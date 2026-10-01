@@ -35,3 +35,5 @@ include(":core:common")
 include(":core:model")
 
 include(":core:testing")
+
+include(":core:audio")

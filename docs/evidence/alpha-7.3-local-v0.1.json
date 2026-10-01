@@ -1,0 +1,71 @@
+{
+  "dependency_verification": "PASS_STRICT",
+  "detekt": "PASS / LOCAL_RELATIVE_ARGUMENT_TRANSPORT_IDENTICAL_INPUTS",
+  "implementation_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+  "jvm_tests": [
+    {
+      "failures": 0,
+      "module": "app",
+      "skipped": 0,
+      "tests": 19
+    },
+    {
+      "failures": 0,
+      "module": "core/common",
+      "skipped": 0,
+      "tests": 1
+    },
+    {
+      "failures": 0,
+      "module": "core/model",
+      "skipped": 0,
+      "tests": 5
+    },
+    {
+      "failures": 0,
+      "module": "core/testing",
+      "skipped": 0,
+      "tests": 1
+    },
+    {
+      "failures": 0,
+      "module": "poc/capture",
+      "skipped": 0,
+      "tests": 26
+    },
+    {
+      "failures": 0,
+      "module": "poc/recovery",
+      "skipped": 0,
+      "tests": 336
+    },
+    {
+      "failures": 0,
+      "module": "poc/search",
+      "skipped": 0,
+      "tests": 13
+    }
+  ],
+  "jvm_total": 401,
+  "migration": "N/A / NO_PRODUCT_PERSISTENCE_SCHEMA_YET",
+  "python_tests": {
+    "auth": 82,
+    "compiled_boundaries": 5,
+    "graph_integration": 1,
+    "provider": 24,
+    "recovery_governance": 21,
+    "release_evidence": 12,
+    "sbom": 6,
+    "signing": 8,
+    "total": 203,
+    "transcript": 44
+  },
+  "review": {
+    "deferred_minor": "Builder helper gates tested; mocked full publication orchestration test not added",
+    "important_fixed": "Runtime file dependencies no longer omitted; actual Gradle direct/transitive local JAR negative control RED -> GREEN"
+  },
+  "sbom_schema": "PASS / OFFICIAL_CYCLONEDX_1_6_JSON_SCHEMA",
+  "spotless_lint_instrumentation_compile_debug_assembly": "PASS",
+  "task": "7.3",
+  "vpn_host_and_loopback": "PASS"
+}

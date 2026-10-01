@@ -1,0 +1,51 @@
+{
+  "application_id": "com.monumentogram.dora",
+  "artifact_filename": "dora-0.1.0-alpha.2-vc4.apk",
+  "artifact_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+  "branch": "stage/7-alpha-foundation",
+  "build_toolchain": {
+    "agp": "9.3.1",
+    "build_tools": "36.0.0",
+    "compile_sdk": 36,
+    "gradle": "9.5.0",
+    "jdk": "17",
+    "kotlin": "2.2.10",
+    "target_sdk": 36
+  },
+  "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+  "ci": {
+    "conclusion": "success",
+    "exact_source": "351874fff41774f10298e8a186bdc78bf6bb720f",
+    "final_publication_gate": "Separate post-commit exact-SHA CI required; receipt retained locally and in final RESULT",
+    "implementation": 36720820501
+  },
+  "dependency_sbom": "PASS / ACTUAL_LOCKED_RELEASE_RUNTIME_CYCLONEDX_1_6",
+  "device": {
+    "abi": "arm64-v8a",
+    "android": "14",
+    "api": 34,
+    "model": "POCO M5",
+    "upgrade": "PASS / 2_TO_4"
+  },
+  "distribution": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+  "migration": "N/A / NO_PRODUCT_PERSISTENCE_SCHEMA_YET",
+  "migration_evidence": "No Room/SQLite/database/DataStore/SharedPreferences schema in app/core:model/core:common main sources or release graph; package continuity is not database migration acceptance",
+  "native_16k": "PASS_ON_SIGNED_ARTIFACT",
+  "non_execution": {
+    "7.3C": "NOT_STARTED",
+    "audio": "NOT_USED",
+    "aws": "NOT_CALLED",
+    "runtime": "NOT_IMPLEMENTED",
+    "stage8": "NOT_STARTED"
+  },
+  "sbom_sha256": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba",
+  "schema_version": "0.1",
+  "secret_scan": "PASS_ZERO_FINDINGS",
+  "signed_apk_verification": "PASS",
+  "signing_backup_restore": "PASS",
+  "source_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+  "status": "PASS / INTERNAL_ALPHA_APK_BUILD_CI_DEVICE_READY",
+  "task": "7.3",
+  "version_code": 4,
+  "version_name": "0.1.0-alpha.2"
+}

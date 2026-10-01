@@ -1,0 +1,564 @@
+{
+  "api_snapshot_discrepancy": {
+    "completed_bootstrap_log_sha256": "3adf0faa3ce03d72f4faec6d225ca06695f6b6e55cc3da3dd9a76089c0b8539b",
+    "completed_search_log_sha256": "6bfb614057077e6aa7ed541e711860af8d6640b00229ed23fea1f49922166367",
+    "reconciled_steps": [
+      "Unit tests, instrumentation compilation, lint, and debug assembly",
+      "Verify compiled Alpha architecture boundaries and negative controls",
+      "Verify unsigned release and locked runtime SBOM graph",
+      "Verify locked search dependency artifact inventory",
+      "Verify exact search license and NOTICE inventory",
+      "Verify native library admission and ELF alignment",
+      "Verify capture PoC native library admission and ELF alignment",
+      "Verify 16 KiB APK zip alignment",
+      "Verify capture PoC 16 KiB APK zip alignment",
+      "Upload Alpha foundation debug verification APK",
+      "Upload capture PoC debug APK",
+      "Post Set up Gradle and validate wrapper",
+      "Post Set up JDK 17",
+      "Post Check out repository"
+    ]
+  },
+  "conclusion": "success",
+  "event": "push",
+  "head_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+  "jobs": {
+    "android-bootstrap": {
+      "conclusion": "success",
+      "head_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+      "id": 109905186084,
+      "steps": [
+        {
+          "completed_at": "2026-09-30T13:19:40Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Set up job",
+          "number": 1,
+          "started_at": "2026-09-30T13:19:39Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:42Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Check out repository",
+          "number": 2,
+          "started_at": "2026-09-30T13:19:40Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:42Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Verify immutable baseline is present",
+          "number": 3,
+          "started_at": "2026-09-30T13:19:42Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:42Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Set up JDK 17",
+          "number": 4,
+          "started_at": "2026-09-30T13:19:42Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:43Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Set up Gradle and validate wrapper",
+          "number": 5,
+          "started_at": "2026-09-30T13:19:42Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:49Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Install Android SDK 36",
+          "number": 6,
+          "started_at": "2026-09-30T13:19:43Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:49Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate Stage 00 artifacts",
+          "number": 7,
+          "started_at": "2026-09-30T13:19:49Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:49Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Verify owner-local Alpha signing boundary without secrets",
+          "number": 8,
+          "started_at": "2026-09-30T13:19:49Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:12Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate internal Alpha release evidence and negative controls",
+          "number": 9,
+          "started_at": "2026-09-30T13:19:49Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:12Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate Cloud ASR provider and adapter contracts",
+          "number": 10,
+          "started_at": "2026-09-30T13:20:12Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:12Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate transcript versioning and edit contracts",
+          "number": 11,
+          "started_at": "2026-09-30T13:20:12Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:12Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate Cloud identity authorization and ownership contracts",
+          "number": 12,
+          "started_at": "2026-09-30T13:20:12Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:12Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate isolated capture PoC contracts",
+          "number": 13,
+          "started_at": "2026-09-30T13:20:12Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:14Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate isolated search PoC contracts",
+          "number": 14,
+          "started_at": "2026-09-30T13:20:12Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:14Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Fetch pinned Recovery reviewed-source provenance",
+          "number": 15,
+          "started_at": "2026-09-30T13:20:14Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:32Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Validate recovery governance package",
+          "number": 16,
+          "started_at": "2026-09-30T13:20:14Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:21:03Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Verify exact recovery dependency inventory",
+          "number": 17,
+          "started_at": "2026-09-30T13:20:32Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:21:03Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Verify recovery execution remains fail-closed",
+          "number": 18,
+          "started_at": "2026-09-30T13:21:03Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:21:49Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Verify pure-host VPN contract kernel",
+          "number": 19,
+          "started_at": "2026-09-30T13:21:03Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:22:41Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Verify hermetic numeric-loopback VPN transport harness",
+          "number": 20,
+          "started_at": "2026-09-30T13:21:49Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:24:29Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Check formatting and Kotlin static analysis",
+          "number": 21,
+          "started_at": "2026-09-30T13:22:41Z",
+          "status": "completed"
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "in_progress",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Unit tests, instrumentation compilation, lint, and debug assembly",
+          "number": 22,
+          "started_at": "2026-09-30T13:24:29Z",
+          "status": "completed",
+          "verified_markers": [
+            ":app:testDebugUnitTest",
+            "BUILD SUCCESSFUL"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify compiled Alpha architecture boundaries and negative controls",
+          "number": 23,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "python3 tools/verify_alpha_boundaries.py",
+            "PASS Alpha compiled boundary core/model",
+            "PASS Alpha compiled boundary app",
+            "Ran 5 tests",
+            "OK"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify unsigned release and locked runtime SBOM graph",
+          "number": 24,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "--init-script ../tools/alpha_release_graph.init.gradle",
+            "BUILD SUCCESSFUL",
+            "PASS release SBOM: 109 components plus application root",
+            "Native inventory passed: 4 ABI entries",
+            "Verification successful"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify locked search dependency artifact inventory",
+          "number": 25,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "python3 tools/poc_search_dependency_inventory.py",
+            "Validated docs/evidence/poc-search-001/dependency-inventory.json"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify exact search license and NOTICE inventory",
+          "number": 26,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "python3 tools/poc_search_license_notice_inventory.py",
+            "Validated docs/evidence/poc-search-001/license-notice-inventory.json"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify native library admission and ELF alignment",
+          "number": 27,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk",
+            "Native inventory passed: 4 ABI entries"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify capture PoC native library admission and ELF alignment",
+          "number": 28,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "python3 tools/verify_apk_native_alignment.py android/poc/capture/build/outputs/apk/debug/capture-debug.apk",
+            "Native inventory passed: 4 ABI entries"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify 16 KiB APK zip alignment",
+          "number": 29,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "zipalign\" -c -P 16 -v 4 android/app/build/outputs/apk/debug/app-debug.apk",
+            "Verification successful"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Verify capture PoC 16 KiB APK zip alignment",
+          "number": 30,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "zipalign\" -c -P 16 -v 4 android/poc/capture/build/outputs/apk/debug/capture-debug.apk",
+            "Verification successful"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Upload Alpha foundation debug verification APK",
+          "number": 31,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "Artifact dora-alpha-foundation-debug-apk has been successfully uploaded!"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Upload capture PoC debug APK",
+          "number": 32,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "Artifact dora-poc-capture-debug-apk has been successfully uploaded!"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Post Set up Gradle and validate wrapper",
+          "number": 62,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "Completed post-action step"
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Post Set up JDK 17",
+          "number": 63,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "Post job cleanup."
+          ]
+        },
+        {
+          "api_conclusion_at_capture": null,
+          "api_status_at_capture": "pending",
+          "completed_at": null,
+          "conclusion": "success",
+          "evidence_source": "COMPLETED_JOB_LOG_AND_SUCCESSFUL_EXACT_SHA_JOB",
+          "name": "Post Check out repository",
+          "number": 64,
+          "started_at": null,
+          "status": "completed",
+          "verified_markers": [
+            "Removing includeIf entries pointing to credentials config files",
+            "Cleaning up orphan processes"
+          ]
+        }
+      ]
+    },
+    "search-smoke": {
+      "conclusion": "success",
+      "head_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+      "id": 109905185465,
+      "steps": [
+        {
+          "completed_at": "2026-09-30T13:19:42Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Set up job",
+          "number": 1,
+          "started_at": "2026-09-30T13:19:39Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:45Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Check out repository",
+          "number": 2,
+          "started_at": "2026-09-30T13:19:42Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:45Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Set up JDK 17",
+          "number": 3,
+          "started_at": "2026-09-30T13:19:45Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:19:46Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Set up Gradle and validate wrapper",
+          "number": 4,
+          "started_at": "2026-09-30T13:19:45Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:32Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Install Android API 36 emulator",
+          "number": 5,
+          "started_at": "2026-09-30T13:19:46Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:20:33Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Create API 36 search smoke AVD",
+          "number": 6,
+          "started_at": "2026-09-30T13:20:32Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:21:24Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Start API 36 emulator",
+          "number": 7,
+          "started_at": "2026-09-30T13:20:33Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:25:26Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Run Room FTS4 schema, correctness, safety, mapping, and mutation smoke tests",
+          "number": 8,
+          "started_at": "2026-09-30T13:21:24Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:25:26Z",
+          "conclusion": "skipped",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Print emulator log on failure",
+          "number": 9,
+          "started_at": "2026-09-30T13:25:26Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:25:27Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Post Set up Gradle and validate wrapper",
+          "number": 16,
+          "started_at": "2026-09-30T13:25:26Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:25:27Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Post Set up JDK 17",
+          "number": 17,
+          "started_at": "2026-09-30T13:25:27Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:25:27Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Post Check out repository",
+          "number": 18,
+          "started_at": "2026-09-30T13:25:27Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-09-30T13:25:27Z",
+          "conclusion": "success",
+          "evidence_source": "GITHUB_JOB_STEPS_API",
+          "name": "Complete job",
+          "number": 19,
+          "started_at": "2026-09-30T13:25:27Z",
+          "status": "completed"
+        }
+      ]
+    }
+  },
+  "run_id": 36720820501,
+  "status": "completed",
+  "step_conclusion_semantics": "Gate outcomes. API stale pending/in_progress entries are explicitly retained and reconciled only against executed command blocks, success markers, no runner error and completed successful exact-SHA job. No check disabled or inferred from local tests.",
+  "task": "7.3",
+  "url": "https://github.com/Monumentogram/DORA/actions/runs/36720820501"
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "0.1",
+  "task": "7.1",
+  "verdict": "PASS / ALPHA_IDENTITY_SIGNING_INSTALL_READY",
+  "scope": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+  "implementation_baseline": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699",
+  "admitted_parent": "4e7742d88377d3d915be904618fc220d479ab25d",
+  "baseline_delta": "FIVE_ADMISSION_DOCUMENTS_ONLY_ZERO_RUNTIME_DELTA",
+  "application_id": "com.monumentogram.dora",
+  "previous_application_id": "com.monumentogram.dora.bootstrap",
+  "namespace": "com.monumentogram.dora",
+  "namespace_strategy": "IMMEDIATE_SMALL_APP_SOURCE_AND_TEST_MIGRATION",
+  "debug_application_id": "com.monumentogram.dora.debug",
+  "version_code": 2,
+  "version_name": "0.1.0-alpha.1",
+  "upgrade_probe": {"version_code": 3, "version_name": "0.1.0-alpha.1-upgrade-test", "distributable_product_version": false},
+  "next_product_version_code_minimum": 4,
+  "signing": {
+    "owner": "PROJECT_OWNER",
+    "model": "DEDICATED_LOCAL_INTERNAL_ALPHA_PKCS12",
+    "alias": "dora-internal-alpha",
+    "algorithm": "RSA-3072 / SHA256withRSA",
+    "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "not_before": "2026-09-30T06:04:38Z",
+    "not_after": "2036-09-27T06:04:38Z",
+    "storage_class": "OWNER_PRIVATE_LOCAL_APPLICATION_DATA_OUTSIDE_GIT",
+    "acl": "OWNER_AND_SYSTEM_ONLY",
+    "backup": "OWNER_ENCRYPTED_OFFLINE_BACKUP_REQUIRED_NOT_VERIFIED",
+    "ci_secrets_required": false,
+    "production_signing_key_created": false
+  },
+  "distribution": "LOCAL_SIGNED_APK_VIA_EXPLICIT_ADB_TO_OWNER_DEVICE",
+  "build": {
+    "status": "PASS",
+    "source_commit": "4a2350a02eba8adc76c04bf250e7769513ad9aa7",
+    "artifact": "dora-0.1.0-alpha.1-vc2.apk",
+    "sha256": "3cb591abc8e33a832bdf018b7cff545a8b3c39641ab74b44e8d4168cfa045d3c",
+    "clean_local_repeat_byte_identical": true,
+    "evidence": "docs/evidence/alpha-7.1-device-build-v0.1.json"
+  },
+  "installation": {
+    "status": "PASS", "reference_device": "POCO M5", "android": "14", "api": 34, "abi": "arm64-v8a",
+    "fresh_install": "PASS", "launch": "PASS", "version_readback": "PASS", "uninstall_reinstall": "PASS",
+    "same_key_upgrade_2_to_3": "PASS_UID_AND_FIRST_INSTALL_TIME_PRESERVED",
+    "wrong_key_upgrade": "REJECTED_INSTALL_FAILED_UPDATE_INCOMPATIBLE",
+    "final_installed_version_code": 2,
+    "installed_apk_byte_identity": "PASS"
+  },
+  "ci": {
+    "status": "PASS", "run_id": 36677470351,
+    "url": "https://github.com/Monumentogram/DORA/actions/runs/36677470351",
+    "exact_head": "4a2350a02eba8adc76c04bf250e7769513ad9aa7",
+    "jobs": {"android-bootstrap": "success", "search-smoke": "success"},
+    "evidence": "docs/evidence/alpha-7.1-ci-v0.1.json"
+  },
+  "security": {"secret_scan": "PASS_ZERO_FINDINGS", "signing_material_in_git": false},
+  "next": "7.2_NOT_STARTED_REQUIRES_SEPARATE_TASK",
+  "pr86": "OPEN_DRAFT_UNMERGED_UNTOUCHED",
+  "recovery_dependency": "CLEAN_REPLACEMENT_BEFORE_STAGE_8_ACCEPTANCE_NOT_BEFORE_7_1",
+  "non_execution": {"7.2": "NOT_STARTED", "recording": "NOT_IMPLEMENTED", "recovery_integration": "NOT_RUN", "aws": "NOT_CALLED", "main": "NOT_CHANGED"}
+}

@@ -1,0 +1,108 @@
+{
+  "task": "7.2",
+  "spreadsheet_id": "1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc",
+  "url": "https://docs.google.com/spreadsheets/d/1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc/edit",
+  "after_implementation_ci": 36683669682,
+  "repository_head_at_readback": "9ee5d718348fc0682ae94e16a5a20ecd75e706c4",
+  "readback": "PASS_19_OF_19_CELLS_EXACT",
+  "visual_check": "PASS; existing wrap and status dropdown styling preserved; changed row heights auto-fit; summary and 7.2 row inspected",
+  "changed_cells": [
+    {
+      "range": "'Этапы'!C59",
+      "value": "ПРОЙДЕНО"
+    },
+    {
+      "range": "'Этапы'!I56",
+      "value": "30.09.2026 — Group C В РАБОТЕ. 7.1 и 7.2 PASS. Минимальные application contracts реализованы; recording/storage/Cloud ASR runtime NOT_IMPLEMENTED."
+    },
+    {
+      "range": "'Этапы'!J56",
+      "value": "Следующая отдельная задача — 7.2C, НЕ НАЧАТО. Recovery clean replacement — отдельно до Stage 8 recording/storage acceptance."
+    },
+    {
+      "range": "'Этапы'!I57",
+      "value": "30.09.2026 — Stage 7 В РАБОТЕ. 7.2 PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY. Ветка stage/7-alpha-foundation; HEAD 9ee5d718348fc0682ae94e16a5a20ecd75e706c4. PR #87 OPEN / DRAFT / UNMERGED."
+    },
+    {
+      "range": "'Этапы'!J57",
+      "value": "7.2C — Replaceable Cloud ASR interface и adapter contract: НЕ НАЧАТО, отдельная задача. 7.2D/E НЕ НАЧАТО; 7.3 ЗАПЛАНИРОВАНО; Stage 8 НЕ НАЧАТО."
+    },
+    {
+      "range": "'Этапы'!J58",
+      "value": "7.1 и 7.2 закрыты. Next: 7.2C — отдельная задача, НЕ НАЧАТО. PR #86 OPEN / DRAFT / UNMERGED, не изменён; Recovery clean replacement — до Stage 8 acceptance."
+    },
+    {
+      "range": "'Этапы'!I59",
+      "value": "PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY. core:model + app/flow: stable IDs, независимые capture/storage/recognition states, typed errors, generic ports, callback guards. 22 новых теста PASS; implementation 9ee5d718348fc0682ae94e16a5a20ecd75e706c4; оба обязательных CI jobs SUCCESS: https://github.com/Monumentogram/DORA/actions/runs/36683669682"
+    },
+    {
+      "range": "'Этапы'!J59",
+      "value": "7.2C NOT_STARTED; provider-specific contracts, runtime recording/storage/ASR и AWS не выполнены. ADR-0016; docs/stage1/DORA_ALPHA_MINIMAL_MODULES_DATA_CONTRACTS_V0_1.md. PR #87 остаётся draft/unmerged."
+    },
+    {
+      "range": "'Сводка'!B2",
+      "value": "2026-09-30"
+    },
+    {
+      "range": "'Сводка'!C2",
+      "value": "30.09.2026 — Stage 0 / 6.3 / 7.1 PASS сохранены; 7.2 PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY. Stage 7 и Group C В РАБОТЕ; Next 7.2C НЕ НАЧАТО. stage/7-alpha-foundation HEAD 9ee5d718348fc0682ae94e16a5a20ecd75e706c4; PR #87 OPEN / DRAFT / UNMERGED. PR #86 не изменён."
+    },
+    {
+      "range": "'Сводка'!B4",
+      "value": "Stage 7 В РАБОТЕ; 7.1 и 7.2 ПРОЙДЕНО"
+    },
+    {
+      "range": "'Сводка'!C4",
+      "value": "7.2: stable IDs, отдельные capture/storage/recognition states, generic ports и coordinator проверены. Recording/storage/Cloud ASR runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "'Сводка'!C5",
+      "value": "com.monumentogram.dora; version 2 / 0.1.0-alpha.1, identity/signing сохранены. Минимальные application contracts готовы. CI implementation PASS: https://github.com/Monumentogram/DORA/actions/runs/36683669682"
+    },
+    {
+      "range": "'Сводка'!B6",
+      "value": "7.2C — Replaceable Cloud ASR interface и adapter contract — НЕ НАЧАТО"
+    },
+    {
+      "range": "'Сводка'!C6",
+      "value": "Только следующая отдельная задача; автоматически не запускать. 7.2D/E НЕ НАЧАТО, 7.3 ЗАПЛАНИРОВАНО, Stage 8 НЕ НАЧАТО. Recovery clean replacement — отдельно до Stage 8 acceptance; PR #86 без изменений."
+    },
+    {
+      "range": "'Сводка'!B14",
+      "value": "Stage 0 PASS → 7.1 PASS → 7.2 PASS → 7.2C NOT_STARTED"
+    },
+    {
+      "range": "'Сводка'!C14",
+      "value": "6.3 PASS и frozen baseline сохранены. Implementation 7.2 9ee5d718348fc0682ae94e16a5a20ecd75e706c4; repository HEAD 9ee5d718348fc0682ae94e16a5a20ecd75e706c4; CI https://github.com/Monumentogram/DORA/actions/runs/36683669682. Group C / Stage 7 В РАБОТЕ; Recovery clean replacement до Stage 8 acceptance."
+    },
+    {
+      "range": "'Сводка'!B29",
+      "value": "7.2C NOT_STARTED / NEXT; Recovery clean replacement — до Stage 8"
+    },
+    {
+      "range": "'Сводка'!C29",
+      "value": "7.2 PASS. PR86-INTEGRATION-RECONCILIATION = PASS / CLEAN_REPLACEMENT_PR; PR #86 OPEN / DRAFT / UNMERGED, не изменён. 7.2C автоматически не начинать; Recovery replacement — отдельная задача."
+    }
+  ],
+  "row_height_autofit": [
+    "'Сводка'!2:2",
+    "'Сводка'!4:6",
+    "'Сводка'!14:14",
+    "'Сводка'!29:29",
+    "'Этапы'!56:59"
+  ],
+  "protected_statuses": {
+    "C56": "В РАБОТЕ",
+    "C57": "В РАБОТЕ",
+    "C58": "ПРОЙДЕНО",
+    "C60": "НЕ НАЧАТО",
+    "C61": "НЕ НАЧАТО",
+    "C62": "НЕ НАЧАТО",
+    "C63": "ЗАПЛАНИРОВАНО",
+    "C64": "ЗАПЛАНИРОВАНО",
+    "C65": "НЕ НАЧАТО"
+  },
+  "protected_readback": "PASS; exact status values and validation rules unchanged",
+  "unrelated_rows_counters": "NOT_EDITED",
+  "publication_note": "After publishing the containing evidence-only commit, replace repository HEAD only in Этапы!I57, Сводка!C2/C14, read back all changed cells again, and report final SHA/CI separately. This snapshot deliberately records the pre-evidence-commit observation."
+}

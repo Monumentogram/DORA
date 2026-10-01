@@ -55,11 +55,8 @@ jobs:
       - name: Validate Stage 00 artifacts
         run: python3 tools/validate_stage00.py
 
-      - name: Validate isolated capture PoC contracts
-        run: python3 tools/validate_poc_capture.py
-
-      - name: Validate isolated search PoC contracts
-        run: python3 tools/validate_poc_search.py
+      - name: Verify owner-local Alpha signing boundary without secrets
+        run: python3 -m unittest discover -s tools -p test_build_internal_alpha.py
 
       - name: Fetch pinned Recovery reviewed-source provenance
         # Squash integration does not retain the reviewed source as a HEAD ancestor.
@@ -68,6 +65,45 @@ jobs:
           git fetch --no-tags --no-recurse-submodules
           https://github.com/Monumentogram/DORA.git
           89551b17a84bc090ccf1cd36d48aeb59afc403fa
+
+      - name: Validate internal Alpha release evidence and negative controls
+        run: |
+          python3 tools/validate_alpha_release.py
+          python3 -m unittest discover -s tools -p test_validate_alpha_release.py
+          python3 -m unittest discover -s tools -p test_alpha_release_sbom.py
+          python3 -m unittest discover -s tools -p test_alpha_release_graph.py
+
+      - name: Validate Cloud ASR provider and adapter contracts
+        run: |
+          python3 tools/validate_cloud_asr_provider_contract.py
+          python3 -m unittest discover -s tools -p test_cloud_asr_provider_contract.py
+
+      - name: Validate transcript versioning and edit contracts
+        run: |
+          python3 tools/validate_transcript_versioning_contract.py
+          python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+
+      - name: Validate Cloud identity authorization and ownership contracts
+        run: |
+          python3 tools/validate_cloud_identity_auth_contract.py
+          python3 -m unittest discover -s tools -p test_cloud_identity_auth_contract.py
+
+      - name: Run deterministic Cloud contract harness
+        run: |
+          python3 tools/cloud_contract_harness.py --self-test
+          python3 -m unittest discover -s tools -p test_cloud_contract_harness.py
+          python3 tools/cloud_contract_harness.py --verify-determinism
+
+      - name: Validate Security and Identity architecture contract
+        run: |
+          python3 tools/validate_security_identity_contract.py
+          python3 -m unittest discover -s tools -p test_security_identity_contract.py
+
+      - name: Validate isolated capture PoC contracts
+        run: python3 tools/validate_poc_capture.py
+
+      - name: Validate isolated search PoC contracts
+        run: python3 tools/validate_poc_search.py
 
       - name: Validate recovery governance package
         run: python3 tools/validate_poc_recovery_governance.py --self-test
@@ -136,6 +172,28 @@ jobs:
           :poc:recovery:assembleDebug
           :poc:search:assembleDebug
 
+      - name: Verify Stage 8.1 audio Recovery boundary
+        run: |
+          python3 tools/validate_audio_recovery_boundary.py
+          python3 -m unittest discover -s tools -p test_audio_recovery_boundary.py
+          cd android
+          ./gradlew --no-daemon --stacktrace :core:audio:testDebugUnitTest :core:audio:compileDebugAndroidTestKotlin :core:audio:lintDebug :core:audio:assembleDebug :core:audio:assembleRelease
+          cd ..
+          python3 tools/validate_audio_recovery_boundary.py --compiled
+
+      - name: Verify compiled Alpha architecture boundaries and negative controls
+        run: |
+          python3 tools/verify_alpha_boundaries.py
+          python3 -m unittest discover -s tools -p test_verify_alpha_boundaries.py
+
+      - name: Verify unsigned release and locked runtime SBOM graph
+        working-directory: android
+        run: |
+          ./gradlew --no-daemon --no-configuration-cache --dependency-verification strict --init-script ../tools/alpha_release_graph.init.gradle :app:assembleRelease :app:exportAlphaReleaseGraph
+          python3 ../tools/alpha_release_sbom.py --graph app/build/reports/alpha-release-graph.json --source "${GITHUB_SHA}" --output app/build/reports/alpha-release-ci.cdx.json
+          python3 ../tools/verify_apk_native_alignment.py app/build/outputs/apk/release/app-release-unsigned.apk --allowlist native-libs-allowlist.txt
+          "${ANDROID_HOME}/build-tools/36.0.0/zipalign" -c -P 16 -v 4 app/build/outputs/apk/release/app-release-unsigned.apk
+
       - name: Verify locked search dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check
 
@@ -164,10 +222,10 @@ jobs:
           -c -P 16 -v 4
           android/poc/capture/build/outputs/apk/debug/capture-debug.apk
 
-      - name: Upload Stage 00 debug APK
+      - name: Upload Alpha foundation debug verification APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: dora-stage00-debug-apk
+          name: dora-alpha-foundation-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7

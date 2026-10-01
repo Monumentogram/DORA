@@ -19,6 +19,8 @@ enum class RecoveryQuarantineObservedState {
     FINAL_ORPHAN,
     SQLITE_POINTS_TO_TEMP,
     UNKNOWN_OR_NON_ALLOWLISTED_NAME,
+    REFERENCED_REJECTED,
+    REFERENCED_DEPENDENT,
 }
 
 data class RecoveryQuarantineIntentInput(

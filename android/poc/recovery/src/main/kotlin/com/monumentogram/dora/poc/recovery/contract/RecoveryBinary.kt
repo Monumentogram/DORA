@@ -3,7 +3,7 @@ package com.monumentogram.dora.poc.recovery.contract
 import java.security.MessageDigest
 import java.util.UUID
 
-class RecoveryContractException(
+open class RecoveryContractException(
     message: String,
     cause: Throwable? = null,
 ) : IllegalArgumentException(message, cause)

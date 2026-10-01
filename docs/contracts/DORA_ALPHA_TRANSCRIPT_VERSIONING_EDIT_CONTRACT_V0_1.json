@@ -1,0 +1,539 @@
+{
+  "schema_version": "dora-transcript-logical-catalog-v0.1",
+  "contract_version": "0.1",
+  "name": "TranscriptVersioningEditContract",
+  "status": "PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY",
+  "scope": "LOGICAL_DATA_CONTRACT_ONLY",
+  "type_language": "closed records; all fields required; ? nullable; [] array; enums closed; unknown extra fields rejected",
+  "identity_aliases": {
+    "recording_id": "RecordingId",
+    "audio_asset_id": "AudioAssetId/source_audio_version",
+    "transcript_id": "TranscriptId/asr_result_id",
+    "processing_job_id": "RecognitionJobId"
+  },
+  "types": {
+    "SourceReference": {
+      "recording_id": "opaque_id",
+      "audio_asset_id": "opaque_id",
+      "sha256": "digest"
+    },
+    "KnownMetadata": {
+      "availability": "Availability",
+      "value": "?nonempty"
+    },
+    "KnownTime": {
+      "availability": "Availability",
+      "value": "?utc"
+    },
+    "Timestamp": {
+      "availability": "TimestampAvailability",
+      "start_us": "?nonnegative_int",
+      "end_us": "?nonnegative_int",
+      "quality": "TimestampQuality"
+    },
+    "SourceState": {
+      "source": "SourceReference",
+      "duration_us": "positive_int",
+      "availability": "SourceAvailability"
+    },
+    "EditRevision": {
+      "recording_id": "opaque_id",
+      "ordinal": "nonnegative_int"
+    },
+    "SegmentRef": {
+      "transcript_id": "opaque_id",
+      "segment_id": "opaque_id"
+    },
+    "TextContext": {
+      "before": "text",
+      "target": "text",
+      "after": "text",
+      "boundary": "Boundary"
+    },
+    "CharRange": {
+      "start": "nonnegative_int",
+      "end": "nonnegative_int"
+    },
+    "EditAnchor": {
+      "source": "SourceReference",
+      "base_transcript_id": "opaque_id",
+      "segment_ref": "?SegmentRef",
+      "timestamp": "Timestamp",
+      "context": "TextContext",
+      "char_range": "?CharRange"
+    },
+    "ProcessingIdentity": {
+      "implementation_id": "nonempty",
+      "implementation_version": "KnownMetadata",
+      "route_id": "KnownMetadata",
+      "provider_id": "KnownMetadata",
+      "provider_version": "KnownMetadata",
+      "model_id": "KnownMetadata",
+      "model_version": "KnownMetadata",
+      "adapter_profile_id": "KnownMetadata",
+      "adapter_profile_version": "KnownMetadata"
+    },
+    "RawProvenance": {
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "idempotency_key": "opaque_id",
+      "attempt_id": "opaque_id",
+      "configuration_ref": "opaque_id",
+      "generation": "positive_int",
+      "provider_operation_ref": "KnownMetadata"
+    },
+    "MergeProvenance": {
+      "proposal_id": "opaque_id",
+      "base_edit_revision": "EditRevision",
+      "applied_edit_ids": "[]opaque_id",
+      "resolution_ids": "[]opaque_id",
+      "parent_transcript_ids": "[]opaque_id"
+    },
+    "TranscriptSegment": {
+      "segment_id": "opaque_id",
+      "transcript_id": "opaque_id",
+      "order": "nonnegative_int",
+      "source": "SourceReference",
+      "text": "text",
+      "timestamp": "Timestamp"
+    },
+    "TranscriptVersion": {
+      "transcript_id": "opaque_id",
+      "recording_id": "opaque_id",
+      "source": "SourceReference",
+      "version_order": "positive_int",
+      "engine": "Engine",
+      "processing_status": "Completeness",
+      "processing": "ProcessingIdentity",
+      "raw_provenance": "?RawProvenance",
+      "merge_provenance": "?MergeProvenance",
+      "created_at": "utc",
+      "processed_at": "KnownTime",
+      "text": "text",
+      "segments": "[]TranscriptSegment"
+    },
+    "UserEdit": {
+      "edit_id": "opaque_id",
+      "recording_id": "opaque_id",
+      "base_transcript_id": "opaque_id",
+      "base_edit_revision": "EditRevision",
+      "revision": "EditRevision",
+      "actor": "UserActor",
+      "created_at": "utc",
+      "kind": "EditKind",
+      "anchor": "EditAnchor",
+      "payload": "text",
+      "mapping_state": "InitialMapping",
+      "conflict": "NoConflict"
+    },
+    "EditMapping": {
+      "edit_id": "opaque_id",
+      "target_anchor": "?EditAnchor",
+      "state": "MappingState",
+      "conflict": "Conflict",
+      "basis": "MappingBasis"
+    },
+    "VersionAlignment": {
+      "alignment_id": "opaque_id",
+      "recording_id": "opaque_id",
+      "source": "SourceReference",
+      "source_transcript_ids": "[]opaque_id",
+      "target_transcript_id": "opaque_id",
+      "base_edit_revision": "EditRevision",
+      "method_id": "nonempty",
+      "method_version": "KnownMetadata",
+      "mappings": "[]EditMapping"
+    },
+    "MergeProposal": {
+      "proposal_id": "opaque_id",
+      "recording_id": "opaque_id",
+      "source": "SourceReference",
+      "base_transcript_id": "opaque_id",
+      "candidate_transcript_id": "opaque_id",
+      "base_edit_revision": "EditRevision",
+      "base_selection_revision": "nonnegative_int",
+      "alignment_id": "opaque_id",
+      "mapped_edit_ids": "[]opaque_id",
+      "unmapped_edit_ids": "[]opaque_id",
+      "conflicted_edit_ids": "[]opaque_id",
+      "created_at": "utc",
+      "creation_state": "ProposalCreationState"
+    },
+    "ConflictResolution": {
+      "resolution_id": "opaque_id",
+      "recording_id": "opaque_id",
+      "edit_id": "opaque_id",
+      "proposal_id": "?opaque_id",
+      "target_transcript_id": "opaque_id",
+      "base_edit_revision": "EditRevision",
+      "base_selection_revision": "nonnegative_int",
+      "actor": "UserActor",
+      "created_at": "utc",
+      "kind": "ResolutionKind",
+      "target_anchor": "?EditAnchor",
+      "reason": "ResolutionReason"
+    },
+    "ExpectedProcessing": {
+      "source": "SourceReference",
+      "processing_action_id": "opaque_id",
+      "generation": "positive_int"
+    },
+    "ActiveTranscriptSelection": {
+      "recording_id": "opaque_id",
+      "transcript_id": "?opaque_id",
+      "selection_revision": "nonnegative_int",
+      "decision_id": "?opaque_id",
+      "mode": "SelectionMode"
+    },
+    "ActivationDecision": {
+      "decision_id": "opaque_id",
+      "recording_id": "opaque_id",
+      "from_transcript_id": "?opaque_id",
+      "target_transcript_id": "?opaque_id",
+      "proposal_id": "?opaque_id",
+      "base_edit_revision": "EditRevision",
+      "base_selection_revision": "nonnegative_int",
+      "actor": "Actor",
+      "created_at": "utc",
+      "kind": "DecisionKind",
+      "outcome": "DecisionOutcome",
+      "reason": "DecisionReason",
+      "resolution_ids": "[]opaque_id"
+    },
+    "Snapshot": {
+      "recording_id": "opaque_id",
+      "lifecycle": "RecordingLifecycle",
+      "sources": "[]SourceState",
+      "current_source": "SourceReference",
+      "versions": "[]TranscriptVersion",
+      "edits": "[]UserEdit",
+      "edit_revision": "EditRevision",
+      "alignments": "[]VersionAlignment",
+      "proposals": "[]MergeProposal",
+      "resolutions": "[]ConflictResolution",
+      "decisions": "[]ActivationDecision",
+      "selection": "ActiveTranscriptSelection",
+      "expected_processing": "?ExpectedProcessing",
+      "processing_history": "[]ExpectedProcessing"
+    }
+  },
+  "enums": {
+    "Availability": [
+      "KNOWN",
+      "UNKNOWN",
+      "NOT_SUPPLIED",
+      "NOT_APPLICABLE"
+    ],
+    "TimestampAvailability": [
+      "KNOWN",
+      "PARTIAL",
+      "UNAVAILABLE"
+    ],
+    "TimestampQuality": [
+      "UNKNOWN",
+      "VALIDATED"
+    ],
+    "SourceAvailability": [
+      "AVAILABLE",
+      "USER_DELETED",
+      "RETENTION_DELETED",
+      "MISSING",
+      "CORRUPT",
+      "KEY_UNAVAILABLE"
+    ],
+    "Boundary": [
+      "NONE",
+      "START",
+      "END"
+    ],
+    "Engine": [
+      "LOCAL",
+      "CLOUD",
+      "MERGED"
+    ],
+    "Completeness": [
+      "VALID",
+      "PARTIAL",
+      "FAILED"
+    ],
+    "UserActor": [
+      "USER"
+    ],
+    "Actor": [
+      "USER",
+      "SYSTEM"
+    ],
+    "EditKind": [
+      "INSERT",
+      "REPLACE",
+      "DELETE"
+    ],
+    "InitialMapping": [
+      "EXACT"
+    ],
+    "NoConflict": [
+      "NONE"
+    ],
+    "MappingState": [
+      "EXACT",
+      "MAPPED",
+      "AMBIGUOUS",
+      "UNMAPPED",
+      "CONFLICTED"
+    ],
+    "Conflict": [
+      "NONE",
+      "AMBIGUOUS_MAPPING",
+      "UNMAPPED_EDIT",
+      "STALE_BASE",
+      "SOURCE_MISMATCH",
+      "SOURCE_UNAVAILABLE",
+      "MANUAL_REVIEW_REQUIRED"
+    ],
+    "MappingBasis": [
+      "UNIQUE_CONTEXT",
+      "USER_CONFIRMED",
+      "INSUFFICIENT"
+    ],
+    "ProposalCreationState": [
+      "READY",
+      "NEEDS_REVIEW"
+    ],
+    "ResolutionKind": [
+      "APPLY_AT_REVIEWED_ANCHOR",
+      "USE_CANDIDATE_TEXT"
+    ],
+    "ResolutionReason": [
+      "USER_REVIEWED_CORRECTION",
+      "USER_CHOSE_CANDIDATE_TEXT"
+    ],
+    "SelectionMode": [
+      "NONE",
+      "AUTOMATIC",
+      "MANUAL"
+    ],
+    "DecisionKind": [
+      "AUTO_INITIAL",
+      "AUTO_CLOUD_REPLACE",
+      "ACCEPT_PROPOSAL",
+      "REJECT_PROPOSAL",
+      "MANUAL_SELECT",
+      "CLEAR_SELECTION"
+    ],
+    "DecisionOutcome": [
+      "ACCEPTED",
+      "REJECTED"
+    ],
+    "DecisionReason": [
+      "EXPECTED_RESULT",
+      "USER_ACCEPTED",
+      "USER_REJECTED",
+      "USER_SELECTED_VERSION",
+      "USER_CLEARED",
+      "STALE_OR_CONFLICT"
+    ],
+    "RecordingLifecycle": [
+      "LIVE",
+      "TOMBSTONED"
+    ]
+  },
+  "entities": {
+    "TranscriptVersion": {
+      "identity": [
+        "transcript_id"
+      ],
+      "immutable": true,
+      "unique": [
+        [
+          "recording_id",
+          "version_order"
+        ]
+      ],
+      "references": [
+        "source",
+        "merge_provenance.parent_transcript_ids"
+      ]
+    },
+    "TranscriptSegment": {
+      "identity": [
+        "transcript_id",
+        "segment_id"
+      ],
+      "immutable": true,
+      "unique": [
+        [
+          "transcript_id",
+          "order"
+        ]
+      ],
+      "references": [
+        "source",
+        "transcript_id"
+      ]
+    },
+    "UserEdit": {
+      "identity": [
+        "edit_id"
+      ],
+      "immutable": true,
+      "references": [
+        "base_transcript_id",
+        "anchor",
+        "base_edit_revision"
+      ]
+    },
+    "EditRevision": {
+      "identity": [
+        "recording_id",
+        "ordinal"
+      ],
+      "immutable": true,
+      "scope": "all transcript contexts of one recording"
+    },
+    "EditAnchor": {
+      "identity": "owned value",
+      "immutable": true,
+      "references": [
+        "source",
+        "base_transcript_id",
+        "segment_ref"
+      ]
+    },
+    "VersionAlignment": {
+      "identity": [
+        "alignment_id"
+      ],
+      "immutable": true,
+      "references": [
+        "source_transcript_ids",
+        "target_transcript_id",
+        "mappings.edit_id"
+      ]
+    },
+    "MergeProposal": {
+      "identity": [
+        "proposal_id"
+      ],
+      "immutable": true,
+      "references": [
+        "base_transcript_id",
+        "candidate_transcript_id",
+        "alignment_id",
+        "base_edit_revision"
+      ]
+    },
+    "ConflictResolution": {
+      "identity": [
+        "resolution_id"
+      ],
+      "immutable": true,
+      "references": [
+        "edit_id",
+        "proposal_id",
+        "target_transcript_id"
+      ]
+    },
+    "ActiveTranscriptSelection": {
+      "identity": [
+        "recording_id"
+      ],
+      "immutable": false,
+      "cardinality": "zero or one active VALID version per recording",
+      "references": [
+        "transcript_id",
+        "decision_id"
+      ]
+    },
+    "ActivationDecision": {
+      "identity": [
+        "decision_id"
+      ],
+      "immutable": true,
+      "references": [
+        "from_transcript_id",
+        "target_transcript_id",
+        "proposal_id",
+        "resolution_ids"
+      ]
+    }
+  },
+  "rules": {
+    "raw_and_merged_versions_immutable": true,
+    "edits_separate_and_immutable": true,
+    "active_is_selection_not_engine": true,
+    "recording_scoped_publication_order": true,
+    "recording_wide_edit_revision": true,
+    "selection_revision_guards_aba": true,
+    "source_and_version_compound_anchor": true,
+    "char_offset_only_forbidden": true,
+    "cross_version_segment_identity_not_alignment": true,
+    "unavailable_timestamp_null": true,
+    "unknown_timestamp_quality_not_proof": true,
+    "unsafe_mapping_needs_user_resolution": true,
+    "proposal_partitions_preserve_all_edits": true,
+    "stale_proposal_cannot_activate": true,
+    "manual_choice_overrides_ranking": true,
+    "auto_requires_no_edits_and_expected_generation": true,
+    "merged_preserves_parents_edits": true,
+    "reference_integrity_required": true,
+    "deletion_policy_not_selected": true,
+    "no_content_logging": true,
+    "processing_history_append_only": true,
+    "merge_edit_bases_precede_derived_version": true,
+    "historical_decisions_check_retained_invariants": true
+  },
+  "priority": [
+    "USER_EDIT",
+    "CLOUD",
+    "LOCAL"
+  ],
+  "effective_proposal_states": [
+    "READY",
+    "NEEDS_REVIEW",
+    "STALE",
+    "ACCEPTED",
+    "REJECTED"
+  ],
+  "deletion_compatibility": {
+    "audio_only": "retain transcript/edit/provenance; mark exact source unavailable; no reprocessing",
+    "version": "reject dangling references; future explicit reselection/tombstone/cascade separately specified",
+    "edit": "explicit future user operation, never ASR completion",
+    "recording": "tombstone blocks activation and resurrection; future scoped erasure",
+    "retention": "DEC-013 unchanged; no new period or physical mechanism"
+  },
+  "forbidden_transitions": [
+    "raw_text_overwrite",
+    "edit_history_drop",
+    "implicit_active_fallback",
+    "stale_proposal_accept",
+    "unsafe_mapping_auto_apply",
+    "late_callback_activation",
+    "cross_source_merge",
+    "arbitrary_referenced_version_remove"
+  ],
+  "non_execution": {
+    "7.2E": "NOT_STARTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "physical_db_schema": "NOT_IMPLEMENTED",
+    "room": "NOT_IMPLEMENTED",
+    "sqlite": "NOT_IMPLEMENTED",
+    "server_db": "NOT_IMPLEMENTED",
+    "dao_repository_runtime": "NOT_IMPLEMENTED",
+    "migrations": "NOT_IMPLEMENTED",
+    "merge_algorithm_runtime": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "cloud_auth_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "recording": "NOT_IMPLEMENTED",
+    "recovery_integration": "NOT_RUN",
+    "cloud_backend_runtime": "NOT_IMPLEMENTED",
+    "aws_adapter_runtime": "NOT_IMPLEMENTED",
+    "audio_upload": "NOT_RUN",
+    "real_product_audio": "NOT_USED",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "first_real_product_audio": "NOT_READY"
+  }
+}

@@ -8,6 +8,7 @@ import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactPresence
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactSizeLimitObservation
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryBootstrapRowState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
@@ -22,6 +23,7 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceFailureContex
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import com.monumentogram.dora.poc.recovery.controller.AliasObservation
@@ -31,12 +33,13 @@ import com.monumentogram.dora.poc.recovery.controller.KeyConfirmationSnapshot
 import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdentity
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
 import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactAccessException
+import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactSizeLimitException
 import com.monumentogram.dora.poc.recovery.storage.RecoveryUnsafePathException
 
 /**
  * Production source: rows come from the unified journal and bytes from descriptor-backed storage.
  */
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 internal class AndroidRecoveryReconciliationSource
 private constructor(
     private val loadBootstrap: (RunId) -> StoredKeyConfirmationIdentity?,
@@ -47,6 +50,14 @@ private constructor(
         (RunId) -> List<com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow>,
     private val storage: AndroidOsRecoveryReconciliationStorage,
     private val aliasExists: (RunId) -> Boolean,
+    private val loadRetained:
+        (
+            RunId,
+            String,
+        ) -> com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow? =
+        { _, _ ->
+            null
+        },
 ) : RecoveryReconciliationSource {
     constructor(
         context: Context
@@ -57,6 +68,8 @@ private constructor(
         loadAllIntents = AndroidRecoveryQuarantineJournal(context.applicationContext)::loadAll,
         storage = AndroidOsRecoveryReconciliationStorage(context.applicationContext),
         aliasExists = AndroidRecoveryBootstrapCrypto()::aliasExists,
+        loadRetained =
+            AndroidRecoveryQuarantineJournal(context.applicationContext)::loadMicrofileSource,
     )
 
     @Suppress("LongParameterList", "UnusedPrivateProperty")
@@ -74,7 +87,23 @@ private constructor(
         storage: AndroidOsRecoveryReconciliationStorage,
         aliasExists: (RunId) -> Boolean,
         testPort: Unit = Unit,
-    ) : this(loadBootstrap, loadSnapshot, loadPending, loadAllIntents, storage, aliasExists)
+        loadRetained:
+            (
+                RunId,
+                String,
+            ) -> com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow? =
+            { _, _ ->
+                null
+            },
+    ) : this(
+        loadBootstrap,
+        loadSnapshot,
+        loadPending,
+        loadAllIntents,
+        storage,
+        aliasExists,
+        loadRetained,
+    )
 
     override fun loadConfirmation(runId: RunId): KeyConfirmationSnapshot {
         val expected = KeyConfirmationValue(RecoveryCandidate.MICROFILE, runId)
@@ -181,6 +210,43 @@ private constructor(
 
     override fun loadPendingQuarantine(runId: RunId) = journalCall {
         loadPending(runId)
+    }
+
+    override fun loadRetainedArtifact(
+        original: RecoveryQuarantineIntentInput,
+        context: RecoveryArtifactContext,
+    ): RecoveryArtifactBytes? {
+        val role =
+            when (context) {
+                RecoveryArtifactContext.UNIT_CIPHERTEXT ->
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT
+                RecoveryArtifactContext.UNIT_KEY_ENVELOPE ->
+                    RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE
+                RecoveryArtifactContext.MANIFEST_CIPHERTEXT ->
+                    RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT
+                RecoveryArtifactContext.MANIFEST_KEY_ENVELOPE ->
+                    RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE
+                else -> null
+            }
+        if (original.candidate != RecoveryCandidate.MICROFILE || role != original.artifactRole)
+            throw bootstrapStructuralFailure("Invalid retained MICROFILE request")
+        val bootstrap = journalCall { loadBootstrap(original.runId) }
+        if (bootstrap?.value != KeyConfirmationValue(RecoveryCandidate.MICROFILE, original.runId))
+            throw bootstrapStructuralFailure("Missing or foreign retained bootstrap")
+        val row =
+            journalCall {
+                try {
+                    loadRetained(original.runId, original.sourceRelativeName)
+                } catch (error: RecoveryMicrofileQuarantineReadbackException) {
+                    throw bootstrapStructuralFailure(
+                        "Malformed or ambiguous retained intent",
+                        error,
+                    )
+                }
+            } ?: return null
+        return pathCall(RecoveryBootstrapRowState.PRESENT, context, original.sourceRelativeName) {
+            storage.loadQuarantinedMicrofileExtent(row, original)
+        }
     }
 
     override fun loadInventory(runId: RunId): List<RecoveryInventoryEntry> =
@@ -304,11 +370,12 @@ private constructor(
         } catch (error: RecoveryArtifactAccessException) {
             throw RecoverySourceAccessException(
                 RecoveryFailureDiagnostic.capture(
-                    if (error.structural) RecoveryFailureCategory.STRUCTURAL
-                    else RecoveryFailureCategory.OPERATIONAL,
-                    error.cause ?: error,
-                    failureStage(context, error.structural),
-                ),
+                        if (error.structural) RecoveryFailureCategory.STRUCTURAL
+                        else RecoveryFailureCategory.OPERATIONAL,
+                        error.cause ?: error,
+                        failureStage(context, error.structural),
+                    )
+                    .copy(artifactSizeLimit = sizeLimitObservation(error.cause)),
                 error,
                 failureContext(
                     rowState,
@@ -334,6 +401,11 @@ private constructor(
                     finalPresence,
                 ),
             )
+        }
+
+    private fun sizeLimitObservation(cause: Throwable?): RecoveryArtifactSizeLimitObservation? =
+        (cause as? RecoveryArtifactSizeLimitException)?.let {
+            RecoveryArtifactSizeLimitObservation(it.relativeName, it.observedBytes, it.maximumBytes)
         }
 
     private fun failureStage(
@@ -405,6 +477,9 @@ private constructor(
                     AndroidRecoveryQuarantineJournal(context.applicationContext)::loadAll,
                 storage = storage,
                 aliasExists = AndroidRecoveryBootstrapCrypto()::aliasExists,
+                loadRetained =
+                    AndroidRecoveryQuarantineJournal(context.applicationContext)::
+                        loadMicrofileSource,
             )
 
         fun loadBootstrapIdentity(context: Context, runId: RunId): StoredKeyConfirmationIdentity? =

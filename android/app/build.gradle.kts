@@ -1,20 +1,46 @@
+import java.util.Properties
+
 plugins {
     id("dora.android.application")
     alias(libs.plugins.compose.compiler)
 }
 
+val alphaIdentity =
+    Properties().apply {
+        load(
+            providers
+                .fileContents(rootProject.layout.projectDirectory.file("alpha-release.properties"))
+                .asText
+                .get()
+                .reader()
+        )
+    }
+
+check(!providers.gradleProperty("doraAlphaUpgradeTest").isPresent) {
+    "Code 3 is a historical non-product probe; use the immutable 7.1 source only."
+}
+
 android {
-    namespace = "com.monumentogram.dora.bootstrap"
+    namespace = "com.monumentogram.dora"
 
     defaultConfig {
-        applicationId = "com.monumentogram.dora.bootstrap"
-        versionCode = 1
-        versionName = "0.0.1-stage00"
+        applicationId = "com.monumentogram.dora"
+        versionCode = alphaIdentity.getProperty("versionCode").toInt()
+        versionName = alphaIdentity.getProperty("versionName")
+        resValue("string", "alpha_version_label", "DORA Alpha $versionName ($versionCode)")
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
     }
 
     buildFeatures {
         compose = true
         buildConfig = false
+        resValues = true
     }
 
     packaging {

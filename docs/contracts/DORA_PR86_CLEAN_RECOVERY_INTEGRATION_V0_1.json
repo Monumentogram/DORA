@@ -1,0 +1,1578 @@
+{
+  "profile": "RECOVERY_CLEAN_REPLACEMENT_PREPARATION_V0_1",
+  "alpha_baseline": "fd943aff885028c6143550ee7bb843798b8105fb",
+  "target_branch": "stage/7-alpha-foundation",
+  "task_branch": "codex/recovery-clean-replacement",
+  "pr86": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+  "accepted_app": "79d930d73ce7836c3cf5bec10be85f800936e829",
+  "preparationAllowed": true,
+  "executionAllowed": false,
+  "productIntegrationAllowed": false,
+  "stage8ExecutionAllowed": false,
+  "fullRecoveryPass": false,
+  "authority": "Owner task: Stage 8 preparation - Recovery clean replacement; accepted CLEAN_REPLACEMENT_PR",
+  "reconciliation_sha256": "9a1d99f4c41c7f7e450170af79b6cffd604091b69c39e5a028fd6e4cbe462784",
+  "recovery_tree": "332c02376661597df294d8c9c1cb72ca2f348498",
+  "recovery_tree_entry": "040000 tree 332c02376661597df294d8c9c1cb72ca2f348498\tandroid/poc/recovery",
+  "implementation_paths": [
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalConnectionConfigurationTest.kt",
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionMigrationVerification.kt",
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixMigrationVerification.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingOrphanArtifacts.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingReconciliation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryArtifactSizeLimitObservation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedArtifacts.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingOrphanReconciler.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryBinary.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryRecords.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryStreamingPersistence.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryStreamingJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchema.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchema.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicy.kt",
+    "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignParserClassification.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedIntentTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamPrefixControllerCryptoTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingSurvivingPrefixTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalApiTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchemaTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileQuarantineReadbackTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchemaTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt",
+    "docs/contracts/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.json",
+    "docs/stage0/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.md",
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/test_rec_microfile_disposition_schema.py",
+    "tools/test_rec_stream_prefix_schema.py",
+    "tools/test_validate_alpha_release.py",
+    "tools/validate_alpha_release.py",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/verify_rec_i3_streaming_sqlite.py"
+  ],
+  "metadata_paths": [
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/evidence/recovery-clean-replacement-local-v0.1.json",
+    "docs/evidence/recovery-clean-replacement-ci-v0.1.json",
+    "docs/evidence/recovery-clean-replacement-sheet-v0.1.json",
+    "docs/evidence/recovery-clean-replacement-closure-v0.1.json"
+  ],
+  "transfers": [
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalConnectionConfigurationTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "66377b98daf60281504789a66e76eadd91a3ccf7",
+      "replacement_blob": "66377b98daf60281504789a66e76eadd91a3ccf7"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionMigrationVerification.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "7827d72c025720b908b02a3280a74686a40c92fd",
+      "replacement_blob": "7827d72c025720b908b02a3280a74686a40c92fd"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixMigrationVerification.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "75303a90714b835adb505b9de5f6556c4da343d0",
+      "replacement_blob": "75303a90714b835adb505b9de5f6556c4da343d0"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingOrphanArtifacts.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "cfe806f43e17b42533501c184f8e94a574b3ea34",
+      "replacement_blob": "cfe806f43e17b42533501c184f8e94a574b3ea34"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingReconciliation.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "c57a9895412f53b96d4bc6933a960aef8bfcd07c",
+      "replacement_blob": "c57a9895412f53b96d4bc6933a960aef8bfcd07c"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryArtifactSizeLimitObservation.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "75cd5d4b1b13ebe83a5f06fb677599a348398279",
+      "replacement_blob": "75cd5d4b1b13ebe83a5f06fb677599a348398279"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "4533840f11cf1a8fb6a0a490e0d20af1e04d9958",
+      "replacement_blob": "4533840f11cf1a8fb6a0a490e0d20af1e04d9958"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedArtifacts.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "1094bf5090e45616f9f0c4710a1174526b061b67",
+      "replacement_blob": "1094bf5090e45616f9f0c4710a1174526b061b67"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "9f8d414704d9cc20ed8dbc85ca6d7b72b49810db",
+      "replacement_blob": "9f8d414704d9cc20ed8dbc85ca6d7b72b49810db"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingOrphanReconciler.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "fb1c4ee563bdda0102335cf1dd3cd8bf25a4bf9a",
+      "replacement_blob": "fb1c4ee563bdda0102335cf1dd3cd8bf25a4bf9a"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "3370ae14730ec847fcdd8fce7972cb92a078018c",
+      "replacement_blob": "3370ae14730ec847fcdd8fce7972cb92a078018c"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "28d718e2608ac754d015c9d416d88deab394e8c1",
+      "replacement_blob": "28d718e2608ac754d015c9d416d88deab394e8c1"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryBinary.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "9621c7ba49b4ee95f8c817a46e36ee55cc404750",
+      "replacement_blob": "9621c7ba49b4ee95f8c817a46e36ee55cc404750"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "1574c0c961446257d590a3f82a0dd7ce27b46aea",
+      "replacement_blob": "1574c0c961446257d590a3f82a0dd7ce27b46aea"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryRecords.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "aacdd1d161e0a6868bbfc99a68743d2dc5b67d6c",
+      "replacement_blob": "aacdd1d161e0a6868bbfc99a68743d2dc5b67d6c"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryStreamingPersistence.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "216d18d30a21749f68cf23678691fb33c3d9155d",
+      "replacement_blob": "216d18d30a21749f68cf23678691fb33c3d9155d"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "82b19bb922e9ae58da37b40d31f5eb289602c824",
+      "replacement_blob": "82b19bb922e9ae58da37b40d31f5eb289602c824"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "6bd00350d8e227b091f3217553cc08712620b3b3",
+      "replacement_blob": "6bd00350d8e227b091f3217553cc08712620b3b3"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "801379ec334d193322aa07885879dc6127d891d4",
+      "replacement_blob": "801379ec334d193322aa07885879dc6127d891d4"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryStreamingJournal.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "4030a7bea64ae1be1736a9fd87b91d8f9ae2dd4b",
+      "replacement_blob": "4030a7bea64ae1be1736a9fd87b91d8f9ae2dd4b"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchema.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "bc4690956825143601383285ced4a3c7c6c83e34",
+      "replacement_blob": "bc4690956825143601383285ced4a3c7c6c83e34"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchema.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "2a5d7056e2782c4b1c451561a7a7e58e62a27515",
+      "replacement_blob": "2a5d7056e2782c4b1c451561a7a7e58e62a27515"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "13b22ad5a75ccf6d5849d112100904f1b80cabc2",
+      "replacement_blob": "13b22ad5a75ccf6d5849d112100904f1b80cabc2"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicy.kt",
+      "source_commit": "79d930d73ce7836c3cf5bec10be85f800936e829",
+      "source_blob": "c63ae53b6c1f4b6f98119bfa4e49022bbffe4c47",
+      "replacement_blob": "c63ae53b6c1f4b6f98119bfa4e49022bbffe4c47"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignParserClassification.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "2c84d1986bf2205fd300208a1a996fe537201b80",
+      "replacement_blob": "2c84d1986bf2205fd300208a1a996fe537201b80"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedIntentTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "1534da60c602d0b660a9fe4f480c73ecdfa9d6f7",
+      "replacement_blob": "1534da60c602d0b660a9fe4f480c73ecdfa9d6f7"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamPrefixControllerCryptoTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "f9361e2e495788b10998d351c07d6f5071dfee6e",
+      "replacement_blob": "f9361e2e495788b10998d351c07d6f5071dfee6e"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "fb8f47ab5c61a4a352577aa6bc9241a1545b8cb4",
+      "replacement_blob": "fb8f47ab5c61a4a352577aa6bc9241a1545b8cb4"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingSurvivingPrefixTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "9f9b2a0a559908207ece443d75966d183e62baeb",
+      "replacement_blob": "9f9b2a0a559908207ece443d75966d183e62baeb"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "0d0369075d37c14be3d7c3adbb03a4dfa1eb53a7",
+      "replacement_blob": "0d0369075d37c14be3d7c3adbb03a4dfa1eb53a7"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "60c5de3c921a58c24cbd2dbe56e7a29df4764c73",
+      "replacement_blob": "60c5de3c921a58c24cbd2dbe56e7a29df4764c73"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalApiTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "937eacff49cac504293b4b98b02797db61044c3f",
+      "replacement_blob": "937eacff49cac504293b4b98b02797db61044c3f"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "77ca88922ba40d604833aab53ee4b2eb1c25dfe3",
+      "replacement_blob": "77ca88922ba40d604833aab53ee4b2eb1c25dfe3"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchemaTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "3a62f69ceb53596f210bf3019a7fcbf0ce78d39b",
+      "replacement_blob": "3a62f69ceb53596f210bf3019a7fcbf0ce78d39b"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileQuarantineReadbackTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "aed80b9062a256b7521dadd1b57f2ca96db8d4a2",
+      "replacement_blob": "aed80b9062a256b7521dadd1b57f2ca96db8d4a2"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchemaTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "530a2fd5486a2419e48793ae0e3eb4c36b518267",
+      "replacement_blob": "530a2fd5486a2419e48793ae0e3eb4c36b518267"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "e9632181a1752f536817d1c8808fed88e77d4f91",
+      "replacement_blob": "e9632181a1752f536817d1c8808fed88e77d4f91"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "8a415e99abd3862346b245bcc381c276c9746cf9",
+      "replacement_blob": "d3f38e8dc76a6f6fc0c88cc81068e4eb8979e9df"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "a2d6677ab615fdabb5d2e8c76b14ecb5133a6281",
+      "replacement_blob": "a2d6677ab615fdabb5d2e8c76b14ecb5133a6281"
+    },
+    {
+      "path": "tools/test_rec_microfile_disposition_schema.py",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "c69205e3b523a9f659c150b67306505ee364ee14",
+      "replacement_blob": "c69205e3b523a9f659c150b67306505ee364ee14"
+    },
+    {
+      "path": "tools/test_rec_stream_prefix_schema.py",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "c6ca04dd472c6db766faddbc7040a5ed4be1d64d",
+      "replacement_blob": "c6ca04dd472c6db766faddbc7040a5ed4be1d64d"
+    },
+    {
+      "path": "tools/verify_rec_i3_streaming_sqlite.py",
+      "source_commit": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "source_blob": "77a64aa07da5c64c42eb5490b9849ae49b5b6ed7",
+      "replacement_blob": "77a64aa07da5c64c42eb5490b9849ae49b5b6ed7"
+    }
+  ],
+  "product": {
+    "applicationId": "com.monumentogram.dora",
+    "versionName": "0.1.0-alpha.2",
+    "versionCode": 4,
+    "apk_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+    "sbom_sha256": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba"
+  },
+  "reconciliation_matrix": [
+    {
+      "path": ".github/workflows/android-ci.yml",
+      "alpha_blob": "5142b69e4504b7e8dde8c545966c3be39dd01141",
+      "pr86_blob": "937edf53eb91abdbb642e95dbd25f4dcb2ef8aa7",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/gradle.lockfile",
+      "alpha_blob": "00c61b6215771a0b6ef39b856dce55683b01c453",
+      "pr86_blob": "ff8aa46d111a890090fdf39a8109e282cd567faf",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "Adds Android-test lint configuration membership only, no dependency coordinate changes. Regenerate minimally if selected tests need it; no wholesale protected-lock overwrite.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignArtifactFaults.kt",
+      "alpha_blob": null,
+      "pr86_blob": "176d00b3f281f162fa7bf11bf9926799a6f323d4",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignBootstrapFixtures.kt",
+      "alpha_blob": null,
+      "pr86_blob": "cf3af1a132003acde18a180c7959cbea80750564",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignCleanupFaults.kt",
+      "alpha_blob": null,
+      "pr86_blob": "8cf7cb1ffd0316f5ee2b481c4588573ed206f475",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignInstrumentedTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "eb2b342075d38f4e192fa269926549afbc911b2c",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignKeyConfirmationFaults.kt",
+      "alpha_blob": null,
+      "pr86_blob": "9641f689835217088a7941ecde1b7e90379d19f2",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignMicrofilePublisher.kt",
+      "alpha_blob": null,
+      "pr86_blob": "3f3cb501189928f949505d8d166ed4a8f58ed105",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignMicrofileRecovery.kt",
+      "alpha_blob": null,
+      "pr86_blob": "33838565a136cd91dc2098a503ae52899eae4659",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignNormalStream.kt",
+      "alpha_blob": null,
+      "pr86_blob": "63d963749b1b6f1487412c4f7a523d4fc22ff4ad",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignPublicationFaults.kt",
+      "alpha_blob": null,
+      "pr86_blob": "bf1de33234de2de0e8a13cb99fe30c1adc5d1e09",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignPublicationFaultsTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "6c8bca158317d6916ee9f34ab50836ba66031c75",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignRunSnapshot.kt",
+      "alpha_blob": null,
+      "pr86_blob": "f44908204a80f6d4056dca5fd3fa40bf7d5e3ed3",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignStreamPersistenceObservation.kt",
+      "alpha_blob": null,
+      "pr86_blob": "93e935483658fde2c2948cdffa363333dbfaa97b",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCheckpointAndroidTestFixture.kt",
+      "alpha_blob": "a61be87a3140cd49f6bf88dfafc61f8ce6041ab2",
+      "pr86_blob": "31c4386f07509f78584956a512d47b1d97a42755",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryE36GapiPreflightInstrumentedTest.kt",
+      "alpha_blob": "8dfd1b26f867441bf8ea5be5c79edb73ca2085c7",
+      "pr86_blob": "04c43fd33d0910912473d63c9f34d5e936b4d895",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryExternalSigkillProbeInstrumentedTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "b227c55d438aed022bb7edd3be07b9b67e0e458c",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPlatformPrerequisitesInstrumentedTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "e23acaaabbea8149530f0473eb35dbaf45088ac6",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPreflightInstrumentationIdentity.kt",
+      "alpha_blob": null,
+      "pr86_blob": "fd769228507311b706711a0fa1a50ca7da563144",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalConnectionConfigurationTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "66377b98daf60281504789a66e76eadd91a3ccf7",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionMigrationVerification.kt",
+      "alpha_blob": null,
+      "pr86_blob": "7827d72c025720b908b02a3280a74686a40c92fd",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixMigrationVerification.kt",
+      "alpha_blob": null,
+      "pr86_blob": "75303a90714b835adb505b9de5f6556c4da343d0",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingOrphanArtifacts.kt",
+      "alpha_blob": null,
+      "pr86_blob": "cfe806f43e17b42533501c184f8e94a574b3ea34",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingPublication.kt",
+      "alpha_blob": null,
+      "pr86_blob": "25cbc667bf87bcf6719ee78f753f978f6d401ed9",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "Campaign fixture / preflight serializer / deliberately non-finalizing writer or its transaction-observer wiring; do not ship verbatim.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingReconciliation.kt",
+      "alpha_blob": "60e009db0e6dc1dbbdab4f663b671e82a3a84fd0",
+      "pr86_blob": "c57a9895412f53b96d4bc6933a960aef8bfcd07c",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryArtifactSizeLimitObservation.kt",
+      "alpha_blob": null,
+      "pr86_blob": "75cd5d4b1b13ebe83a5f06fb677599a348398279",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignFixture.kt",
+      "alpha_blob": null,
+      "pr86_blob": "38e41b35788ff639215ec7580504cc11029b01fa",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "Campaign fixture / preflight serializer / deliberately non-finalizing writer or its transaction-observer wiring; do not ship verbatim.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
+      "alpha_blob": "c3d5d6fa1a87dc12db4a4f4b980627bd58cab5cb",
+      "pr86_blob": "4533840f11cf1a8fb6a0a490e0d20af1e04d9958",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedArtifacts.kt",
+      "alpha_blob": null,
+      "pr86_blob": "1094bf5090e45616f9f0c4710a1174526b061b67",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+      "alpha_blob": "bc7a3e102113513fd88dbf73e1929f075bebc33f",
+      "pr86_blob": "9f8d414704d9cc20ed8dbc85ca6d7b72b49810db",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingOrphanReconciler.kt",
+      "alpha_blob": null,
+      "pr86_blob": "fb1c4ee563bdda0102335cf1dd3cd8bf25a4bf9a",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingPublicationWriter.kt",
+      "alpha_blob": null,
+      "pr86_blob": "e56f9f2bf5cf6265803fed8c6e233b94dfa9c720",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "Campaign fixture / preflight serializer / deliberately non-finalizing writer or its transaction-observer wiring; do not ship verbatim.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt",
+      "alpha_blob": "737c467cb1ee73bec176b13c7e567c16fdfcc74a",
+      "pr86_blob": "3370ae14730ec847fcdd8fce7972cb92a078018c",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt",
+      "alpha_blob": "2fb84dab8552671c82ebcaebe4d50af9b0b79f75",
+      "pr86_blob": "28d718e2608ac754d015c9d416d88deab394e8c1",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/SqliteCompileOptionsCanonicalizer.kt",
+      "alpha_blob": null,
+      "pr86_blob": "405f69a72662105af0574665fcd6e8b99a189c16",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "Campaign fixture / preflight serializer / deliberately non-finalizing writer or its transaction-observer wiring; do not ship verbatim.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryBinary.kt",
+      "alpha_blob": "8aad4a46c2fb02b686938d8135efa3ef6bb9363f",
+      "pr86_blob": "9621c7ba49b4ee95f8c817a46e36ee55cc404750",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "B",
+      "reason": "Typed proof/quarantine contract or exact shared schema definition required by the recovery delta. Historical migrations are PoC compatibility, not a fresh Alpha data-support promise.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+      "alpha_blob": "c2db4d25b6b3508d55f6b1a413121409258d000d",
+      "pr86_blob": "1574c0c961446257d590a3f82a0dd7ce27b46aea",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "B",
+      "reason": "Typed proof/quarantine contract or exact shared schema definition required by the recovery delta. Historical migrations are PoC compatibility, not a fresh Alpha data-support promise.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryRecords.kt",
+      "alpha_blob": "1ce61cdb4b7da237299de77a583c4250de0cb937",
+      "pr86_blob": "aacdd1d161e0a6868bbfc99a68743d2dc5b67d6c",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "B",
+      "reason": "Typed proof/quarantine contract or exact shared schema definition required by the recovery delta. Historical migrations are PoC compatibility, not a fresh Alpha data-support promise.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryStreamingPersistence.kt",
+      "alpha_blob": "f977493ea00293d8bd1546d4eeae738797e64a13",
+      "pr86_blob": "216d18d30a21749f68cf23678691fb33c3d9155d",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "B",
+      "reason": "Typed proof/quarantine contract or exact shared schema definition required by the recovery delta. Historical migrations are PoC compatibility, not a fresh Alpha data-support promise.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+      "alpha_blob": "f4aa9496793b21f1b0f4c76d77ab75c11e4f18f2",
+      "pr86_blob": "82b19bb922e9ae58da37b40d31f5eb289602c824",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+      "alpha_blob": "e6a07bdc1d3b1812f173c367706a0e59fc91fa5f",
+      "pr86_blob": "6bd00350d8e227b091f3217553cc08712620b3b3",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+      "alpha_blob": "b0b5c578d142b2df67991b7ab4cee51aeb3f8f44",
+      "pr86_blob": "801379ec334d193322aa07885879dc6127d891d4",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryStreamingJournal.kt",
+      "alpha_blob": "12dea74a797d15f87d1f5c000634a8abfa443e4b",
+      "pr86_blob": "4030a7bea64ae1be1736a9fd87b91d8f9ae2dd4b",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "D",
+      "reason": "TEST_ONLY visibility support: private->internal SQLite adapter is also required by selected exact Android migration tests (compile-proven dependency), without journal algorithm change.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchema.kt",
+      "alpha_blob": null,
+      "pr86_blob": "bc4690956825143601383285ced4a3c7c6c83e34",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "B",
+      "reason": "Typed proof/quarantine contract or exact shared schema definition required by the recovery delta. Historical migrations are PoC compatibility, not a fresh Alpha data-support promise.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchema.kt",
+      "alpha_blob": null,
+      "pr86_blob": "2a5d7056e2782c4b1c451561a7a7e58e62a27515",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "B",
+      "reason": "Typed proof/quarantine contract or exact shared schema definition required by the recovery delta. Historical migrations are PoC compatibility, not a fresh Alpha data-support promise.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamingCheckpointCommitAdapter.kt",
+      "alpha_blob": null,
+      "pr86_blob": "b9f556d2400c77a63675e49055f511914c250225",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "Campaign fixture / preflight serializer / deliberately non-finalizing writer or its transaction-observer wiring; do not ship verbatim.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
+      "alpha_blob": "14a2c821a6524e58187b9eb08066ce395ccadbb1",
+      "pr86_blob": "13b22ad5a75ccf6d5849d112100904f1b80cabc2",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicy.kt",
+      "alpha_blob": "88242da3fbd91cd8fef664a1ec69f1a3b30d9ca7",
+      "pr86_blob": "c63ae53b6c1f4b6f98119bfa4e49022bbffe4c47",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "A",
+      "reason": "Measured recovery controller, authentication, journal or storage behavior absent from baseline; preserve behind isolated boundary before recording acceptance.",
+      "source": "79d930d73ce7836c3cf5bec10be85f800936e829"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignConfirmationAccess.kt",
+      "alpha_blob": null,
+      "pr86_blob": "7b9e359d1f5938c721256a70cfee85b1a3de6d74",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignJournalRows.kt",
+      "alpha_blob": null,
+      "pr86_blob": "f7ae7326adcac8f5f124ff7108e0427dd5dff1bc",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignParserClassification.kt",
+      "alpha_blob": null,
+      "pr86_blob": "2c84d1986bf2205fd300208a1a996fe537201b80",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency. Exact AndroidRecoveryReconciliationSourceTest dependency: 99-line shared-test helper retained only in synthetic candidate; primary purpose remains campaign-only.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignStreamPersistenceDigest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "2ab8026f56456e9369721674b8534333e4265001",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignStreamPersistenceSummary.kt",
+      "alpha_blob": null,
+      "pr86_blob": "a60dfb837967d2f767752393b147aea26440cb1b",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryExternalSigkillProbeGate.kt",
+      "alpha_blob": null,
+      "pr86_blob": "a208730738a97a1b10a44275ee334dd7e4541caf",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPhysicalDeviceIdentityGuard.kt",
+      "alpha_blob": null,
+      "pr86_blob": "978541f56f7d7ebe8347fc569522329728363b73",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPreflightDeviceIdentityGuard.kt",
+      "alpha_blob": null,
+      "pr86_blob": "af3a0ba5dd266318e1168818b3c7afc541561fbb",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignConfirmationAccessTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "d8862dc103f5234ec6af3de7d6f4cef82a258971",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignFixtureTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "565f1e6aba10a270ab41163fc7a0f9365a8fab03",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignJournalRowsTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "ccde48beea9af02a8be9f92c914704804abc8122",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignParserClassificationTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "3550effd25668f0cdab93fd84575cd3f345bc92b",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignStreamPersistenceDigestTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "45a28de27b25a56a6383f1053c39d6602cf85390",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignStreamPersistenceSummaryTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "01886620348070fa16a998dbd153f2fb9bf09eff",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryExternalSigkillProbeGateTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "46f94876a6f75e416b378a56814c1d2783f3daf7",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedIntentTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "1534da60c602d0b660a9fe4f480c73ecdfa9d6f7",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPhysicalDeviceIdentityGuardTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "54893727370f729d4155f144f4c0deba7f7bc9da",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPreflightDeviceIdentityGuardTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "a30214afc109a7ac4f06d917934e9417ae950607",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamPrefixControllerCryptoTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "f9361e2e495788b10998d351c07d6f5071dfee6e",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingPublicationWriterTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "bb7c728761ea61144ef46acdd94622f6279ebffd",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt",
+      "alpha_blob": "a2e0628afb8210a14e468ce5b77befdb19e0e77f",
+      "pr86_blob": "fb8f47ab5c61a4a352577aa6bc9241a1545b8cb4",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingSurvivingPrefixTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "9f9b2a0a559908207ece443d75966d183e62baeb",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt",
+      "alpha_blob": "4000ee35d5496aed38e5276e35eaff1d12ecfe83",
+      "pr86_blob": "0d0369075d37c14be3d7c3adbb03a4dfa1eb53a7",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/SqliteCompileOptionsCanonicalizerTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "8a9081022fcd0eb7c29a6391b00b2a33e8a239b7",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "D",
+      "reason": "One-shot campaign fixture, device identity/kill control, observation or harness regression; not production dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+      "alpha_blob": "5261f2748625a83e8626cc5834466124b961dce2",
+      "pr86_blob": "60c5de3c921a58c24cbd2dbe56e7a29df4764c73",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalApiTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "937eacff49cac504293b4b98b02797db61044c3f",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+      "alpha_blob": "a185ad7e295d371dd72a8469f2af8383d46c5204",
+      "pr86_blob": "77ca88922ba40d604833aab53ee4b2eb1c25dfe3",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchemaTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "3a62f69ceb53596f210bf3019a7fcbf0ce78d39b",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileQuarantineReadbackTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "aed80b9062a256b7521dadd1b57f2ca96db8d4a2",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchemaTest.kt",
+      "alpha_blob": null,
+      "pr86_blob": "530a2fd5486a2419e48793ae0e3eb4c36b518267",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+      "alpha_blob": "47219794e0d9296e60a1409138382cb0d4f85500",
+      "pr86_blob": "e9632181a1752f536817d1c8808fed88e77d4f91",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt",
+      "alpha_blob": "1f90c436c576942f1fb66c0fd4760afddaa13e01",
+      "pr86_blob": "8a415e99abd3862346b245bcc381c276c9746cf9",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt",
+      "alpha_blob": "8612d53e06db82fd60c9607507d1649753d2dcb7",
+      "pr86_blob": "a2d6677ab615fdabb5d2e8c76b14ecb5133a6281",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "alpha_blob": "827efa68a776b7f675cbccc2fbde13224997720e",
+      "pr86_blob": "e6a41f914368c2677557732e16f0a8da831f1d19",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "I",
+      "reason": "MUST_NOT_OVERWRITE_CURRENT_STATUS: current Stage0/5/6/6.3, Cloud and privacy authority wins; retain PR passages only as dated history.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "alpha_blob": "711bbb848904201087f9c48bf33775af458c9307",
+      "pr86_blob": "7d1b65302e08546c184346cb40e5716888d69197",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "I",
+      "reason": "MUST_NOT_OVERWRITE_CURRENT_STATUS: current Stage0/5/6/6.3, Cloud and privacy authority wins; retain PR passages only as dated history.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "alpha_blob": "d0f2f14e20623662dd91aa366f953b57675cf3d1",
+      "pr86_blob": "1ac81eab5593b21f086b3eeb7dc576531f405bea",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "I",
+      "reason": "MUST_NOT_OVERWRITE_CURRENT_STATUS: current Stage0/5/6/6.3, Cloud and privacy authority wins; retain PR passages only as dated history.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "alpha_blob": "77644e52a81efb48547ad4b3eb8cdb8094b8e4f1",
+      "pr86_blob": "181f46bbd0f2d601e24e87b26629d3108282226d",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "I",
+      "reason": "MUST_NOT_OVERWRITE_CURRENT_STATUS: current Stage0/5/6/6.3, Cloud and privacy authority wins; retain PR passages only as dated history.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/REC-I3-SQLITE-PER-CONNECTION-POC-DECISION.md",
+      "alpha_blob": null,
+      "pr86_blob": "41ad7c83293884d9fa9c278899f12d800d93448d",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/adr/ADR-0008-stream-surviving-checkpoint-prefix.md",
+      "alpha_blob": null,
+      "pr86_blob": "1ae460bd0730510f04d1b88f39d5efd1cd0edac6",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/adr/ADR-0009-microfile-referenced-quarantine.md",
+      "alpha_blob": null,
+      "pr86_blob": "0e523ef507f432937093c64fcdef38c0189c6bb7",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md",
+      "alpha_blob": null,
+      "pr86_blob": "438790efa5fe9f9e3a444059110405306863f893",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md",
+      "alpha_blob": null,
+      "pr86_blob": "7922b1849c274881671fc3c21cad468365adc2e3",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md",
+      "alpha_blob": null,
+      "pr86_blob": "f8b055f0c19fb24fdab631d29fee66176ebc4b15",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/stage0/DORA_0D6_API33_HARNESS_SCOPE_20260918.md",
+      "alpha_blob": null,
+      "pr86_blob": "311064663185085afead431fa7ded5b933609505",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md",
+      "alpha_blob": null,
+      "pr86_blob": "f4957f56e7c618590748cc6294af858ab6dc4aeb",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/stage0/DORA_0D6_POCO_PHYSICAL_SCOPE_20260918.md",
+      "alpha_blob": null,
+      "pr86_blob": "4f121957c7c57a0695afc1531fb01adb03adbddb",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-09-rec-i3-v8-host-run-contract-repair.md",
+      "alpha_blob": null,
+      "pr86_blob": "ed26b29055860c60d7d9a2f247c8bd285f49f564",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-10-rec-i3-v11-sqlite-openparams-full.md",
+      "alpha_blob": null,
+      "pr86_blob": "cbc7df80dc7e609131172bbceb48c2f551e1b944",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "F",
+      "reason": "HISTORICAL_ONLY / SAFE_TO_ARCHIVE by immutable commit link. PoC scope/design/owner record or old implementation plan, not current product admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/rec_i3_owned_process.psm1",
+      "alpha_blob": null,
+      "pr86_blob": "4f5acf3d24843a163451e1b09bc9b6dbbb684c31",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/rec_i3_preserve_and_cleanup.ps1",
+      "alpha_blob": "5a87465d2defa69b272d878eed0397f63d781521",
+      "pr86_blob": "1104ae83a97cd8190064c1c492d27b7cab71cfcd",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/recovery_alpha_prefix_repair.py",
+      "alpha_blob": null,
+      "pr86_blob": "2fa2f250e62ddc67cc2fad22210abf6f2131df48",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/recovery_alpha_repair.py",
+      "alpha_blob": null,
+      "pr86_blob": "2b1e8d85b177d2507223fbb543eb0f26789ffc55",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/recovery_api33.py",
+      "alpha_blob": null,
+      "pr86_blob": "56f1019a6928ee81b224a98048acad2622ff42ba",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/recovery_campaign.py",
+      "alpha_blob": null,
+      "pr86_blob": "bd1ca73bab177c703807ab3de5c497fe02d5adb2",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/recovery_instrumentation_status.py",
+      "alpha_blob": null,
+      "pr86_blob": "de03c9eb031817eb76c326827050b77a1aecd473",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/recovery_physical.py",
+      "alpha_blob": null,
+      "pr86_blob": "8af42c2bf27b308513b0e12e9998901979256570",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/run_rec_i3_v8.ps1",
+      "alpha_blob": null,
+      "pr86_blob": "eaa584d625d758126786dad9da4e75243eb77e47",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_poc_recovery_i3_governance.py",
+      "alpha_blob": "46b46772a275fb3855086f7ca765e35b070fc9fa",
+      "pr86_blob": "2070404c2ce82c81403d85faff2eb7bc7de4baa9",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_rec_i3_owned_process.ps1",
+      "alpha_blob": null,
+      "pr86_blob": "70728e2abbc33c9bc59708c68ecd050e7a2cbaaf",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_rec_i3_preserve_and_cleanup.py",
+      "alpha_blob": "251b18f6ec6ec482092bbd7ee285fc6c30ec0ee9",
+      "pr86_blob": "030e45bce9665aadc7f261ecfe1b83279b212eac",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_rec_microfile_disposition_schema.py",
+      "alpha_blob": null,
+      "pr86_blob": "c69205e3b523a9f659c150b67306505ee364ee14",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_rec_stream_prefix_schema.py",
+      "alpha_blob": null,
+      "pr86_blob": "c6ca04dd472c6db766faddbc7040a5ed4be1d64d",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "C",
+      "reason": "Regression for authenticated recovery, quarantine, exact SQL/history, path policy or per-connection durability configuration; preserve assertions with PoC/product scope separation.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_alpha_prefix_repair.py",
+      "alpha_blob": null,
+      "pr86_blob": "d97c9f20120703fa7a3d539e1802ff96b60e0a77",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_alpha_repair.py",
+      "alpha_blob": null,
+      "pr86_blob": "4563dfeb9f151614279dec940dd3e07b91e6ab3b",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_api33.py",
+      "alpha_blob": null,
+      "pr86_blob": "042eddda6395828f438f128753f7afb62096b5d9",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_campaign.py",
+      "alpha_blob": null,
+      "pr86_blob": "900ffb4be636a759502e6fe02063317e43286bd6",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_instrumentation_status.py",
+      "alpha_blob": null,
+      "pr86_blob": "be9e69e47f7d937f8668416f3060d54c066c22ad",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_microfile_tru03.py",
+      "alpha_blob": null,
+      "pr86_blob": "d98f2d48f666df472abc4c85cb8d3ce4f6789437",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_recovery_physical.py",
+      "alpha_blob": null,
+      "pr86_blob": "376986c41ee7a3043d0d37c4aaf6c5cc6e8787ab",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_run_rec_i3_v8.py",
+      "alpha_blob": null,
+      "pr86_blob": "d65ee983f7e5d72dfc99fc38a760630cf11dba40",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/test_validate_recovery_0d6_candidate.py",
+      "alpha_blob": null,
+      "pr86_blob": "f54fe713af94d14f20ea805d6219b1b72f6b7986",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/validate_poc_recovery_governance.py",
+      "alpha_blob": "23e87fe7476db1ec49a1e60f941480e8a9e3a979",
+      "pr86_blob": "18ad0dfc13264e8fda9ab1062be9ded901f0db4e",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/validate_recovery_0d6_candidate.py",
+      "alpha_blob": null,
+      "pr86_blob": "ffd4ad78eea5e42a40470c18c4ac546137bdcfb1",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/validate_stage00.py",
+      "alpha_blob": "2991189934252ce51fc41b2f0eb807832a7b56be",
+      "pr86_blob": "021d7f83bb371e1ba53dfbe8af875c0d13fc95a7",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/verify_poc_recovery_dependency_inventory.py",
+      "alpha_blob": "728cd9fd2fdd56d9c2b86de4ff058847d3286e3b",
+      "pr86_blob": "9565176284bce083593083d0f1a62a9a682866db",
+      "already_present": false,
+      "disposition": "EXCLUDE",
+      "category": "H",
+      "reason": "PR-specific historical branch/metadata/workflow admission. Preserve 92f00f7d content-based lineage repair; no wholesale import. Future exact successor requires narrowly tested admission.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    },
+    {
+      "path": "tools/verify_rec_i3_streaming_sqlite.py",
+      "alpha_blob": "abe0038b3bbae30edeb9a5dbb88919c82e6aed63",
+      "pr86_blob": "77a64aa07da5c64c42eb5490b9849ae49b5b6ed7",
+      "already_present": false,
+      "disposition": "TRANSFER",
+      "category": "G",
+      "reason": "Host orchestration/evidence generation/cleanup or its tests; no product runtime dependency. Needed as SQL extractor by two valuable host schema tests; use PR version only as test support, never as admission replacement.",
+      "source": "b951bc454d550e33669ebf4f276a4b09177a99ca"
+    }
+  ]
+}
