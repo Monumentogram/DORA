@@ -168,6 +168,7 @@ enum class AudioDeletionCategory {
  * failed extraction invalidates the whole attempt, including earlier callbacks.
  */
 interface ProductAudioSession {
+    val originals: OriginalAudioPort
     val writer: ProductAudioWriterPort
     val reader: ProductAudioReaderPort
     val protection: VaultKeyProtection

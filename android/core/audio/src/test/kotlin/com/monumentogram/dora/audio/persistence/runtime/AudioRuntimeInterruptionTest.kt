@@ -174,6 +174,9 @@ class AudioRuntimeInterruptionTest {
     private fun await(latch: CountDownLatch) = assertTrue(latch.await(5, TimeUnit.SECONDS))
 
     private class FixtureVault : RuntimeVault {
+        override val originals: com.monumentogram.dora.audio.OriginalAudioPort
+            get() = error("Unused fixture port")
+
         var createAction: () -> Unit = {}
         var appendAction: (ByteArray) -> Unit = {}
         override val protection = VaultKeyProtection.SOFTWARE

@@ -9,6 +9,8 @@ import com.monumentogram.dora.audio.AudioReadSummary
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioSourceState
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
+import com.monumentogram.dora.audio.OriginalAudioPort
+import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
@@ -21,6 +23,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal interface RuntimeVault : AutoCloseable {
+    val originals: OriginalAudioPort
     val writer: ProductAudioWriterPort
     val reader: ProductAudioReaderPort
     val protection: VaultKeyProtection
@@ -184,6 +187,35 @@ internal class AudioRuntimeCoordinator(
         val vault: RuntimeVault,
         val authorization: AppLockSession.Authorization,
     ) : ProductAudioSession {
+        override val originals =
+            object : OriginalAudioPort {
+                override fun acquire(identity: AudioIdentity) = invoke {
+                    originals.acquire(identity)
+                }
+
+                override fun inspect(reference: OriginalAudioReference) = invoke {
+                    originals.inspect(reference)
+                }
+
+                override fun extract(
+                    reference: OriginalAudioReference,
+                    consume: (Long, ByteArray) -> Unit,
+                ) = invoke {
+                    originals.extract(reference) { frame, bytes ->
+                        authorization.withPlaintextDelivery { consume(frame, bytes) }
+                    }
+                }
+
+                override fun withAvailable(reference: OriginalAudioReference, action: () -> Unit) =
+                    invoke {
+                        originals.withAvailable(reference) {
+                            authorization.withPlaintextDelivery {
+                                requireCurrent(this@Handle)
+                                action()
+                            }
+                        }
+                    }
+            }
         override val protection = vault.protection
         override val writer =
             object : ProductAudioWriterPort {

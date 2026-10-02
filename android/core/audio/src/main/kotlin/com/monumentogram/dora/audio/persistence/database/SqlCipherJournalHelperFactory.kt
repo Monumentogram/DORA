@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteStatement
+import com.monumentogram.dora.audio.persistence.journal.JournalSchemaVerifier
 import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
@@ -139,8 +140,13 @@ private class GuardedHelper(
 
             override fun onCreate(db: SQLiteDatabase) = configuration.callback.onCreate(wrap(db))
 
-            override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit =
-                error("Unadmitted database migration")
+            override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+                check(oldVersion == 1 && newVersion == 2) { "Unadmitted database migration" }
+                val connection = wrap(db)
+                JournalSchemaVerifier.verify(connection, 1)
+                configuration.callback.onUpgrade(connection, oldVersion, newVersion)
+                JournalSchemaVerifier.verify(connection)
+            }
 
             override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit =
                 error("Database downgrade rejected")

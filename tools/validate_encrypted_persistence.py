@@ -291,6 +291,9 @@ def validate_device_inventory(raw, expected_tests, expected_sha256):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_original_audio_lifecycle as lifecycle
+    if lifecycle.candidate(root):
+        return lifecycle.validate_checkout(root, allow_working=allow_working)
     allow_working = working_verification(allow_working, os.environ)
     require((root / CONTRACT).is_file(), 'Stage 8.2 reviewed contract is missing')
     raw = (root / CONTRACT).read_bytes()

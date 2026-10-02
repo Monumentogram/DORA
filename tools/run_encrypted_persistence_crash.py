@@ -14,6 +14,7 @@ import sys
 from run_encrypted_persistence_device import RUNNER, measure_page_sizes, parse_results, require
 
 TEST = 'com.monumentogram.dora.audio.persistence.EncryptedAudioProcessDeathTest#verifyProcessDeathRecovery'
+ORIGINAL_AUDIO_TEST = 'com.monumentogram.dora.audio.persistence.OriginalAudioProcessDeathTest#verifyOriginalAudioProcessDeath'
 PHASES = ('INTENT', 'PUBLISHED', 'COMMITTED')
 PACKAGE = RUNNER.split('/')[0]
 MARKER = re.compile(r'^INSTRUMENTATION_STATUS: stream=DORA_PERSISTENCE_(READY|VERIFIED):'
@@ -34,10 +35,11 @@ def ready_pid(output, phase):
     return phase_marker(output, phase, 'READY')[0]
 
 
-def verified_pid(output, phase, previous_pid):
+def verified_pid(output, phase, previous_pid, *, expected_test=TEST):
     pid, normal = phase_marker(output, phase, 'VERIFIED')
     require(pid != previous_pid, 'Verification did not execute in a fresh process')
-    require(parse_results(normal) == [{'name': TEST, 'result': 'PASS'}],
+    require(expected_test in (TEST, ORIGINAL_AUDIO_TEST), 'Unadmitted process test')
+    require(parse_results(normal) == [{'name': expected_test, 'result': 'PASS'}],
             'Exact process-death verification test did not pass')
     return pid
 
@@ -94,7 +96,9 @@ def main():
     parser.add_argument('--expected-page-size', type=int, choices=(4096, 16384), default=4096)
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
+    parser.add_argument('--original-audio', action='store_true')
     args = parser.parse_args()
+    selected_test = ORIGINAL_AUDIO_TEST if args.original_audio else TEST
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected emulator is admitted')
     require(not args.receipt.exists(), 'Receipt already exists; choose a new attempt path')
     driver_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -113,7 +117,7 @@ def main():
         return result.stdout.replace('\r\n', '\n').strip()
 
     def instrument(phase, action):
-        return ['shell', 'am', 'instrument', '-w', '-r', '-e', 'class', TEST,
+        return ['shell', 'am', 'instrument', '-w', '-r', '-e', 'class', selected_test,
                 '-e', 'persistenceCrashPhase', phase, '-e', 'persistenceCrashAction', action, RUNNER]
 
     require(command('get-state') == 'device' and command('shell', 'getprop', 'ro.kernel.qemu') == '1',
@@ -146,7 +150,7 @@ def main():
             require(time.monotonic() - started < 110, 'Termination exceeded the prepared phase hold window')
             process.wait(timeout=20)
             output = command(*instrument(phase, 'VERIFY'))
-            fresh_pid = verified_pid(output, phase, pid)
+            fresh_pid = verified_pid(output, phase, pid, expected_test=selected_test)
             rows.append({'phase': phase, 'result': 'PASS', 'prepared_pid': pid, 'verifier_pid': fresh_pid,
                          'termination': 'AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED'})
             print('PASS abrupt process phase ' + phase, flush=True)
@@ -154,6 +158,7 @@ def main():
             cleanup_process(process, lambda: command('shell', 'am', 'force-stop', PACKAGE),
                             primary=sys.exc_info()[1])
     receipt = {'schema_version': 1, 'status': 'PASS_COMPONENT_PROCESS_DEATH_ONLY',
+               'test': selected_test,
                'api': api, 'abi': abi, **page_measurement, 'phases': rows,
                'apk_sha256': apk_hash,
                'driver_sha256': driver_hash,

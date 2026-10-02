@@ -5,6 +5,7 @@ plugins {
 
 extensions.configure<com.android.build.api.dsl.LibraryExtension> {
     namespace = "com.monumentogram.dora.audio"
+    sourceSets.getByName("androidTest").assets.srcDir("schemas")
 
     // Compile the accepted implementation in place; never fork the Recovery engine.
     sourceSets

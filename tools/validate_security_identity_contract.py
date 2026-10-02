@@ -130,6 +130,10 @@ def validate_ci_provenance_order(workflow):
 def validate_status(root):
     for name in ("DORA_MVP1_STAGE_STATUS.md", "DORA_MVP1_IMPLEMENTATION_BACKLOG.md"):
         text = (root / "docs" / name).read_text(encoding="utf-8")
+        import validate_original_audio_lifecycle as lifecycle
+        if text.startswith(lifecycle.STATUS_HEADER):
+            historical = lifecycle.parent_file(root, "docs/" + name).decode()
+            text = lifecycle.validate_status_projection(text, historical)
         if text.startswith("## 2026-10-01 — Stage 8.2 encrypted product persistence"):
             import validate_encrypted_persistence as persistence
             historical = persistence.git(root, "show", persistence.BASELINE + ":docs/" + name).decode()
