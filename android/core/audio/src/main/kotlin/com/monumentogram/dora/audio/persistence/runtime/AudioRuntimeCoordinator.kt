@@ -1,3 +1,7 @@
+@file:Suppress(
+    "TooManyFunctions"
+) // Serialized vault ownership and authenticated delivery remain together.
+
 package com.monumentogram.dora.audio.persistence.runtime
 
 import com.monumentogram.dora.audio.AudioAvailability
@@ -23,6 +27,11 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal interface RuntimeVault : AutoCloseable {
+    fun recordingRecoveryPage(
+        after: String
+    ): AudioResult<List<com.monumentogram.dora.audio.recording.RecordingRecovery>> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val originals: OriginalAudioPort
     val writer: ProductAudioWriterPort
     val reader: ProductAudioReaderPort
@@ -139,6 +148,29 @@ internal class AudioRuntimeCoordinator(
             current?.let { handle -> worker.execute { retire(handle.vault) } }
             current = null
         }
+    }
+
+    /** Exclusive handoff: new service composition is forbidden until retirement actually ends. */
+    fun retireForRecording(completion: (Boolean) -> Unit) {
+        revoke()
+        worker.execute {
+            retiring.retry()
+            completion(retiring.isEmpty)
+        }
+    }
+
+    fun recordingRecoveryPage(
+        session: ProductAudioSession,
+        after: String,
+        completion:
+            (AudioResult<List<com.monumentogram.dora.audio.recording.RecordingRecovery>>) -> Unit,
+    ) {
+        val handle = session as? Handle
+        if (handle == null || !isCurrent(handle)) {
+            completion(AudioResult.Failed(AudioFailure.LOCKED))
+            return
+        }
+        worker.execute { completion(handle.perform { recordingRecoveryPage(after) }) }
     }
 
     fun isCurrent(session: ProductAudioSession): Boolean =

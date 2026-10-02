@@ -1,3 +1,12 @@
+## 2026-10-02 — Stage 8.3 product recording
+
+8.3 = PENDING_FINAL_PUBLICATION
+Target = PRODUCT_RECORDING_RUNTIME_READY
+8.2C = PASS (external publication for a1b9a8a56fe62ceb2332a0e7147ab537f8ce3431)
+8.4 = NOT_STARTED
+Stage 8 = IN_PROGRESS
+Physical POCO microphone, exact-SHA CI, independent review, artifact audit and Sheet readback remain publication gates.
+
 ## 2026-10-02 — Stage 8.2C original audio lifecycle
 
 8.2C = PENDING_FINAL_PUBLICATION

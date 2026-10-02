@@ -308,7 +308,12 @@ def validate_android_bootstrap() -> None:
         fail("Application identity differs from the accepted Alpha ADR-0015")
     read_text("docs/adr/ADR-0015-internal-alpha-identity-signing.md")
     if "android.permission.RECORD_AUDIO" in app_manifest:
-        fail("Stage 00 bootstrap must not request microphone permission")
+        # Product capture is admitted only by the complete bounded successor gate.
+        # Historical bootstrap checkouts still reject microphone permission.
+        import validate_product_recording as recording
+        if not recording.candidate(ROOT):
+            fail("Stage 00 bootstrap must not request microphone permission")
+        recording.validate_checkout(ROOT)
     read_text(
         "android/app/src/androidTest/kotlin/com/monumentogram/dora/"
         "DoraBootstrapAppTest.kt"

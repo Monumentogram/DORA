@@ -276,6 +276,13 @@ internal class RecoveryAudioBridge(
         consume: (firstFrame: Long, pcm: ByteArray) -> Unit,
     ): AudioResult<AudioReadSummary> = withAsset(identity) { extractAsset(it, consume = consume) }
 
+    /** Resume requires every committed unit to pass strict recovery, including quarantine state. */
+    internal fun verifyContinuation(identity: AudioIdentity): AudioResult<AudioReadSummary> =
+        withAsset(identity) {
+            if (it.pending != null || it.finalization != null) failed(AudioFailure.INCOMPLETE)
+            else extractAsset(it, requireComplete = true) { _, _ -> }
+        }
+
     /** Caller owns the catalog lease; no second acquisition can split reference/read/delete. */
     internal fun extractFinalizedHeld(
         expected: StoredAudioAsset,

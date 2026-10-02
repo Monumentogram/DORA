@@ -28,6 +28,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import product_recording_ci_profile
+    workflow = product_recording_ci_profile.normalize(workflow)
     if INVENTORY not in workflow and EXTRA_STEP not in workflow: return workflow
     for marker in (INVENTORY, GATE, EXTRA_STEP, RECEIPT):
         require(workflow.count(marker) == 1, 'Exact original audio lifecycle CI gate missing or changed')

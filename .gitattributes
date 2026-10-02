@@ -22,3 +22,8 @@ android/app/src/main/assets/third_party/sqlcipher/LibTomCrypt.txt -text
 android/app/src/main/assets/third_party/sqlcipher/SQLCipher-Android.txt -text
 android/app/src/main/assets/third_party/sqlcipher/SQLCipher.txt -text
 android/app/src/main/assets/third_party/sqlcipher/SQLite.txt -text
+
+# These append-only ledgers contain historical byte-pinned closure receipts.
+# Keep their frozen suffix bytes when adding a new stage header.
+docs/DORA_MVP1_STAGE_STATUS.md -text
+docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md -text

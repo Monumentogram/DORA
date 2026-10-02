@@ -50,7 +50,10 @@ def validate_module_and_manifests() -> None:
     if expected_id not in build:
         fail("PoC application ID drifted")
     if "android.permission.RECORD_AUDIO" in main_manifest_text:
-        fail("The main Dora bootstrap must remain microphone-free")
+        import validate_product_recording as recording
+        if not recording.candidate(ROOT):
+            fail("The main Dora bootstrap must remain microphone-free")
+        recording.validate_checkout(ROOT)
 
     permissions = {
         node.attrib[ANDROID_NS + "name"] for node in poc_manifest.findall("uses-permission")

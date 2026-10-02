@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "stage": "8.3",
+  "status": "PENDING_FINAL_PUBLICATION",
+  "parent_sha": "a1b9a8a56fe62ceb2332a0e7147ab537f8ce3431",
+  "branch": "stage/8.3-product-recording",
+  "implementation": "AudioRecord PCM S16LE 16000 mono -> bounded memory queue -> ProductAudioWriterPort -> existing encrypted vault and Recovery",
+  "plaintext_audio_store": false,
+  "logical_pause_frames": 0,
+  "physical_segment_on_resume": "NEW; same logical recording and asset",
+  "jvm": {
+    "debug_tests": 589,
+    "recovery_tests_included": 414,
+    "failures": 0
+  },
+  "physical": {
+    "device": "POCO M5, Android 14/API34, arm64-v8a",
+    "scope": "Owner-authorized harmless microphone samples; no audio exported",
+    "main_runtime_apk_sha256": "a6427ad86ef4d8d5c6295dd89598650aa1ab888a48d8cc60df47d2e6e13d216b",
+    "main_runtime": "More than ten minutes including screen-off; queue high-water 43/320, maximum observed append 2140728846 ns, no short reads or read errors. Pause committed 11066400 frames; Resume excluded pause wall time; navigation and stop-confirmation cancellation continued capture; final SAVED 13:02.",
+    "recovery_apk_sha256": "9c09c33d3aa33cd0767c94a0458a34e487a976194c8e1747887b58690ba7ae63",
+    "recovery": "Force-stop verified while active at 865600 captured / 800000 durable frames. Process absence and no microphone restart verified. Real-authenticated recovery read verified 13:02 finalized source and exact 800000-frame/50-second prefix. Explicit continuation reached 1499200 durable frames, paused with zero queue, and resumed explicitly. Notification Pause released microphone; notification Stop preserved pause until confirmed. SAVED subsequently observed.",
+    "final_apk_sha256": "763c7ca187304aa2ffd423368ec94768f37968c06c70a459b20a914de48d21b8",
+    "final_regression": "Development marker disabled for acceptance. Real system authorization confirmed by owner. Capture survived Activity rotation and HOME/return; Pause released microphone with 1656800 captured and durable frames, zero queue, zero read errors. Confirmed Stop displayed SAVED; service absent. Original lock-0 orientation and owner development marker restored afterwards.",
+    "waveform": "Owner explicitly confirmed that the circular wave reacted to sound. Secure-window screenshots were not bypassed.",
+    "failed_attempts_preserved": "Earlier 64-block queue and unbounded drain attempts failed backpressure. They are not acceptance evidence. Fixed finite drain, immediate read-stop and exact asset bulk catalog queries; final runtime campaign is separate.",
+    "installed_ui_apk_sha256": "f5be488ae3f4703c9184850ec99f480e0b7655c4a29b431f3ce76843a22d1bdd",
+    "installed_ui_delta": "Final controls-only change adds explicit preflight Cancel and accessible participant checkbox label; no capture/runtime change. Fresh API28/API36 UI suites and POCO preflight/Cancel passed. No microphone start in this final controls check; development marker retained and microphone service absent."
+  },
+  "development_exception": "ADR-DEV-001 separately authorized by owner; opt-in debug package only. Acceptance used marker absent. Release bytecode unlock returns constant false and does not invoke marker or session methods.",
+  "privacy": {
+    "synthetic_api36_audit": "13 positive scanner controls, unique start/end UID log controls; zero known canary matches in 182708 diagnostic bytes, 595 runtime private files and two 19-file crash states",
+    "audio_exported": false,
+    "limitation": "Known synthetic canaries and bounded source/artifact audit; no universal forensic or OEM guarantee",
+    "audit_receipt_sha256": "b9ef9f63a4525b578a121295dfdba152cf782e52c89ab55d363f1669052e80c4"
+  },
+  "independent_review": {
+    "unresolved_p0": 0,
+    "unresolved_p1": 0,
+    "unresolved_p2": 0,
+    "basis": "Independent adversarial source review including final UI and successor gates; zero unresolved P0/P1/P2. Local runtime evidence verified by implementer; publication gates remain pending."
+  },
+  "publication_gates": {
+    "exact_sha_ci": "PENDING",
+    "artifact_log_audit": "PENDING_FINAL",
+    "sheet_readback": "PENDING"
+  },
+  "non_claims": [
+    "Stage 8 completion",
+    "Stage 8.4",
+    "VAD",
+    "rotation policy",
+    "Cloud or ASR",
+    "all OEMs",
+    "Bluetooth/call coverage",
+    "positive biometric-specific coverage",
+    "physical 16-KiB runtime",
+    "new signed release"
+  ],
+  "stage_8_4": "NOT_STARTED",
+  "android": {
+    "api28": {
+      "persistence_auth_tests": 100,
+      "crash_phases": 6,
+      "product_ui_tests": 11
+    },
+    "api36": {
+      "persistence_auth_tests": 100,
+      "crash_phases": 6,
+      "product_ui_tests": 11
+    },
+    "microphone_claim": "Physical campaign below; emulator UI uses controlled presentation states",
+    "core_test_apk_sha256": "7131c7c20a944c11cc0209a990f33e53397eebc8a88a44f17a54c1e464413334",
+    "ui_test_apk_sha256": "22409ec06153319b0a989b4fc50ee560c63bd409f8f64891a57c6ba9a8a8124b"
+  },
+  "local_checks": [
+    "Strict dependency verification, formatting, Detekt and lint",
+    "589 JVM tests including 414 Recovery",
+    "Release dependency graph and native/ZIP alignment",
+    "VPN host and loopback checks",
+    "Historical status/backlog suffix bytes preserved",
+    "Release development override bytecode returns constant false"
+  ],
+  "python": {
+    "python_unittest_total": 366,
+    "python_distinct_ci_unittests_excluding_recovery_selftest": 310,
+    "mandatory_source_checks": 34
+  },
+  "local_verification_receipt_sha256": "3b6af10d4e9783ccdcf378a6db05b3741ce5f1b7397fdb03451f46439557ce60"
+}

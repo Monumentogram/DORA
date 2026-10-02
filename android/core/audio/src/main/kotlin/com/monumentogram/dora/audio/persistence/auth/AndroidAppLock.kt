@@ -7,11 +7,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.widget.Toast
+import java.io.File
 import java.lang.ref.WeakReference
 import java.util.UUID
 
@@ -58,9 +61,9 @@ internal class AndroidAppLock(
     fun requestUnlock(activity: Activity, completion: (UnlockResult) -> Unit) {
         check(Looper.myLooper() == Looper.getMainLooper())
         lock()
-        val denied = denialFor(activity)
-        if (denied != null) {
-            completion(denied)
+        val immediate = denialFor(activity) ?: developmentUnlock()
+        if (immediate != null) {
+            completion(immediate)
             return
         }
         val proof =
@@ -100,6 +103,22 @@ internal class AndroidAppLock(
         } catch (_: Exception) {
             finishPending(UnlockResult.UNAVAILABLE)
         }
+    }
+
+    /** ADR-DEV-001: local debug opt-in. The release implementation cannot grant authority. */
+    private fun developmentUnlock(): UnlockResult? {
+        val granted =
+            DevelopmentAppLockOverride.unlock(
+                session,
+                application.packageName,
+                application.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0,
+            ) {
+                File(application.noBackupFilesDir, "development-app-lock-no-prompt").isFile
+            }
+        if (!granted) return null
+        Toast.makeText(application, "Режим разработки: вход в DORA без PIN", Toast.LENGTH_SHORT)
+            .show()
+        return UnlockResult.UNLOCKED
     }
 
     /** Setup never grants authority; returning requires a separate requestUnlock prompt. */
