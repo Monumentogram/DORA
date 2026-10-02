@@ -20,6 +20,62 @@ import org.junit.Test
 
 /** Synthetic actual-SQLCipher tests; never a product key or plaintext database fallback. */
 class SqlCipherConnectionPolicyTest {
+    @Test
+    fun combinedReadReturnsEveryPinnedConnectionPolicyValue() {
+        val secret = key()
+        try {
+            helper(file(), secret).use { opened ->
+                opened.writableDatabase
+                    .query(
+                        "SELECT journal_mode, synchronous, foreign_keys, temp_store " +
+                            "FROM pragma_journal_mode, pragma_synchronous, pragma_foreign_keys, pragma_temp_store"
+                    )
+                    .use {
+                        assertTrue(it.moveToFirst())
+                        assertEquals(
+                            listOf("wal", "2", "1", "2"),
+                            (0 until it.columnCount).map(it::getString),
+                        )
+                        assertFalse(it.moveToNext())
+                    }
+                opened.writableDatabase.query("PRAGMA wal_autocheckpoint").use {
+                    assertTrue(it.moveToFirst())
+                    assertEquals("0", it.getString(0))
+                    assertFalse(it.moveToNext())
+                }
+            }
+        } finally {
+            secret.fill(0)
+        }
+    }
+
+    @Test
+    fun everyConnectionPolicyDriftPermanentlyFencesStatementAndHelper() {
+        listOf("synchronous=1", "foreign_keys=0", "temp_store=1", "wal_autocheckpoint=1000")
+            .forEach { drift ->
+                val secret = key()
+                try {
+                    helper(file(), secret).use { opened ->
+                        val db = opened.writableDatabase
+                        val statement =
+                            db.compileStatement("INSERT INTO synthetic_metadata VALUES (?)")
+                        assertThrows(IllegalStateException::class.java) {
+                            db.execSQL("PRAGMA $drift")
+                        }
+                        assertThrows(IllegalStateException::class.java) {
+                            statement.bindString(1, "synthetic")
+                        }
+                        assertThrows(IllegalStateException::class.java) {
+                            statement.executeInsert()
+                        }
+                        assertThrows(IllegalStateException::class.java) { opened.writableDatabase }
+                    }
+                } finally {
+                    secret.fill(0)
+                }
+            }
+    }
+
     private val context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 

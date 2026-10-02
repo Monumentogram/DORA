@@ -17,6 +17,38 @@ import org.junit.Test
 
 class RecordingSessionTest {
     @Test
+    fun pauseThenStopKeepsTheCommittedTailWithoutAppendingItTwice() {
+        session.start()
+        session.accept(ByteArray(1600))
+        session.pause()
+        session.requestStop()
+        session.confirmStop()
+        assertEquals(RecordingPhase.SAVED, session.state.phase)
+        assertEquals(800L, session.state.durableFrames)
+        assertEquals(listOf(1600), writer.sizes)
+        assertEquals(1, writer.finalizations)
+    }
+
+    @Test
+    fun immediateStopAfterResumePersistsOwnedFramesWithNewPhysicalProvenance() {
+        session.start()
+        session.accept(ByteArray(1600))
+        session.pause()
+        session.resume()
+        session.requestStop()
+        session.accept(ByteArray(3200))
+        session.confirmStop()
+        assertEquals(RecordingPhase.SAVED, session.state.phase)
+        assertEquals(2400L, session.state.durableFrames)
+        assertEquals(listOf(0L, 800L), writer.units.map { it.firstFrame })
+        assertEquals(listOf(0L, 800L), writer.units.map { it.physicalFirstFrame })
+        assertEquals(listOf(0L, 0L), writer.units.map { it.sourceFrameOffset })
+        assertEquals(listOf(identity, identity), writer.units.map { it.audio })
+        assertNotEquals(writer.units[0].physicalSegmentId, writer.units[1].physicalSegmentId)
+        assertEquals(1, writer.finalizations)
+    }
+
+    @Test
     fun recoveredResumeDoesNotCreateAgainAndPreservesCommittedEnd() {
         session.restore(1234L, 3)
         assertTrue(session.resume())

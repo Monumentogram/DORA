@@ -53,6 +53,8 @@ def read_product_sources(root=ROOT):
 
 def validate_product_sources(files):
     """Obvious bypass controls complement behavioral tests and independent source review."""
+    import validate_recording_latency as latency
+    files = latency.project_policy_sources(files)
     compact = lambda value: re.sub(r'\s+', '', value)
     for path, source in files.items():
         if not path.startswith(PRODUCT):

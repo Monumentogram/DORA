@@ -164,13 +164,14 @@ internal class RecoveryAudioBridge(
         )
             return failed(AudioFailure.INVALID_INPUT)
         val intent = AudioIntent.Append(segment, frames)
-        if (!catalog.reserve(asset, intent)) return failed(AudioFailure.COLLISION)
+        if (!PersistenceLatency.measure("reserve") { catalog.reserve(asset, intent) })
+            return failed(AudioFailure.COLLISION)
         // Reservation stays pending after every failure: retries must reconcile, never overwrite.
         val run = RunId.fromCanonicalString(segment.unitId)
         val confirmation = KeyConfirmationValue(RecoveryCandidate.MICROFILE, run)
         val bootstrapAttempt =
             keyFailures.observe(run, RunKeyOperation.BOOTSTRAP) {
-                bootstrap.bootstrap(confirmation)
+                PersistenceLatency.measure("bootstrap") { bootstrap.bootstrap(confirmation) }
             }
         bootstrapAttempt.failure?.let {
             return failed(it.audioFailure())
@@ -179,9 +180,16 @@ internal class RecoveryAudioBridge(
         if (boot !is BootstrapResult.Committed) return failed(AudioFailure.UNCERTAIN)
         val publicationAttempt =
             keyFailures.observe(run, RunKeyOperation.PUBLICATION) {
-                publisher.publish(
-                    MicrofilePublicationInput(confirmation, boot.publicationCapability, bytes, 5UL)
-                )
+                PersistenceLatency.measure("publication") {
+                    publisher.publish(
+                        MicrofilePublicationInput(
+                            confirmation,
+                            boot.publicationCapability,
+                            bytes,
+                            5UL,
+                        )
+                    )
+                }
             }
         publicationAttempt.failure?.let {
             return failed(it.audioFailure())
@@ -192,7 +200,7 @@ internal class RecoveryAudioBridge(
         if (publication.capability.runId != run || publication.capability.generation != 1UL) {
             return failed(AudioFailure.CORRUPT)
         }
-        val authenticated = recover(segment)
+        val authenticated = PersistenceLatency.measure("recovery") { recover(segment) }
         if (authenticated is AudioResult.Failed) return authenticated
         val recovered = (authenticated as AudioResult.Value).value
         try {
@@ -205,7 +213,9 @@ internal class RecoveryAudioBridge(
             val stored = StoredAudioSegment(segment, frames, recovered.manifestDigest)
             val pending = asset.copy(pending = intent)
             return if (
-                catalog.compareAndSet(pending, asset.copy(segments = asset.segments + stored))
+                PersistenceLatency.measure("catalog_commit") {
+                    catalog.compareAndSet(pending, asset.copy(segments = asset.segments + stored))
+                }
             ) {
                 AudioResult.Value(Unit)
             } else failed(AudioFailure.UNCERTAIN)
