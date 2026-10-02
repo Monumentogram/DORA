@@ -7,6 +7,23 @@ import org.junit.Test
 
 class CaptureAdmissionTest {
     @Test
+    fun exactFenceTimeIsSeparateFromLastAcceptedPcmAndStableInSnapshot() {
+        var clock = 100L
+        val admission = CaptureAdmission(BoundedPcmQueue(4)) { clock }
+        val generation = admission.begin()
+        admission.open(generation)
+        admission.offer(generation, byteArrayOf(1, 2))
+        clock = 150L
+        val boundary = admission.fence()
+        assertEquals(100L, boundary.lastAcceptedNanos)
+        assertEquals(150L, boundary.fencedAtNanos)
+        clock = 200L
+        assertEquals(150L, admission.snapshot().fencedAtNanos)
+        assertEquals(CaptureAdmission.Result.FENCED, admission.offer(generation, byteArrayOf(3, 4)))
+        assertEquals(1L, admission.snapshot().frames)
+    }
+
+    @Test
     fun movingPcmOutOfQueueDoesNotReleaseBudgetUntilDurable() {
         val queue = BoundedPcmQueue(1)
         val admission = CaptureAdmission(queue) { 100L }

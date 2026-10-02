@@ -2,6 +2,7 @@ package com.monumentogram.dora
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Choreographer
@@ -62,8 +63,11 @@ class MainActivity : ComponentActivity() {
             (application as DoraApplication)
                 .recording
                 .inputAt(
-                    System.nanoTime() -
-                        (SystemClock.uptimeMillis() - event.eventTime) * NANOS_PER_MILLI
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+                        event.eventTimeNanos
+                    else
+                        System.nanoTime() -
+                            (SystemClock.uptimeMillis() - event.eventTime) * NANOS_PER_MILLI
                 )
         }
         return try {

@@ -339,6 +339,7 @@ class RecordingController(
         val operation = beginTiming("pause")
         val boundary = capture.requestStop { event -> latency.mark(operation, event) }
         latency.mark(operation, "stop_signal")
+        latency.value(operation, "admission_fence_nanos", boundary.fencedAtNanos)
         latency.value(operation, "fence_frames", boundary.frames)
         latency.value(operation, "last_admission", boundary.lastAcceptedNanos)
         latency.awaitDurability(operation, timeline.frames(boundary.frames), token)

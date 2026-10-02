@@ -13,12 +13,13 @@ internal class CaptureAdmission(
         FULL,
     }
 
-    data class Boundary(val frames: Long, val lastAcceptedNanos: Long)
+    data class Boundary(val frames: Long, val lastAcceptedNanos: Long, val fencedAtNanos: Long)
 
     private var generation = 0L
     private var accepting = false
     private var frames = 0L
     private var lastAccepted = 0L
+    private var fencedAt = 0L
     private var physicalId = ""
     private val outstanding = ArrayDeque<Long>()
     private var durableFrames = 0L
@@ -57,11 +58,12 @@ internal class CaptureAdmission(
     @Synchronized
     fun fence(): Boundary {
         accepting = false
+        fencedAt = now() // Same monitor as PCM admission, before any native stop or queue work.
         generation++
-        return Boundary(frames, lastAccepted)
+        return Boundary(frames, lastAccepted, fencedAt)
     }
 
-    @Synchronized fun snapshot(): Boundary = Boundary(frames, lastAccepted)
+    @Synchronized fun snapshot(): Boundary = Boundary(frames, lastAccepted, fencedAt)
 
     /** Only verified durable completion releases budget, never a memory-only queue drain. */
     @Synchronized

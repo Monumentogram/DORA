@@ -14,6 +14,8 @@ def upgrade(workflow):
     return workflow.replace(ANCHOR, GATE + ANCHOR)
 
 def normalize(workflow):
+    import development_device_security_ci_profile as development
+    workflow = development.normalize(workflow)
     if 'instant recording controls admission' not in workflow:
         return workflow
     if workflow.count(GATE) != 1:

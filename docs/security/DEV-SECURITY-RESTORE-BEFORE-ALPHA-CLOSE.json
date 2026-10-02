@@ -1,0 +1,22 @@
+{
+  "id": "DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE",
+  "state": "OPEN",
+  "blocks": [
+    "FINAL_ALPHA_CLOSURE",
+    "SIGNED_ALPHA_SECURITY_ACCEPTANCE"
+  ],
+  "alpha_security_acceptance": false,
+  "evidence_sha256": null,
+  "checks": {
+    "android_credential_restored": false,
+    "no_device_lock_marker_removed": false,
+    "no_prompt_marker_removed": false,
+    "dora_restarted": false,
+    "is_device_secure_true": false,
+    "normal_app_lock_prompt_verified": false,
+    "background_and_device_lock_revoke": false,
+    "resume_requires_fresh_proof": false,
+    "release_overrides_impossible": false,
+    "same_encrypted_vault_readable": false
+  }
+}

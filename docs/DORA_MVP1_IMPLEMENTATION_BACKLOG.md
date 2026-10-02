@@ -1,3 +1,14 @@
+## 2026-10-02 — Owner-authorized no-PIN development / Stage 8.3 remediation
+
+8.3 functional = PASS
+8.3 instant-control remediation = NOT_READY / PHYSICAL_ACCEPTANCE_PENDING
+ADR-DEV-002 is a debug-only development exception; production authentication is not certified.
+DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE = OPEN; blocks final/signed Alpha security acceptance.
+Tracked checks: docs/security/DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE.json
+New exact-SHA 30+30, vault continuity, CI, review and leak audit remain required.
+8.4 = NOT_STARTED
+Stage 8 = IN_PROGRESS
+
 ## 2026-10-02 — Stage 8.3 instant recording controls
 
 Remediation v2 = PENDING_FINAL_PUBLICATION

@@ -2,7 +2,6 @@ package com.monumentogram.dora.audio.persistence.auth
 
 import android.app.Activity
 import android.app.Application
-import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -35,11 +34,11 @@ internal class AndroidAppLock(
     private val application: Application,
     private val onLocked: () -> Unit = {},
 ) {
-    private val keyguard = application.getSystemService(KeyguardManager::class.java)
+    internal val deviceSecurity = AndroidDeviceSecurityPolicy(application)
     private val main = Handler(Looper.getMainLooper())
     private val session =
         AppLockSession(android.os.SystemClock::elapsedRealtime) {
-            keyguard.isDeviceSecure && !keyguard.isDeviceLocked
+            deviceSecurity.deviceReady()
         }
     private var resumed: Activity? = null
     private var pending: Pending? = null
@@ -116,7 +115,11 @@ internal class AndroidAppLock(
                 File(application.noBackupFilesDir, "development-app-lock-no-prompt").isFile
             }
         if (!granted) return null
-        Toast.makeText(application, "Режим разработки: вход в DORA без PIN", Toast.LENGTH_SHORT)
+        Toast.makeText(
+                application,
+                deviceSecurity.developmentNotice() ?: "Режим разработки: вход в DORA без PIN",
+                Toast.LENGTH_SHORT,
+            )
             .show()
         return UnlockResult.UNLOCKED
     }
@@ -131,8 +134,8 @@ internal class AndroidAppLock(
         when {
             resumed !== activity || activity.isFinishing || activity.isDestroyed ->
                 UnlockResult.CANCELLED
-            !keyguard.isDeviceSecure -> UnlockResult.CREDENTIAL_SETUP_REQUIRED
-            keyguard.isDeviceLocked -> UnlockResult.UNAVAILABLE
+            !deviceSecurity.credentialAvailable() -> UnlockResult.CREDENTIAL_SETUP_REQUIRED
+            !deviceSecurity.deviceReady() -> UnlockResult.UNAVAILABLE
             else -> null
         }
 
@@ -165,7 +168,7 @@ internal class AndroidAppLock(
                 override fun onActivityResumed(activity: Activity) {
                     resumed = activity
                     session.resume()
-                    if (!keyguard.isDeviceSecure || keyguard.isDeviceLocked) {
+                    if (!deviceSecurity.deviceReady()) {
                         lock()
                         return
                     }
