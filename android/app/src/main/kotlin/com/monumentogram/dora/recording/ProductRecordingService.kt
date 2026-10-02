@@ -20,6 +20,7 @@ import androidx.core.app.ServiceCompat
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.R
+import com.monumentogram.dora.audio.recording.RecordingDurability
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import java.io.FileDescriptor
 import java.io.PrintWriter
@@ -81,7 +82,11 @@ class ProductRecordingService : Service() {
                     lastPausePending = snapshot.pausePending
                     lastResumePending = snapshot.resumePending
                 }
-                if (foreground && phase == RecordingPhase.RECORDING) {
+                val needsWake =
+                    phase == RecordingPhase.RECORDING ||
+                        phase == RecordingPhase.FINALIZING ||
+                        snapshot.recording.durability == RecordingDurability.PENDING
+                if (foreground && needsWake) {
                     val now = SystemClock.elapsedRealtime()
                     if (!wakeLock.isHeld || now - renewedAt >= WAKE_RENEW_MILLIS) {
                         wakeLock.acquire(WAKE_TIMEOUT_MILLIS)

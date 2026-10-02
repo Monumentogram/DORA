@@ -202,6 +202,11 @@ jobs:
           python3 tools/validate_original_audio_lifecycle.py
           python3 -m unittest discover -s tools -p 'test_original_audio_lifecycle.py'
 
+      - name: Verify Stage 8.3 instant recording controls admission
+        run: |
+          python3 tools/validate_instant_recording.py
+          python3 -m unittest discover -s tools -p 'test_instant_recording.py'
+
       - name: Verify Stage 8.3 recording latency remediation admission
         run: |
           python3 tools/validate_recording_latency.py

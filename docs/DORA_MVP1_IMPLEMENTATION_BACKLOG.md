@@ -1,3 +1,12 @@
+## 2026-10-02 — Stage 8.3 instant recording controls
+
+Remediation v2 = PENDING_FINAL_PUBLICATION
+Target = PRODUCT_RECORDING_INSTANT_CONTROL_READY
+Capture Pause is independent of durability; final Saved still requires verified completion.
+8.4 = NOT_STARTED
+Stage 8 = IN_PROGRESS
+Physical 30+30, rapid cycles, visual verification, exact-SHA CI, review and leak audit remain required.
+
 ## 2026-10-02 — Stage 8.3 pause/resume latency remediation
 
 Remediation = PENDING_FINAL_PUBLICATION

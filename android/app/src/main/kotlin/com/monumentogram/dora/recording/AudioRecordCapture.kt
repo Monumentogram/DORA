@@ -3,6 +3,7 @@
     "LongMethod",
     "CyclomaticComplexMethod",
     "TooGenericExceptionCaught",
+    "TooManyFunctions",
 ) // Native acquisition maps failures and releases on every exceptional exit.
 
 package com.monumentogram.dora.recording
@@ -97,11 +98,15 @@ internal class AudioRecordCapture(
     val healthy: Boolean
         get() = running.get() && thread?.isAlive == true
 
-    fun start(withStartAuthority: (() -> Unit) -> Unit, timing: (String) -> Unit = {}) {
+    fun start(
+        withStartAuthority: (() -> Unit) -> Unit,
+        physicalId: String = "",
+        timing: (String) -> Unit = {},
+    ) {
         check(recorder == null && thread?.isAlive != true)
         failure = null
         stopTiming = {}
-        val generation = admission.begin()
+        val generation = admission.begin(physicalId)
         if (!permitted()) throw CaptureException(CaptureFailure.PERMISSION_DENIED)
         val created =
             try {
@@ -257,6 +262,17 @@ internal class AudioRecordCapture(
 
     fun drain(maximumBlocks: Int = QUEUE_CAPACITY, consume: (ByteArray) -> Unit) {
         queue.drain(maximumBlocks, consume)
+    }
+
+    fun drainOwned(maximumBlocks: Int = QUEUE_CAPACITY, consume: (CapturedBlock) -> Unit) {
+        queue.drainOwned(maximumBlocks, consume)
+    }
+
+    fun durableThrough(frames: Long) = admission.durableThrough(frames)
+
+    fun retire() {
+        check(!hasLiveThread)
+        admission.retire()
     }
 
     private fun level(bytes: ByteArray, count: Int): Float {

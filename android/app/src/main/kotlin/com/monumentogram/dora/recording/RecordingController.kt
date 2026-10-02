@@ -3,6 +3,7 @@
     "TooManyFunctions",
     "LongMethod",
     "CyclomaticComplexMethod",
+    "LargeClass",
 ) // Serialized state transitions fence stale actions and share terminal cleanup.
 
 package com.monumentogram.dora.recording
@@ -87,6 +88,9 @@ class RecordingController(
     }
 
     private val worker = Executors.newSingleThreadScheduledExecutor { task ->
+        Thread(task, "Dora recording controls")
+    }
+    private val persistence = Executors.newSingleThreadExecutor { task ->
         Thread(task, "Dora recording persistence")
     }
     private val capture = AudioRecordCapture(context)
@@ -118,6 +122,7 @@ class RecordingController(
     private var servicePending = false
     @Volatile private var servicePresent = false
     private var shutdownUnconfirmed = false
+    private var retiring = false
     @Volatile var onTerminal: (() -> Unit)? = null
 
     init {
@@ -134,6 +139,7 @@ class RecordingController(
     /** Aggregate health only, exposed through Android's privileged service dump. No IDs or PCM. */
     fun diagnosticSummary(): String =
         "phase=${state.value.recording.phase} queue=${capture.queuedBlocks} " +
+            "durability=${state.value.recording.durability} " +
             "queueHighWater=${capture.maximumQueuedBlocks} maxAppendNanos=$maximumAppendNanos " +
             "frames=${state.value.recording.frames} durableFrames=${state.value.recording.durableFrames} " +
             "shortReads=${capture.shortReads} readErrors=${capture.readErrors} healthy=${capture.healthy}\n" +
@@ -153,9 +159,11 @@ class RecordingController(
         main.removeCallbacks(presentationTick)
         main.post(presentationTick)
         val token = id()
+        latency.recordingStarted(token)
         actionToken = token
         worker.execute {
             session = null
+            retiring = false
             mutable.value =
                 RecordingViewState(recording = RecordingState(phase = RecordingPhase.PREPARING))
         }
@@ -248,6 +256,7 @@ class RecordingController(
                         capture.admittedFrames,
                         selected.continuation?.summary?.frames ?: 0L,
                     )
+                capture.retire()
                 // Establish the logical owner before admitting PCM. An immediate Stop/Pause then
                 // drains into this same session, including frames captured during native startup.
                 val created =
@@ -258,6 +267,10 @@ class RecordingController(
                         appendTiming =
                             if (latency.enabled) ({ stages -> lastAppendStages = stages })
                             else null,
+                        persistence = persistence,
+                        completion = worker,
+                        changed = { if (access === selected) persistenceChanged() },
+                        persistenceFailed = { capture.requestStop() },
                     )
                 session = created
                 val continuation = selected.continuation
@@ -290,7 +303,7 @@ class RecordingController(
                     }
                 }
                 try {
-                    capture.start(initialStart)
+                    capture.start(initialStart, physicalId = created.physicalId)
                 } catch (_: ResumeCancelled) {
                     if (stopRequested.get() || !serviceOwner.isCurrent(owner)) return@execute
                     if (pauseRequested.get())
@@ -328,6 +341,8 @@ class RecordingController(
         latency.mark(operation, "stop_signal")
         latency.value(operation, "fence_frames", boundary.frames)
         latency.value(operation, "last_admission", boundary.lastAcceptedNanos)
+        latency.awaitDurability(operation, timeline.frames(boundary.frames), token)
+        latency.durableThrough(state.value.recording.durableFrames)
         mutable.update {
             it.copy(
                 pausePending = it.recording.phase == RecordingPhase.RECORDING || it.resumePending,
@@ -353,7 +368,7 @@ class RecordingController(
                 return
             }
             latency.mark(timingOperation, "drain_start")
-            capture.drain(consume = current::accept)
+            drainOwned(current)
             latency.mark(timingOperation, "drain_end")
             latency.mark(timingOperation, "tail_start")
             current.pause()
@@ -397,12 +412,14 @@ class RecordingController(
                     val current = session ?: return@execute
                     if (
                         current.state.phase != RecordingPhase.PAUSED ||
+                            !current.canCapture ||
                             stopRequested.get() ||
                             pauseRequested.get() ||
                             !serviceActive ||
                             !servicePresent
                     )
                         return@execute
+                    val physicalId = id()
                     capture.start(
                         withStartAuthority = { nativeStart ->
                             result.value.consume {
@@ -414,7 +431,8 @@ class RecordingController(
                                                 serviceActive &&
                                                 servicePresent &&
                                                 !stopRequested.get() &&
-                                                !pauseRequested.get())
+                                                !pauseRequested.get() &&
+                                                current.canCapture)
                                         )
                                             throw ResumeCancelled()
                                         nativeStart()
@@ -424,10 +442,14 @@ class RecordingController(
                             }
                         },
                         timing = { event -> latency.mark(operation, event) },
+                        physicalId = physicalId,
                     )
                     // Establish provenance even if Stop/Pause arrived during native start.
                     // Accepted frames are then drained by that command; they are never discarded.
-                    check(current.resume())
+                    if (!current.resume(physicalId)) {
+                        capture.requestStop()
+                        return@execute
+                    }
                     latency.mark(operation, "segment_ready")
                     if (pauseRequested.get()) pauseNow()
                     else if (!stopRequested.get()) {
@@ -484,7 +506,7 @@ class RecordingController(
                     fail(it)
                     return@execute
                 }
-                capture.drain(consume = current::accept)
+                drainOwned(current)
                 current.requestStop()
                 mutable.update {
                     it.copy(
@@ -498,7 +520,7 @@ class RecordingController(
                 }
                 current.confirmStop()
                 publish()
-                release()
+                if (current.state.phase == RecordingPhase.EMPTY) retireAccess()
             } catch (error: CaptureException) {
                 fail(error.failure)
             } catch (_: Exception) {
@@ -533,10 +555,10 @@ class RecordingController(
             return
         }
         val current = session ?: return
-        if (!serviceActive || current.state.phase != RecordingPhase.RECORDING) return
+        if (!serviceActive || retiring || current.state.phase != RecordingPhase.RECORDING) return
         try {
             // A finite quantum guarantees queued commands run even under sustained storage load.
-            capture.drain(DRAIN_BLOCKS_PER_TICK, current::accept)
+            drainOwned(current, DRAIN_BLOCKS_PER_TICK)
             if (current.state.phase == RecordingPhase.INTERRUPTED) {
                 terminate()
                 return
@@ -596,11 +618,36 @@ class RecordingController(
                 it.copy(recording = it.recording.copy(phase = RecordingPhase.INTERRUPTED))
             }
         publish()
-        release()
+        retireAccess()
+    }
+
+    private fun drainOwned(current: RecordingSession, maximum: Int = 320) {
+        capture.drainOwned(maximum) { block ->
+            current.accept(block.pcm, block.physicalId, timeline.frames(block.firstFrame))
+        }
+    }
+
+    private fun persistenceChanged() {
+        val current = session ?: return
+        capture.durableThrough(timeline.admitted(current.state.durableFrames))
+        latency.durableThrough(current.state.durableFrames)
+        publish()
+        if (current.state.phase == RecordingPhase.INTERRUPTED && !retiring) terminate()
+        else if (current.state.phase == RecordingPhase.SAVED) retireAccess()
+    }
+
+    private fun retireAccess() {
+        if (retiring) return
+        retiring = true
+        val selected = access
+        val current = session
+        if (current == null) release()
+        else current.whenSettled { if (access === selected) release() }
     }
 
     private fun release() {
         check(!capture.hasLiveThread)
+        latency.retireDurability()
         stopPresentation()
         actionToken = null
         resumes.cancel()

@@ -17,6 +17,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import instant_recording_ci_profile as instant
+    workflow = instant.normalize(workflow)
     if 'recording latency remediation' not in workflow and INVENTORY not in workflow:
         return workflow
     if workflow.count(GATE) != 1 or workflow.count(INVENTORY) != 1 or OLD_INVENTORY in workflow:

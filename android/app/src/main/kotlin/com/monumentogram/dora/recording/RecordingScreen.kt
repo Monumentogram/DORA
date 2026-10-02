@@ -62,6 +62,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.audio.AudioFailure
+import com.monumentogram.dora.audio.recording.RecordingDurability
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraDesignTokens
@@ -214,7 +215,9 @@ internal fun RecordingScreen(
                     DoraWave(
                         snapshot.level,
                         snapshot.signalAtNanos,
-                        state.phase == RecordingPhase.RECORDING,
+                        state.phase == RecordingPhase.RECORDING &&
+                            !snapshot.pausePending &&
+                            !snapshot.resumePending,
                         activity,
                     )
                     Text(
@@ -227,10 +230,23 @@ internal fun RecordingScreen(
                             },
                     )
                     Text(snapshot.route)
+                    // Keep the control row stationary when asynchronous persistence catches up.
+                    Text(
+                        if (state.durability != RecordingDurability.PENDING) " "
+                        else if (state.phase == RecordingPhase.PAUSED)
+                            "Сохраняем последние секунды…"
+                        else "Сохраняем…",
+                        minLines = 2,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
                     Text(
                         if (state.durableFrames > 0)
                             "Сохранено на устройстве: ${capturedTime(state.durableFrames)}"
-                        else "Ожидаем подтверждения сохранения"
+                        else "Ожидаем подтверждения сохранения",
+                        minLines = 2,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 } else {
                     Text("Запись защищена. Разблокируйте DORA для просмотра.")
