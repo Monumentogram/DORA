@@ -199,6 +199,8 @@ jobs:
           python3 tools/validate_encrypted_persistence.py --compiled
           python3 tools/validate_encrypted_persistence_native.py
           python3 -m unittest discover -s tools -p 'test_encrypted_persistence*.py'
+          python3 tools/validate_original_audio_lifecycle.py
+          python3 -m unittest discover -s tools -p 'test_original_audio_lifecycle.py'
 
       - name: Verify locked search dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check
@@ -400,7 +402,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/persistence-8.2-device-tests.json
+          --inventory docs/contracts/original-audio-8.2c-device-tests.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
       - name: Verify abrupt process death at durable persistence phases
@@ -410,6 +412,13 @@ jobs:
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
           --receipt "${RUNNER_TEMP}/persistence-process-death-receipt.json"
 
+      - name: Verify original audio lifecycle abrupt process death
+        run: >-
+          python3 tools/run_encrypted_persistence_crash.py --original-audio
+          --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${RUNNER_TEMP}/original-audio-process-death-receipt.json"
+
       - name: Upload content-free persistence runtime receipt
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -417,5 +426,6 @@ jobs:
           path: |
             ${{ runner.temp }}/persistence-runtime-receipt.json
             ${{ runner.temp }}/persistence-process-death-receipt.json
+            ${{ runner.temp }}/original-audio-process-death-receipt.json
           if-no-files-found: error
           retention-days: 7

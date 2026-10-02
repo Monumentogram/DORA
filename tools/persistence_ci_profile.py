@@ -117,6 +117,8 @@ def require(condition, message):
 
 
 def validate(workflow):
+    import original_audio_ci_profile
+    workflow = original_audio_ci_profile.normalize(workflow)
     require(workflow.count(STEP) == 1 and workflow.count(JOBS) == 1,
             'Required exact encrypted persistence CI checks missing or changed')
     require(workflow.index('      - name: Verify unsigned release and locked runtime SBOM graph\n')
@@ -128,6 +130,8 @@ def validate(workflow):
 
 def normalize(workflow):
     """Strip only the admitted exact additions before historical whole-workflow comparison."""
+    import original_audio_ci_profile
+    workflow = original_audio_ci_profile.normalize(workflow)
     if '      - name: Verify Stage 8.2' not in workflow and '\n  encrypted-persistence:' not in workflow:
         return workflow
     validate(workflow)

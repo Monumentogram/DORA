@@ -1,3 +1,12 @@
+## 2026-10-02 — Stage 8.2C original audio lifecycle
+
+8.2C = PENDING_FINAL_PUBLICATION
+Target = ORIGINAL_AUDIO_LIFECYCLE_RUNTIME_READY
+8.2 = PASS (external publication for 5af0f28046237a42d2d5b8c51a3b419013d7ee8b)
+8.3 = NOT_STARTED
+Stage 8 = IN_PROGRESS
+Exact-SHA CI, independent review, artifacts and Sheet readback remain publication gates.
+
 ## 2026-10-01 — Stage 8.2 encrypted product persistence
 
 8.2 = PENDING_FINAL_PUBLICATION

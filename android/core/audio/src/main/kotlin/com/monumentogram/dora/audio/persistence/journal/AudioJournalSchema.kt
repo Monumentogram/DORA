@@ -11,6 +11,28 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Update
 
+/** Derived immutable provenance; retained independently of removable Recovery source rows. */
+@Entity(
+    tableName = "original_audio_reference",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = AssetEntity::class,
+                parentColumns = ["assetId"],
+                childColumns = ["assetId"],
+                onDelete = ForeignKey.RESTRICT,
+            )
+        ],
+    indices = [Index(value = ["digest"], unique = true)],
+)
+internal data class OriginalAudioReferenceEntity(
+    @PrimaryKey val assetId: String,
+    val version: Int,
+    val digest: String,
+    val frames: Long,
+    val unavailableReason: String?,
+)
+
 @Entity(
     tableName = "vault_binding",
     indices = [Index(value = ["ownerId", "vaultId"], unique = true)],
@@ -348,6 +370,16 @@ internal data class DeletionTargetEntity(
 @Suppress("TooManyFunctions")
 @Dao
 internal interface AudioJournalDao {
+    @Query("SELECT assetId FROM audio_asset WHERE recordingId=:recording ORDER BY assetId")
+    fun recordingAssets(recording: String): List<String>
+
+    @Query("SELECT * FROM original_audio_reference WHERE assetId=:id")
+    fun originalReference(id: String): OriginalAudioReferenceEntity?
+
+    @Insert fun insert(value: OriginalAudioReferenceEntity)
+
+    @Update fun update(value: OriginalAudioReferenceEntity): Int
+
     @Query("SELECT * FROM vault_binding ORDER BY singleton")
     fun bindings(): List<VaultBindingEntity>
 
@@ -449,8 +481,9 @@ internal interface AudioJournalDao {
             QuarantineEntity::class,
             TombstoneEntity::class,
             DeletionTargetEntity::class,
+            OriginalAudioReferenceEntity::class,
         ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 internal abstract class AudioJournalDatabase : RoomDatabase() {

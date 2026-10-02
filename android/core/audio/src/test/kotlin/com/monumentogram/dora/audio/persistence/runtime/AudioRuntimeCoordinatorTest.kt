@@ -10,6 +10,9 @@ import com.monumentogram.dora.audio.AudioReadSummary
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioSourceState
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
+import com.monumentogram.dora.audio.OriginalAudioPort
+import com.monumentogram.dora.audio.OriginalAudioReference
+import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
@@ -194,7 +197,63 @@ class AudioRuntimeCoordinatorTest {
         return (runtime.availability as AudioAvailability.Available).session
     }
 
+    @Test
+    fun originalReferenceUsesGenerationFenceAndDependentCallbackCannotReenter() {
+        val lock = AppLockSession { true }
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(FixtureVault()) }
+            .use { runtime ->
+                val first = opened(runtime, authorize(lock))
+                val acquired = first.originals.acquire(identity) as AudioResult.Value
+                val ref = (acquired.value as OriginalAudioStatus.Available).reference
+                var callbacks = 0
+                assertEquals(
+                    acquired,
+                    first.originals.withAvailable(ref) {
+                        callbacks++
+                        assertEquals(
+                            AudioResult.Failed(AudioFailure.BUSY),
+                            first.originals.inspect(ref),
+                        )
+                    },
+                )
+                lock.lock()
+                runtime.revoke()
+                val second = opened(runtime, authorize(lock))
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    first.originals.withAvailable(ref) { callbacks++ },
+                )
+                assertEquals(acquired, second.originals.inspect(ref))
+                assertEquals(1, callbacks)
+            }
+    }
+
     private class FixtureVault : RuntimeVault {
+        override val originals =
+            object : OriginalAudioPort {
+                override fun acquire(identity: AudioIdentity) =
+                    inspect(OriginalAudioReference(1, identity, "0".repeat(64), 1))
+
+                override fun inspect(reference: OriginalAudioReference) =
+                    AudioResult.Value(OriginalAudioStatus.Available(reference))
+
+                override fun extract(
+                    reference: OriginalAudioReference,
+                    consume: (Long, ByteArray) -> Unit,
+                ): AudioResult<OriginalAudioStatus> {
+                    reader.extract(reference.identity, consume)
+                    return inspect(reference)
+                }
+
+                override fun withAvailable(
+                    reference: OriginalAudioReference,
+                    action: () -> Unit,
+                ): AudioResult<OriginalAudioStatus> {
+                    action()
+                    return inspect(reference)
+                }
+            }
+
         var closed = false
         var writes = 0
         var deletions = 0

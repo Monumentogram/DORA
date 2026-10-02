@@ -5,10 +5,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import com.monumentogram.dora.audio.AudioDeletionCategory
+import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioIntent
 import com.monumentogram.dora.audio.AudioSourceState
 import com.monumentogram.dora.audio.EncryptedAudioCatalog
+import com.monumentogram.dora.audio.OriginalAudioLifecycle
+import com.monumentogram.dora.audio.OriginalAudioReference
+import com.monumentogram.dora.audio.OriginalAudioReferenceCodec
 import com.monumentogram.dora.audio.StoredAudioAsset
 import com.monumentogram.dora.audio.StoredAudioSegment
 import com.monumentogram.dora.poc.recovery.bootstrap.KeyConfirmationState
@@ -72,6 +76,66 @@ private constructor(
     val bootstrapJournal: RecoveryRunBootstrapJournal = BootstrapJournal()
     val microfileJournal: RecoveryMicrofileJournal = MicrofileJournal()
     val quarantineJournal: RecoveryQuarantineJournal = QuarantineJournal()
+    val sourceOwner: String
+        get() = binding.ownerId
+
+    val sourceVault: String
+        get() = binding.vaultId
+
+    /** Multiple immutable assets remain preserved, but cannot select their own current version. */
+    fun originalSourceState(identity: AudioIdentity): AudioSourceState? {
+        sourceState(identity)?.let {
+            return it
+        }
+        if (dao.recordingAssets(identity.recordingId.value) != listOf(identity.assetId.value))
+            return AudioSourceState.Unavailable(AudioFailure.COLLISION)
+        return null
+    }
+
+    fun originalSourceLoss(reference: OriginalAudioReference): AudioFailure? {
+        requireOperation(reference.identity)
+        val row = dao.originalReference(reference.identity.assetId.value) ?: return null
+        check(
+            row.version == reference.version &&
+                row.digest == reference.digest &&
+                row.frames == reference.frames
+        )
+        return row.unavailableReason?.let {
+            AudioFailure.valueOf(it).also { failure ->
+                check(failure in OriginalAudioLifecycle.permanentFailures)
+            }
+        }
+    }
+
+    /** Derived only after complete authentication, or as explicit permanent-loss evidence. */
+    fun retainOriginalReference(reference: OriginalAudioReference, failure: AudioFailure?) {
+        requireOperation(reference.identity)
+        requireMutable()
+        check(sourceState(reference.identity) == null)
+        val source = checkNotNull(catalog.load(reference.identity))
+        check(
+            OriginalAudioReferenceCodec.derive(binding.ownerId, binding.vaultId, source) ==
+                reference
+        )
+        check(failure == null || failure in OriginalAudioLifecycle.permanentFailures)
+        val old = dao.originalReference(reference.identity.assetId.value)
+        originalSourceLoss(reference)?.let {
+            check(failure == it)
+            return
+        }
+        val row =
+            OriginalAudioReferenceEntity(
+                reference.identity.assetId.value,
+                reference.version,
+                reference.digest,
+                reference.frames,
+                failure?.name,
+            )
+        if (row == old) return
+        commits.commit({ if (old == null) dao.insert(row) else check(dao.update(row) == 1) }) {
+            dao.originalReference(row.assetId) == row
+        }
+    }
 
     /** Borrow the caller's existing vault operation; never silently acquire a nested operation. */
     fun requireOperation(identity: AudioIdentity) {
@@ -946,6 +1010,7 @@ private constructor(
                             file.path,
                         )
                         .openHelperFactory(helperFactory)
+                        .addMigrations(OriginalAudioMigration)
                         .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                         .build()
                 } catch (error: Exception) {

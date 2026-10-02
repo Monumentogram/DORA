@@ -5,7 +5,7 @@ import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 
 /** Room's identity hash alone does not detect DDL tampering with an unchanged master row. */
 internal object JournalSchemaVerifier {
-    fun verify(database: SupportSQLiteDatabase) {
+    fun verify(database: SupportSQLiteDatabase, version: Int = 2) {
         val actual = mutableMapOf<String, String>()
         database
             .query(
@@ -30,13 +30,31 @@ internal object JournalSchemaVerifier {
                     )
                 }
             }
-        check(actual == expected) { "Journal schema rejected" }
+        check(version == 1 || version == 2)
+        val schema = if (version == 1) expected else expected + originalReferenceSchema
+        check(actual == schema) { "Journal schema rejected" }
         database.query("PRAGMA foreign_key_check").use {
             check(!it.moveToFirst()) { "Journal references rejected" }
         }
     }
 
     // Generated from the reviewed Room v1 schema export. Changes require schema review and tests.
+    private val originalReferenceSchema =
+        mapOf(
+            "original_audio_reference" to schemaDigest(OriginalAudioMigration.TABLE_SQL),
+            "index_original_audio_reference_digest" to
+                schemaDigest(OriginalAudioMigration.INDEX_SQL),
+        )
+
+    private fun schemaDigest(sql: String) =
+        Sha256Value.calculate(
+                sql.replace("IF NOT EXISTS ", "")
+                    .trim()
+                    .replace(Regex("\\s+"), " ")
+                    .toByteArray(Charsets.UTF_8)
+            )
+            .toLowercaseHex()
+
     private val expected =
         mapOf(
             "vault_binding" to "a8f2669b469cb337dac64600fb58e817b7830250988453e4115da41a3bdd0135",

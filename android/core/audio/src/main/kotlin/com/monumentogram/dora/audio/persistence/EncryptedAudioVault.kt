@@ -13,6 +13,7 @@ import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioSourceState
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.EncryptedAudioCatalog
+import com.monumentogram.dora.audio.OriginalAudioLifecycle
 import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioRecoverySource
 import com.monumentogram.dora.audio.ProductAudioWriterPort
@@ -68,6 +69,19 @@ private constructor(
     override val protection: VaultKeyProtection,
 ) : RuntimeVault {
     @Volatile private var closed = false
+
+    override val originals =
+        OriginalAudioLifecycle(
+            journal.sourceOwner,
+            journal.sourceVault,
+            journal.catalog,
+            journal::originalSourceState,
+            journal::originalSourceLoss,
+            journal::retainOriginalReference,
+            bridge::extractFinalizedHeld,
+            ::requireActive,
+            deliverAuthorized,
+        )
 
     /** Only the explicit confirmed-audio operation may call this internal mutation boundary. */
     fun deleteAudio(identity: AudioIdentity): AudioResult<Unit> = delete(identity, true)

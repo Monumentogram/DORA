@@ -276,6 +276,16 @@ internal class RecoveryAudioBridge(
         consume: (firstFrame: Long, pcm: ByteArray) -> Unit,
     ): AudioResult<AudioReadSummary> = withAsset(identity) { extractAsset(it, consume = consume) }
 
+    /** Caller owns the catalog lease; no second acquisition can split reference/read/delete. */
+    internal fun extractFinalizedHeld(
+        expected: StoredAudioAsset,
+        consume: (Long, ByteArray) -> Unit,
+    ): AudioResult<AudioReadSummary> {
+        check(catalog.load(expected.identity) == expected)
+        check(expected.pending == null && expected.finalization != null)
+        return extractAsset(expected, requireComplete = true, consume = consume)
+    }
+
     private fun extractAsset(
         asset: StoredAudioAsset,
         requireComplete: Boolean = false,
