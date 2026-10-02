@@ -47,6 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -110,7 +111,8 @@ internal fun ProductRecordingHost(activity: MainActivity, action: Triple<String?
             if (action.first == ProductRecordingService.STOP) controller.requestStop()
         }
     }
-    // Resume notification returns to visible UI; the explicit Continue control obtains fresh auth.
+    // Notification returns to visible UI; Continue requires current foreground authority or fresh
+    // proof.
     if (showRecording) {
         BackHandler { showRecording = false }
         RecordingScreen(activity, snapshot, authorized, { showRecording = false })
@@ -186,9 +188,18 @@ internal fun RecordingScreen(
                     RecordingPhase.INTERRUPTED -> "Запись прервана"
                 }
             Text(
-                if (snapshot.pausePending) "Приостанавливаем запись…" else status,
+                when {
+                    snapshot.pausePending -> "Приостанавливаем…"
+                    snapshot.resumePending -> "Возобновляем запись…"
+                    else -> status
+                },
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                modifier =
+                    Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                        .drawWithContent {
+                            drawContent()
+                            controller.rendered(snapshot)
+                        },
             )
             if (
                 state.phase in
@@ -206,7 +217,15 @@ internal fun RecordingScreen(
                         state.phase == RecordingPhase.RECORDING,
                         activity,
                     )
-                    Text(capturedTime(state.frames), style = MaterialTheme.typography.displayLarge)
+                    Text(
+                        capturedTime(state.frames),
+                        style = MaterialTheme.typography.displayLarge,
+                        modifier =
+                            Modifier.drawWithContent {
+                                drawContent()
+                                controller.latency.timer(state.frames)
+                            },
+                    )
                     Text(snapshot.route)
                     Text(
                         if (state.durableFrames > 0)
@@ -233,7 +252,7 @@ internal fun RecordingScreen(
                 RecordingPhase.PAUSED ->
                     Row(horizontalArrangement = Arrangement.spacedBy(DoraDimensions.space4)) {
                         Button(
-                            enabled = !snapshot.pausePending,
+                            enabled = !snapshot.pausePending && !snapshot.resumePending,
                             onClick = {
                                 if (state.phase == RecordingPhase.PAUSED)
                                     controller.resume(activity)

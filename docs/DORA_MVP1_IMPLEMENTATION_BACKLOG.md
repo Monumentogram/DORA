@@ -1,3 +1,12 @@
+## 2026-10-02 — Stage 8.3 pause/resume latency remediation
+
+Remediation = PENDING_FINAL_PUBLICATION
+Historical 8.3 functional gate = PASS (external publication for c596f5256e34bebf308d4c90d89c9f97affc3abb)
+Pause latency = P1 OPEN until all physical thresholds pass
+8.4 = NOT_STARTED
+Stage 8 = IN_PROGRESS
+Source checks do not certify the 20-cycle physical timing, exact-SHA CI or publication gates.
+
 ## 2026-10-02 — Stage 8.3 product recording
 
 8.3 = PENDING_FINAL_PUBLICATION

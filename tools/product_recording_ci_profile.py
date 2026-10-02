@@ -37,6 +37,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import recording_latency_ci_profile as latency
+    workflow = latency.normalize(workflow)
     if 'Verify Stage 8.3' not in workflow:
         return workflow
     if workflow.count(GATE) != 1 or workflow.count(DEVICE_GATE) != 1:

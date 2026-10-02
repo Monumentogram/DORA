@@ -120,10 +120,25 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
 
     fun requestRecordingResume(
         activity: Activity,
+        expected: RecordingAccess,
+        authorityRoute: (Boolean) -> Unit = {},
         completion: (AudioResult<RecordingResumeGrant>) -> Unit,
     ) {
         requireMain()
         secure(activity)
+        val current =
+            try {
+                val authorization = appLock.captureAuthorization()
+                recordings.resumeGrant(expected, authorization::withPlaintextDelivery)
+            } catch (_: AppLockedException) {
+                null
+            }
+        if (current != null) {
+            authorityRoute(false)
+            completion(AudioResult.Value(current))
+            return
+        }
+        authorityRoute(true)
         appLock.requestUnlock(activity) { result ->
             if (result != UnlockResult.UNLOCKED) completion(AudioResult.Failed(AudioFailure.LOCKED))
             else {
@@ -131,7 +146,7 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
                     try {
                         val authorization = appLock.captureAuthorization()
                         AudioResult.Value(
-                            recordings.resumeGrant(authorization::withPlaintextDelivery)
+                            recordings.resumeGrant(expected, authorization::withPlaintextDelivery)
                         )
                     } catch (_: AppLockedException) {
                         AudioResult.Failed(AudioFailure.LOCKED)

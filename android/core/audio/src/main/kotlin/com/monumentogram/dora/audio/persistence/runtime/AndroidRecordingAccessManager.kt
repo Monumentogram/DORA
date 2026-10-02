@@ -195,8 +195,19 @@ internal class AndroidRecordingAccessManager(
         }
     }
 
-    fun resumeGrant(boundary: (() -> Unit) -> Unit) =
-        active?.resumeGrant(boundary) ?: throw AppLockedException()
+    fun resumeGrant(
+        expected: RecordingAccess,
+        boundary: (() -> Unit) -> Unit,
+    ): com.monumentogram.dora.audio.recording.RecordingResumeGrant {
+        val issuedEpoch = epoch
+        if (active !== expected) throw AppLockedException()
+        return expected.resumeGrant { start ->
+            boundary {
+                if (active !== expected || epoch != issuedEpoch) throw AppLockedException()
+                start()
+            }
+        }
+    }
 
     fun revoke() {
         currentAuthority?.revoke()

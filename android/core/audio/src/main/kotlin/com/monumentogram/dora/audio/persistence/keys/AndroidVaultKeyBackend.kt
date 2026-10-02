@@ -13,6 +13,7 @@ import android.security.keystore.KeyProperties
 import android.security.keystore.StrongBoxUnavailableException
 import android.security.keystore.UserNotAuthenticatedException
 import com.google.crypto.tink.Aead
+import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.poc.recovery.contract.CanonicalRecoveryAlias
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryDecryptFailureSignal
@@ -67,12 +68,12 @@ internal class NoLogRecoveryRunAeadBackend(
 
     override fun generateNew(keyUri: String) {
         val run = run(keyUri)
-        keystore(run).generate(alias(run))
+        PersistenceLatency.measure("key_generation") { keystore(run).generate(alias(run)) }
     }
 
     override fun getAead(keyUri: String): Aead {
         val run = run(keyUri)
-        return keystore(run).open(alias(run)).aead
+        return PersistenceLatency.measure("key_open") { keystore(run).open(alias(run)).aead }
     }
 
     fun aliasExists(runId: RunId): Boolean =

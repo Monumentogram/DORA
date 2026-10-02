@@ -130,6 +130,11 @@ def validate_ci_provenance_order(workflow):
 def validate_status(root):
     for name in ("DORA_MVP1_STAGE_STATUS.md", "DORA_MVP1_IMPLEMENTATION_BACKLOG.md"):
         text = (root / "docs" / name).read_text(encoding="utf-8")
+        import validate_recording_latency as latency
+        if text.startswith(latency.STATUS_HEADER):
+            import validate_encrypted_persistence as persistence
+            historical = persistence.git(root, 'show', latency.PARENT + ':docs/' + name).decode()
+            text = latency.validate_status_projection(text, historical)
         import validate_product_recording as recording
         if text.startswith(recording.STATUS_HEADER):
             import validate_encrypted_persistence as persistence

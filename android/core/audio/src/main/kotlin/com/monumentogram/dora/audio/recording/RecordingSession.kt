@@ -11,6 +11,7 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.AudioTimeline
+import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import java.util.UUID
 
@@ -45,6 +46,8 @@ data class RecordingState(
 class RecordingSession(
     val identity: AudioIdentity,
     private val writer: ProductAudioWriterPort,
+    private val timing: (String) -> Unit = {},
+    private val appendTiming: ((Map<String, Long>) -> Unit)? = null,
 ) {
     var state = RecordingState()
         private set
@@ -154,9 +157,17 @@ class RecordingSession(
         val result =
             try {
                 val started = System.nanoTime()
-                writer.append(unit, AudioFormat.PCM, bytes).also {
-                    maximumAppendNanos = maxOf(maximumAppendNanos, System.nanoTime() - started)
-                }
+                timing("append_start")
+                val report = appendTiming
+                (if (report == null) writer.append(unit, AudioFormat.PCM, bytes)
+                    else
+                        PersistenceLatency.collect(report) {
+                            writer.append(unit, AudioFormat.PCM, bytes)
+                        })
+                    .also {
+                        maximumAppendNanos = maxOf(maximumAppendNanos, System.nanoTime() - started)
+                        timing("append_end")
+                    }
             } finally {
                 bytes.fill(0)
             }

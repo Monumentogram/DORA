@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteStatement
+import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.audio.persistence.journal.JournalSchemaVerifier
 import java.io.File
 import java.lang.reflect.InvocationTargetException
@@ -194,21 +195,34 @@ private class GuardedHelper(
         }
     }
 
-    private fun verify(db: SQLiteDatabase) {
-        check(!closed && !fenced.get() && opens.get() == 1) { "Encrypted database fenced" }
-        if (SQLiteGlobal.getWALConnectionPoolSize() != 1) {
-            fenced.set(true)
-            error("Database pool policy changed")
-        }
-        for ((name, expected) in REQUIRED) {
-            val actual =
-                db.query("PRAGMA $name").use { if (it.moveToFirst()) it.getString(0) else null }
-            if (actual != expected) {
+    private fun verify(db: SQLiteDatabase) =
+        PersistenceLatency.measure("sql_policy") {
+            check(!closed && !fenced.get() && opens.get() == 1) { "Encrypted database fenced" }
+            if (SQLiteGlobal.getWALConnectionPoolSize() != 1) {
+                fenced.set(true)
+                error("Database pool policy changed")
+            }
+            // Read the same live values at every original checkpoint, with fewer SQL round trips.
+            // wal_autocheckpoint has no portable table-valued PRAGMA, so retain its direct read.
+            val settingsMatch =
+                db.query(POLICY_QUERY).use { row ->
+                    row.columnCount == EXPECTED_POLICY.size &&
+                        row.moveToFirst() &&
+                        EXPECTED_POLICY.indices.all { row.getString(it) == EXPECTED_POLICY[it] } &&
+                        !row.moveToNext()
+                }
+            val checkpointMatches =
+                db.query("PRAGMA wal_autocheckpoint").use { row ->
+                    row.columnCount == 1 &&
+                        row.moveToFirst() &&
+                        row.getString(0) == "0" &&
+                        !row.moveToNext()
+                }
+            if (!settingsMatch || !checkpointMatches) {
                 fenced.set(true)
                 error("Encrypted database connection policy mismatch")
             }
         }
-    }
 
     private fun wrap(db: SQLiteDatabase): SupportSQLiteDatabase =
         Proxy.newProxyInstance(
@@ -276,14 +290,10 @@ private class GuardedHelper(
         }
 
     private companion object {
-        val REQUIRED =
-            mapOf(
-                "journal_mode" to "wal",
-                "synchronous" to "2",
-                "foreign_keys" to "1",
-                "wal_autocheckpoint" to "0",
-                "temp_store" to "2",
-            )
+        const val POLICY_QUERY =
+            "SELECT journal_mode, synchronous, foreign_keys, temp_store " +
+                "FROM pragma_journal_mode, pragma_synchronous, pragma_foreign_keys, pragma_temp_store"
+        val EXPECTED_POLICY = listOf("wal", "2", "1", "2")
         val RECONFIGURATION =
             setOf(
                 "enableWriteAheadLogging",

@@ -1,5 +1,6 @@
 package com.monumentogram.dora.audio.persistence.journal
 
+import com.monumentogram.dora.audio.PersistenceLatency
 import java.util.concurrent.atomic.AtomicReference
 
 /** One logical vault operation; borrowing on its owning thread never acquires another operation. */
@@ -71,7 +72,7 @@ internal class JournalCommitBoundary(
             write()
             markSuccessful()
         } finally {
-            end()
+            PersistenceLatency.measure("sql_commit") { end() }
         }
         check(exactReadback()) { "Journal readback rejected" }
     }

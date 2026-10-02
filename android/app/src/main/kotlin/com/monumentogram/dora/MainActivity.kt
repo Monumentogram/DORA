@@ -3,6 +3,9 @@ package com.monumentogram.dora
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.SystemClock
+import android.view.Choreographer
+import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +20,14 @@ import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 
 class MainActivity : ComponentActivity() {
+    private val diagnosticFrame =
+        object : Choreographer.FrameCallback {
+            override fun doFrame(frameTimeNanos: Long) {
+                (application as DoraApplication).recording.latency.drawingFrameNanos =
+                    frameTimeNanos
+                Choreographer.getInstance().postFrameCallback(this)
+            }
+        }
     private val recordingAction =
         mutableStateOf<Triple<String?, String?, Int>>(Triple(null, null, 0))
 
@@ -42,6 +53,39 @@ class MainActivity : ComponentActivity() {
                 intent.getStringExtra(ProductRecordingService.TOKEN),
                 recordingAction.value.third + 1,
             )
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val recording = (application as DoraApplication).recording
+        if (!recording.latency.enabled) return super.dispatchTouchEvent(event)
+        if (event.actionMasked == MotionEvent.ACTION_UP) {
+            (application as DoraApplication)
+                .recording
+                .inputAt(
+                    System.nanoTime() -
+                        (SystemClock.uptimeMillis() - event.eventTime) * NANOS_PER_MILLI
+                )
+        }
+        return try {
+            super.dispatchTouchEvent(event)
+        } finally {
+            (application as DoraApplication).recording.inputAt(0)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if ((application as DoraApplication).recording.latency.enabled)
+            Choreographer.getInstance().postFrameCallback(diagnosticFrame)
+    }
+
+    override fun onPause() {
+        Choreographer.getInstance().removeFrameCallback(diagnosticFrame)
+        super.onPause()
+    }
+
+    private companion object {
+        const val NANOS_PER_MILLI = 1_000_000L
     }
 }
 

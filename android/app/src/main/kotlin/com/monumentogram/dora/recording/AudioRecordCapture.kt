@@ -8,14 +8,12 @@
 package com.monumentogram.dora.recording
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
-import android.media.AudioFormat
 import android.media.AudioRecord
-import android.media.MediaRecorder
 import android.os.Process
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.sqrt
 
@@ -39,16 +37,42 @@ internal class CaptureException(val failure: CaptureFailure) : IllegalStateExcep
 internal data class MicrophoneSignal(val level: Float = 0f, val atNanos: Long = 0)
 
 /** Audio thread does only bounded reading/amplitude/queueing. No disk, Compose or logging. */
-internal class AudioRecordCapture(private val context: Context) {
+internal class AudioRecordCapture(
+    private val create: () -> NativeMicrophone,
+    private val permitted: () -> Boolean,
+    private val prioritize: () -> Unit,
+) {
+    constructor(
+        context: Context
+    ) : this(
+        AndroidMicrophone::create,
+        {
+            context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+        },
+        { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) },
+    )
+
+    @Volatile private var stopTiming: (String) -> Unit = {}
     private val running = AtomicBoolean(false)
     private val queue = BoundedPcmQueue(QUEUE_CAPACITY)
-    @Volatile private var recorder: AudioRecord? = null
-    private var thread: Thread? = null
+    private val admission = CaptureAdmission(queue)
+    private val nativeOwnership = Any()
+    private val stopRequests = Any()
+    private var stopRequestedHandle: NativeMicrophone? = null
+    private val nativeControl = Executors.newSingleThreadExecutor { task ->
+        Thread(task, "Dora microphone control").apply { isDaemon = true }
+    }
+    @Volatile private var recorder: NativeMicrophone? = null
+    @Volatile private var thread: Thread? = null
     val maximumQueuedBlocks: Int
         get() = queue.highWater
 
     val queuedBlocks: Int
         get() = queue.size
+
+    val admittedFrames: Long
+        get() = admission.snapshot().frames
 
     @Volatile
     var signal = MicrophoneSignal()
@@ -73,67 +97,48 @@ internal class AudioRecordCapture(private val context: Context) {
     val healthy: Boolean
         get() = running.get() && thread?.isAlive == true
 
-    @SuppressLint("MissingPermission")
-    fun start(withStartAuthority: (() -> Unit) -> Unit) {
+    fun start(withStartAuthority: (() -> Unit) -> Unit, timing: (String) -> Unit = {}) {
         check(recorder == null && thread?.isAlive != true)
-        if (
-            context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) !=
-                PackageManager.PERMISSION_GRANTED
-        )
-            throw CaptureException(CaptureFailure.PERMISSION_DENIED)
-        val minimum =
-            AudioRecord.getMinBufferSize(
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-            )
-        if (minimum <= 0) throw CaptureException(CaptureFailure.CONFIGURATION_UNAVAILABLE)
+        failure = null
+        stopTiming = {}
+        val generation = admission.begin()
+        if (!permitted()) throw CaptureException(CaptureFailure.PERMISSION_DENIED)
         val created =
             try {
-                AudioRecord.Builder()
-                    .setAudioSource(MediaRecorder.AudioSource.MIC)
-                    .setAudioFormat(
-                        AudioFormat.Builder()
-                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                            .setSampleRate(SAMPLE_RATE)
-                            .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
-                            .build()
-                    )
-                    .setBufferSizeInBytes(
-                        maxOf(minimum * NATIVE_BUFFER_MULTIPLIER, SAMPLE_RATE * 2)
-                    )
-                    .build()
+                timing("construct_start")
+                create()
+            } catch (error: CaptureException) {
+                throw error
             } catch (_: SecurityException) {
                 throw CaptureException(CaptureFailure.PERMISSION_DENIED)
             } catch (_: Exception) {
                 throw CaptureException(CaptureFailure.INITIALIZATION_FAILED)
             }
         try {
-            if (created.state != AudioRecord.STATE_INITIALIZED)
-                throw CaptureException(CaptureFailure.INITIALIZATION_FAILED)
-            if (
-                created.sampleRate != SAMPLE_RATE ||
-                    created.channelCount != 1 ||
-                    created.audioFormat != AudioFormat.ENCODING_PCM_16BIT
-            )
-                throw CaptureException(CaptureFailure.CONFIGURATION_UNAVAILABLE)
+            timing("construct_end")
+            created.requireConfiguration()
             withStartAuthority {
                 try {
+                    timing("native_start_begin")
                     created.startRecording()
+                    timing("native_start_end")
                 } catch (_: SecurityException) {
                     throw CaptureException(CaptureFailure.PERMISSION_DENIED)
                 } catch (_: Exception) {
                     throw CaptureException(CaptureFailure.START_FAILED)
                 }
-                if (created.recordingState != AudioRecord.RECORDSTATE_RECORDING)
-                    throw CaptureException(CaptureFailure.START_FAILED)
+                if (!created.recording) throw CaptureException(CaptureFailure.START_FAILED)
+                timing("native_recording")
                 // Publish ownership under the same authority monitor as native start.
                 // Revocation can now always find and stop the reader it revoked.
                 failure = null
                 signal = MicrophoneSignal()
                 recorder = created
-                running.set(true)
-                thread = Thread({ readLoop(created) }, "Dora microphone").also { it.start() }
+                running.set(admission.open(generation))
+                thread =
+                    Thread({ readLoop(created, generation, timing) }, "Dora microphone").also {
+                        it.start()
+                    }
             }
         } catch (error: Exception) {
             runCatching { created.stop() }
@@ -142,18 +147,18 @@ internal class AudioRecordCapture(private val context: Context) {
         }
     }
 
-    private fun readLoop(record: AudioRecord) {
+    @Suppress(
+        "LoopWithTooManyJumpStatements"
+    ) // Both native stop and admission fence end this reader.
+    private fun readLoop(record: NativeMicrophone, generation: Long, timing: (String) -> Unit) {
         val bytes = ByteArray(READ_BYTES)
         var lastSignal = 0L
+        var firstPcm = true
         try {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
+            prioritize()
             while (running.get()) {
-                if (
-                    context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) !=
-                        PackageManager.PERMISSION_GRANTED
-                )
-                    throw CaptureException(CaptureFailure.PERMISSION_DENIED)
-                val count = record.read(bytes, 0, bytes.size, AudioRecord.READ_BLOCKING)
+                if (!permitted()) throw CaptureException(CaptureFailure.PERMISSION_DENIED)
+                val count = record.read(bytes)
                 if (!running.get()) break
                 if (count <= 0 || count % 2 != 0) {
                     readErrors++
@@ -164,15 +169,26 @@ internal class AudioRecordCapture(private val context: Context) {
                 }
                 if (count < bytes.size) shortReads++
                 val copied = bytes.copyOf(count)
-                if (!queue.offer(copied)) {
-                    copied.fill(0)
-                    throw CaptureException(CaptureFailure.PERSISTENCE_BACKPRESSURE)
+                when (admission.offer(generation, copied)) {
+                    CaptureAdmission.Result.ACCEPTED -> Unit
+                    CaptureAdmission.Result.FENCED -> {
+                        copied.fill(0)
+                        break
+                    }
+                    CaptureAdmission.Result.FULL -> {
+                        copied.fill(0)
+                        throw CaptureException(CaptureFailure.PERSISTENCE_BACKPRESSURE)
+                    }
+                }
+                if (firstPcm) {
+                    timing("first_pcm")
+                    firstPcm = false
                 }
                 val now = System.nanoTime()
                 if (now - lastSignal >= SIGNAL_PERIOD_NANOS) {
                     signal = MicrophoneSignal(level(bytes, count), now)
                     lastSignal = now
-                    route = routeLabel(record.routedDevice?.type)
+                    route = routeLabel(record.routeType)
                 }
                 bytes.fill(0)
             }
@@ -185,10 +201,16 @@ internal class AudioRecordCapture(private val context: Context) {
         } finally {
             running.set(false)
             bytes.fill(0)
-            runCatching { record.stop() }
-            record.release()
-            recorder = null
+            val stopped = stopTiming
+            synchronized(nativeOwnership) {
+                stopped("reader_stop_start")
+                runCatching { record.stop() }
+                stopped("reader_stop_end")
+                record.release()
+                recorder = null
+            }
             signal = MicrophoneSignal()
+            stopped("reader_released")
         }
     }
 
@@ -196,19 +218,38 @@ internal class AudioRecordCapture(private val context: Context) {
     fun stop() {
         requestStop()
         thread?.join(STOP_WAIT_MILLIS)
+        stopTiming("join_end")
         if (thread?.isAlive == true) throw CaptureException(CaptureFailure.THREAD_TIMEOUT)
         thread = null
         signal = MicrophoneSignal()
     }
 
-    fun requestStop() {
-        running.set(false)
-        runCatching { recorder?.stop() }
+    fun requestStop(timing: ((String) -> Unit)? = null): CaptureAdmission.Boundary {
+        val boundary = stopReading(timing)
+        val selected = recorder ?: return boundary
+        val stopped = stopTiming
+        synchronized(stopRequests) {
+            if (stopRequestedHandle === selected) return@synchronized
+            stopRequestedHandle = selected
+            nativeControl.execute {
+                synchronized(nativeOwnership) {
+                    if (recorder === selected) {
+                        stopped("control_stop_start")
+                        runCatching { selected.stop() }
+                        stopped("control_stop_end")
+                    }
+                }
+            }
+        }
+        return boundary
     }
 
     /** Nonblocking control signal; the bounded native read returns within its current buffer. */
-    fun stopReading() {
+    fun stopReading(timing: ((String) -> Unit)? = null): CaptureAdmission.Boundary {
+        if (timing != null) stopTiming = timing
+        val boundary = admission.fence()
         running.set(false)
+        return boundary
     }
 
     val hasLiveThread: Boolean
@@ -244,8 +285,6 @@ internal class AudioRecordCapture(private val context: Context) {
         }
 
     private companion object {
-        const val SAMPLE_RATE = 16_000
-        const val NATIVE_BUFFER_MULTIPLIER = 4
         const val BYTE_MASK = 0xff
         const val BYTE_BITS = 8
         const val READ_BYTES = 1_600

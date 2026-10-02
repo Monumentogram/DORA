@@ -202,6 +202,11 @@ jobs:
           python3 tools/validate_original_audio_lifecycle.py
           python3 -m unittest discover -s tools -p 'test_original_audio_lifecycle.py'
 
+      - name: Verify Stage 8.3 recording latency remediation admission
+        run: |
+          python3 tools/validate_recording_latency.py
+          python3 -m unittest discover -s tools -p 'test_recording_latency.py'
+
       - name: Verify Stage 8.3 product recording admission
         run: |
           python3 tools/validate_product_recording.py
@@ -407,7 +412,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/original-audio-8.2c-device-tests.json
+          --inventory docs/contracts/recording-latency-8.3-device-tests.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
       - name: Verify abrupt process death at durable persistence phases

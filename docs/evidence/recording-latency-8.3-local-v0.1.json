@@ -1,0 +1,872 @@
+{
+  "schema_version": 1,
+  "status": "PENDING_FINAL_PUBLICATION",
+  "physical_verdict": "FAIL_P1_AND_INCOMPLETE_PRESENTATION",
+  "parent_sha": "c596f5256e34bebf308d4c90d89c9f97affc3abb",
+  "development_marker": "ABSENT_DURING_RUN_RESTORED_AFTER_STOP",
+  "device": "POCO M5 / Android 14 / API 34 / arm64",
+  "trials_per_control": 20,
+  "nearest_rank_p95_index_one_based": 19,
+  "thresholds_ms": {
+    "pause_ack": 100,
+    "pause_admission": 250,
+    "pause_confirmed": 500,
+    "resume_ack": 100,
+    "resume_native": 500,
+    "resume_first_pcm": 750,
+    "resume_confirmed": 750
+  },
+  "statistics": {
+    "pause_ack_present_ms": {
+      "count": 20,
+      "missing": 0,
+      "complete": true,
+      "min": 54.173231,
+      "median": 70.122346,
+      "p95": 109.60277,
+      "max": 114.107923
+    },
+    "pause_admission_ms": {
+      "count": 20,
+      "missing": 0,
+      "complete": true,
+      "min": 7.898692,
+      "median": 12.314654,
+      "p95": 17.051385,
+      "max": 18.059615
+    },
+    "pause_confirmed_present_ms": {
+      "count": 20,
+      "missing": 0,
+      "complete": true,
+      "min": 1530.180308,
+      "median": 1619.667693,
+      "p95": 2102.761308,
+      "max": 2213.337231
+    },
+    "resume_ack_present_ms": {
+      "count": 20,
+      "missing": 0,
+      "complete": true,
+      "min": 49.28577,
+      "median": 64.65211550000001,
+      "p95": 76.309615,
+      "max": 80.254385
+    },
+    "resume_native_ms": {
+      "count": 20,
+      "missing": 0,
+      "complete": true,
+      "min": 51.740385,
+      "median": 55.722807,
+      "p95": 64.824231,
+      "max": 69.114769
+    },
+    "resume_first_pcm_ms": {
+      "count": 20,
+      "missing": 0,
+      "complete": true,
+      "min": 185.784923,
+      "median": 191.9250385,
+      "p95": 212.660615,
+      "max": 214.995077
+    },
+    "resume_confirmed_present_ms": {
+      "count": 20,
+      "missing": 3,
+      "complete": false
+    }
+  },
+  "trials": [
+    {
+      "trial": 1,
+      "kind": "pause",
+      "sequence": 1,
+      "ack_present_ms": 67.960308,
+      "confirmed_present_ms": 1565.25377,
+      "ack_draw_ms": 28.789154,
+      "confirmed_draw_ms": 1516.699616,
+      "admission_ms": 13.406154,
+      "native_released_ms": 70.802077,
+      "durable_paused_ms": 1466.705539,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 1,
+      "kind": "resume",
+      "sequence": 2,
+      "ack_present_ms": 71.247,
+      "confirmed_present_ms": 137.749461,
+      "ack_draw_ms": 30.926154,
+      "confirmed_draw_ms": 80.551308,
+      "native_ms": 61.042384,
+      "first_pcm_ms": 198.323384,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 2,
+      "kind": "pause",
+      "sequence": 3,
+      "ack_present_ms": 81.697231,
+      "confirmed_present_ms": 1596.030462,
+      "ack_draw_ms": 31.299923,
+      "confirmed_draw_ms": 1570.292231,
+      "admission_ms": 18.059615,
+      "native_released_ms": 114.218769,
+      "durable_paused_ms": 1519.405154,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 2,
+      "kind": "resume",
+      "sequence": 4,
+      "ack_present_ms": 49.28577,
+      "confirmed_present_ms": 132.389154,
+      "ack_draw_ms": 26.515616,
+      "confirmed_draw_ms": 80.859923,
+      "native_ms": 57.783693,
+      "first_pcm_ms": 197.380847,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 3,
+      "kind": "pause",
+      "sequence": 5,
+      "ack_present_ms": 61.657846,
+      "confirmed_present_ms": 1839.375385,
+      "ack_draw_ms": 29.722384,
+      "confirmed_draw_ms": 1791.791308,
+      "admission_ms": 13.326384,
+      "native_released_ms": 171.664231,
+      "durable_paused_ms": 1749.145231,
+      "append_inflight_at_tap": true
+    },
+    {
+      "trial": 3,
+      "kind": "resume",
+      "sequence": 6,
+      "ack_present_ms": 64.814769,
+      "confirmed_present_ms": 131.3,
+      "ack_draw_ms": 32.671307,
+      "confirmed_draw_ms": 83.660307,
+      "native_ms": 61.268615,
+      "first_pcm_ms": 195.876307,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 4,
+      "kind": "pause",
+      "sequence": 7,
+      "ack_present_ms": 109.60277,
+      "confirmed_present_ms": 1600.564847,
+      "ack_draw_ms": 25.124539,
+      "confirmed_draw_ms": 1556.831693,
+      "admission_ms": 14.087,
+      "native_released_ms": 118.238154,
+      "durable_paused_ms": 1503.294693,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 4,
+      "kind": "resume",
+      "sequence": 8,
+      "ack_present_ms": 50.038154,
+      "confirmed_present_ms": 116.524923,
+      "ack_draw_ms": 26.156384,
+      "confirmed_draw_ms": 80.883154,
+      "native_ms": 53.272692,
+      "first_pcm_ms": 189.420307,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 5,
+      "kind": "pause",
+      "sequence": 9,
+      "ack_present_ms": 66.776923,
+      "confirmed_present_ms": 1647.724538,
+      "ack_draw_ms": 28.299077,
+      "confirmed_draw_ms": 1605.415923,
+      "admission_ms": 12.127692,
+      "native_released_ms": 131.235615,
+      "durable_paused_ms": 1554.619615,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 5,
+      "kind": "resume",
+      "sequence": 10,
+      "ack_present_ms": 61.848307,
+      "confirmed_present_ms": 144.915077,
+      "ack_draw_ms": 26.216615,
+      "confirmed_draw_ms": 81.394461,
+      "native_ms": 55.720307,
+      "first_pcm_ms": 191.546769,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 6,
+      "kind": "pause",
+      "sequence": 11,
+      "ack_present_ms": 83.403693,
+      "confirmed_present_ms": 1607.488616,
+      "ack_draw_ms": 30.784693,
+      "confirmed_draw_ms": 1573.324616,
+      "admission_ms": 14.049616,
+      "native_released_ms": 103.673616,
+      "durable_paused_ms": 1524.457001,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 6,
+      "kind": "resume",
+      "sequence": 12,
+      "ack_present_ms": 58.183307,
+      "confirmed_present_ms": 141.302384,
+      "ack_draw_ms": 26.840615,
+      "confirmed_draw_ms": 84.346692,
+      "native_ms": 55.649461,
+      "first_pcm_ms": 190.075077,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 7,
+      "kind": "pause",
+      "sequence": 13,
+      "ack_present_ms": 54.173231,
+      "confirmed_present_ms": 1561.872,
+      "ack_draw_ms": 28.346384,
+      "confirmed_draw_ms": 1514.559385,
+      "admission_ms": 10.167923,
+      "native_released_ms": 118.772923,
+      "durable_paused_ms": 1464.815692,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 7,
+      "kind": "resume",
+      "sequence": 14,
+      "ack_present_ms": 51.402538,
+      "confirmed_present_ms": 151.136615,
+      "ack_draw_ms": 26.497846,
+      "confirmed_draw_ms": 74.120615,
+      "native_ms": 55.725307,
+      "first_pcm_ms": 192.221846,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 8,
+      "kind": "pause",
+      "sequence": 15,
+      "ack_present_ms": 73.293539,
+      "confirmed_present_ms": 1971.194154,
+      "ack_draw_ms": 25.458462,
+      "confirmed_draw_ms": 1926.795308,
+      "admission_ms": 9.375,
+      "native_released_ms": 145.664846,
+      "durable_paused_ms": 1878.947616,
+      "append_inflight_at_tap": true
+    },
+    {
+      "trial": 8,
+      "kind": "resume",
+      "sequence": 16,
+      "ack_present_ms": 60.686769,
+      "confirmed_present_ms": null,
+      "ack_draw_ms": 30.470769,
+      "confirmed_draw_ms": 77.394769,
+      "native_ms": 55.490077,
+      "first_pcm_ms": 214.995077,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 9,
+      "kind": "pause",
+      "sequence": 17,
+      "ack_present_ms": 114.107923,
+      "confirmed_present_ms": 1631.84677,
+      "ack_draw_ms": 28.629462,
+      "confirmed_draw_ms": 1592.090385,
+      "admission_ms": 17.051385,
+      "native_released_ms": 126.016,
+      "durable_paused_ms": 1543.169462,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 9,
+      "kind": "resume",
+      "sequence": 18,
+      "ack_present_ms": 69.526693,
+      "confirmed_present_ms": null,
+      "ack_draw_ms": 27.345539,
+      "confirmed_draw_ms": 76.267616,
+      "native_ms": 54.739693,
+      "first_pcm_ms": 191.12177,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 10,
+      "kind": "pause",
+      "sequence": 19,
+      "ack_present_ms": 62.006462,
+      "confirmed_present_ms": 1576.339462,
+      "ack_draw_ms": 24.041231,
+      "confirmed_draw_ms": 1537.124923,
+      "admission_ms": 12.501616,
+      "native_released_ms": 153.160077,
+      "durable_paused_ms": 1511.588616,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 10,
+      "kind": "resume",
+      "sequence": 20,
+      "ack_present_ms": 58.278462,
+      "confirmed_present_ms": 91.518769,
+      "ack_draw_ms": 27.718154,
+      "confirmed_draw_ms": 73.411308,
+      "native_ms": 58.436846,
+      "first_pcm_ms": 212.660615,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 11,
+      "kind": "pause",
+      "sequence": 21,
+      "ack_present_ms": 72.284384,
+      "confirmed_present_ms": 1692.351692,
+      "ack_draw_ms": 32.385307,
+      "confirmed_draw_ms": 1639.532692,
+      "admission_ms": 12.696615,
+      "native_released_ms": 127.637307,
+      "durable_paused_ms": 1596.365846,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 11,
+      "kind": "resume",
+      "sequence": 22,
+      "ack_present_ms": 64.609154,
+      "confirmed_present_ms": 197.581231,
+      "ack_draw_ms": 25.896538,
+      "confirmed_draw_ms": 77.623384,
+      "native_ms": 52.072923,
+      "first_pcm_ms": 185.784923,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 12,
+      "kind": "pause",
+      "sequence": 23,
+      "ack_present_ms": 66.120693,
+      "confirmed_present_ms": 1530.180308,
+      "ack_draw_ms": 20.685539,
+      "confirmed_draw_ms": 1492.733924,
+      "admission_ms": 8.254462,
+      "native_released_ms": 77.78377,
+      "durable_paused_ms": 1475.764693,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 12,
+      "kind": "resume",
+      "sequence": 24,
+      "ack_present_ms": 80.254385,
+      "confirmed_present_ms": 163.363615,
+      "ack_draw_ms": 36.460615,
+      "confirmed_draw_ms": 87.463385,
+      "native_ms": 69.114769,
+      "first_pcm_ms": 202.944,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 13,
+      "kind": "pause",
+      "sequence": 25,
+      "ack_present_ms": 73.206385,
+      "confirmed_present_ms": 2213.337231,
+      "ack_draw_ms": 37.422385,
+      "confirmed_draw_ms": 2164.993769,
+      "admission_ms": 12.024923,
+      "native_released_ms": 140.715692,
+      "durable_paused_ms": 2105.544308,
+      "append_inflight_at_tap": true
+    },
+    {
+      "trial": 13,
+      "kind": "resume",
+      "sequence": 26,
+      "ack_present_ms": 67.02,
+      "confirmed_present_ms": 116.890384,
+      "ack_draw_ms": 32.303307,
+      "confirmed_draw_ms": 82.026461,
+      "native_ms": 64.824231,
+      "first_pcm_ms": 199.656,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 14,
+      "kind": "pause",
+      "sequence": 27,
+      "ack_present_ms": 57.041615,
+      "confirmed_present_ms": 1581.392385,
+      "ack_draw_ms": 24.082846,
+      "confirmed_draw_ms": 1536.773846,
+      "admission_ms": 12.042846,
+      "native_released_ms": 72.447077,
+      "durable_paused_ms": 1477.619692,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 14,
+      "kind": "resume",
+      "sequence": 28,
+      "ack_present_ms": 56.242462,
+      "confirmed_present_ms": 139.348924,
+      "ack_draw_ms": 29.156385,
+      "confirmed_draw_ms": 72.544693,
+      "native_ms": 52.253539,
+      "first_pcm_ms": 190.65077,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 15,
+      "kind": "pause",
+      "sequence": 29,
+      "ack_present_ms": 78.971692,
+      "confirmed_present_ms": 1556.652385,
+      "ack_draw_ms": 23.763385,
+      "confirmed_draw_ms": 1509.829231,
+      "admission_ms": 10.018846,
+      "native_released_ms": 87.900077,
+      "durable_paused_ms": 1471.495693,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 15,
+      "kind": "resume",
+      "sequence": 30,
+      "ack_present_ms": 53.112077,
+      "confirmed_present_ms": null,
+      "ack_draw_ms": 23.392615,
+      "confirmed_draw_ms": 63.775462,
+      "native_ms": 51.740385,
+      "first_pcm_ms": 188.451385,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 16,
+      "kind": "pause",
+      "sequence": 31,
+      "ack_present_ms": 62.539923,
+      "confirmed_present_ms": 1686.844231,
+      "ack_draw_ms": 31.245769,
+      "confirmed_draw_ms": 1637.170462,
+      "admission_ms": 15.056846,
+      "native_released_ms": 161.195692,
+      "durable_paused_ms": 1602.104,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 16,
+      "kind": "resume",
+      "sequence": 32,
+      "ack_present_ms": 73.543077,
+      "confirmed_present_ms": 123.432846,
+      "ack_draw_ms": 27.825846,
+      "confirmed_draw_ms": 70.776923,
+      "native_ms": 58.441231,
+      "first_pcm_ms": 191.628231,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 17,
+      "kind": "pause",
+      "sequence": 33,
+      "ack_present_ms": 54.609923,
+      "confirmed_present_ms": 1588.559769,
+      "ack_draw_ms": 24.408385,
+      "confirmed_draw_ms": 1556.957539,
+      "admission_ms": 9.989308,
+      "native_released_ms": 75.065231,
+      "durable_paused_ms": 1497.896616,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 17,
+      "kind": "resume",
+      "sequence": 34,
+      "ack_present_ms": 67.825769,
+      "confirmed_present_ms": 150.937846,
+      "ack_draw_ms": 24.825153,
+      "confirmed_draw_ms": 76.174384,
+      "native_ms": 52.017769,
+      "first_pcm_ms": 191.128923,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 18,
+      "kind": "pause",
+      "sequence": 35,
+      "ack_present_ms": 64.665846,
+      "confirmed_present_ms": 2102.761308,
+      "ack_draw_ms": 27.741538,
+      "confirmed_draw_ms": 2069.861615,
+      "admission_ms": 15.030769,
+      "native_released_ms": 127.616615,
+      "durable_paused_ms": 2021.621923,
+      "append_inflight_at_tap": true
+    },
+    {
+      "trial": 18,
+      "kind": "resume",
+      "sequence": 36,
+      "ack_present_ms": 65.929539,
+      "confirmed_present_ms": 132.421539,
+      "ack_draw_ms": 24.930154,
+      "confirmed_draw_ms": 71.853462,
+      "native_ms": 51.887923,
+      "first_pcm_ms": 186.691693,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 19,
+      "kind": "pause",
+      "sequence": 37,
+      "ack_present_ms": 87.618384,
+      "confirmed_present_ms": 1645.412538,
+      "ack_draw_ms": 18.063692,
+      "confirmed_draw_ms": 1609.133846,
+      "admission_ms": 7.898692,
+      "native_released_ms": 112.588846,
+      "durable_paused_ms": 1563.390692,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 19,
+      "kind": "resume",
+      "sequence": 38,
+      "ack_present_ms": 76.309615,
+      "confirmed_present_ms": 142.799153,
+      "ack_draw_ms": 38.780615,
+      "confirmed_draw_ms": 85.213538,
+      "native_ms": 60.280076,
+      "first_pcm_ms": 198.039077,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 20,
+      "kind": "pause",
+      "sequence": 39,
+      "ack_present_ms": 77.257923,
+      "confirmed_present_ms": 1704.957923,
+      "ack_draw_ms": 22.940615,
+      "confirmed_draw_ms": 1651.973923,
+      "admission_ms": 11.960384,
+      "native_released_ms": 151.571692,
+      "durable_paused_ms": 1598.196923,
+      "append_inflight_at_tap": false
+    },
+    {
+      "trial": 20,
+      "kind": "resume",
+      "sequence": 40,
+      "ack_present_ms": 64.695077,
+      "confirmed_present_ms": 131.178154,
+      "ack_draw_ms": 31.083769,
+      "confirmed_draw_ms": 79.940307,
+      "native_ms": 58.395692,
+      "first_pcm_ms": 197.748307,
+      "auth_route": "current",
+      "append_inflight_at_tap": false
+    }
+  ],
+  "timer_cadence": [
+    {
+      "from_seconds": 24,
+      "to_seconds": 25,
+      "draw_gap_ms": 976.981,
+      "presentation_gap_ms": 984.814154
+    },
+    {
+      "from_seconds": 25,
+      "to_seconds": 26,
+      "draw_gap_ms": 1047.317231,
+      "presentation_gap_ms": 1050.316077
+    },
+    {
+      "from_seconds": 26,
+      "to_seconds": 27,
+      "draw_gap_ms": 955.190384,
+      "presentation_gap_ms": 951.913231
+    },
+    {
+      "from_seconds": 27,
+      "to_seconds": 28,
+      "draw_gap_ms": 983.918539,
+      "presentation_gap_ms": 984.737461
+    },
+    {
+      "from_seconds": 28,
+      "to_seconds": 29,
+      "draw_gap_ms": 1051.180923,
+      "presentation_gap_ms": 1050.381539
+    },
+    {
+      "from_seconds": 29,
+      "to_seconds": 30,
+      "draw_gap_ms": 956.018077,
+      "presentation_gap_ms": 936.968077
+    },
+    {
+      "from_seconds": 30,
+      "to_seconds": 31,
+      "draw_gap_ms": 1009.392077,
+      "presentation_gap_ms": 1014.006769
+    },
+    {
+      "from_seconds": 31,
+      "to_seconds": 32,
+      "draw_gap_ms": 985.788231,
+      "presentation_gap_ms": 980.752923
+    },
+    {
+      "from_seconds": 32,
+      "to_seconds": 33,
+      "draw_gap_ms": 1030.811461,
+      "presentation_gap_ms": 1030.638154
+    },
+    {
+      "from_seconds": 33,
+      "to_seconds": 34,
+      "draw_gap_ms": 983.166462,
+      "presentation_gap_ms": 1001.778154
+    },
+    {
+      "from_seconds": 34,
+      "to_seconds": 35,
+      "draw_gap_ms": 1015.635,
+      "presentation_gap_ms": 1017.623615
+    },
+    {
+      "from_seconds": 35,
+      "to_seconds": 36,
+      "draw_gap_ms": 1011.013923,
+      "presentation_gap_ms": 1017.492077
+    },
+    {
+      "from_seconds": 36,
+      "to_seconds": 37,
+      "draw_gap_ms": 963.025769,
+      "presentation_gap_ms": 939.521462
+    },
+    {
+      "from_seconds": 37,
+      "to_seconds": 38,
+      "draw_gap_ms": 1015.160616,
+      "presentation_gap_ms": 1013.992692
+    },
+    {
+      "from_seconds": 38,
+      "to_seconds": 39,
+      "draw_gap_ms": 978.463077,
+      "presentation_gap_ms": 980.749231
+    },
+    {
+      "from_seconds": 39,
+      "to_seconds": 40,
+      "draw_gap_ms": 1018.234769,
+      "presentation_gap_ms": 1029.788923
+    },
+    {
+      "from_seconds": 40,
+      "to_seconds": 41,
+      "draw_gap_ms": 976.956077,
+      "presentation_gap_ms": 984.730462
+    },
+    {
+      "from_seconds": 41,
+      "to_seconds": 42,
+      "draw_gap_ms": 1019.060923,
+      "presentation_gap_ms": 1017.88
+    },
+    {
+      "from_seconds": 42,
+      "to_seconds": 43,
+      "draw_gap_ms": 1022.716231,
+      "presentation_gap_ms": 1017.256923
+    },
+    {
+      "from_seconds": 43,
+      "to_seconds": 44,
+      "draw_gap_ms": 966.052616,
+      "presentation_gap_ms": 942.443308
+    },
+    {
+      "from_seconds": 44,
+      "to_seconds": 45,
+      "draw_gap_ms": 1024.219769,
+      "presentation_gap_ms": 1030.693538
+    },
+    {
+      "from_seconds": 45,
+      "to_seconds": 46,
+      "draw_gap_ms": 1003.961154,
+      "presentation_gap_ms": 997.316693
+    },
+    {
+      "from_seconds": 46,
+      "to_seconds": 47,
+      "draw_gap_ms": 989.181231,
+      "presentation_gap_ms": 1010.646154
+    },
+    {
+      "from_seconds": 47,
+      "to_seconds": 48,
+      "draw_gap_ms": 1014.023461,
+      "presentation_gap_ms": 1017.746384
+    },
+    {
+      "from_seconds": 48,
+      "to_seconds": 49,
+      "draw_gap_ms": 984.738769,
+      "presentation_gap_ms": 984.53477
+    },
+    {
+      "from_seconds": 49,
+      "to_seconds": 50,
+      "draw_gap_ms": 1018.759924,
+      "presentation_gap_ms": 1017.559153
+    },
+    {
+      "from_seconds": 50,
+      "to_seconds": 51,
+      "draw_gap_ms": 976.055769,
+      "presentation_gap_ms": 957.821231
+    },
+    {
+      "from_seconds": 51,
+      "to_seconds": 52,
+      "draw_gap_ms": 987.378462,
+      "presentation_gap_ms": 980.750154
+    },
+    {
+      "from_seconds": 52,
+      "to_seconds": 53,
+      "draw_gap_ms": 1020.727615,
+      "presentation_gap_ms": 1030.634462
+    },
+    {
+      "from_seconds": 53,
+      "to_seconds": 54,
+      "draw_gap_ms": 997.653923,
+      "presentation_gap_ms": 997.366461
+    },
+    {
+      "from_seconds": 54,
+      "to_seconds": 55,
+      "draw_gap_ms": 1006.558462,
+      "presentation_gap_ms": 997.392308
+    },
+    {
+      "from_seconds": 55,
+      "to_seconds": 56,
+      "draw_gap_ms": 986.751384,
+      "presentation_gap_ms": 997.381539
+    }
+  ],
+  "reauthentication": {
+    "status": "PASS_BACKGROUND_REAUTH_PHYSICAL",
+    "auth_route": "fresh",
+    "auth_end_ms": 4214.931154,
+    "native_recording_ms": 4263.282769,
+    "first_pcm_ms": 4399.157615,
+    "includes_human_confirmation": true,
+    "raw_receipt_sha256": "5d97d4eca8cf52254a2b566ddf0026caed5c73cdf3ace93f729f9f3fc01e5361"
+  },
+  "exact_sha_ci": "PENDING",
+  "artifact_audit": "PENDING",
+  "stage_8_4": "NOT_STARTED",
+  "tested_apk_sha256": "10f823a39af06165b05ddabccd7e7ec6ca02104dc1a675e9eb573b9ceb2d7de4",
+  "raw_physical_receipt_sha256": "619e884101ce3e4d65d1117cfdb7e79d10dccf96a881e6d678d574a797773d11",
+  "measurement_driver_sha256": "68719f16ff24786be2c3b1ee722adf71689758152ec51908265791c46267299f",
+  "measurement_analyzer_sha256": "53597ffc2913d9648c9616544a3f31f9e93141ad7547ebc60b8f94f7fbe08a73",
+  "build_log_sha256": "c78ff9ae6b3a79b18185c69ece780ce1ba23dcb91463a76edad7c813e4bf7404",
+  "measured_runtime_sources_sha256": {
+    "android/app/src/main/kotlin/com/monumentogram/dora/DoraApplication.kt": "fa25502245b592cc6e21593fb4db64127b4c4300c8a7818d5d043ea678d64585",
+    "android/app/src/main/kotlin/com/monumentogram/dora/MainActivity.kt": "b34308aca9ceda2a3346ac84cd5fc6e438b934e0ee5d6e5141e2247f10e558d3",
+    "android/app/src/main/kotlin/com/monumentogram/dora/flow/AlphaFlowCoordinator.kt": "c75b15fc659b696a58d57df0ecf8d0830115f974777a852a239feecf764691b8",
+    "android/app/src/main/kotlin/com/monumentogram/dora/flow/UnavailableAlphaPorts.kt": "540e14d850e13f3af1f147ad62bc17a249dedb00265c2f8b96f379b026a89cf5",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/AudioRecordCapture.kt": "d7a0537706f3fd2e83ce3eb70dac4a878601983b5c0f01430fb83e430567c933",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/BoundedPcmQueue.kt": "7a73dc107e2994b11dc87e6fa6fe7c66b84e1187b559881f840606cf7d388ac2",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/CaptureAdmission.kt": "db65ea2cff2c08b0c508f323375174b5c2b085ef67ef4e2817055ae1c9a56fcf",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/CapturedTimeline.kt": "9aeb4f83c04aeab2e0c43d28a62c3cb9e8569ba48674457e7207083f3cab769a",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/NativeMicrophone.kt": "01203f3e440532fcef966c9ebe21b66dbcb6c593d11ce0516492110aa705959b",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/ProductRecordingService.kt": "05b388bd77365593ed85353d5dc6f46402e3368c2fbb94e2dbfea0ad9873829e",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt": "03492384480f0a2a9a340d2750d0888723798b92b4d3a822a33b5a51481fe3ea",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingLatency.kt": "ffb3a9467f505a10342cde9a7def41d4494d4443aabf3a1ab5cfaf915ee23455",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingRecoveryCard.kt": "956088c52a6deed1aab2e30f9e95cd1089489064a1a27bd0cea5a1792ccba7f0",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt": "2e2cf3be9e9fbb311d3eaaf34f8efb68ea694d541d9cfc6acbcedeb92f74fbe5",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingServiceOwner.kt": "7103eb50a5827f780c2953b8cff13ee29d197d03f064c05a270c3d51a5385772",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/ResumeRequests.kt": "496102de29c2b421e51a57733c368cb52e824944a6f4ec92c1165c422e19c6dd",
+    "android/app/src/main/kotlin/com/monumentogram/dora/ui/BootstrapDestinationResources.kt": "3f15d3dab915d9c9d48b7a4614d0e91afac8e9edc78218d7373df7db90b0c821",
+    "android/app/src/main/kotlin/com/monumentogram/dora/ui/BootstrapNavigationLayout.kt": "154eb4b97a6265ed8e17daa8a3f0cd9e1ce3f1196af4d0e27dae225ad87a4396",
+    "android/app/src/main/kotlin/com/monumentogram/dora/ui/DestinationPlaceholder.kt": "425f0be05afea0b6b8ff90d39d5b49c1fdb31cb3c9b3d643e9349f55e48da3c0",
+    "android/app/src/main/kotlin/com/monumentogram/dora/ui/DoraBootstrapApp.kt": "64cc3d8f76b1e440cbd428da9b258d3edc459b585e57fd4e78936207b4ffbb5b",
+    "android/app/src/main/kotlin/com/monumentogram/dora/ui/theme/DoraBootstrapTheme.kt": "21607122ecb905c3c151053b2c74e9471da64c3e699f85eab3053bebd9ce7b71",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/OriginalAudioLifecycle.kt": "ac34ee8469d9f92fe1e9bf2e2432cc47c833e9fa377aef8b488dcc91ee3136a0",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/OriginalAudioPort.kt": "97f793032330526a667207e94075563741fd5b341201f3c86a369bef7caf5eb0",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/OriginalAudioReferenceCodec.kt": "ad6b072b50ae05eedbed1a4360a05281fbc7713bc78a31fa20b1ddb1dd8004ef",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/PersistenceLatency.kt": "4724c9f0860277d81532f078ef44a5eee71bc2f81f41a6102974b1d5810fa0b5",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/ProductAudioPort.kt": "b7501eeb8c0d8b75c4c5865126c15ad54af95114303c1d5f15742eb499c0b23d",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/RecoveryAudioBridge.kt": "76b3781cc864aa4e06d26e561901df6eea242544185df4f15acf13a534dd6806",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/AndroidAudioDeletionStorage.kt": "07ab70df96df105c2e5b6e8d1089b1b3782c5c6df115d22971db79fcaf69183d",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/EncryptedAudioVault.kt": "98e6137215972c5d715fbc4c813a711498b53d4170388154468a3e56ab3569f3",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingAccess.kt": "67fad71ae840a0cbefcb07eb11a10a4d5e8bc468a2bf9c7b2d0aaeac6d391540",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingAuthority.kt": "fd84c7f875ef37a30a3e2be7821ae69e8e5a0f57685fb1b2ab540ee872859539",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingRecovery.kt": "5c6279b4d3aa7b38385d1ce4e8fa1babb9ca85174a379c5aefee9e7fd57eb832",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingResumeGrant.kt": "af84502939a68499ac87413553fca6dfca0963eaf4b8a975735c30704bee5d49",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSession.kt": "2886acbc2f99fc777d4cd6b8c5b563b4a488769a4763cdb64a0e218b920c9b82",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/auth/AndroidAppLock.kt": "4c6fcbf1e62e0bc675f2817991048d3d7cdaf1f047dd8d5477082bc6297dd275",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/auth/AndroidAuthProof.kt": "0bffd97aaeff94396d3f775bf8137f4bbdecac81fd85f427500630bd525143a3",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/auth/AppLockAuthenticationActivity.kt": "e1ad832725cbb08637cc8147ed2d03e99df6606116527e5bf99cd566cebbc02c",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/auth/AppLockSession.kt": "34ad943d61ca6b7852847f32b58884b4eea34fb21c5d9710ec2613d0939016b8",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/database/SqlCipherJournalHelperFactory.kt": "f04bc193d2bd2000d9313c946ff45d2f42a72a0f4540220c4dabe1e6171eb592",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/AudioDeletionJournal.kt": "54580de55a48b84bb29a840fc234b2cb673485b6e668bcf90c5c64d02217e139",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/AudioJournalSchema.kt": "c858b0f6f0a00e6138d42a6a1ffa4bb6d7d1aa17523aa820bfa75e8ca9ad52bf",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/JournalRows.kt": "28f261ba51ff5fef1c6e5da1693b82486784681e606e164aa7982e89619dfdea",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/JournalSchemaVerifier.kt": "9c435c1c861f27e4864d59c4b3a0f82415d60b346e8fd680ecd8b841e265d422",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/OriginalAudioMigration.kt": "90a14714a66b64159fb2cd2389bf8b6cf0712229dff58b01c47e7f10ed687bf4",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomAudioJournal.kt": "f2a9397928e25bac07e86e0d73b2c02f1b671668f9e6aa01c6accd60c572c8d2",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/VaultJournalLease.kt": "c827de328205cf25c67c4457184cd98b429ffd50e016bc736e7e990f9bc593e6",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/AndroidVaultBundleStorage.kt": "f336c629f85abd0a5a366628614eff65e0704dbf6de55de45b23b8722cd17893",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/AndroidVaultKeyBackend.kt": "645887b549777ca7fda1bb06f18d21113337cc488c684d618ae33b3d28db5cef",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/ProductRecoveryBootstrapCrypto.kt": "518148efb74c34390385eca10aefef8db99223dd4399eb0375edcb3240c29d08",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/RunKeyFailureScopes.kt": "0b88a47d96e67eb9e8b4f2f5f305421c9578ea2057602a9fdd3af0f1bafca16a",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/VaultEnvelope.kt": "93001ebbe5f5537dc2edd99ec3115f53d2307e8a820fc1bf47c14f07c1402538",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/VaultSecretStore.kt": "c5fa1902492a808619a0334fc1e52cd66cf3fc3d16fde5148f9dd33cc3f04288",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/AndroidProductAudioRuntime.kt": "69bd3d98f2cc3b8e561a7e4704e1330a384e45b67e6f270ac31fb882443bd1f9",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/AndroidRecordingAccessManager.kt": "606efc97b4764c7fd572a6c78123cca8c46145439ba7c119a9b947a53b4d832d",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/AudioDeletionConfirmation.kt": "9a9a3a1806e6713e110379e8a05b34243439f09cc39a5e7c153e0afc8b30126b",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/AudioRuntimeCoordinator.kt": "1cab9bb570441cb55e77401925347eed6d9ddac07564a23522ab05193773ebde",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/ResourceRetirement.kt": "8a6c9a3d91d335ac4c429a02e0e7fce67c525f9aefd91177f6f8be996eccafbe"
+  }
+}

@@ -38,6 +38,7 @@ class ProductRecordingService : Service() {
     private var foreground = false
     private var lastPhase: RecordingPhase? = null
     private var lastPausePending = false
+    private var lastResumePending = false
     private var renewedAt = 0L
     private lateinit var wakeLock: PowerManager.WakeLock
 
@@ -66,13 +67,19 @@ class ProductRecordingService : Service() {
         scope.launch {
             controller.state.collect { snapshot ->
                 val phase = snapshot.recording.phase
-                if (
-                    foreground && (phase != lastPhase || snapshot.pausePending != lastPausePending)
-                ) {
+                val changed =
+                    phase != lastPhase ||
+                        snapshot.pausePending != lastPausePending ||
+                        snapshot.resumePending != lastResumePending
+                if (foreground && changed) {
                     getSystemService(NotificationManager::class.java)
-                        .notify(NOTIFICATION_ID, notification(phase, snapshot.pausePending))
+                        .notify(
+                            NOTIFICATION_ID,
+                            notification(phase, snapshot.pausePending, snapshot.resumePending),
+                        )
                     lastPhase = phase
                     lastPausePending = snapshot.pausePending
+                    lastResumePending = snapshot.resumePending
                 }
                 if (foreground && phase == RecordingPhase.RECORDING) {
                     val now = SystemClock.elapsedRealtime()
@@ -130,27 +137,30 @@ class ProductRecordingService : Service() {
         super.onDestroy()
     }
 
-    private fun notification(phase: RecordingPhase, pausePending: Boolean = false): Notification {
+    private fun notification(
+        phase: RecordingPhase,
+        pausePending: Boolean = false,
+        resumePending: Boolean = false,
+    ): Notification {
         val paused = phase == RecordingPhase.PAUSED
         val title =
-            when (phase) {
-                RecordingPhase.PAUSED -> "Запись приостановлена"
-                RecordingPhase.RECORDING -> "Запись продолжается"
-                RecordingPhase.FINALIZING -> "Завершаем запись"
-                RecordingPhase.INTERRUPTED -> "Запись прервана · Останавливаем микрофон"
-                else -> "Подключаем микрофон…"
+            when {
+                pausePending -> "Приостанавливаем…"
+                resumePending -> "Возобновляем запись…"
+                else -> notificationTitle(phase)
             }
         val builder =
             NotificationCompat.Builder(this, CHANNEL)
                 .setSmallIcon(R.drawable.ic_bootstrap_mic)
-                .setContentTitle(if (pausePending) "Приостанавливаем запись…" else title)
+                .setContentTitle(title)
                 .setContentText("DORA · Только на устройстве")
                 .setContentIntent(activityIntent(OPEN, 0))
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        if (phase == RecordingPhase.RECORDING || paused) {
+        val controllable = phase == RecordingPhase.RECORDING || paused
+        if (!pausePending && !resumePending && controllable) {
             val action =
                 if (paused) activityIntent(RESUME, 1)
                 else
@@ -169,6 +179,15 @@ class ProductRecordingService : Service() {
         }
         return builder.build()
     }
+
+    private fun notificationTitle(phase: RecordingPhase): String =
+        when (phase) {
+            RecordingPhase.PAUSED -> "Запись приостановлена"
+            RecordingPhase.RECORDING -> "Запись продолжается"
+            RecordingPhase.FINALIZING -> "Завершаем запись"
+            RecordingPhase.INTERRUPTED -> "Запись прервана · Останавливаем микрофон"
+            else -> "Подключаем микрофон…"
+        }
 
     private fun activityIntent(action: String, code: Int) =
         PendingIntent.getActivity(
