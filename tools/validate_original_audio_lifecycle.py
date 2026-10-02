@@ -88,6 +88,9 @@ def historical_parent(root):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_product_recording as recording
+    if recording.candidate(root):
+        return recording.validate_checkout(root, allow_working=allow_working)
     import validate_encrypted_persistence as p
     import original_audio_ci_profile as ci
     allow_working = p.working_verification(allow_working, os.environ)

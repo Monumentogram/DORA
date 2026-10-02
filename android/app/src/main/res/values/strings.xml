@@ -13,7 +13,7 @@
     <string name="placeholder_tasks">Задачи не реализованы в этой версии Alpha. Экран не содержит базы данных, извлечения или синхронизации.</string>
     <string name="placeholder_settings">Настройки продукта не реализованы в этой версии Alpha. Облачная обработка и production-конфигурация отсутствуют.</string>
     <string name="record_action_label">Запись</string>
-    <string name="record_action_description">Запись пока недоступна в DORA Alpha</string>
-    <string name="record_action_state">Заглушка. Микрофон не используется</string>
+    <string name="record_action_description">Открыть экран записи</string>
+    <string name="record_action_state">Начало записи требует подтверждения</string>
     <string name="record_unavailable_message">Запись пока недоступна: DORA Alpha не запрашивает доступ к микрофону.</string>
 </resources>

@@ -7709,7 +7709,8 @@ def validate_rec_clean_integrated_anchor(anchor, preparation, implementation):
 
 
 def rec_clean_integrated_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
-    if lifecycle.branch in ("stage/8.2-encrypted-persistence", "stage/8.2c-original-audio-lifecycle"):
+    if lifecycle.branch in ("stage/8.2-encrypted-persistence", "stage/8.2c-original-audio-lifecycle",
+                            "stage/8.3-product-recording"):
         import validate_encrypted_persistence as persistence
         # A successor is admitted only by its separately sealed, exact current-tree gate.
         persistence.validate_checkout(ROOT)
@@ -7847,7 +7848,8 @@ def validate_rec_clean_closure_receipt(receipt, governance_head):
 
 def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
     require(rec_clean_integrated_candidate(lifecycle), "Recovery clean integrated identity not admitted")
-    persistence_successor = lifecycle.branch in ("stage/8.2-encrypted-persistence", "stage/8.2c-original-audio-lifecycle")
+    persistence_successor = lifecycle.branch in ("stage/8.2-encrypted-persistence", "stage/8.2c-original-audio-lifecycle",
+                                                "stage/8.3-product-recording")
     if persistence_successor:
         import validate_encrypted_persistence as persistence
     # The immutable historical transition keeps its original policy and object identities.

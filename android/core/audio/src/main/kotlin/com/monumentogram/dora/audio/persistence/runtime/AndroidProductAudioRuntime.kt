@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions") // Authenticated entrypoints share one vault owner.
+
 package com.monumentogram.dora.audio.persistence.runtime
 
 import android.app.Activity
@@ -19,11 +21,15 @@ import com.monumentogram.dora.audio.persistence.auth.AndroidAppLock
 import com.monumentogram.dora.audio.persistence.auth.AppLockState
 import com.monumentogram.dora.audio.persistence.auth.AppLockedException
 import com.monumentogram.dora.audio.persistence.auth.UnlockResult
+import com.monumentogram.dora.audio.recording.RecordingAccess
+import com.monumentogram.dora.audio.recording.RecordingRecovery
+import com.monumentogram.dora.audio.recording.RecordingResumeGrant
+import java.io.File
 
 /**
  * Install once in Application.onCreate, before any Activity resumes. No test delegate is exposed.
  */
-class AndroidProductAudioRuntime(application: Application) : ProductAudioRuntime {
+class AndroidProductAudioRuntime(private val application: Application) : ProductAudioRuntime {
     private val main = Handler(Looper.getMainLooper())
     private val coordinator =
         AudioRuntimeCoordinator({ Looper.myLooper() == Looper.getMainLooper() }) {
@@ -46,6 +52,94 @@ class AndroidProductAudioRuntime(application: Application) : ProductAudioRuntime
             old?.confirmation?.cancel()
             main.post { if (pending === old) cancelPending(AudioFailure.LOCKED) }
         }
+    private val recordings = AndroidRecordingAccessManager(application, appLock, coordinator)
+
+    fun isRecordingUiAuthorized(): Boolean = appLock.state == AppLockState.UNLOCKED
+
+    fun requestRecordingRecovery(
+        activity: Activity,
+        after: String = "",
+        completion: (AudioResult<List<RecordingRecovery>>) -> Unit,
+    ) {
+        requestOpen(activity, AudioOpenMode.OPEN_EXISTING) { available ->
+            if (available !is AudioAvailability.Available) {
+                completion(
+                    AudioResult.Failed(
+                        (available as? AudioAvailability.Failed)?.reason ?: AudioFailure.LOCKED
+                    )
+                )
+            } else
+                coordinator.recordingRecoveryPage(available.session, after) { result ->
+                    main.post {
+                        val checked =
+                            try {
+                                coordinator.requireCurrent(available.session)
+                                result
+                            } catch (_: AppLockedException) {
+                                AudioResult.Failed(AudioFailure.LOCKED)
+                            }
+                        completion(checked)
+                    }
+                }
+        }
+    }
+
+    fun requestRecordingUiUnlock(activity: Activity, completion: (Boolean) -> Unit) {
+        requireMain()
+        secure(activity)
+        appLock.requestUnlock(activity) { completion(it == UnlockResult.UNLOCKED) }
+    }
+
+    /**
+     * Namespace existence chooses create vs existing once; failed open never falls back to create.
+     */
+    fun recordingOpenMode(): AudioOpenMode =
+        if (File(application.noBackupFilesDir, "dora-vault-v1").exists())
+            AudioOpenMode.OPEN_EXISTING
+        else AudioOpenMode.CREATE_NEW
+
+    fun requestRecording(
+        activity: Activity,
+        identity: AudioIdentity,
+        completion: (AudioResult<RecordingAccess>) -> Unit,
+    ) {
+        requireMain()
+        secure(activity)
+        recordings.request(activity, recordingOpenMode(), identity, completion = completion)
+    }
+
+    fun requestRecordingContinuation(
+        activity: Activity,
+        identity: AudioIdentity,
+        completion: (AudioResult<RecordingAccess>) -> Unit,
+    ) {
+        requireMain()
+        secure(activity)
+        recordings.request(activity, AudioOpenMode.OPEN_EXISTING, identity, true, completion)
+    }
+
+    fun requestRecordingResume(
+        activity: Activity,
+        completion: (AudioResult<RecordingResumeGrant>) -> Unit,
+    ) {
+        requireMain()
+        secure(activity)
+        appLock.requestUnlock(activity) { result ->
+            if (result != UnlockResult.UNLOCKED) completion(AudioResult.Failed(AudioFailure.LOCKED))
+            else {
+                val result =
+                    try {
+                        val authorization = appLock.captureAuthorization()
+                        AudioResult.Value(
+                            recordings.resumeGrant(authorization::withPlaintextDelivery)
+                        )
+                    } catch (_: AppLockedException) {
+                        AudioResult.Failed(AudioFailure.LOCKED)
+                    }
+                completion(result)
+            }
+        }
+    }
 
     override val availability: AudioAvailability
         get() {
@@ -65,6 +159,10 @@ class AndroidProductAudioRuntime(application: Application) : ProductAudioRuntime
     ) {
         requireMain()
         secure(activity)
+        if (recordings.inUse) {
+            completion(AudioAvailability.Failed(AudioFailure.BUSY))
+            return
+        }
         appLock.requestUnlock(activity) { result ->
             if (result != UnlockResult.UNLOCKED) {
                 val failure =
@@ -95,7 +193,10 @@ class AndroidProductAudioRuntime(application: Application) : ProductAudioRuntime
         }
     }
 
-    fun lock() = appLock.lock()
+    fun lock() {
+        recordings.revoke()
+        appLock.lock()
+    }
 
     fun openCredentialSetup(activity: Activity) {
         requireMain()

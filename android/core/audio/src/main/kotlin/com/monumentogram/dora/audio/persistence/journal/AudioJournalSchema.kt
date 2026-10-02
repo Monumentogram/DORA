@@ -370,6 +370,12 @@ internal data class DeletionTargetEntity(
 @Suppress("TooManyFunctions")
 @Dao
 internal interface AudioJournalDao {
+    @Query(
+        "SELECT * FROM audio_asset WHERE ownerId=:owner AND vaultId=:vault AND assetId>:after " +
+            "AND assetId NOT IN (SELECT assetId FROM deletion_tombstone) ORDER BY assetId LIMIT 20"
+    )
+    fun recordingCandidates(owner: String, vault: String, after: String): List<AssetEntity>
+
     @Query("SELECT assetId FROM audio_asset WHERE recordingId=:recording ORDER BY assetId")
     fun recordingAssets(recording: String): List<String>
 
@@ -393,6 +399,19 @@ internal interface AudioJournalDao {
 
     @Query("SELECT * FROM physical_source WHERE assetId=:asset AND physicalId=:id")
     fun physical(asset: String, id: String): PhysicalEntity?
+
+    @Query("SELECT * FROM physical_source WHERE assetId=:asset")
+    fun physicalSources(asset: String): List<PhysicalEntity>
+
+    @Query(
+        "SELECT manifest.* FROM manifest JOIN unit_claim USING(runId) WHERE unit_claim.assetId=:asset"
+    )
+    fun assetManifests(asset: String): List<ManifestEntity>
+
+    @Query(
+        "SELECT microfile.* FROM microfile JOIN unit_claim USING(runId) WHERE unit_claim.assetId=:asset"
+    )
+    fun assetMicrofiles(asset: String): List<MicrofileEntity>
 
     @Insert fun insert(value: PhysicalEntity)
 

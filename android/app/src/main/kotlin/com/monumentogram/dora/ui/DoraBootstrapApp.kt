@@ -65,7 +65,10 @@ import java.util.UUID
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun DoraBootstrapApp(forcedLayout: BootstrapNavigationLayout? = null) {
+internal fun DoraBootstrapApp(
+    forcedLayout: BootstrapNavigationLayout? = null,
+    onRecordingRequested: (() -> Unit)? = null,
+) {
     var selectedRoute by rememberSaveable { mutableStateOf(BootstrapDestination.HOME.route) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -78,6 +81,10 @@ internal fun DoraBootstrapApp(forcedLayout: BootstrapNavigationLayout? = null) {
         val update = uiState.reduce(action)
         selectedRoute = update.state.selectedDestination.route
         if (update.effect == BootstrapEffect.ShowRecordingUnavailableNotice) {
+            if (onRecordingRequested != null) {
+                onRecordingRequested()
+                return
+            }
             recordingFlow.dispatch(FlowIntent.Reset)
             recordingFlow.dispatch(FlowIntent.Start(RecordingId(UUID.randomUUID().toString())))
             coroutineScope.launch {

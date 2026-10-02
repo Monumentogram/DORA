@@ -36,6 +36,7 @@ import com.monumentogram.dora.audio.persistence.keys.VaultKeystoreIo
 import com.monumentogram.dora.audio.persistence.keys.VaultSecretStore
 import com.monumentogram.dora.audio.persistence.runtime.ResourceRetirement
 import com.monumentogram.dora.audio.persistence.runtime.RuntimeVault
+import com.monumentogram.dora.audio.recording.RecordingRecovery
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryKeyBootstrapController
 import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryMicrofileCrypto
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
@@ -69,6 +70,58 @@ private constructor(
     override val protection: VaultKeyProtection,
 ) : RuntimeVault {
     @Volatile private var closed = false
+
+    override fun recordingRecoveryPage(after: String): AudioResult<List<RecordingRecovery>> =
+        operation {
+            val entries = mutableListOf<RecordingRecovery>()
+            for (identity in journal.recordingCandidates(after)) {
+                val result = recordingRecovery(identity)
+                if (result is AudioResult.Failed) return@operation result
+                entries += (result as AudioResult.Value).value
+            }
+            AudioResult.Value(entries)
+        }
+
+    @Suppress(
+        "CyclomaticComplexMethod"
+    ) // Explicit source, reconciliation and strict continuation fences.
+    fun recordingRecovery(identity: AudioIdentity): AudioResult<RecordingRecovery> = operation {
+        val lease =
+            journal.catalog.tryAcquire(identity)
+                ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+        val sourceState = lease.use { journal.sourceState(identity) }
+        if (sourceState != null) return@operation AudioResult.Failed(AudioFailure.UNAVAILABLE)
+        val reconciliation = bridge.reconcile(identity)
+        val read = bridge.extract(identity) { _, _ -> }
+        val summary = (read as? AudioResult.Value)?.value
+        val continuation = bridge.verifyContinuation(identity)
+        val inspection =
+            journal.catalog.tryAcquire(identity)
+                ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+        val asset =
+            inspection.use { journal.catalog.load(identity) }
+                ?: return@operation AudioResult.Failed(AudioFailure.INCOMPLETE)
+        val completePrefix =
+            continuation is AudioResult.Value &&
+                summary != null &&
+                summary.tailFailure == null &&
+                asset.segments.sumOf { it.frames } == summary.frames
+        AudioResult.Value(
+            RecordingRecovery(
+                identity,
+                summary,
+                (reconciliation as? AudioResult.Failed)?.reason
+                    ?: (read as? AudioResult.Failed)?.reason
+                    ?: if (asset.finalization == null) (continuation as? AudioResult.Failed)?.reason
+                    else null,
+                reconciliation is AudioResult.Value &&
+                    completePrefix &&
+                    asset.pending == null &&
+                    asset.finalization == null,
+                asset.segments.size,
+            )
+        )
+    }
 
     override val originals =
         OriginalAudioLifecycle(

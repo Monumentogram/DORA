@@ -1,0 +1,481 @@
+@file:Suppress(
+    "ReturnCount",
+    "TooManyFunctions",
+    "LongMethod",
+    "CyclomaticComplexMethod",
+) // Serialized state transitions fence stale actions and share terminal cleanup.
+
+package com.monumentogram.dora.recording
+
+import android.app.Activity
+import android.content.Context
+import android.os.StatFs
+import androidx.core.content.ContextCompat
+import com.monumentogram.dora.audio.AudioFailure
+import com.monumentogram.dora.audio.AudioIdentity
+import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntime
+import com.monumentogram.dora.audio.recording.RecordingAccess
+import com.monumentogram.dora.audio.recording.RecordingPhase
+import com.monumentogram.dora.audio.recording.RecordingSession
+import com.monumentogram.dora.audio.recording.RecordingState
+import com.monumentogram.dora.model.alpha.AudioAssetId
+import com.monumentogram.dora.model.alpha.RecordingId
+import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+data class RecordingViewState(
+    val recording: RecordingState = RecordingState(),
+    val level: Float = 0f,
+    val signalAtNanos: Long = 0,
+    val pausePending: Boolean = false,
+    val route: String = "Маршрут определяется при запуске",
+    val failure: CaptureFailure? = null,
+    val shortReads: Long = 0,
+    val readErrors: Long = 0,
+    val captureThreadHealthy: Boolean = false,
+)
+
+/** Application state survives Activity recreation; only the foreground service runs capture. */
+class RecordingController(
+    private val context: Context,
+    private val runtime: AndroidProductAudioRuntime,
+) {
+    private val mutable = MutableStateFlow(RecordingViewState())
+    val state = mutable.asStateFlow()
+    private val worker = Executors.newSingleThreadScheduledExecutor { task ->
+        Thread(task, "Dora recording persistence")
+    }
+    private val capture = AudioRecordCapture(context)
+    private val starting = AtomicBoolean(false)
+    private val stopRequested = AtomicBoolean(false)
+    private val pauseRequested = AtomicBoolean(false)
+    private var session: RecordingSession? = null
+    @Volatile private var maximumAppendNanos = 0L
+    @Volatile private var access: RecordingAccess? = null
+    @Volatile private var serviceActive = false
+    @Volatile
+    var actionToken: String? = null
+        private set
+
+    private var awaitingServiceStop = false
+    private var servicePending = false
+    private var servicePresent = false
+    private var shutdownUnconfirmed = false
+    @Volatile var onTerminal: (() -> Unit)? = null
+
+    init {
+        worker.scheduleWithFixedDelay(
+            { tick() },
+            UI_PERIOD_MILLIS,
+            UI_PERIOD_MILLIS,
+            TimeUnit.MILLISECONDS,
+        )
+    }
+
+    fun availableBytes(): Long = StatFs(context.noBackupFilesDir.path).availableBytes
+
+    /** Aggregate health only, exposed through Android's privileged service dump. No IDs or PCM. */
+    fun diagnosticSummary(): String =
+        "phase=${state.value.recording.phase} queue=${capture.queuedBlocks} " +
+            "queueHighWater=${capture.maximumQueuedBlocks} maxAppendNanos=$maximumAppendNanos " +
+            "frames=${state.value.recording.frames} durableFrames=${state.value.recording.durableFrames} " +
+            "shortReads=${capture.shortReads} readErrors=${capture.readErrors} healthy=${capture.healthy}"
+
+    fun start(activity: Activity, recoveredIdentity: AudioIdentity? = null) {
+        if (!starting.compareAndSet(false, true)) return
+        if (state.value.recording.phase in ACTIVE_PHASES) {
+            starting.set(false)
+            return
+        }
+        stopRequested.set(false)
+        pauseRequested.set(false)
+        val token = id()
+        actionToken = token
+        worker.execute {
+            session = null
+            mutable.value =
+                RecordingViewState(recording = RecordingState(phase = RecordingPhase.PREPARING))
+        }
+        if (availableBytes() < MINIMUM_FREE_BYTES) {
+            worker.execute { failBeforeStart(CaptureFailure.STORAGE_FULL) }
+            return
+        }
+        val identity =
+            recoveredIdentity ?: AudioIdentity(RecordingId(id()), AudioAssetId(id()), id())
+        val completion: (AudioResult<RecordingAccess>) -> Unit = { result ->
+            worker.execute {
+                if (actionToken != token) {
+                    if (result is AudioResult.Value) result.value.close()
+                    return@execute
+                }
+                when (result) {
+                    is AudioResult.Failed -> {
+                        mutable.update {
+                            it.copy(
+                                recording =
+                                    RecordingState(
+                                        phase = RecordingPhase.INTERRUPTED,
+                                        persistenceFailure = result.reason,
+                                    )
+                            )
+                        }
+                        actionToken = null
+                        starting.set(false)
+                    }
+                    is AudioResult.Value -> {
+                        access = result.value
+                        if (stopRequested.get()) {
+                            release()
+                            publishEmpty()
+                        } else
+                            try {
+                                servicePending = true
+                                ContextCompat.startForegroundService(
+                                    context,
+                                    ProductRecordingService.startIntent(
+                                        context,
+                                        token,
+                                    ),
+                                )
+                            } catch (_: Exception) {
+                                servicePending = false
+                                release()
+                                failBeforeStart(CaptureFailure.SERVICE_REJECTED)
+                            }
+                    }
+                }
+            }
+        }
+        if (recoveredIdentity == null) runtime.requestRecording(activity, identity, completion)
+        else runtime.requestRecordingContinuation(activity, identity, completion)
+    }
+
+    /**
+     * Called only by the service after successful startForeground. Null/replayed intents do not
+     * mint authority.
+     */
+    fun serviceStart(token: String?) = worker.execute {
+        if (token == null || token != actionToken) return@execute
+        if (serviceActive) return@execute
+        val selected = access ?: return@execute
+        serviceActive = true
+        if (!starting.get() || stopRequested.get()) {
+            release()
+            publishEmpty()
+            return@execute
+        }
+        try {
+            selected.onRevocation {
+                capture.requestStop()
+                worker.execute {
+                    if (access === selected && serviceActive) failPersistence(AudioFailure.LOCKED)
+                }
+            }
+            capture.start(selected::activate)
+            // A Stop/Pause that arrived during native start must win before any disk operation.
+            if (stopRequested.get()) {
+                capture.stop()
+                capture.drain {}
+                release()
+                publishEmpty()
+                return@execute
+            }
+            if (pauseRequested.get()) capture.stop()
+            val created = RecordingSession(selected.identity, selected.writer)
+            session = created
+            val continuation = selected.continuation
+            if (continuation != null)
+                created.restore(checkNotNull(continuation.summary).frames, continuation.nextOrdinal)
+            if (!(if (continuation != null) created.resume() else created.start())) {
+                terminate()
+                return@execute
+            }
+            if (state.value.recording.stopConfirmation) created.requestStop()
+            if (pauseRequested.get()) pauseNow() else publish()
+        } catch (error: CaptureException) {
+            fail(error.failure)
+        } catch (_: Exception) {
+            failPersistence(AudioFailure.LOCKED)
+        }
+    }
+
+    fun serviceCreated() = worker.execute {
+        servicePresent = true
+        servicePending = false
+    }
+
+    fun pause(token: String? = actionToken) {
+        if (token == null || token != actionToken) return
+        pauseRequested.set(true)
+        capture.stopReading()
+        mutable.update {
+            it.copy(pausePending = it.recording.phase == RecordingPhase.RECORDING, level = 0f)
+        }
+        worker.execute { if (token == actionToken) pauseNow() }
+    }
+
+    private fun pauseNow() {
+        val current = session ?: return
+        if (current.state.phase != RecordingPhase.RECORDING) {
+            mutable.update { it.copy(pausePending = false) }
+            return
+        }
+        try {
+            capture.stop()
+            capture.failure?.let {
+                fail(it)
+                return
+            }
+            capture.drain(consume = current::accept)
+            current.pause()
+            publish()
+            if (current.state.phase == RecordingPhase.INTERRUPTED) terminate()
+        } catch (error: CaptureException) {
+            fail(error.failure)
+        }
+    }
+
+    fun resume(activity: Activity) {
+        if (state.value.recording.phase != RecordingPhase.PAUSED) return
+        pauseRequested.set(false)
+        runtime.requestRecordingResume(activity) { result ->
+            if (result is AudioResult.Value)
+                worker.execute {
+                    val current = session ?: return@execute
+                    if (
+                        current.state.phase != RecordingPhase.PAUSED ||
+                            stopRequested.get() ||
+                            pauseRequested.get()
+                    )
+                        return@execute
+                    try {
+                        capture.start(result.value::consume)
+                        if (stopRequested.get()) {
+                            capture.stop()
+                            capture.drain {}
+                            return@execute
+                        }
+                        if (pauseRequested.get()) capture.stop()
+                        current.resume()
+                        if (pauseRequested.get()) pauseNow() else publish()
+                    } catch (error: CaptureException) {
+                        fail(error.failure)
+                    } catch (_: Exception) {
+                        failPersistence(AudioFailure.LOCKED)
+                    }
+                }
+        }
+    }
+
+    fun requestStop() {
+        mutable.update { it.copy(recording = it.recording.copy(stopConfirmation = true)) }
+        worker.execute {
+            session?.requestStop()
+            publish()
+        }
+    }
+
+    fun cancelStop() {
+        mutable.update { it.copy(recording = it.recording.copy(stopConfirmation = false)) }
+        worker.execute {
+            session?.cancelStop()
+            publish()
+        }
+    }
+
+    fun confirmStop() {
+        if (!state.value.recording.stopConfirmation || !stopRequested.compareAndSet(false, true))
+            return
+        capture.stopReading()
+        worker.execute {
+            val current = session
+            if (current == null) {
+                if (access != null) {
+                    release()
+                    publishEmpty()
+                }
+                return@execute
+            }
+            try {
+                capture.stop()
+                capture.failure?.let {
+                    fail(it)
+                    return@execute
+                }
+                capture.drain(consume = current::accept)
+                current.requestStop()
+                mutable.update {
+                    it.copy(
+                        level = 0f,
+                        recording =
+                            current.state.copy(
+                                phase = RecordingPhase.FINALIZING,
+                                stopConfirmation = false,
+                            ),
+                    )
+                }
+                current.confirmStop()
+                publish()
+                release()
+            } catch (error: CaptureException) {
+                fail(error.failure)
+            } catch (_: Exception) {
+                failPersistence(AudioFailure.UNAVAILABLE)
+            }
+        }
+    }
+
+    fun serviceRejected() = worker.execute { fail(CaptureFailure.SERVICE_REJECTED) }
+
+    fun serviceDestroyed() = worker.execute {
+        servicePresent = false
+        servicePending = false
+        if (serviceActive) fail(CaptureFailure.SERVICE_DESTROYED)
+        if (awaitingServiceStop && !capture.hasLiveThread) {
+            awaitingServiceStop = false
+            starting.set(false)
+        }
+    }
+
+    private fun tick() {
+        if (shutdownUnconfirmed) {
+            if (!capture.hasLiveThread) terminate()
+            return
+        }
+        val current = session ?: return
+        if (!serviceActive || current.state.phase != RecordingPhase.RECORDING) return
+        try {
+            // A finite quantum guarantees queued commands run even under sustained storage load.
+            capture.drain(DRAIN_BLOCKS_PER_TICK, current::accept)
+            if (current.state.phase == RecordingPhase.INTERRUPTED) {
+                terminate()
+                return
+            }
+            capture.failure?.let {
+                fail(it)
+                return
+            }
+            if (availableBytes() < MINIMUM_FREE_BYTES) {
+                fail(CaptureFailure.STORAGE_FULL)
+                return
+            }
+            publish()
+        } catch (_: Exception) {
+            failPersistence(AudioFailure.UNAVAILABLE)
+        }
+    }
+
+    private fun fail(failure: CaptureFailure) {
+        mutable.update { it.copy(failure = failure) }
+        session?.interrupt()
+        terminate()
+    }
+
+    private fun failPersistence(reason: AudioFailure) {
+        session?.interrupt(reason)
+        mutable.update {
+            it.copy(
+                recording =
+                    it.recording.copy(
+                        phase = RecordingPhase.INTERRUPTED,
+                        persistenceFailure = reason,
+                    )
+            )
+        }
+        terminate()
+    }
+
+    private fun terminate() {
+        try {
+            capture.stop()
+        } catch (_: CaptureException) {
+            shutdownUnconfirmed = true
+            mutable.update {
+                it.copy(
+                    level = 0f,
+                    failure = CaptureFailure.THREAD_TIMEOUT,
+                    recording = it.recording.copy(phase = RecordingPhase.INTERRUPTED),
+                )
+            }
+            return
+        }
+        shutdownUnconfirmed = false
+        capture.drain {}
+        if (session == null)
+            mutable.update {
+                it.copy(recording = it.recording.copy(phase = RecordingPhase.INTERRUPTED))
+            }
+        publish()
+        release()
+    }
+
+    private fun release() {
+        check(!capture.hasLiveThread)
+        actionToken = null
+        mutable.update { it.copy(pausePending = false) }
+        val previous = access
+        access = null
+        previous?.close()
+        awaitingServiceStop = servicePresent || servicePending
+        serviceActive = false
+        if (!awaitingServiceStop) starting.set(false)
+        onTerminal?.invoke()
+    }
+
+    private fun publishEmpty() {
+        mutable.value = RecordingViewState(RecordingState(phase = RecordingPhase.EMPTY))
+        if (!awaitingServiceStop) starting.set(false)
+        onTerminal?.invoke()
+    }
+
+    private fun failBeforeStart(reason: CaptureFailure) {
+        actionToken = null
+        mutable.value =
+            RecordingViewState(RecordingState(phase = RecordingPhase.INTERRUPTED), failure = reason)
+        starting.set(false)
+    }
+
+    private fun publish() {
+        val current = session ?: return
+        maximumAppendNanos = current.maximumAppendNanos
+        val signal = capture.signal
+        val fresh = System.nanoTime() - signal.atNanos < SIGNAL_STALE_NANOS
+        mutable.update {
+            it.copy(
+                recording = current.state,
+                pausePending =
+                    pauseRequested.get() && current.state.phase == RecordingPhase.RECORDING,
+                signalAtNanos = signal.atNanos,
+                level =
+                    if (current.state.phase == RecordingPhase.RECORDING && fresh) signal.level
+                    else 0f,
+                route = capture.route,
+                shortReads = capture.shortReads,
+                readErrors = capture.readErrors,
+                captureThreadHealthy = capture.healthy,
+            )
+        }
+    }
+
+    companion object {
+        private const val UI_PERIOD_MILLIS = 50L
+        private const val DRAIN_BLOCKS_PER_TICK = 20
+        private const val SIGNAL_STALE_NANOS = 250_000_000L
+        private const val MINIMUM_FREE_BYTES = 16L * 1024 * 1024
+        private val ACTIVE_PHASES =
+            setOf(
+                RecordingPhase.PREPARING,
+                RecordingPhase.RECORDING,
+                RecordingPhase.PAUSED,
+                RecordingPhase.FINALIZING,
+            )
+
+        private fun id() = UUID.randomUUID().toString()
+    }
+}

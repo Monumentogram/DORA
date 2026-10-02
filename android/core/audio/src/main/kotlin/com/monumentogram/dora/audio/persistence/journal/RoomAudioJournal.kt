@@ -73,6 +73,16 @@ private constructor(
             uncertain = true
         }
     val catalog: EncryptedAudioCatalog = Catalog()
+
+    /** Bounded encrypted discovery; callers authenticate each source before describing audio. */
+    fun recordingCandidates(after: String): List<AudioIdentity> {
+        checkOpen()
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        return dao.recordingCandidates(binding.ownerId, binding.vaultId, after).map {
+            it.identity()
+        }
+    }
+
     val bootstrapJournal: RecoveryRunBootstrapJournal = BootstrapJournal()
     val microfileJournal: RecoveryMicrofileJournal = MicrofileJournal()
     val quarantineJournal: RecoveryQuarantineJournal = QuarantineJournal()
@@ -206,6 +216,11 @@ private constructor(
             val asset = exactAsset(identity) ?: return null
             if (dao.tombstone(asset.assetId) != null) return null
             val claims = dao.claims(asset.assetId)
+            // One lease still fences the complete snapshot. Bulk reads preserve every row
+            // invariant below while avoiding three SQLCipher round trips per historic unit.
+            val physical = dao.physicalSources(asset.assetId).associateBy { it.physicalId }
+            val manifests = dao.assetManifests(asset.assetId).associateBy { it.runId }
+            val microfiles = dao.assetMicrofiles(asset.assetId).associateBy { it.runId }
             var nextFrame = 0L
             claims.forEachIndexed { ordinal, row ->
                 check(
@@ -217,10 +232,7 @@ private constructor(
                 check(
                     Math.addExact(row.physicalFirstFrame, row.sourceFrameOffset) == row.firstFrame
                 )
-                check(
-                    dao.physical(asset.assetId, row.physicalId)?.physicalFirstFrame ==
-                        row.physicalFirstFrame
-                )
+                check(physical[row.physicalId]?.physicalFirstFrame == row.physicalFirstFrame)
                 canonical(row.runId)
                 canonical(row.physicalId)
                 nextFrame = Math.addExact(nextFrame, row.frames)
@@ -228,8 +240,8 @@ private constructor(
             val committed = claims.takeWhile { it.committed }
             check(claims.drop(committed.size).none { it.committed })
             val sources = committed.map { row ->
-                val manifest = checkNotNull(dao.manifest(row.runId))
-                val unit = checkNotNull(dao.microfile(row.runId))
+                val manifest = checkNotNull(manifests[row.runId])
+                val unit = checkNotNull(microfiles[row.runId])
                 validatePublication(row, unit.row(), manifest.row())
                 check(unit.manifestDigest == manifest.digest)
                 StoredAudioSegment(row.identity(identity), row.frames, manifest.digest.sha())

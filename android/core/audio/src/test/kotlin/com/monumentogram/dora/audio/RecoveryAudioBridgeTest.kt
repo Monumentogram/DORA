@@ -51,12 +51,29 @@ class RecoveryAudioBridgeTest {
             )
         f.quarantine.failRename = true
         assertEquals(AudioCompletion.PARTIAL_RECOVERED, read(f).second.completion)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.INCOMPLETE),
+            f.bridge.verifyContinuation(identity),
+        )
         assertEquals(AudioResult.Failed(AudioFailure.INCOMPLETE), f.bridge.finalize(identity))
         assertTrue(f.quarantine.rows.isNotEmpty())
         f.quarantine.failRename = false
         assertEquals(AudioResult.Failed(AudioFailure.INCOMPLETE), f.bridge.reconcile(identity))
         assertEquals(AudioResult.Value(Unit), f.bridge.reconcile(identity))
         assertEquals(AudioCompletion.FINALIZED, read(f).second.completion)
+    }
+
+    @Test
+    fun `strict continuation accepts complete unfinalized units but rejects finalized sources`() {
+        val f = AudioMemoryFixture()
+        f.bridge.create(identity)
+        append(f, first, 0, 0, byteArrayOf(1, 2))
+        assertTrue(f.bridge.verifyContinuation(identity) is AudioResult.Value)
+        assertEquals(AudioResult.Value(Unit), f.bridge.finalize(identity))
+        assertEquals(
+            AudioResult.Failed(AudioFailure.INCOMPLETE),
+            f.bridge.verifyContinuation(identity),
+        )
     }
 
     @Test
