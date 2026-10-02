@@ -14,6 +14,7 @@ import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
+import android.os.Trace
 import androidx.core.content.ContextCompat
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioIdentity
@@ -55,7 +56,13 @@ class RecordingController(
     private val mutable = MutableStateFlow(RecordingViewState())
     val state = mutable.asStateFlow()
     internal val latency =
-        RecordingLatency(context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
+        RecordingLatency(
+            context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0,
+            presentationTrace = { name ->
+                Trace.beginSection(name)
+                Trace.endSection()
+            },
+        )
     @Volatile private var timingOperation = 0L
     private var inputTimeNanos = 0L
     @Volatile private var lastAppendStages = emptyMap<String, Long>()
@@ -64,8 +71,20 @@ class RecordingController(
         inputTimeNanos = nanos
     }
 
-    fun rendered(snapshot: RecordingViewState) {
+    fun rendered(
+        snapshot: RecordingViewState,
+        window: Long = 0L,
+        screen: Long = 0L,
+        view: String = "",
+    ) {
         if (!latency.enabled) return
+        latency.presentation(
+            "draw",
+            window,
+            screen,
+            "o=${snapshot.timingOperation} p=${snapshot.recording.phase} " +
+                "a=${if (snapshot.pausePending) 1 else 0} b=${if (snapshot.resumePending) 1 else 0} $view",
+        )
         val operation = snapshot.timingOperation
         val kind = latency.kind(operation) ?: return
         val label =

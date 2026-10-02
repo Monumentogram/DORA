@@ -39,19 +39,22 @@
 
 - [x] Add a bounded instrumentation-only existing-vault/key receipt through the real target app; no production/exported authority route, no keys or audio emitted.
 - [x] Prove baseline existing-vault readback and aliases before the owner changes PIN.
-- [ ] Harden private per-operation input/state/frame correlation and fail-fast completeness. Smoke the collection pipeline before the full 30+30 campaign.
+- [x] Harden private per-operation input/state/frame correlation and fail-fast completeness. Fresh one-Pause/one-Resume smoke obtained both exact presentations; failed earlier smoke attempts remain retained outside acceptance.
 - [x] Only after implementation/build/review verification ask for the one owner-side Settings action; verify the same vault/aliases/readback afterwards or stop.
 
 ## Task 3: bounded successor governance and full verification
 
 - [x] Add sealed development successor contract, validators and negative tests; preserve immutable parent checks and prospective thresholds.
 - [x] Add OPEN DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE in backlog/status and Alpha closure admission.
-- [x] Full local JVM/414 Recovery/Python/stage gates/API28/API36/process-death/UI/lint/Detekt/format/dependencies/SBOM/native16KiB checks. Local JVM: 779 passed, one Windows symlink capability skip; Python: 384 passed. API28 and API36 each: 102 persistence/auth, six process-death phases and 15 UI checks passed. Bounded local audits passed; publication audit remains pending.
+- [x] Initial local JVM/414 Recovery/Python/stage gates/API28/API36/process-death/UI/lint/Detekt/format/dependencies/SBOM/native16KiB checks. Initial JVM: 779 passed, one Windows symlink capability skip; Python: 384 passed. API28 and API36 each: 102 persistence/auth, six process-death phases and 15 UI checks passed. Bounded local audits passed.
+- [x] Repeat local required gates after presentation-witness hardening: 781 JVM passed, one Windows symlink capability skip; 384 Python tests and 40 gates passed; six compiled gates passed; API28/API36 UI each 15 passed. Initial exact-SHA CI success does not certify this successor; new exact-SHA CI remains required.
 - [ ] Commit exact reviewed change, update existing draft PR94, run exact-SHA CI and inspect published logs/artifacts; no merge.
 
 ## Task 4: physical acceptance and qualified closure
 
 Pre-PIN and post-PIN selected-existing-recording readback passed on the dedicated physical device: five identical existing sources, 17,456,800 frames, and all 621 persistent wrapping-key identities/creation times unchanged. All 3,103 ciphertext files were byte-identical immediately across the owner-side Settings change, before reopening the application. This is selected-recording readback, not exhaustive historical-recording validation. Private receipts retain exact comparisons; no audio is published.
+
+Measurement ruling: POCO RenderThread may skip submission after a full UI-tree sync and subsequently submit the retained tree under a different native VSYNC ID. Equal main-thread/frame-timeline tokens are therefore insufficient. Content-free debug tracing now witnesses every actual status display-list write (including terminal states), window/screen/recording epochs, foreground/focus/input, mount/unmount, exact Float-bit geometry and scroll. The analyzer must prove uninterrupted state provenance through every intervening full sync to the explicit native buffer submission and actual display frame, or fail closed. This instrumentation changes no capture, authority or durability decisions. Failed smoke traces remain retained and are not acceptance samples.
 
 - [ ] New exact-SHA debug no-PIN preflight; mic OFF, correct opt-ins, existing vault intact.
 - [ ] 30 Pause and30 Resume with per-attempt exact presentation validation, rapid cycles, PAUSED/PENDING, Resume/priorPENDING and strict final SAVED.

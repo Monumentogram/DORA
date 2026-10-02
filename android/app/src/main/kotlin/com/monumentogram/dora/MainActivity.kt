@@ -21,6 +21,14 @@ import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 
 class MainActivity : ComponentActivity() {
+    internal var presentationWindow = 0L
+        private set
+
+    private var presentationForeground = false
+    private var presentationFocus = false
+    internal val presentationVisibility: String
+        get() = "f=${if (presentationForeground) 1 else 0} k=${if (presentationFocus) 1 else 0}"
+
     private val diagnosticFrame =
         object : Choreographer.FrameCallback {
             override fun doFrame(frameTimeNanos: Long) {
@@ -34,6 +42,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        presentationWindow =
+            (application as DoraApplication).recording.latency.newPresentationEpoch()
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         recordingAction.value =
             Triple(intent?.action, intent?.getStringExtra(ProductRecordingService.TOKEN), 0)
@@ -47,6 +57,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        presentationEvent("intent")
         setIntent(intent)
         recordingAction.value =
             Triple(
@@ -59,6 +70,11 @@ class MainActivity : ComponentActivity() {
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         val recording = (application as DoraApplication).recording
         if (!recording.latency.enabled) return super.dispatchTouchEvent(event)
+        recording.latency.presentation(
+            "input",
+            presentationWindow,
+            detail = "a=${event.actionMasked}",
+        )
         if (event.actionMasked == MotionEvent.ACTION_UP) {
             (application as DoraApplication)
                 .recording
@@ -79,13 +95,39 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        presentationForeground = true
+        presentationEvent("resume")
         if ((application as DoraApplication).recording.latency.enabled)
             Choreographer.getInstance().postFrameCallback(diagnosticFrame)
     }
 
     override fun onPause() {
+        presentationForeground = false
+        presentationEvent("pause")
         Choreographer.getInstance().removeFrameCallback(diagnosticFrame)
         super.onPause()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        presentationFocus = hasFocus
+        presentationEvent("focus")
+    }
+
+    override fun onDestroy() {
+        presentationEvent("destroy")
+        super.onDestroy()
+    }
+
+    private fun presentationEvent(event: String) {
+        (application as DoraApplication)
+            .recording
+            .latency
+            .presentation(
+                event,
+                presentationWindow,
+                detail = presentationVisibility,
+            )
     }
 
     private companion object {

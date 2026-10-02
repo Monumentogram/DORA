@@ -12,7 +12,7 @@ PARENT = '1fce758237942f03e35b6560b48a2f4983389eab'
 PARENT_TREE = '8168148095c6f413bbf9a0576a4acd3f9678e139'
 BRANCH = 'stage/8.3-instant-recording-controls'
 CONTRACT = 'docs/contracts/DORA_DEVELOPMENT_DEVICE_SECURITY_V0_1.json'
-CONTRACT_SHA256 = '3c0c34ba976eaf715eab3748010d865db78d1cc3d44cdfdaa162aa4796a1e7db'
+CONTRACT_SHA256 = '7d167f4fc37c46b440097505d4199ed8325e00369267bb61dbe47fd841ad9ca1'
 STATUS_HEADER = '## 2026-10-02 — Owner-authorized no-PIN development / Stage 8.3 remediation\n\n8.3 functional = PASS\n8.3 instant-control remediation = NOT_READY / PHYSICAL_ACCEPTANCE_PENDING\nADR-DEV-002 is a debug-only development exception; production authentication is not certified.\nDEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE = OPEN; blocks final/signed Alpha security acceptance.\nTracked checks: docs/security/DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE.json\nNew exact-SHA 30+30, vault continuity, CI, review and leak audit remain required.\n8.4 = NOT_STARTED\nStage 8 = IN_PROGRESS\n\n'
 LIMITS_MS = {'pause_ack': 100, 'pause_admission': 50, 'pause_native': 200, 'pause_confirmed': 250,
              'resume_ack': 100, 'resume_native': 150, 'resume_first_pcm': 300, 'resume_confirmed': 300}

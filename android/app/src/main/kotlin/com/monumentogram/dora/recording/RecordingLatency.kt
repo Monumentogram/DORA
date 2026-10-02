@@ -7,6 +7,7 @@ package com.monumentogram.dora.recording
  */
 internal class RecordingLatency(
     val enabled: Boolean,
+    private val presentationTrace: (String) -> Unit = {},
     private val now: () -> Long = System::nanoTime,
 ) {
     @Volatile var drawingFrameNanos: Long = 0
@@ -30,9 +31,23 @@ internal class RecordingLatency(
     private val entries = ArrayDeque<Entry>()
     private var sequence = 0L
     private var recordingOwner: String? = null
+    private var presentationEpoch = 0L
+    private var presentationOwner = 0L
+    private var presentationEvent = 0L
     private var appendStart: Long? = null
     private val spans = ArrayDeque<Pair<Long, Long>>()
     private val timers = ArrayDeque<Triple<Long, Long, Long>>()
+
+    @Synchronized fun newPresentationEpoch(): Long = if (enabled) ++presentationEpoch else 0L
+
+    /** Every status display-list write is witnessed, including terminal/unknown operations. */
+    @Synchronized
+    fun presentation(event: String, window: Long, screen: Long = 0L, detail: String = "") {
+        if (!enabled || window == 0L) return
+        presentationTrace(
+            "DORA_UI $event n=${++presentationEvent} w=$window s=$screen r=$presentationOwner $detail"
+        )
+    }
 
     @Synchronized
     fun appendEvent(event: String) {
@@ -103,6 +118,7 @@ internal class RecordingLatency(
     fun recordingStarted(owner: String) {
         retireDurability()
         recordingOwner = owner
+        if (enabled) presentationOwner++
     }
 
     @Synchronized

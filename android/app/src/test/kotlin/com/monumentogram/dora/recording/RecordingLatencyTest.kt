@@ -6,6 +6,38 @@ import org.junit.Test
 
 class RecordingLatencyTest {
     @Test
+    fun presentationWitnessRetainsAllStatesWithoutDrawCandidateLimit() {
+        val traces = mutableListOf<String>()
+        val timing = RecordingLatency(true, presentationTrace = traces::add)
+        val window = timing.newPresentationEpoch()
+        val screen = timing.newPresentationEpoch()
+        timing.recordingStarted("private-owner-never-traced")
+        repeat(40) { timing.presentation("draw", window, screen, "p=PAUSED") }
+        timing.presentation("draw", window, screen, "p=INTERRUPTED")
+        assertEquals(41, traces.size)
+        org.junit.Assert.assertTrue(traces.last().contains("n=41"))
+        org.junit.Assert.assertTrue(traces.last().contains("p=INTERRUPTED"))
+        org.junit.Assert.assertTrue(traces.all { it.contains("w=1 s=2 r=1") })
+        assertFalse(traces.any { it.contains("private-owner") })
+    }
+
+    @Test
+    fun disabledWitnessCannotEmitAndEpochsChangeOnNewOwners() {
+        val traces = mutableListOf<String>()
+        val disabled = RecordingLatency(false, presentationTrace = traces::add)
+        assertEquals(0L, disabled.newPresentationEpoch())
+        disabled.presentation("draw", 1, 2, "p=PAUSED")
+        assertEquals(0, traces.size)
+        val active = RecordingLatency(true, presentationTrace = traces::add)
+        active.recordingStarted("first")
+        active.presentation("mount", active.newPresentationEpoch(), active.newPresentationEpoch())
+        active.recordingStarted("second")
+        active.presentation("mount", active.newPresentationEpoch(), active.newPresentationEpoch())
+        org.junit.Assert.assertTrue(traces[0].contains("w=1 s=2 r=1"))
+        org.junit.Assert.assertTrue(traces[1].contains("w=3 s=4 r=2"))
+    }
+
+    @Test
     fun latePauseCannotReattachDurabilityAfterRecordingRetires() {
         val timing = RecordingLatency(true) { 100L }
         timing.recordingStarted("old")
