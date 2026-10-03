@@ -7,6 +7,50 @@ from vad_admission import build
 
 
 class VadArtifactAdmissionTests(unittest.TestCase):
+    def test_closure_cannot_invent_physical_execution_or_unbind_custody(self):
+        import json
+        from pathlib import Path
+        root=Path(gate.__file__).resolve().parents[1]/'docs/evidence/vad-8.4-closure'
+        values=[json.loads((root/n).read_text()) for n in ('supply-chain.json','retrieval.json','runtime-smoke.json')]
+        gate.validate_closure_data(*values)
+        for index,key,value in ((1,'aarSha256','0'*64),(1,'originalBuildOutputUsed',True),
+                                (1,'physicalRuntimeProved',True),(2,'harnessInstalled',False),
+                                (2,'repositoryDisposition','PASS'),(2,'installedApkSha256','0'*64),
+                                (2,'unexpectedNonPlatformLibraries',['libpiper.so']),
+                                (2,'nativeFilesOnDeviceMatchedPackagedHashes',False),
+                                (2,'crashBufferErrors',1),(2,'processAbsentAfterCleanup',False),
+                                (2,'campaignStartsFromStoppedProcess',False)):
+            changed=copy.deepcopy(values);changed[index][key]=value
+            with self.assertRaises(ValueError):gate.validate_closure_data(*changed)
+        for key,value in (('samePid',False),('freshReceiptAfterDeletion',False),('totalPssKiB',0)):
+            changed=copy.deepcopy(values);changed[2]['runs'][0][key]=value
+            with self.assertRaises(ValueError):gate.validate_closure_data(*changed)
+        for key,value in (('closed',False),('initialized',False),('resetToSilence',False),
+                          ('speechPositiveWindows',0),('silencePositiveWindows',1),('modelSha256','0'*64)):
+            changed=copy.deepcopy(values);changed[2]['runs'][0]['runtime'][key]=value
+            with self.assertRaises(ValueError):gate.validate_closure_data(*changed)
+
+    def test_custody_identity_and_mutability_are_explicit(self):
+        from vad_admission import custody
+        manifest=custody.base_manifest()
+        custody.validate_manifest(manifest)
+        for key,value in (('version','1.13.8-dora.2'),('sha256','0'*64),('bytes',1)):
+            changed=copy.deepcopy(manifest);changed['artifact'][key]=value
+            with self.assertRaises(ValueError):custody.validate_manifest(changed)
+        for key,value in (('public',True),('ownerCanModifyOrDelete',False),('ciCredentialsGranted',True),('overwriteAllowed',True)):
+            changed=copy.deepcopy(manifest);changed['custody'][key]=value
+            with self.assertRaises(ValueError):custody.validate_manifest(changed)
+
+    def test_custody_retrieval_rejects_size_hash_and_unknown_inventory(self):
+        from vad_admission import custody
+        data=b'synthetic metadata only'
+        import hashlib
+        identity={'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+        custody.verify_bytes(data,identity)
+        for bad in (data+b'!',b'X'+data[1:]):
+            with self.assertRaises(ValueError):custody.verify_bytes(bad,identity)
+        with self.assertRaises(ValueError):build.check_aar_entries(build.AAR_ENTRIES|{'assets/unexpected.pcm'})
+
     def test_recovery_admission_requires_exact_branch_and_full_tree_gate(self):
         from types import SimpleNamespace
         from unittest.mock import patch

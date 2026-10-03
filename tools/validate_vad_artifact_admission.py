@@ -19,6 +19,9 @@ PATHS = {PREFIX + name for name in ('README.md','candidate.json','license-invent
 PATHS.add('docs/adr/ADR-VAD-001-isolated-vad-only-runtime-admission.md')
 PATHS.add('.gitattributes')
 PATHS.add('tools/validate_poc_recovery_governance.py')
+CLOSURE_PREFIX = 'docs/evidence/vad-8.4-closure/'
+PATHS |= {CLOSURE_PREFIX + n for n in ('README.md','supply-chain.json','retrieval.json','runtime-smoke.json')}
+PATHS.add('tools/vad_admission/custody.py')
 NOTICE_ATTRIBUTE = '\n# Preserve the exact isolated VAD candidate attribution bytes.\ndocs/evidence/vad-8.4-remediation/NOTICE.txt -text\ntools/vad_admission/SmokeActivity.java text eol=lf\n'
 
 
@@ -137,4 +140,77 @@ def validate_successor(root):
                 'Rebuild recipe digest does not match the artifact receipt')
     require(record['artifact']['sha256']==inputs['artifactInventory']['artifact']['sha256'],'Candidate AAR identity mismatch')
     require(record['artifact']['bytes']==inputs['artifactInventory']['artifact']['bytes'],'Candidate AAR length mismatch')
+    manifest,retrieval,runtime=[json.loads((root/CLOSURE_PREFIX/n).read_text(encoding='utf-8'))
+                              for n in ('supply-chain.json','retrieval.json','runtime-smoke.json')]
+    validate_closure_data(manifest,retrieval,runtime)
+    recipes={n:hashlib.sha256((root/'tools/vad_admission'/n).read_bytes()).hexdigest()
+             for n in ('build.py','CMakeLists.txt')}
+    require(manifest['buildRecipeFiles']==recipes and manifest['buildRecipeSha256']==
+            hashlib.sha256(json.dumps(recipes,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
+            'Custody recipe identity mismatch')
+    for field,path in (('noticeSha256','NOTICE.txt'),('sbomSha256','sbom.cdx.json')):
+        require(manifest[field]==hashlib.sha256((root/PREFIX/path).read_bytes()).hexdigest(),
+                'Custody NOTICE/SBOM identity mismatch')
     return PATHS | HISTORICAL
+
+
+def validate_closure_data(manifest,retrieval,runtime):
+    from vad_admission import custody
+    custody.validate_manifest(manifest)
+    require(manifest['repositoryBaseline']=='7b3a4b494df0c1d18c8f7bcd8e064c21393ea040', 'Wrong closure baseline')
+    require(manifest['historicalRevisionRetentionGuaranteed'] is False,'Drive revision retention is not WORM')
+    require(manifest['recoveryKit']=={'fileId':'1JrGUbWRJYIGpGQY5cgYsSzENlhNOjsY_',
+            'name':'vad-runtime-recovery-kit-v1.zip','bytes':653358,
+            'sha256':'a8be2542f96dbff97e09ff8a9e34070021bd514b636e9d1ec84c54cdc39a9e21'},'Recovery kit identity drift')
+    require(retrieval['status']=='PASS_PRIVATE_OWNER_RETRIEVAL_AND_HARNESS_CONSUMPTION'
+            and retrieval['aarFileId']==manifest['custody']['fileId']
+            and retrieval['aarBytes']==manifest['artifact']['bytes']
+            and retrieval['aarSha256']==manifest['artifact']['sha256']
+            and retrieval['modelSha256']==manifest['sileroSha256'],'Retrieval candidate identity drift')
+    require(retrieval['originalBuildOutputUsed'] is False and retrieval['physicalRuntimeProved'] is False
+            and retrieval['storageEnforcedNoOverwrite'] is False
+            and retrieval['ciPrivateArtifactRetrieval']=='NOT_ENABLED','Retrieval scope inflated')
+    require(retrieval['permissionsReadback']=={'shared':False,'roles':['owner'],'publicOrDomainGrant':False},
+            'Private custody permissions not established')
+    kit=retrieval['recoveryKitRetrieval']
+    require(kit['source']=='AUTHENTICATED_GOOGLE_DRIVE_FETCH' and kit['result']=='PASS'
+            and kit['bytes']==manifest['recoveryKit']['bytes'] and kit['sha256']==manifest['recoveryKit']['sha256']
+            and kit['indexedFilesVerified']==14,'Recovery kit retrieval not verified')
+    require(runtime['status']=='PASS_BOUNDED_SAME_PROCESS_RUNTIME_SMOKE'
+            and runtime['repositoryDisposition']=='PENDING_FINAL_PUBLICATION'
+            and runtime['harnessInstalled'] is True
+            and runtime['installedApkSha256']==retrieval['harnessApkSha256']==
+            '3f3b20e4c09068ba276bf747dda6734a837d3349f90ef7f1ae277f5b2946b756'
+            and runtime['microphoneUsed'] is False and runtime['productionIntegration'] is False,
+            'Physical receipt identity or scope drift')
+    require(runtime['aarSha256']==manifest['artifact']['sha256'] and runtime['modelSha256']==manifest['sileroSha256'],
+            'Executed runtime/model identity drift')
+    require(runtime['installation']['exitCode']==0 and 'Success' in runtime['installation']['output']
+            and runtime['installationHistory']['harnessInstalled'] is False,
+            'Installation success or historical blocker lost')
+    native={'libonnxruntime.so':'33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1',
+            'libsherpa-onnx-jni.so':'2e7412da436e02b705cea92d6fe6e3d2f2bf97a483b12d9ae2cc65ad6b723cc7'}
+    require(runtime['packagedNativeSha256']==native
+            and runtime['loadedCandidateLibraries']==sorted(native)
+            and runtime['nativeFilesOnDeviceMatchedPackagedHashes'] is True
+            and runtime['unexpectedNonPlatformLibraries']==[]
+            and runtime['crashBufferErrors']==0 and runtime['processAbsentAfterCleanup'] is True,
+            'Native dependency, crash or cleanup evidence mismatch')
+    require(runtime['campaignStartsFromStoppedProcess'] is True
+            and runtime['initializationReleaseCycles']==6 and len(runtime['runs'])==6
+            and runtime['inferenceWindowsPerCycle']==572,'Incomplete bounded campaign')
+    for index,run in enumerate(runtime['runs']):
+        require(run['index']==index and run['samePid'] is True and run['freshReceiptAfterDeletion'] is True,
+                'Stale receipt or process identity gap')
+        result=run['runtime']
+        expected={'sherpaVersion':'1.13.8','upstreamEmbeddedGitLabel':'8c8e275d','onnxruntimeVersion':'1.28.2',
+                  'abi':'arm64-v8a','api':34,'modelSha256':manifest['sileroSha256'],
+                  'runtimeAarSha256':manifest['artifact']['sha256'],'initialized':True,
+                  'silenceWindows':100,'silencePositiveWindows':0,'speechWindows':372,
+                  'speechPositiveWindows':262,'speechSegments':3,'resetToSilence':True,
+                  'loadedCandidateLibraries':sorted(native),'closed':True,
+                  'fixtureSha256':'1e83d3eb15660d4776c3497d61e9d8a718a0be5a4c0ec780f1a0b042efda25a7',
+                  'result':'PASS_ISOLATED_RUNTIME_SMOKE'}
+        require(result==expected,'Frozen physical receipt changed')
+        require(all(type(run[k]) is int and run[k]>0 for k in ('totalPssKiB','fdCount','threadCount')),
+                'Missing bounded resource observations')
