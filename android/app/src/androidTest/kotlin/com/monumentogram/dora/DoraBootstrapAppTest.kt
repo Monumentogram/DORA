@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.monumentogram.dora.audio.recording.RecordingPhase
@@ -201,6 +202,10 @@ class DoraBootstrapAppTest {
             .onNodeWithContentDescription("Я предупредил(а) участников о записи")
             .assertIsDisplayed()
         composeRule.onNodeWithText("Отмена").assertIsDisplayed()
+        composeRule
+            .onNodeWithText("Разблокировать сохранённые записи")
+            .performScrollTo()
+            .assertIsEnabled()
         composeRule.runOnIdle {
             org.junit.Assert.assertFalse(
                 (composeRule.activity.application as DoraApplication)

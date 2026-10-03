@@ -23,6 +23,7 @@ import com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest.Compa
 import com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest.Companion.reference
 import com.monumentogram.dora.audio.recording.RecordingCompletionState
 import com.monumentogram.dora.audio.recording.RecordingPhase
+import com.monumentogram.dora.audio.recording.RecordingSegmentation
 import com.monumentogram.dora.audio.recording.RecordingSession
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
@@ -32,10 +33,16 @@ import com.monumentogram.dora.vad.FrameRange
 import com.monumentogram.dora.vad.SegmentationProfile
 import com.monumentogram.dora.vad.SegmentationReducer
 import com.monumentogram.dora.vad.SemanticEvent
+import com.monumentogram.dora.vad.VadEngine
+import com.monumentogram.dora.vad.VadEngineFactory
+import com.monumentogram.dora.vad.VadException
+import com.monumentogram.dora.vad.VadFailure
 import com.monumentogram.dora.vad.VadObservation
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -182,6 +189,7 @@ class LogicalRecoveryProcessDeathTest {
                     }
                 var session = RecordingSession(audio, writer)
                 assertTrue(session.start())
+                val failingVad = if (phase == "VAD_DEGRADED") failingVad(session) else null
                 try {
                     if (phase == "OPEN_BEFORE_PCM") armed = true
                     session.accept(ByteArray(160000) { 7 })
@@ -241,18 +249,25 @@ class LogicalRecoveryProcessDeathTest {
                             checkpoint(phase)
                         }
                         phase == "VAD_DEGRADED" -> {
-                            success(
-                                writer.segmentation(
-                                    audio,
-                                    SegmentationMetadata(
-                                        SegmentationKind.DEGRADED,
-                                        id(99),
-                                        0,
-                                        80000,
-                                        reason = "INFERENCE_FAILED",
-                                        degraded = true,
-                                    ),
-                                )
+                            val (segmentation, worker) = checkNotNull(failingVad)
+                            segmentation.accept(ByteArray(32000) { 7 }, 0)
+                            worker.submit {}.get(10, TimeUnit.SECONDS)
+                            segmentation.drain()
+                            worker.shutdown()
+                            assertTrue(
+                                segmentation.diagnostics().contains("vadFailure=INFERENCE_FAILED")
+                            )
+                            assertTrue(
+                                metadata(vault, audio).any {
+                                    it.kind == SegmentationKind.DEGRADED &&
+                                        it.reason == "INFERENCE_FAILED" &&
+                                        it.degraded
+                                }
+                            )
+                            assertTrue(
+                                metadata(vault, audio).none {
+                                    it.kind == SegmentationKind.SEMANTIC_CLOSE
+                                }
                             )
                             checkpoint(phase)
                         }
@@ -275,6 +290,23 @@ class LogicalRecoveryProcessDeathTest {
                 }
                 assertTrue("Required phase not reached: $phase", reached)
             }
+        }
+
+        private fun failingVad(
+            session: RecordingSession
+        ): Pair<RecordingSegmentation, ExecutorService> {
+            val worker = Executors.newSingleThreadExecutor()
+            val factory = VadEngineFactory {
+                object : VadEngine {
+                    override fun probability(samples: FloatArray): Float =
+                        throw VadException(VadFailure.INFERENCE_FAILED)
+
+                    override fun reset() = Unit
+
+                    override fun close() = Unit
+                }
+            }
+            return RecordingSegmentation(session, factory, worker) to worker
         }
 
         // Keep the ordered fault scenario and its assertions together for review.

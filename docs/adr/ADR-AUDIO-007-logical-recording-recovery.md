@@ -60,6 +60,9 @@ Recovery never constructs a provisional final reference. Resume reauthenticates
 the same RecordingId/AudioAssetId/session, starts a new capture epoch and VAD
 state, and requires explicit participant acknowledgement and microphone permission.
 Discovery performs no microphone or playback action. Deletion and revocation win.
+Cold preflight exposes an explicit saved-recordings unlock action through the
+existing app-lock authority; successful unlock automatically starts discovery.
+The action does not request microphone permission or create a capture session.
 
 ## Tail-loss contract
 

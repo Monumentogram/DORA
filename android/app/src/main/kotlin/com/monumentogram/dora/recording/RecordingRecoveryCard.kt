@@ -76,6 +76,13 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         }
     }
     LaunchedEffect(authorized) { if (authorized) load() }
+    if (!authorized) {
+        Text("Сохранённые записи защищены. Разблокируйте DORA для восстановления.")
+        Button(onClick = { app.audioRuntime.requestRecordingUiUnlock(activity) {} }) {
+            Text("Разблокировать сохранённые записи")
+        }
+        return
+    }
     TextButton(enabled = authorized && !loading, onClick = { load() }) {
         Text(if (loading) "Проверяем сохранение…" else "Проверить сохранённые записи")
     }
