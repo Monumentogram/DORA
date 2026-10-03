@@ -18,6 +18,7 @@ PATHS = {PREFIX + name for name in ('README.md','candidate.json','license-invent
     'tools/test_development_device_security.py'}
 PATHS.add('docs/adr/ADR-VAD-001-isolated-vad-only-runtime-admission.md')
 PATHS.add('.gitattributes')
+PATHS.add('tools/validate_poc_recovery_governance.py')
 NOTICE_ATTRIBUTE = '\n# Preserve the exact isolated VAD candidate attribution bytes.\ndocs/evidence/vad-8.4-remediation/NOTICE.txt -text\ntools/vad_admission/SmokeActivity.java text eol=lf\n'
 
 

@@ -7,6 +7,25 @@ from vad_admission import build
 
 
 class VadArtifactAdmissionTests(unittest.TestCase):
+    def test_recovery_admission_requires_exact_branch_and_full_tree_gate(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        import validate_poc_recovery_governance as recovery
+        import validate_encrypted_persistence as persistence
+        lifecycle=SimpleNamespace(branch=gate.BRANCH,head='a'*40)
+        anchor=SimpleNamespace(commit='b'*40,is_ancestor_of_head=True)
+        with patch.object(persistence,'validate_checkout') as check, \
+             patch.object(recovery,'collect_pinned_commit_identity',return_value=anchor), \
+             patch.object(recovery,'validate_rec_clean_integrated_anchor') as historical:
+            self.assertTrue(recovery.rec_clean_integrated_candidate(lifecycle))
+            check.assert_called_once_with(recovery.ROOT)
+            historical.assert_called_once()
+        with patch.object(persistence,'validate_checkout',side_effect=ValueError('Unapproved tree')):
+            with self.assertRaisesRegex(ValueError,'Unapproved tree'):
+                recovery.rec_clean_integrated_candidate(lifecycle)
+        lifecycle.branch=gate.BRANCH+'-unapproved'
+        self.assertFalse(recovery.rec_clean_integrated_candidate(lifecycle))
+
     def test_substituted_aar_rejected_before_harness(self):
         import tempfile
         from pathlib import Path

@@ -50,13 +50,14 @@
     "docs/evidence/vad-8.4-remediation/runtime-smoke.json": "cb927f2322048db2c2e41b460a084aabf0efd94a1b48e70432d6db3fc9d31583",
     "docs/evidence/vad-8.4-remediation/sbom.cdx.json": "2f36acf2b71a6e52c79f4a9b533a063a2acd210065eaabf00922baddd62963e2",
     "tools/test_development_device_security.py": "97ffa2d81d113c0df3276064ea0b04a5a09e711821679de613e6ded9b6c870ee",
-    "tools/test_vad_artifact_admission.py": "19e24e197e07a2574d287d8ab78e72021795418110508feee96d96784be2183b",
+    "tools/test_vad_artifact_admission.py": "30c2a19e0826fe6e067633161f4efa9c9588136a294bc2829e4df5327982c806",
     "tools/vad_admission/AndroidManifest.xml": "8eda970315dd9374a5e09a78c1ed02ce9749198030a9ef7f3bb8a53a68aa85c4",
     "tools/vad_admission/CMakeLists.txt": "14e54685f337c08deb7a27b7a4e52c94d0704ff2d70cc922143b0a1893bb7888",
     "tools/vad_admission/SmokeActivity.java": "d9634b9a7d770320dca9716586bcd4867116ac53a41132c2cd49d24605a562bd",
     "tools/vad_admission/build.py": "80d0163bea41b3b081bfb1e95a8ef1961eb074a6933f95007d48a8dd90979891",
     "tools/validate_development_device_security.py": "4a737bc6a564688c8c6e321daff16b00aad0ddae42ca62d30a93dd939132dc23",
+    "tools/validate_poc_recovery_governance.py": "e66f53d8ebf90f1e52e619cbc88294d5a9210cd4bd280026a4276260e43e80a8",
     "tools/validate_recording_alpha_acceptance.py": "a0dc2b883b747a9d14cebe1f32bba18a499437733d01f537efabdbf0fce80c21",
-    "tools/validate_vad_artifact_admission.py": "f7a76899b3d619d9b321b069525026bd6f9a71a6e14ba4857a3eff8ec0a02f1c"
+    "tools/validate_vad_artifact_admission.py": "6ce8415b3d92ecfdff2d4e8145eecb3f9fd0f1282d5544ff0d4f8a49f7587f07"
   }
 }
