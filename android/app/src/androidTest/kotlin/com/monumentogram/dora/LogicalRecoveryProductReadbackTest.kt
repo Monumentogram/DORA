@@ -59,7 +59,11 @@ class LogicalRecoveryProductReadbackTest {
                     }
                 }
                 check(done.await(30, TimeUnit.SECONDS))
-                val session = (opened.get() as AudioAvailability.Available).session
+                val available = opened.get()
+                check(available is AudioAvailability.Available) {
+                    "Existing vault unavailable: $available"
+                }
+                val session = available.session
                 val identity =
                     existingIdentities(session).single { identityHash(it) == expectedIdentity }
                 val snapshot = exactRecovery(session, identity)

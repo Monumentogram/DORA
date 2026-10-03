@@ -5,7 +5,7 @@
   "files": {
     ".github/workflows/android-ci.yml": "4e54d152e8d418a63e8e5b6e5e73aa66f2cb2ea971378d6cfeb2fcbe30d03918",
     "android/app/src/androidTest/kotlin/com/monumentogram/dora/DevelopmentVaultContinuityTest.kt": "87f365904111d458534c178addf50d47cbad70d0bf7b4ebfca19f63e8f01bed1",
-    "android/app/src/androidTest/kotlin/com/monumentogram/dora/LogicalRecoveryProductReadbackTest.kt": "845df76f014b4d7e67c89f74305ddce19b0a099a797bafedfe415c1d949e3d62",
+    "android/app/src/androidTest/kotlin/com/monumentogram/dora/LogicalRecoveryProductReadbackTest.kt": "76778479fda21dcb99a075744b5c538ae3f46aabd594571aec32984f6e43db5d",
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingRecoveryCard.kt": "d179517356f39fe81a2e3440124392804fb4d9aba7d8e0d51923d96120f0ddf4",
     "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/LogicalRecoveryProcessDeathTest.kt": "b4a7a3b352d6a655ea3ea943d570604ffe27ddcb282b850f42d0a24c15351a85",
     "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/LogicalRecoveryRuntimeTest.kt": "6f1ab3e8830bf93a5104af5ae0c543ecbce388e1d8b272543d53d5f207772f49",
