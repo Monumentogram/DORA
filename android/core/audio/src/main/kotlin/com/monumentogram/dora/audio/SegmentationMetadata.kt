@@ -4,6 +4,10 @@ import com.monumentogram.dora.vad.SegmentationProfile
 import com.monumentogram.dora.vad.VadFailure
 import java.util.UUID
 
+/** Persisted segmentation decoding failed; does not classify canonical audio as unavailable. */
+internal class InvalidSegmentationMetadata :
+    IllegalArgumentException("INVALID_SEGMENTATION_METADATA")
+
 enum class SegmentationKind {
     TECHNICAL_OPEN,
     TECHNICAL_CLOSE,

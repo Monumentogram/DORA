@@ -72,6 +72,14 @@ private constructor(
 ) : RuntimeVault {
     @Volatile private var closed = false
 
+    override val logicalRecordings: com.monumentogram.dora.audio.logical.LogicalRecordingPort
+        get() =
+            com.monumentogram.dora.audio.logical.AuthenticatedLogicalRecordings(originals) {
+                reference,
+                after ->
+                journal.segmentationPage(reference.identity, after)
+            }
+
     override fun recordingRecoveryPage(after: String): AudioResult<List<RecordingRecovery>> =
         operation {
             val entries = mutableListOf<RecordingRecovery>()

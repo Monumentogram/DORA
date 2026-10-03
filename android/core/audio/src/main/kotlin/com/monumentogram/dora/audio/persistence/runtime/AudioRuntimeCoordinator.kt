@@ -28,6 +28,12 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal interface RuntimeVault : AutoCloseable {
+    val logicalRecordings: com.monumentogram.dora.audio.logical.LogicalRecordingPort
+        get() =
+            com.monumentogram.dora.audio.logical.LogicalRecordingPort {
+                AudioResult.Failed(AudioFailure.UNAVAILABLE)
+            }
+
     fun recordingRecoveryPage(
         after: String
     ): AudioResult<List<com.monumentogram.dora.audio.recording.RecordingRecovery>> =
@@ -220,6 +226,10 @@ internal class AudioRuntimeCoordinator(
         val vault: RuntimeVault,
         val authorization: AppLockSession.Authorization,
     ) : ProductAudioSession {
+        override val logicalRecordings =
+            com.monumentogram.dora.audio.logical.LogicalRecordingPort { reference ->
+                invoke { logicalRecordings.read(reference) }
+            }
         override val originals =
             object : OriginalAudioPort {
                 override fun acquire(identity: AudioIdentity) = invoke {

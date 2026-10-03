@@ -1,3 +1,12 @@
+## 2026-10-03 — Stage 8.4C logical recording and technical chunks
+
+8.4C = PENDING_FINAL_PUBLICATION
+8.3 / 8.4 = accepted predecessor PASS (external receipts).
+8.5 = NOT_STARTED; Stage 8 = IN_PROGRESS.
+One RecordingId, one exact OriginalAudioReference and one authorization unit across technical chunks.
+See ADR-AUDIO-006; no Cloud implementation, PCM copies, schema change or VAD/profile changes.
+PERF-REC-001 remains deferred/non-blocking; DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE remains OPEN.
+
 ## 2026-10-03 — Owner acceptance of Stage 8.3 responsiveness for Alpha
 
 Current governance disposition: ACCEPTED_FOR_ALPHA / INSTANT_CONTROL_FUNCTIONALLY_RESOLVED.

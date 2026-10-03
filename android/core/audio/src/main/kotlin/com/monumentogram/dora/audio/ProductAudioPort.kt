@@ -178,6 +178,12 @@ enum class AudioDeletionCategory {
  * failed extraction invalidates the whole attempt, including earlier callbacks.
  */
 interface ProductAudioSession {
+    val logicalRecordings: com.monumentogram.dora.audio.logical.LogicalRecordingPort
+        get() =
+            com.monumentogram.dora.audio.logical.LogicalRecordingPort {
+                AudioResult.Failed(AudioFailure.UNAVAILABLE)
+            }
+
     val originals: OriginalAudioPort
     val writer: ProductAudioWriterPort
     val reader: ProductAudioReaderPort
