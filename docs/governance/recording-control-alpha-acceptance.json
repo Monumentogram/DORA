@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-03",
+  "decision_id": "ADR-PERF-001",
+  "owner_decision": "The original product defect, where Pause/Resume visibly took about 1.5–2.2 seconds, is considered resolved for Alpha.\n\nCurrent remaining latency variance of roughly 10–15 ms around the previously frozen presentation thresholds is accepted for Alpha because no material user-visible defect has been demonstrated and further production optimization currently has an unfavorable risk/reward profile.\n\nThe historical strict thresholds remain factual historical criteria and are not retroactively declared passed.\n\nFurther micro-latency optimization is deferred to a separate performance-hardening activity.",
+  "product_source_sha": "1272ea212308eeb8cb9b27e81aa35bf939967d8f",
+  "disposition": "ACCEPTED_FOR_ALPHA / INSTANT_CONTROL_FUNCTIONALLY_RESOLVED",
+  "remediation": "OWNER_ACCEPTED_FOR_ALPHA",
+  "historical_strict_gate": "NOT_READY / PHYSICAL_INSTANT_CONTROL_GATE_FAILED",
+  "strict_gate_technically_passed": false,
+  "historical_limits_ms": {
+    "pause_ack": 100,
+    "pause_admission": 50,
+    "pause_native": 200,
+    "pause_confirmed": 250,
+    "resume_ack": 100,
+    "resume_native": 150,
+    "resume_first_pcm": 300,
+    "resume_confirmed": 300
+  },
+  "evidence": {
+    "original_pause_delay_seconds": [
+      1.5,
+      2.2
+    ],
+    "architecture": "Capture Pause independent of encrypted tail durability; final SAVED remains strict.",
+    "observed_resume_ack_ms": [
+      111.615912,
+      113.712836
+    ],
+    "observed_paused_present_ms": [
+      250.722837,
+      258.863069
+    ],
+    "diagnostic_verdict": "DIAGNOSIS / INSUFFICIENT_EVIDENCE",
+    "exact_remaining_cause_proven": false,
+    "material_user_visible_variance_demonstrated": false,
+    "current_read_only_display_mode_hz": 60,
+    "display_mode_scope": "Current read-only check, not proof of constant mode throughout historical campaign.",
+    "problematic_main_frame_wall_ms": 31.452231,
+    "recomposition_wall_ms": 12.777615,
+    "layout_measure_wall_ms": 10.734231,
+    "timings_scope": "Historical partial campaign; not complete 30+30, not fresh 10+10, not full-campaign p95.",
+    "security_scope": "Owner-authorized debug no-PIN latency evidence; not production authentication acceptance.",
+    "problematic_historical_frames": [
+      {
+        "kind": "resume",
+        "attempt": 2,
+        "status_draw_witness_ms": 34.534451,
+        "native_submission_ms": 42.392912,
+        "presented_ms": 111.615912
+      },
+      {
+        "kind": "pause",
+        "attempt": 3,
+        "status_draw_witness_ms": 189.574529,
+        "native_submission_ms": 196.125991,
+        "presented_ms": 250.722837
+      },
+      {
+        "kind": "resume",
+        "attempt": 3,
+        "status_draw_witness_ms": 45.26099,
+        "native_submission_ms": 52.156606,
+        "presented_ms": 113.712836
+      },
+      {
+        "kind": "pause",
+        "attempt": 5,
+        "status_draw_witness_ms": 182.280377,
+        "native_submission_ms": 202.888608,
+        "presented_ms": 258.863069
+      }
+    ]
+  },
+  "performance_item": {
+    "id": "PERF-REC-001",
+    "title": "Pause/Resume presentation micro-latency hardening",
+    "status": "DEFERRED_AFTER_ALPHA_ACCEPTANCE",
+    "blocks_alpha": false,
+    "scheduled_in_stage_8_4": false
+  },
+  "stages": {
+    "8.3": "PASS / functional recording controls",
+    "8.4": "NOT_STARTED",
+    "8.4_readiness": "READY_TO_START_AFTER_PUBLICATION",
+    "8": "IN_PROGRESS"
+  },
+  "security_restoration_blocker": "OPEN",
+  "publication_receipt": "External, after pushed SHA, required CI, consistency review and Sheet readback.",
+  "retained_private_evidence_sha256": {
+    "FINAL-REPORT.json": "34403b46d3e9d21d0983b7c6f9374e7890e2e71a9b2a02d07da460d22468fd04",
+    "POST-PUBLICATION-RECEIPT.json": "c46cc5957cc6ad99766c90b003d48e443e7208e9036227b77cbbd81af9bb9a1b",
+    "analysis.json": "8148d8ba396deb3a3025c84d0fd77b6dd9e28d3a03003df9015961a5ea966042"
+  }
+}

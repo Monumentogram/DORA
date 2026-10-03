@@ -6,7 +6,6 @@ package com.monumentogram.dora.audio.persistence.runtime
 
 import android.app.Activity
 import android.app.Application
-import android.app.KeyguardManager
 import android.os.Handler
 import android.os.Looper
 import com.monumentogram.dora.audio.AudioFailure
@@ -96,11 +95,10 @@ internal class AndroidRecordingAccessManager(
                 completion(AudioResult.Failed(AudioFailure.LOCKED))
                 return
             }
-        val keyguard = application.getSystemService(KeyguardManager::class.java)
         val authority =
             RecordingAuthority(
                 foreground::requireActive,
-                { keyguard.isDeviceSecure && epoch == requestEpoch },
+                { appLock.deviceSecurity.credentialAvailable() && epoch == requestEpoch },
                 foreground::withPlaintextDelivery,
             )
         currentAuthority = authority

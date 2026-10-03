@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "PENDING_FINAL_PUBLICATION",
+  "parent_sha": "3e1603dbad9083977b1e08b6a5cce9a52de2148d",
+  "physical_acceptance": "PENDING_REAL_AUTHORIZATION_AND_30_PAUSE_30_RESUME",
+  "prospective_limits_ms": {
+    "pause_ack": 100,
+    "pause_admission": 50,
+    "pause_native": 200,
+    "pause_confirmed": 250,
+    "resume_ack": 100,
+    "resume_native": 150,
+    "resume_first_pcm": 300,
+    "resume_confirmed": 300
+  },
+  "local_regression": {
+    "jvm": 644,
+    "recovery_subset": 414,
+    "python": 379,
+    "source_gates": 38,
+    "compiled_gates": 6,
+    "api28": {
+      "persistence": 102,
+      "crash_phases": 6,
+      "ui": 15
+    },
+    "api36": {
+      "persistence": 102,
+      "crash_phases": 6,
+      "ui": 15
+    },
+    "lint": "PASS",
+    "detekt": "PASS",
+    "formatting": "PASS",
+    "strict_dependencies": "PASS",
+    "sbom_and_native_alignment": "PASS"
+  },
+  "ordering": "PASS_EXACT_A_0_15999_B_16000_31999_WITH_B_CAPTURE_BEFORE_A_COMMIT",
+  "independent_review": {
+    "unresolved_P0": 0,
+    "unresolved_P1": 0,
+    "unresolved_P2": 0,
+    "scope": "Runtime and successor governance; external acceptance gates separate"
+  },
+  "synthetic_privacy": {
+    "api28": "PASS",
+    "api36": "PASS",
+    "positive_controls": 13,
+    "limitation": "Fixed canaries and explicit private-file/log coverage; not universal forensics"
+  },
+  "receipt_sha256": {
+    "persistence-api28": "e89209d424f13c400c3cb04e5b4210de840bbe03bb427890fc0b4222345c8f38",
+    "crash-api28": "4c039d1bd3eb33e51d283a243e41c036c75ca668f6653f15b1d189f8022f5d13",
+    "crash-api28-original-audio": "64bff0ec1223913875087430d0bbf2f9320b44172c98f71063e24f0ab701a8a8",
+    "persistence-api28-privacy": "17e9baeb09f4b1b26c6c6c9ed8afe8a6bb2ee58b488f54a00b7a4dc90968abff",
+    "ui-api28": "2d67c9fc4fee30603e6e54b8ce48bfbb4dc8c691244cb9063a8c4f0f08106705",
+    "persistence-api36": "d974ebbf7bbc0071dc8f10e9cf011aca1f97d27b7464c69b63fc2d36cf160910",
+    "crash-api36": "30cd5d757e4beaed31d86d2215d4d81afd90f638bc08b0a46fe81b8cff9bba82",
+    "crash-api36-original-audio": "0b96f774b5620dbf00178c0ddf22e83c8b7f11792ed77d8d5c32270dbbe45f8c",
+    "persistence-api36-privacy": "66d47740f62ec27ef6cc8bfe88a14c5b288d4c00e813280773a7d03fb58ccaf7",
+    "ui-api36": "4fdc39d4d51957b8b8b2ffe9fd3f3bf19a3df454bcb7e076c9037dc3d9da7e8c"
+  },
+  "exact_sha_ci": "PENDING",
+  "publication_audit": "PENDING",
+  "final_visual_verification": "PENDING",
+  "sheet": "UNCHANGED_UNTIL_ALL_GATES_PASS",
+  "stage_8_4": "NOT_STARTED"
+}

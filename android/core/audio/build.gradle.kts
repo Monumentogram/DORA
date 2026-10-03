@@ -20,6 +20,14 @@ ksp {
     arg("room.schemaLocation", file("schemas").path)
 }
 
+// Both compiled implementations must execute the no-device-lock negative tests.
+extensions.configure<com.android.build.api.variant.LibraryAndroidComponentsExtension> {
+    beforeVariants(selector().withBuildType("release")) {
+        it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =
+            true
+    }
+}
+
 dependencies {
     implementation(project(":core:model"))
     implementation("com.google.crypto.tink:tink-android:1.23.0") {

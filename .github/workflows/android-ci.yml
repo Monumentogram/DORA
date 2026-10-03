@@ -202,6 +202,18 @@ jobs:
           python3 tools/validate_original_audio_lifecycle.py
           python3 -m unittest discover -s tools -p 'test_original_audio_lifecycle.py'
 
+      - name: Verify owner-authorized development device security
+        run: |
+          python3 tools/validate_development_device_security.py
+          python3 -m unittest discover -s tools -p 'test_development_device_security.py'
+          cd android
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
+
+      - name: Verify Stage 8.3 instant recording controls admission
+        run: |
+          python3 tools/validate_instant_recording.py
+          python3 -m unittest discover -s tools -p 'test_instant_recording.py'
+
       - name: Verify Stage 8.3 recording latency remediation admission
         run: |
           python3 tools/validate_recording_latency.py

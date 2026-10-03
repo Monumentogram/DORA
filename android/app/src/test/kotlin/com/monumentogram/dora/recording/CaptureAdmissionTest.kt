@@ -7,6 +7,57 @@ import org.junit.Test
 
 class CaptureAdmissionTest {
     @Test
+    fun exactFenceTimeIsSeparateFromLastAcceptedPcmAndStableInSnapshot() {
+        var clock = 100L
+        val admission = CaptureAdmission(BoundedPcmQueue(4)) { clock }
+        val generation = admission.begin()
+        admission.open(generation)
+        admission.offer(generation, byteArrayOf(1, 2))
+        clock = 150L
+        val boundary = admission.fence()
+        assertEquals(100L, boundary.lastAcceptedNanos)
+        assertEquals(150L, boundary.fencedAtNanos)
+        clock = 200L
+        assertEquals(150L, admission.snapshot().fencedAtNanos)
+        assertEquals(CaptureAdmission.Result.FENCED, admission.offer(generation, byteArrayOf(3, 4)))
+        assertEquals(1L, admission.snapshot().frames)
+    }
+
+    @Test
+    fun movingPcmOutOfQueueDoesNotReleaseBudgetUntilDurable() {
+        val queue = BoundedPcmQueue(1)
+        val admission = CaptureAdmission(queue) { 100L }
+        val first = admission.begin()
+        admission.open(first)
+        admission.offer(first, byteArrayOf(1, 2))
+        queue.drain(1) {}
+        admission.fence()
+        val next = admission.begin()
+        admission.open(next)
+        assertEquals(CaptureAdmission.Result.FULL, admission.offer(next, byteArrayOf(3, 4)))
+        admission.durableThrough(1)
+        assertEquals(CaptureAdmission.Result.ACCEPTED, admission.offer(next, byteArrayOf(3, 4)))
+    }
+
+    @Test
+    fun delayedDrainKeepsOriginalPhysicalIdentityAndFramePosition() {
+        val queue = BoundedPcmQueue(4)
+        val admission = CaptureAdmission(queue) { 100L }
+        val first = admission.begin("A")
+        admission.open(first)
+        admission.offer(first, ByteArray(32_000))
+        admission.fence()
+        val next = admission.begin("B")
+        admission.open(next)
+        admission.offer(next, ByteArray(32_000))
+        val blocks = mutableListOf<Triple<String, Long, Long>>()
+        queue.drainOwned(4) { blocks.add(Triple(it.physicalId, it.firstFrame, it.generation)) }
+        assertEquals(listOf("A", "B"), blocks.map { it.first })
+        assertEquals(listOf(0L, 16_000L), blocks.map { it.second })
+        assertEquals(listOf(first, next), blocks.map { it.third })
+    }
+
+    @Test
     fun pauseWithEmptyQueueRejectsReadThatFinishedAfterFence() {
         val queue = BoundedPcmQueue(4)
         val admission = CaptureAdmission(queue) { 100L }

@@ -51,6 +51,8 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -62,6 +64,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.audio.AudioFailure
+import com.monumentogram.dora.audio.recording.RecordingDurability
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraDesignTokens
@@ -158,11 +161,31 @@ internal fun RecordingScreen(
     val controller = app.recording
     val state = snapshot.recording
     val palette = DoraDesignTokens.darkPalette
+    val window = (activity as? MainActivity)?.presentationWindow ?: 0L
+    val screen = remember(activity) { controller.latency.newPresentationEpoch() }
+    val scroll = rememberScrollState()
+    DisposableEffect(activity, screen) {
+        controller.latency.presentation("mount", window, screen)
+        onDispose { controller.latency.presentation("unmount", window, screen) }
+    }
+    LaunchedEffect(scroll.value) {
+        controller.latency.presentation("scroll", window, screen, "y=${scroll.value}")
+    }
     Surface(color = Color(palette.canvas.surfaceDeep), contentColor = Color(palette.text.onDeep)) {
         Column(
             Modifier.fillMaxSize()
+                .onGloballyPositioned { coordinates ->
+                    val bounds = coordinates.boundsInWindow()
+                    controller.latency.presentation(
+                        "geometry",
+                        window,
+                        screen,
+                        "x=${bounds.left.toRawBits()} y=${bounds.top.toRawBits()} " +
+                            "h=${bounds.height.toRawBits()} z=${bounds.width.toRawBits()}",
+                    )
+                }
                 .safeDrawingPadding()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scroll)
                 .padding(DoraDimensions.space6),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(DoraDimensions.space4),
@@ -196,9 +219,24 @@ internal fun RecordingScreen(
                 style = MaterialTheme.typography.titleLarge,
                 modifier =
                     Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                        .onGloballyPositioned { coordinates ->
+                            val bounds = coordinates.boundsInWindow()
+                            controller.latency.presentation(
+                                "status_geometry",
+                                window,
+                                screen,
+                                "x=${bounds.left.toRawBits()} y=${bounds.top.toRawBits()} " +
+                                    "h=${bounds.height.toRawBits()} z=${bounds.width.toRawBits()}",
+                            )
+                        }
                         .drawWithContent {
                             drawContent()
-                            controller.rendered(snapshot)
+                            controller.rendered(
+                                snapshot,
+                                window,
+                                screen,
+                                "${(activity as? MainActivity)?.presentationVisibility.orEmpty()} y=${scroll.value}",
+                            )
                         },
             )
             if (
@@ -214,7 +252,9 @@ internal fun RecordingScreen(
                     DoraWave(
                         snapshot.level,
                         snapshot.signalAtNanos,
-                        state.phase == RecordingPhase.RECORDING,
+                        state.phase == RecordingPhase.RECORDING &&
+                            !snapshot.pausePending &&
+                            !snapshot.resumePending,
                         activity,
                     )
                     Text(
@@ -227,10 +267,23 @@ internal fun RecordingScreen(
                             },
                     )
                     Text(snapshot.route)
+                    // Keep the control row stationary when asynchronous persistence catches up.
+                    Text(
+                        if (state.durability != RecordingDurability.PENDING) " "
+                        else if (state.phase == RecordingPhase.PAUSED)
+                            "Сохраняем последние секунды…"
+                        else "Сохраняем…",
+                        minLines = 2,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
                     Text(
                         if (state.durableFrames > 0)
                             "Сохранено на устройстве: ${capturedTime(state.durableFrames)}"
-                        else "Ожидаем подтверждения сохранения"
+                        else "Ожидаем подтверждения сохранения",
+                        minLines = 2,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 } else {
                     Text("Запись защищена. Разблокируйте DORA для просмотра.")

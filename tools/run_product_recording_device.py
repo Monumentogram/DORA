@@ -24,6 +24,10 @@ TESTS = {
         'finalizingPresentationDoesNotClaimSaved',
         'permissionFailurePresentationDoesNotClaimCaptureOrSaved',
         'preflightSurvivesActivityRecreationWithoutStartingMicrophone',
+        'pausedPendingTailKeepsResumeEnabledWithoutFalseSaved',
+        'resumedPendingTailKeepsPauseEnabled',
+        'durabilityCatchUpDoesNotMoveResumeUnderUsersFinger',
+        'largeFontDurabilityCatchUpKeepsResumeStationary',
     )
 }
 

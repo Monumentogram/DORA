@@ -1,3 +1,16 @@
+## 2026-10-03 — Owner Alpha acceptance of recording-control responsiveness
+
+[ADR-PERF-001](adr/ADR-PERF-001-alpha-recording-control-latency-acceptance.md)
+records ACCEPTED_FOR_ALPHA / INSTANT_CONTROL_FUNCTIONALLY_RESOLVED.
+Historical strict micro-latency acceptance remains NOT_READY / PHYSICAL_INSTANT_CONTROL_GATE_FAILED;
+the quantitative thresholds are unchanged and are not declared passed.
+PERF-REC-001 is deferred and non-blocking Alpha, outside Stage 8.4.
+8.4 remains NOT_STARTED, READY_TO_START only as a separate task after publication.
+The OPEN development-security restoration blocker still gates final/signed Alpha closure.
+Earlier decisions below remain historical and unchanged.
+
+---
+
 # Dora MVP 1 — Product Decisions
 
 ## 2026-09-29 — Prospective 6.2D media preflight boundary

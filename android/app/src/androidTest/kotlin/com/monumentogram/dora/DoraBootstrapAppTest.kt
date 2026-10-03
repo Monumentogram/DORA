@@ -1,6 +1,8 @@
 package com.monumentogram.dora
 
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -10,6 +12,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Density
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.audio.recording.RecordingState
@@ -25,12 +28,70 @@ import org.junit.runner.RunWith
 class DoraBootstrapAppTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
 
+    @Test
+    fun largeFontDurabilityCatchUpKeepsResumeStationary() {
+        render(
+            RecordingViewState(recording = RecordingState(RecordingPhase.PAUSED, 32000, 0)),
+            fontScale = 2f,
+        )
+        val pendingTop =
+            composeRule.onNodeWithText("Продолжить").fetchSemanticsNode().boundsInRoot.top
+        render(
+            RecordingViewState(recording = RecordingState(RecordingPhase.PAUSED, 32000, 32000)),
+            fontScale = 2f,
+        )
+        org.junit.Assert.assertEquals(
+            pendingTop,
+            composeRule.onNodeWithText("Продолжить").fetchSemanticsNode().boundsInRoot.top,
+        )
+    }
+
+    @Test
+    fun durabilityCatchUpDoesNotMoveResumeUnderUsersFinger() {
+        render(RecordingViewState(recording = RecordingState(RecordingPhase.PAUSED, 32000, 0)))
+        val pendingTop =
+            composeRule.onNodeWithText("Продолжить").fetchSemanticsNode().boundsInRoot.top
+        render(RecordingViewState(recording = RecordingState(RecordingPhase.PAUSED, 32000, 32000)))
+        org.junit.Assert.assertEquals(
+            pendingTop,
+            composeRule.onNodeWithText("Продолжить").fetchSemanticsNode().boundsInRoot.top,
+        )
+    }
+
+    @Test
+    fun pausedPendingTailKeepsResumeEnabledWithoutFalseSaved() {
+        render(RecordingViewState(recording = RecordingState(RecordingPhase.PAUSED, 32000, 0)))
+        composeRule.onNodeWithText("Запись приостановлена").assertIsDisplayed()
+        composeRule.onNodeWithText("Продолжить").assertIsEnabled()
+        composeRule.onNodeWithText("Сохраняем последние секунды…").assertIsDisplayed()
+        composeRule.onNodeWithText("Запись сохранена").assertDoesNotExist()
+        composeRule.mainClock.advanceTimeBy(5000)
+        composeRule.onNodeWithText("00:00:02").assertIsDisplayed()
+    }
+
+    @Test
+    fun resumedPendingTailKeepsPauseEnabled() {
+        render(RecordingViewState(recording = RecordingState(RecordingPhase.RECORDING, 32000, 0)))
+        composeRule.onNodeWithText("Запись продолжается").assertIsDisplayed()
+        composeRule.onNodeWithText("Пауза").assertIsEnabled()
+        composeRule.onNodeWithText("Сохраняем…").assertIsDisplayed()
+        composeRule.onNodeWithText("Запись сохранена").assertDoesNotExist()
+    }
+
     // Presentation-only fixtures. No capture, writer, authentication or runtime state is replaced.
-    private fun render(snapshot: RecordingViewState, authorized: Boolean = true) {
+    private fun render(
+        snapshot: RecordingViewState,
+        authorized: Boolean = true,
+        fontScale: Float = 1f,
+    ) {
         composeRule.runOnUiThread {
             composeRule.activity.setContent {
-                DoraBootstrapTheme {
-                    RecordingScreen(composeRule.activity, snapshot, authorized, {})
+                CompositionLocalProvider(
+                    LocalDensity provides Density(LocalDensity.current.density, fontScale)
+                ) {
+                    DoraBootstrapTheme {
+                        RecordingScreen(composeRule.activity, snapshot, authorized, {})
+                    }
                 }
             }
         }

@@ -5,4 +5,6 @@ package com.monumentogram.dora.recording
  */
 internal data class CapturedTimeline(private val origin: Long, private val restoredFrames: Long) {
     fun frames(admitted: Long): Long = restoredFrames + (admitted - origin).coerceAtLeast(0)
+
+    fun admitted(frames: Long): Long = origin + (frames - restoredFrames).coerceAtLeast(0)
 }

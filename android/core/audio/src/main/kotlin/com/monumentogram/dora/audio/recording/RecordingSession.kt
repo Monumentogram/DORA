@@ -1,6 +1,7 @@
 @file:Suppress(
     "ReturnCount",
     "TooManyFunctions",
+    "LongParameterList",
 ) // Early exits keep terminal-state and durability fences explicit.
 
 package com.monumentogram.dora.audio.recording
@@ -14,6 +15,8 @@ import com.monumentogram.dora.audio.AudioTimeline
 import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import java.util.UUID
+import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicReference
 
 enum class RecordingPhase {
     PREFLIGHT,
@@ -26,6 +29,12 @@ enum class RecordingPhase {
     INTERRUPTED,
 }
 
+enum class RecordingDurability {
+    CAUGHT_UP,
+    PENDING,
+    FAILED,
+}
+
 /** Content-free state. Signal is supplied separately by the Android capture adapter. */
 data class RecordingState(
     val phase: RecordingPhase = RecordingPhase.PREFLIGHT,
@@ -34,29 +43,48 @@ data class RecordingState(
     val stopConfirmation: Boolean = false,
     val persistenceFailure: AudioFailure? = null,
 ) {
+    val durability: RecordingDurability
+        get() =
+            when {
+                phase == RecordingPhase.INTERRUPTED -> RecordingDurability.FAILED
+                frames > durableFrames -> RecordingDurability.PENDING
+                else -> RecordingDurability.CAUGHT_UP
+            }
+
     val durationUs: Long
         get() = AudioTimeline.durationUs(frames)
 }
 
 /**
- * Single persistence-worker owner. The service drains the bounded capture queue before pause or
- * stop; calls here never run on the AudioRecord thread or on main. Confirmation is orthogonal to
- * capture, so audio continues until the service receives explicit confirmation and releases mic.
+ * One control owner assembles PCM and seals immutable units. Only the serialized persistence
+ * executor borrows sealed bytes; completion returns to the control owner. No disk work runs in
+ * pause/resume. The caller fences admission and releases the reader before invoking pause.
  */
 class RecordingSession(
     val identity: AudioIdentity,
     private val writer: ProductAudioWriterPort,
     private val timing: (String) -> Unit = {},
     private val appendTiming: ((Map<String, Long>) -> Unit)? = null,
+    private val persistence: Executor = Executor { it.run() },
+    private val completion: Executor = Executor { it.run() },
+    private val changed: () -> Unit = {},
+    private val persistenceFailed: () -> Unit = {},
 ) {
+    private val failed = AtomicReference<AudioFailure?>(null)
+    val canCapture: Boolean
+        get() = failed.get() == null && state.phase in ACTIVE_PHASES
+
     var state = RecordingState()
         private set
 
     private val pending = ByteArray(TRANSPORT_BYTES)
     private var pendingBytes = 0
     private var ordinal = 0
-    private var physicalId = freshId()
+    var physicalId = freshId()
+        private set
+
     private var physicalStart = 0L
+    private var sealedFrames = 0L
     var maximumAppendNanos: Long = 0
         private set
 
@@ -66,6 +94,7 @@ class RecordingSession(
         require(frames >= 0 && nextOrdinal >= 0)
         ordinal = nextOrdinal
         physicalStart = frames
+        sealedFrames = frames
         state = RecordingState(RecordingPhase.PAUSED, frames, frames)
     }
 
@@ -79,7 +108,7 @@ class RecordingSession(
 
     /** Input is borrowed; the caller always clears its own array after return. */
     fun accept(pcm: ByteArray) {
-        if (state.phase != RecordingPhase.RECORDING) return
+        if (state.phase != RecordingPhase.RECORDING || failed.get() != null) return
         val frames = AudioTimeline.frames(pcm.size)
         state = state.copy(frames = AudioTimeline.nextFrame(state.frames, frames))
         var offset = 0
@@ -88,18 +117,34 @@ class RecordingSession(
             pcm.copyInto(pending, pendingBytes, offset, offset + count)
             pendingBytes += count
             offset += count
-            if (pendingBytes == pending.size) flush()
+            if (pendingBytes == pending.size) seal()
         }
+    }
+
+    /** Exact admission provenance; delayed draining cannot relabel a block. */
+    fun accept(pcm: ByteArray, physicalSegmentId: String, firstFrame: Long) {
+        if (failed.get() != null) return
+        if (
+            physicalSegmentId != physicalId ||
+                firstFrame != state.frames ||
+                state.phase != RecordingPhase.RECORDING
+        ) {
+            interrupt(AudioFailure.INVALID_INPUT)
+            persistenceFailed()
+            return
+        }
+        accept(pcm)
     }
 
     fun pause() {
         if (state.phase != RecordingPhase.RECORDING) return
-        if (flush()) state = state.copy(phase = RecordingPhase.PAUSED)
+        state = state.copy(phase = RecordingPhase.PAUSED)
+        seal()
     }
 
-    fun resume(): Boolean {
-        if (state.phase != RecordingPhase.PAUSED) return false
-        physicalId = freshId()
+    fun resume(physicalSegmentId: String = freshId()): Boolean {
+        if (state.phase != RecordingPhase.PAUSED || failed.get() != null) return false
+        physicalId = physicalSegmentId
         physicalStart = state.frames
         state = state.copy(phase = RecordingPhase.RECORDING)
         return true
@@ -117,17 +162,35 @@ class RecordingSession(
     fun confirmStop() {
         if (!state.stopConfirmation || state.phase !in ACTIVE_PHASES) return
         state = state.copy(phase = RecordingPhase.FINALIZING, stopConfirmation = false)
-        if (!flush()) return
+        seal()
+        if (failed.get() != null) return
         if (state.frames == 0L) {
             state = state.copy(phase = RecordingPhase.EMPTY)
             return
         }
         // Exactly one finalize call. UNCERTAIN remains interrupted until authenticated recovery.
-        if (checkResult(writer.finalize(identity))) state = state.copy(phase = RecordingPhase.SAVED)
+        persistence.execute {
+            val result = write { writer.finalize(identity) }
+            completion.execute {
+                if (
+                    checkResult(result) &&
+                        state.phase == RecordingPhase.FINALIZING &&
+                        failed.get() == null
+                )
+                    state = state.copy(phase = RecordingPhase.SAVED)
+                changed()
+            }
+        }
+    }
+
+    /** Retire access only after every task has stopped borrowing its writer and plaintext. */
+    fun whenSettled(action: () -> Unit) {
+        persistence.execute { completion.execute(action) }
     }
 
     /** Keeps the committed prefix and never converts abnormal termination into successful Stop. */
     fun interrupt(reason: AudioFailure? = null) {
+        failed.compareAndSet(null, reason ?: AudioFailure.UNAVAILABLE)
         pending.fill(0)
         pendingBytes = 0
         state =
@@ -138,8 +201,8 @@ class RecordingSession(
             )
     }
 
-    private fun flush(): Boolean {
-        if (pendingBytes == 0) return true
+    private fun seal() {
+        if (pendingBytes == 0) return
         val bytes = pending.copyOf(pendingBytes)
         pending.fill(0)
         pendingBytes = 0
@@ -149,32 +212,57 @@ class RecordingSession(
                 identity,
                 freshId(),
                 ordinal,
-                state.durableFrames,
+                sealedFrames,
                 physicalId,
                 physicalStart,
-                state.durableFrames - physicalStart,
+                sealedFrames - physicalStart,
             )
+        // Reserve before enqueue: even a direct executor may reenter through completion.
+        ordinal++
+        sealedFrames = AudioTimeline.nextFrame(sealedFrames, count)
+        val durableEnd = sealedFrames
+        persistence.execute {
+            var elapsed = 0L
+            val result =
+                try {
+                    write {
+                        val started = System.nanoTime()
+                        timing("append_start")
+                        val report = appendTiming
+                        (if (report == null) writer.append(unit, AudioFormat.PCM, bytes)
+                            else
+                                PersistenceLatency.collect(report) {
+                                    writer.append(unit, AudioFormat.PCM, bytes)
+                                })
+                            .also {
+                                elapsed = System.nanoTime() - started
+                                timing("append_end")
+                            }
+                    }
+                } finally {
+                    bytes.fill(0)
+                }
+            completion.execute {
+                maximumAppendNanos = maxOf(maximumAppendNanos, elapsed)
+                if (checkResult(result)) state = state.copy(durableFrames = durableEnd)
+                changed()
+            }
+        }
+    }
+
+    private fun write(action: () -> AudioResult<Unit>): AudioResult<Unit> {
+        failed.get()?.let {
+            return AudioResult.Failed(it)
+        }
         val result =
             try {
-                val started = System.nanoTime()
-                timing("append_start")
-                val report = appendTiming
-                (if (report == null) writer.append(unit, AudioFormat.PCM, bytes)
-                    else
-                        PersistenceLatency.collect(report) {
-                            writer.append(unit, AudioFormat.PCM, bytes)
-                        })
-                    .also {
-                        maximumAppendNanos = maxOf(maximumAppendNanos, System.nanoTime() - started)
-                        timing("append_end")
-                    }
-            } finally {
-                bytes.fill(0)
+                action()
+            } catch (_: Exception) {
+                AudioResult.Failed(AudioFailure.UNAVAILABLE)
             }
-        if (!checkResult(result)) return false
-        ordinal++
-        state = state.copy(durableFrames = AudioTimeline.nextFrame(state.durableFrames, count))
-        return true
+        if (result is AudioResult.Failed && failed.compareAndSet(null, result.reason))
+            persistenceFailed()
+        return result
     }
 
     private fun checkResult(result: AudioResult<Unit>): Boolean =
