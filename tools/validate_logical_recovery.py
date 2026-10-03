@@ -11,7 +11,7 @@ BASE_TREE = 'b024531db56df6d6167694685efd4310cb351962'
 BRANCH = 'stage/8.5-logical-recording-recovery'
 CONTRACT = 'docs/contracts/DORA_LOGICAL_RECOVERY_8_5_V0_1.json'
 SELF = 'tools/validate_logical_recovery.py'
-CONTRACT_SHA256 = '2be6844a54e860bdf27c2118cc7793e91bef4a3c684d0eee5f69f169306693a9'
+CONTRACT_SHA256 = 'c9c2d9979fa9a9eeb6a3a9f483f05cc92f806aab5f3c4643ef5a08e576fc9acd'
 STATUS_HEADER = """## 2026-10-04 — Stage 8.5 logical recording recovery
 
 8.5 = PENDING_FINAL_PUBLICATION

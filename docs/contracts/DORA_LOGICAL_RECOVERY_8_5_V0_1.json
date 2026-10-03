@@ -20,6 +20,7 @@
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingRecovery.kt": "a20889297d9e950d2a17b13637c2061c05163d1b5f6bc9217fad700128b54fa3",
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSession.kt": "1a889f5e0d6b1e45532f93c511ea11f3e8b52f0cceb66a92a2be028ad73962ca",
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecoveryMetadata.kt": "bc565fe7eed7fe8d2f683b87976549fc7ea6d0cbe074659cf66e07f0d5fdd657",
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/persistence/runtime/AudioRuntimeCoordinatorTest.kt": "86f548743cbe140af5f5af40392330e4c6be00d9689398b598276d0573eda99f",
     "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/recording/LogicalRecoveryContractTest.kt": "a8057e80f7d6db64f4f838f36a3b1dfe69f241a4f8b5c5c4af6d81eca366006a",
     "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/recording/RecoveryMetadataTest.kt": "d2436b97759f3fcd311f11ca3d43beb75609c4ed246c1c3e92a670a4786a41ba",
     "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": "342d7a583ab29afea1bccb646b1d1311755c168691a30b6d22d258c2de01e7ba",
