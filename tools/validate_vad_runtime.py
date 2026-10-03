@@ -79,6 +79,9 @@ def approved_graph(root, contract):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_logical_recording as logical
+    if logical.candidate(root):
+        return logical.validate_checkout(root, allow_working=allow_working)
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_product_recording as recording

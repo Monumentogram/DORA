@@ -164,22 +164,26 @@ private constructor(
         val source = checkNotNull(catalog.load(identity))
         val frames = source.segments.sumOf { it.frames }
         return dao.segmentationPage(identity.assetId.value, afterKey).map { row ->
-            SegmentationMetadata(
-                    SegmentationKind.valueOf(row.kind),
-                    row.segmentId,
-                    row.firstFrame,
-                    row.endFrame,
-                    row.captureEpochId,
-                    row.overlapFirstFrame,
-                    row.reason,
-                    row.degraded,
-                    row.profileId,
-                    row.profileSha256,
-                )
-                .also {
-                    it.validate(frames)
-                    check(it.key == row.recordKey)
-                }
+            try {
+                SegmentationMetadata(
+                        SegmentationKind.valueOf(row.kind),
+                        row.segmentId,
+                        row.firstFrame,
+                        row.endFrame,
+                        row.captureEpochId,
+                        row.overlapFirstFrame,
+                        row.reason,
+                        row.degraded,
+                        row.profileId,
+                        row.profileSha256,
+                    )
+                    .also {
+                        it.validate(frames)
+                        require(it.key == row.recordKey)
+                    }
+            } catch (_: IllegalArgumentException) {
+                throw com.monumentogram.dora.audio.InvalidSegmentationMetadata()
+            }
         }
     }
 

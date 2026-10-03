@@ -23,6 +23,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import logical_recording_ci_profile
+    workflow = logical_recording_ci_profile.normalize(workflow)
     if 'Stage 8.4 repository logic' not in workflow and INVENTORY not in workflow:
         return workflow
     if workflow.count(GATE) != 1 or workflow.count(INVENTORY) != 1 or OLD_INVENTORY in workflow or workflow.count(CRASH_GATE) != 1:

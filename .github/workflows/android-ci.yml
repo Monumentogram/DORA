@@ -224,6 +224,11 @@ jobs:
           python3 tools/validate_product_recording.py
           python3 -m unittest discover -s tools -p 'test_product_recording.py'
 
+      - name: Verify Stage 8.4C logical recording contract
+        run: |
+          python3 tools/validate_logical_recording.py
+          python3 -m unittest discover -s tools -p 'test_logical_recording*.py'
+
       - name: Verify Stage 8.4 repository logic without private runtime
         run: |
           python3 tools/validate_vad_runtime.py
@@ -432,7 +437,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/vad-runtime-8.4-device-tests.json
+          --inventory docs/contracts/logical-recording-8.4c-device-tests.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
       - name: Verify abrupt process death at durable persistence phases
@@ -461,6 +466,21 @@ jobs:
         with:
           name: vad-segmentation-process-death-api${{ matrix.api }}
           path: ${{ runner.temp }}/vad-segmentation-process-death.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Verify Stage 8.4C logical source abrupt process death
+        run: >-
+          python3 tools/run_logical_recording_crash.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${{ runner.temp }}/logical-recording-process-death.json"
+
+      - name: Upload content-free Stage 8.4C process death receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: logical-recording-process-death-api${{ matrix.api }}
+          path: ${{ runner.temp }}/logical-recording-process-death.json
           if-no-files-found: error
           retention-days: 7
 
