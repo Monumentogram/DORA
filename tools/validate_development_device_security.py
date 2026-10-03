@@ -49,6 +49,8 @@ def p95_thresholds(measurements):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_recording_alpha_acceptance as owner
+    governance_paths = owner.validate_overlay(root) if owner.candidate(root) else set()
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_product_recording as recording
@@ -102,6 +104,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
                 and Path(os.environ.get('GITHUB_WORKSPACE', '')).resolve() == root.resolve(), 'Wrong exact-SHA CI context')
     expected = set(contract['implementation_paths'])
     require(CONTRACT in expected and len(expected) == len(contract['implementation_paths']), 'Malformed latency inventory')
+    expected |= governance_paths
     actual = set(git('diff', '--name-only', '--no-renames', PARENT).decode().splitlines())
     actual.update(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     require(actual == expected, 'Instant-control changed-file inventory mismatch')
@@ -126,7 +129,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     for path in frozen:
         require((root / path).read_bytes().replace(b'\r\n', b'\n') == historical(PARENT, path).replace(b'\r\n', b'\n'), 'Frozen authority changed')
     for path in ('docs/DORA_MVP1_STAGE_STATUS.md', 'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md'):
-        require((root / path).read_bytes() == STATUS_HEADER.encode() + historical(PARENT, path), 'Historical status bytes changed')
+        prefix = owner.STATUS_HEADER.encode() if governance_paths else b''
+        require((root / path).read_bytes() == prefix + STATUS_HEADER.encode() + historical(PARENT, path), 'Historical status bytes changed')
         instant.validate_status_projection(historical(PARENT, path).decode(), historical(instant.PARENT, path).decode())
         latency.validate_status_projection(historical(instant.PARENT, path).decode(), historical(latency.PARENT, path).decode())
         recording.validate_status_projection(historical(latency.PARENT, path).decode(), historical(recording.PARENT, path).decode())

@@ -1,3 +1,34 @@
+## 2026-10-03 — Owner acceptance of Stage 8.3 responsiveness for Alpha
+
+Current governance disposition: ACCEPTED_FOR_ALPHA / INSTANT_CONTROL_FUNCTIONALLY_RESOLVED.
+8.3 = PASS / functional recording controls.
+8.3 latency remediation = OWNER_ACCEPTED_FOR_ALPHA.
+Latency remediation accepted for Alpha by owner; strict historical micro-latency gate remains not technically passed.
+Historical strict campaign = NOT_READY / PHYSICAL_INSTANT_CONTROL_GATE_FAILED.
+PERF-REC-001 = DEFERRED_AFTER_ALPHA_ACCEPTANCE / NOT BLOCKING ALPHA.
+8.4 = NOT_STARTED; readiness = READY_TO_START in a separate owner-scoped task after publication.
+Stage 8 = IN_PROGRESS.
+
+[ADR-PERF-001](adr/ADR-PERF-001-alpha-recording-control-latency-acceptance.md)
+records the exact Owner decision and [content-free evidence](governance/recording-control-alpha-acceptance.json).
+This later disposition removes only the micro-latency blocker to Alpha progression.
+Earlier PENDING/P1/NOT_READY entries below are preserved historical snapshots;
+their strict timing requirement is deferred, not retroactively satisfied.
+DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE remains OPEN and still blocks final Alpha
+closure and signed Alpha security acceptance. This is no production-authentication certification.
+
+### PERF-REC-001 — Pause/Resume presentation micro-latency hardening
+
+Priority: non-blocking Alpha. Status: DEFERRED_AFTER_ALPHA_ACCEPTANCE.
+Scope: investigate remaining input-to-presentation variance; add exact StateFlow
+publication / Compose observation timing only if needed; profile main-thread,
+recomposition and layout work; optimize only for a measurable user or release need.
+Scheduling: separate performance-hardening activity, not part of Stage 8.4.
+Re-evaluate before public release; the Owner must explicitly scope any later work.
+No runtime optimization, changed thresholds, new device campaign or Stage 8.4 implementation is admitted here.
+
+---
+
 ## 2026-10-02 — Owner-authorized no-PIN development / Stage 8.3 remediation
 
 8.3 functional = PASS

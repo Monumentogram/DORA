@@ -6,6 +6,49 @@ import validate_development_device_security as gate
 
 
 class DevelopmentDeviceSecurityAdmissionTests(unittest.TestCase):
+    def test_owner_acceptance_cannot_rewrite_history(self):
+        import validate_recording_alpha_acceptance as owner
+        self.assertEqual('history\n', owner.validate_status_projection(owner.STATUS_HEADER + 'history\n', 'history\n'))
+        with self.assertRaises(ValueError):
+            owner.validate_status_projection(owner.STATUS_HEADER + 'rewritten\n', 'history\n')
+
+    def test_owner_acceptance_rejects_false_gate_pass(self):
+        import validate_recording_alpha_acceptance as owner
+        record = owner.read_record()
+        for change in ({'strict_gate_technically_passed': True}, {'historical_strict_gate': 'PASS'},
+                       {'disposition': 'PASS / PRODUCT_RECORDING_INSTANT_CONTROL_READY'}):
+            with self.assertRaises(ValueError):
+                owner.validate_record({**record, **change})
+
+    def test_owner_acceptance_preserves_limits(self):
+        import validate_recording_alpha_acceptance as owner
+        record = owner.read_record()
+        record['historical_limits_ms']['resume_ack'] = 115
+        with self.assertRaises(ValueError):
+            owner.validate_record(record)
+
+    def test_owner_acceptance_cannot_start_stage_or_close_security(self):
+        import validate_recording_alpha_acceptance as owner
+        for field, value in (('security_restoration_blocker', 'CLOSED'), ('stages', {'8.4':'IN_PROGRESS'})):
+            with self.assertRaises(ValueError):
+                owner.validate_record({**owner.read_record(), field:value})
+
+    def test_performance_item_must_be_deferred_outside_stage84(self):
+        import validate_recording_alpha_acceptance as owner
+        for field,value in (('blocks_alpha',True),('scheduled_in_stage_8_4',True),('status','IN_PROGRESS')):
+            record=owner.read_record()
+            record['performance_item'][field]=value
+            with self.assertRaises(ValueError):
+                owner.validate_record(record)
+
+    def test_governance_paths_cannot_admit_runtime_or_workflow(self):
+        import validate_recording_alpha_acceptance as owner
+        owner.validate_paths(owner.PATHS)
+        for path in ('android/app/src/main/RecordingController.kt','.github/workflows/android-ci.yml',
+                     gate.CONTRACT,gate.BLOCKER_PATH,'docs/evidence/instant-recording-8.3-local-v0.1.json'):
+            with self.assertRaises(ValueError):
+                owner.validate_paths(owner.PATHS | {path})
+
     def test_parent_must_dispatch_to_complete_successor(self):
         import validate_instant_recording as parent
         with patch.object(gate, 'candidate', return_value=True), patch.object(gate, 'validate_checkout', side_effect=ValueError('invalid successor')):
