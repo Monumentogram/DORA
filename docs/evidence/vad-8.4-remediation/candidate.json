@@ -1,0 +1,62 @@
+{
+  "status": "PENDING_FINAL_PUBLICATION",
+  "parentSha": "23adb618a39a014e5090ee2f32e27015de485f07",
+  "initialHead": "fc1d362d4d3b692a55b5b954841276b247f4b456",
+  "sherpaSourceSha": "11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+  "modelSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "productionVadIntegration": "NOT_STARTED",
+  "securityRestorationBlocker": "OPEN",
+  "8.4C": "NOT_STARTED",
+  "8.5": "NOT_STARTED",
+  "artifact": {
+    "filename": "sherpa-onnx-vad-1.13.8-dora.1-arm64.aar",
+    "bytes": 23396212,
+    "sha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+    "abi": [
+      "arm64-v8a"
+    ]
+  },
+  "modelBytes": 2327524,
+  "modelLicense": "MIT",
+  "ciRebuildsNativeBinary": false,
+  "physical16KiBRuntime": "NOT_RUN",
+  "custody": {
+    "status": "BLOCKED / VAD_BINARY_CUSTODY_REQUIRED",
+    "binaryCommitted": false,
+    "publicUpload": false,
+    "reason": "Existing SQLCipher public Git/Maven mechanism not automatically reused for this23MB artifact. No accepted private immutable location found; owner input pending."
+  },
+  "genericComparison": {
+    "genericBytes": 50129134,
+    "genericFiles": 26,
+    "genericNativeFiles": 16,
+    "genericAbis": 4,
+    "genericArm64NativeBytes": 31927176,
+    "genericJavaEntries": 128,
+    "customBytes": 23396212,
+    "customFiles": 6,
+    "customNativeFiles": 2,
+    "customAbis": 1,
+    "customArm64NativeBytes": 22861456,
+    "customJavaEntries": 14
+  },
+  "repositoryFiles": {
+    ".gitattributes": "a9e9f5f7e74b7925f179ad4ec11f8cf9f06cdcf9be38d63ce692fdfa76004ad6",
+    "docs/adr/ADR-VAD-001-isolated-vad-only-runtime-admission.md": "220dde5f9e5b13659a39e397b4efcc69cc189df10abcb51c6f4ed76b12960dc7",
+    "docs/evidence/vad-8.4-remediation/NOTICE.txt": "0caaabf2b9d78f600fd7b3392163753dd50603eee89069341ec5416fd9e4141c",
+    "docs/evidence/vad-8.4-remediation/README.md": "bd0ca7cce4fc63ce37cd8b6acdbe4e545fb350c5e461c9acb1b8a86420c941ae",
+    "docs/evidence/vad-8.4-remediation/build-inputs.json": "81e7a2d6393a3eedcf73e41304414bfa73568952a27f6f5e145aafc9fe67689a",
+    "docs/evidence/vad-8.4-remediation/license-inventory.json": "cfec74001a7b4faa9a63cd0cf9fa3d4bac577312791a047817d9317327dede18",
+    "docs/evidence/vad-8.4-remediation/runtime-smoke.json": "cb927f2322048db2c2e41b460a084aabf0efd94a1b48e70432d6db3fc9d31583",
+    "docs/evidence/vad-8.4-remediation/sbom.cdx.json": "2f36acf2b71a6e52c79f4a9b533a063a2acd210065eaabf00922baddd62963e2",
+    "tools/test_development_device_security.py": "97ffa2d81d113c0df3276064ea0b04a5a09e711821679de613e6ded9b6c870ee",
+    "tools/test_vad_artifact_admission.py": "19e24e197e07a2574d287d8ab78e72021795418110508feee96d96784be2183b",
+    "tools/vad_admission/AndroidManifest.xml": "8eda970315dd9374a5e09a78c1ed02ce9749198030a9ef7f3bb8a53a68aa85c4",
+    "tools/vad_admission/CMakeLists.txt": "14e54685f337c08deb7a27b7a4e52c94d0704ff2d70cc922143b0a1893bb7888",
+    "tools/vad_admission/SmokeActivity.java": "d9634b9a7d770320dca9716586bcd4867116ac53a41132c2cd49d24605a562bd",
+    "tools/vad_admission/build.py": "80d0163bea41b3b081bfb1e95a8ef1961eb074a6933f95007d48a8dd90979891",
+    "tools/validate_development_device_security.py": "4a737bc6a564688c8c6e321daff16b00aad0ddae42ca62d30a93dd939132dc23",
+    "tools/validate_recording_alpha_acceptance.py": "a0dc2b883b747a9d14cebe1f32bba18a499437733d01f537efabdbf0fce80c21",
+    "tools/validate_vad_artifact_admission.py": "f7a76899b3d619d9b321b069525026bd6f9a71a6e14ba4857a3eff8ec0a02f1c"
+  }
+}

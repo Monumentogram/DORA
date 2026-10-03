@@ -61,17 +61,20 @@ def validate_status_projection(current, historical):
 def validate_overlay(root=ROOT):
     # This supplements (never replaces) the complete inherited source-admission checks.
     from validate_encrypted_persistence import git
+    import validate_vad_artifact_admission as vad
+    successor_paths = vad.validate_successor(root) if vad.candidate(root) else set()
+    allowed = PATHS | successor_paths
     require(git(root, 'merge-base', BASE, 'HEAD').decode().strip() == BASE, 'Wrong governance parent')
     actual = set(git(root, 'diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual.update(git(root, 'ls-files', '--others', '--exclude-standard').decode().splitlines())
-    validate_paths(actual)
-    require(actual == PATHS, 'Incomplete exact governance inventory')
+    require(actual <= allowed, 'Only the exact governance/admission docs/tools delta is allowed')
+    require(actual == allowed, 'Incomplete exact governance inventory')
     for line in git(root, 'rev-list', '--reverse', '--parents', BASE + '..HEAD').decode().splitlines():
         parts = line.split()
         require(len(parts) == 2, 'Governance merge history rejected')
         paths = set(git(root, 'diff', '--name-only', '--no-renames', parts[1], parts[0]).decode().splitlines())
         require(bool(paths), 'Empty governance commit rejected')
-        validate_paths(paths)
+        require(paths <= allowed, 'Unapproved governance/admission history')
     for path, expected in SEALED_DOCUMENTS.items():
         require(hashlib.sha256((root/path).read_bytes()).hexdigest() == expected, 'Sealed Owner document changed: ' + path)
     for path in STATUS_PATHS:
@@ -82,4 +85,4 @@ def validate_overlay(root=ROOT):
     validate_record(read_record(root))
     # All non-allowlisted tracked bytes (including Android, workflows, contracts, evidence,
     # and restoration blocker) are unchanged from the exact reviewed product baseline.
-    return PATHS
+    return allowed

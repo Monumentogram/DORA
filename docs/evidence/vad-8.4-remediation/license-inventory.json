@@ -1,0 +1,718 @@
+{
+  "status": "ENGINEERING_LICENSE_INVENTORY_COMPLETE",
+  "scope": "Exact frozen VAD-only AAR engineering license inventory; not a legal opinion or terminal admission PASS.",
+  "components": [
+    {
+      "name": "sherpa-onnx VAD JNI",
+      "version": "1.13.8 / 11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "license": "Apache-2.0",
+      "source": "https://github.com/k2-fsa/sherpa-onnx/tree/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "distributed": true,
+      "linkage": "packaged-shared-library",
+      "evidence": "Exact wrapper link map: VAD Silero/TEN implementation, shared utility code, JNI and version; no TEN model.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "sherpa-onnx VAD Java bindings",
+      "version": "1.13.8 / 11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "license": "Apache-2.0",
+      "source": "https://github.com/k2-fsa/sherpa-onnx/tree/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/sherpa-onnx/java-api/src/main/java/com/k2fsa/sherpa/onnx",
+      "distributed": true,
+      "linkage": "packaged-bytecode",
+      "evidence": "Exact upstream8 sources: Vad,VadModelConfig,SileroVadModelConfig,TenVadModelConfig,SpeechSegment,VersionInfo,LibraryLoader,LibraryUtils; JDK library APIs only; no Kotlin runtime",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "ONNX Runtime",
+      "version": "1.28.2 / 33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "MIT",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "packaged-shared-library",
+      "evidence": "binary embedded source prefix33ca962; producer job101086389995 checkout exact fullSHA/cache miss; pinnedzipSHA01518867f78241138b6aa25925802e843a4fa9085af8d303d49e35bbb52aff4d",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "abseil-cpp",
+      "version": "20250814.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/abseil/abseil-cpp/archive/refs/tags/20250814.0.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "a9eb1d648cbca4d4d788737e971a6a7a63726b07",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "protobuf",
+      "version": "21.12",
+      "license": "BSD-3-Clause",
+      "source": "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v21.12.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "7cf2733949036c7d52fda017badcab093fe73bfa",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "ONNX",
+      "version": "1.22.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/onnx/onnx/archive/refs/tags/v1.22.0.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "2b2cd58ac7a26df5371266149e0c76776330cdf1",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "flatbuffers",
+      "version": "23.5.26",
+      "license": "Apache-2.0",
+      "source": "https://github.com/google/flatbuffers/archive/refs/tags/v23.5.26.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "59422c3b5e573dd192fead2834d25951f1c1670c",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "RE2",
+      "version": "2024-07-02",
+      "license": "BSD-3-Clause",
+      "source": "https://github.com/google/re2/archive/refs/tags/2024-07-02.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "646e1728269cde7fcef990bf4a8e87b047882e88",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "CPUInfo",
+      "version": "4628dc060ce4e82345dc166bbac875609db4ff69",
+      "license": "BSD-2-Clause",
+      "source": "https://github.com/pytorch/cpuinfo/archive/4628dc060ce4e82345dc166bbac875609db4ff69.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "e58d4b47c16a982111c897e669ae4f1821a393d7",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "KleidiAI",
+      "version": "1.20.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/ARM-software/kleidiai/archive/refs/tags/v1.20.0.tar.gz",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Positive producer job compiled objects and archive links; source deps pin",
+      "source_archive_sha1": "6895e72b3d5cf1173358164cb3d64c9d7d33cc84",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Eigen (ORT)",
+      "version": "1d8b82b0740839c0de7f1242a3585e3390ff5f33",
+      "license": "MPL-2.0 AND BSD-3-Clause",
+      "source": "https://github.com/eigen-mirror/eigen/archive/1d8b82b0740839c0de7f1242a3585e3390ff5f33/eigen-1d8b82b0740839c0de7f1242a3585e3390ff5f33.zip",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "ORT exact external dependency target plus runtime source/header use",
+      "source_archive_sha1": "05b19b49e6fbb91246be711d801160528c135e34",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes.",
+      "source_availability": "Required: SOURCE-ACCESS.txt exact source and ORT modifications, MPL2 terms retained."
+    },
+    {
+      "name": "Microsoft GSL",
+      "version": "4.2.1",
+      "license": "MIT",
+      "source": "https://github.com/microsoft/GSL/archive/refs/tags/v4.2.1.zip",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "ORT exact external dependency target plus runtime source/header use",
+      "source_archive_sha1": "1094e3bb7a8af763dcb136ccd676e6e75e614eec",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Boost MP11",
+      "version": "boost-1.82.0",
+      "license": "BSL-1.0",
+      "source": "https://github.com/boostorg/mp11/archive/refs/tags/boost-1.82.0.zip",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "ORT exact external dependency target plus runtime source/header use",
+      "source_archive_sha1": "9bc9e01dffb64d9e0773b2e44d2f22c51aace063",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "SafeInt",
+      "version": "3.0.28",
+      "license": "MIT",
+      "source": "https://github.com/dcleblanc/SafeInt/archive/refs/tags/3.0.28.zip",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "ORT exact external dependency target plus runtime source/header use",
+      "source_archive_sha1": "23f252040ff6cb9f1fd18575b32fa8fb5928daac",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Howard Hinnant date",
+      "version": "3.0.1",
+      "license": "MIT",
+      "source": "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.zip",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "ORT exact external dependency target plus runtime source/header use",
+      "source_archive_sha1": "2dac0c81dc54ebdd8f8d073a75c053b04b56e159",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "nlohmann/json (ORT)",
+      "version": "3.11.3",
+      "license": "MIT AND Apache-2.0",
+      "source": "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.zip",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "ORT exact external dependency target plus runtime source/header use",
+      "source_archive_sha1": "5e88795165cc8590138d1f47ce94ee567b85b4d6",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "clog (CPUInfo embedded)",
+      "version": "CPUInfo 4628dc060ce4e82345dc166bbac875609db4ff69",
+      "license": "BSD-2-Clause",
+      "source": "https://github.com/pytorch/cpuinfo/tree/4628dc060ce4e82345dc166bbac875609db4ff69/deps/clog",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "CPUInfo src/log.c compiled by producer; embedded clog macros/header",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "kaldi-native-fbank",
+      "version": "1.22.3",
+      "license": "Apache-2.0",
+      "source": "https://github.com/csukuangfj/kaldi-native-fbank/archive/refs/tags/v1.22.3.tar.gz",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Wrapper live map mel-computations.cc and rfft.cc",
+      "source_archive_sha256": "9176cc66fc7ce1edf85cf355b06e320c57db6297df74277f575183468893cf61",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "kissfft",
+      "version": "febd4caeed32e33ad8b2e0bb5ea77542c40f18ec",
+      "license": "BSD-3-Clause",
+      "source": "https://github.com/mborgerding/kissfft/archive/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec.zip",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Wrapper live map kiss_fft.c and kiss_fftr.c",
+      "source_archive_sha256": "497103e664168ebe39580b757adbe616f6cf85a16572af581ca7bc42d0ab13fd",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Eigen (sherpa)",
+      "version": "5.0.1",
+      "license": "MPL-2.0 AND BSD-3-Clause AND Apache-2.0",
+      "source": "https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.gz",
+      "distributed": true,
+      "linkage": "compiled-header",
+      "evidence": "TEN VAD model source includes Eigen/Dense; retained TEN branch in live map",
+      "source_archive_sha256": "e9c326dc8c05cd1e044c71f30f1b2e34a6161a3b6ecf445d56b53ff1669e3dec",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes.",
+      "source_availability": "Required: SOURCE-ACCESS.txt exact source and ORT modifications, MPL2 terms retained."
+    },
+    {
+      "name": "TensorFlow-derived ORT code",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: onnxruntime/core/common/status.cc; core/platform/env*.cc; CPU random/nonmax/onehot; contrib crop_and_resize",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Caffe2/PyTorch-derived ORT code",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: core/util/math_cpu.cc; CPU conv/batchnorm/softmax/topk/lrn/roialign",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Caffe-derived math fragment",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "BSD-2-Clause",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: core/util/math_cpu.cc credits BVLC/caffe PR3536",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "XNNPACK-derived ORT kernel",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "BSD-3-Clause",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: core/mlas/lib/qdwconv_kernelsize.cpp; this is copied code, XNNPACK EP is disabled",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "MurmurHash3 and scikit-learn adaptation",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "LicenseRef-Public-Domain AND BSD-3-Clause",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: core/framework/murmurhash3.cc; contrib_ops/cpu/murmur_hash3.cc",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "AOSP/TensorFlow NNAPI wrapper sources",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: core/providers/nnapi/nnapi_builtin/nnapi_lib/NeuralNetworksWrapper.cc and nnapi_implementation.cc",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Eigen-derived ORT threadpool",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "license": "MPL-2.0",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "distributed": true,
+      "linkage": "copied-source",
+      "evidence": "Exact source attribution and corresponding compiled consumer: include/onnxruntime/core/platform/Barrier.h and EigenNonBlockingThreadPool.h",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes.",
+      "source_availability": "Required: SOURCE-ACCESS.txt exact source and ORT modifications, MPL2 terms retained."
+    },
+    {
+      "name": "libc++ (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "ORT producer NDK flag and binary clang18/r522817d; no shared STL dependency",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "libc++abi (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "ORT producer NDK flag and binary clang18/r522817d; no shared STL dependency",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "libunwind (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "ORT producer NDK flag and binary clang18/r522817d; no shared STL dependency",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "compiler-rt builtins (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "ORT producer NDK flag and binary clang18/r522817d; no shared STL dependency",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "libc++ (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Wrapper live link map explicit4 archive families",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "libc++abi (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Wrapper live link map explicit4 archive families",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "libunwind (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Wrapper live link map explicit4 archive families",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "compiler-rt builtins (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "license": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/",
+      "distributed": true,
+      "linkage": "statically-linked",
+      "evidence": "Wrapper live link map explicit4 archive families",
+      "license_note": "Exact runtime LICENSE.TXT retains Apache LLVM terms and legacy dual MIT/NCSA terms. Full texts and available credits preserved; no GPL license is selected by the LLVM GPL compatibility exception.",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    },
+    {
+      "name": "Silero VAD model",
+      "version": "6.2.1",
+      "license": "MIT",
+      "source": "https://github.com/snakers4/silero-vad/tree/7e30209a3e901f9842f81b225f3e93d8199902b1",
+      "distributed": false,
+      "linkage": "separate-model",
+      "evidence": "Separately identified existing model, not runtime AAR payload",
+      "artifact_bytes": 2327524,
+      "artifact_sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+      "notice_obligation": "Retain copyright, license text and applicable NOTICE/attribution; see notice_files source hashes."
+    }
+  ],
+  "notice_files": [
+    {
+      "path": "ONNXRUNTIME-LICENSE.txt",
+      "bytes": 1073,
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/LICENSE"
+    },
+    {
+      "path": "SHERPA-LICENSE.txt",
+      "bytes": 11560,
+      "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+      "source": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/LICENSE"
+    },
+    {
+      "path": "KALDI-NATIVE-FBANK-LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source": "https://github.com/csukuangfj/kaldi-native-fbank/blob/v1.22.3/LICENSE"
+    },
+    {
+      "path": "KISSFFT-COPYING.txt",
+      "bytes": 246,
+      "sha256": "a2840585f8411be8e6826a31ef15ae65c950bd74a2437a73b013398a934ad0c6",
+      "source": "https://github.com/mborgerding/kissfft/blob/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec/COPYING"
+    },
+    {
+      "path": "KISSFFT-BSD-3-Clause.txt",
+      "bytes": 1830,
+      "sha256": "4d6bcab46f27d6d0c878e8305d4bdcfe040d52bf6656b9771f04c9fb9902c0ed",
+      "source": "https://github.com/mborgerding/kissfft/blob/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec/LICENSES/BSD-3-Clause"
+    },
+    {
+      "path": "EIGEN5-MPL2.txt",
+      "bytes": 16727,
+      "sha256": "66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172",
+      "source": "https://gitlab.com/libeigen/eigen/-/blob/5.0.1/COPYING.MPL2"
+    },
+    {
+      "path": "EIGEN-ORT-MPL2.txt",
+      "bytes": 16727,
+      "sha256": "66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172",
+      "source": "https://github.com/eigen-mirror/eigen/blob/1d8b82b0740839c0de7f1242a3585e3390ff5f33/COPYING.MPL2"
+    },
+    {
+      "path": "ABSEIL-LICENSE.txt",
+      "bytes": 11361,
+      "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+      "source": "https://github.com/abseil/abseil-cpp/blob/20250814.0/LICENSE"
+    },
+    {
+      "path": "PROTOBUF-LICENSE.txt",
+      "bytes": 1732,
+      "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "source": "https://github.com/protocolbuffers/protobuf/blob/v21.12/LICENSE"
+    },
+    {
+      "path": "ONNX-LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source": "https://github.com/onnx/onnx/blob/v1.22.0/LICENSE"
+    },
+    {
+      "path": "FLATBUFFERS-LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source": "https://github.com/google/flatbuffers/blob/v23.5.26/LICENSE"
+    },
+    {
+      "path": "RE2-LICENSE.txt",
+      "bytes": 1558,
+      "sha256": "6040cda75d90b1738292a631d89934c411ef7ffd543c4d6a1b7edfc8edf29449",
+      "source": "https://github.com/google/re2/blob/2024-07-02/LICENSE"
+    },
+    {
+      "path": "CPUINFO-LICENSE.txt",
+      "bytes": 1424,
+      "sha256": "8e7e60636c3aa0cb03571a1a841ce5697f9551ff92b3c426c2561613d15ade70",
+      "source": "https://github.com/pytorch/cpuinfo/blob/4628dc060ce4e82345dc166bbac875609db4ff69/LICENSE"
+    },
+    {
+      "path": "CLOG-LICENSE.txt",
+      "bytes": 1384,
+      "sha256": "68a14c3e79add023eecd83d611e73f05b8bf1d16852efeb7eb4033a96736da9e",
+      "source": "https://github.com/pytorch/cpuinfo/blob/4628dc060ce4e82345dc166bbac875609db4ff69/deps/clog/LICENSE"
+    },
+    {
+      "path": "KLEIDIAI-LICENSE.txt",
+      "bytes": 10280,
+      "sha256": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
+      "source": "https://github.com/ARM-software/kleidiai/blob/v1.20.0/LICENSES/Apache-2.0.txt"
+    },
+    {
+      "path": "GSL-LICENSE.txt",
+      "bytes": 1157,
+      "sha256": "4c21dc82a1c7186ea754fd59d504c00947953a3401fe8e24eaa44109ef8e2555",
+      "source": "https://github.com/microsoft/GSL/blob/v4.2.1/LICENSE"
+    },
+    {
+      "path": "SAFEINT-LICENSE.txt",
+      "bytes": 1066,
+      "sha256": "a46919cc8f01eb73f6e4b84af0d41b46b2a33b87c74e864279ef585079f82da4",
+      "source": "https://github.com/dcleblanc/SafeInt/blob/3.0.28/LICENSE"
+    },
+    {
+      "path": "DATE-LICENSE.txt",
+      "bytes": 1637,
+      "sha256": "c90f6c00fb961170560299cbda28ca2d45804913aa8b2a9f36dbb8e0028d6930",
+      "source": "https://github.com/HowardHinnant/date/blob/v3.0.1/LICENSE.txt"
+    },
+    {
+      "path": "JSON-LICENSE.txt",
+      "bytes": 1076,
+      "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14",
+      "source": "https://github.com/nlohmann/json/blob/v3.11.3/LICENSE.MIT"
+    },
+    {
+      "path": "DATE-ATTRIBUTION.txt",
+      "bytes": 1541,
+      "sha256": "69cae89f9fc38265d36d042d1f8fd0037aa184bf271ac8754b4b37b6edc75741",
+      "source": "https://github.com/HowardHinnant/date/blob/v3.0.1/include/date/date.h"
+    },
+    {
+      "path": "ORT-COPIED-Tensorflow.txt",
+      "bytes": 10407,
+      "sha256": "67024aaebbba4aac778391ecd0ccc7c71566990ca38de95c9eb80ade4e66207b",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#Tensorflow"
+    },
+    {
+      "path": "ORT-COPIED-Pytorch-Caffe2.txt",
+      "bytes": 3157,
+      "sha256": "552de736c767c74f777a9c7af3fa6f438721487be39f39874189d21c0b2d01a2",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#Pytorch / Caffe2"
+    },
+    {
+      "path": "ORT-COPIED-Caffe.txt",
+      "bytes": 2096,
+      "sha256": "c20796a8a33763fb894caeb2a62ad463fbadacd722073c48e0cfe7d75133418b",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#Caffe"
+    },
+    {
+      "path": "ORT-COPIED-Scikit-learn.txt",
+      "bytes": 1554,
+      "sha256": "6f874d218220b32132c4875183f19c8851c15e099f01e8aaae0194600c55417f",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#Scikit-learn"
+    },
+    {
+      "path": "ORT-COPIED-MurmurHash3.txt",
+      "bytes": 466,
+      "sha256": "63c6f2937cbc90b9063e0fae5cd84344175df66fd56c6776234341537dd123e5",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#MurmurHash3"
+    },
+    {
+      "path": "ORT-COPIED-The-Android-Open-Source-Project.txt",
+      "bytes": 17811,
+      "sha256": "c5460e743273986b2c1607b0d7bb4d76486b344244b03d621cfa2b9a371d09ba",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#The Android Open Source Project"
+    },
+    {
+      "path": "ORT-COPIED-google-XNNPACK.txt",
+      "bytes": 1576,
+      "sha256": "9d2eef5d42ecb1d8187ab7587402accbb55892895df688f2bb4c744dfaac9706",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#google/XNNPACK"
+    },
+    {
+      "path": "ORT-COPIED-Boost.txt",
+      "bytes": 1345,
+      "sha256": "a0b58e1e906affe98d0aa3b598eb5911b93596dc31deb19b6dea90f1476ddc71",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#Boost"
+    },
+    {
+      "path": "ORT-COPIED-onnx.txt",
+      "bytes": 11470,
+      "sha256": "6e1e9db924976e1f1ea71e89ba22da186339e6fb765a7d8ec4af4318e0a8bb2b",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#onnx"
+    },
+    {
+      "path": "ORT-COPIED-google-flatbuffers.txt",
+      "bytes": 11362,
+      "sha256": "650b319094ff6502ed53ed1eb4bf3d73d3d59af67581d7f934cca182df974294",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#google/flatbuffers"
+    },
+    {
+      "path": "ORT-COPIED-abseil-cpp.txt",
+      "bytes": 11408,
+      "sha256": "33edea422222332d052128fa3a467a9e27bf704d32e6d81ed3bc23a9c7222dc6",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#abseil-cpp"
+    },
+    {
+      "path": "ORT-COPIED-KleidiAI.txt",
+      "bytes": 10744,
+      "sha256": "2f49436542a55ad7aea7bd36ed9caffc9b91e1b1f3a126ec42d6a6169b060a33",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/ThirdPartyNotices.txt#KleidiAI"
+    },
+    {
+      "path": "ORT-SOURCE-ATTRIBUTIONS.txt",
+      "bytes": 75443,
+      "sha256": "70f896c86ade8e43699603d8b00b69127a10d2e340e2d16244065351b71ed1c9",
+      "source": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+    },
+    {
+      "path": "ORT-EIGEN-THREADPOOL-SOURCE-NOTICE.txt",
+      "bytes": 1618,
+      "sha256": "fbf8efac5c665129a4d8fb1d0cad92da5c5c5d2e804f886f253beff07ca959b5",
+      "source": "https://github.com/microsoft/onnxruntime/blob/33ca9628233dc8f002435e868d4c2e9f82766ca1/include/onnxruntime/core/platform/EigenNonBlockingThreadPool.h"
+    },
+    {
+      "path": "LLVM-RUNTIME-NOTICE.txt",
+      "bytes": 130424,
+      "sha256": "f96f763beb66a7ba7a667647fc64c0226ace875e590c831fdd9579ec1c1d91e1",
+      "source": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/refs/tags/ndk-r27d/clang-r522817d/NOTICE; byte-identical to installed NDK28.2 toolchains/llvm/prebuilt/windows-x86_64/NOTICE"
+    },
+    {
+      "path": "LLVM-libcxx-LICENSE.txt",
+      "bytes": 16703,
+      "sha256": "539dd7aed86e8a4f12cbdd0e6c50c189c7d74847e4fecc64ce2c6ee3a01da38b",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/libcxx/LICENSE.TXT"
+    },
+    {
+      "path": "LLVM-libcxx-CREDITS.txt",
+      "bytes": 4124,
+      "sha256": "054e099bf5954c8821b880f5751d2fbf221bf43cf7c57ac1c2c5ff6263d6d9c3",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/libcxx/CREDITS.TXT"
+    },
+    {
+      "path": "LLVM-libcxxabi-LICENSE.txt",
+      "bytes": 16706,
+      "sha256": "e2b35be49f7284a45b7baca8fc7b3ab7440e7902392b2528a457816b5bb2a15c",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/libcxxabi/LICENSE.TXT"
+    },
+    {
+      "path": "LLVM-libcxxabi-CREDITS.txt",
+      "bytes": 1660,
+      "sha256": "a259fff28a51623f14917dd68f97f3af7804984087ddc1bfd8196d08ebb75b83",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/libcxxabi/CREDITS.TXT"
+    },
+    {
+      "path": "LLVM-libunwind-LICENSE.txt",
+      "bytes": 16706,
+      "sha256": "b5efebcaca80879234098e52d1725e6d9eb8fb96a19fce625d39184b705f7b6d",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/libunwind/LICENSE.TXT"
+    },
+    {
+      "path": "LLVM-compiler-rt-LICENSE.txt",
+      "bytes": 16708,
+      "sha256": "1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/compiler-rt/LICENSE.TXT"
+    },
+    {
+      "path": "LLVM-compiler-rt-CREDITS.txt",
+      "bytes": 1049,
+      "sha256": "a9901f47a089da41e4690682d00ce4cedaa2baf41fedbe79beee366d43ac2461",
+      "source": "https://android.googlesource.com/toolchain/llvm-project/+/d8003a456d14a3deb8054cdaa529ffbf02d9b262/compiler-rt/CREDITS.TXT"
+    },
+    {
+      "path": "EIGEN5-COPYING.BSD.txt",
+      "bytes": 1517,
+      "sha256": "51928dce36213c5333ba3172e847d735d4c6e9b7ff2722a326c49067155b82eb",
+      "source": "https://gitlab.com/libeigen/eigen/-/blob/5.0.1/COPYING.BSD"
+    },
+    {
+      "path": "EIGEN5-COPYING.APACHE.txt",
+      "bytes": 11362,
+      "sha256": "03379001a7b12a2ec997a25554247d985270b353c10d5bafee9ac8d6519820b7",
+      "source": "https://gitlab.com/libeigen/eigen/-/blob/5.0.1/COPYING.APACHE"
+    },
+    {
+      "path": "EIGEN-ORT-BSD.txt",
+      "bytes": 1517,
+      "sha256": "51928dce36213c5333ba3172e847d735d4c6e9b7ff2722a326c49067155b82eb",
+      "source": "https://github.com/eigen-mirror/eigen/blob/1d8b82b0740839c0de7f1242a3585e3390ff5f33/COPYING.BSD"
+    },
+    {
+      "path": "JSON-EMBEDDED-ATTRIBUTIONS.txt",
+      "bytes": 479,
+      "sha256": "deb85a067a06b8e62d88a9cb1aad7250b8153cc9e231ee521c7f1f1b0226fcc6",
+      "source": "https://github.com/nlohmann/json/blob/v3.11.3/single_include/nlohmann/json.hpp"
+    },
+    {
+      "path": "ABSEIL-SOURCE-ATTRIBUTIONS.txt",
+      "bytes": 584,
+      "sha256": "139be8a6f5fd0e373ca6d7e5126a7afcc86717684bac72f0b6b7a5cfe542937e",
+      "source": "https://github.com/abseil/abseil-cpp/tree/20250814.0/absl"
+    },
+    {
+      "path": "KALDI-NATIVE-FBANK-SOURCE-ATTRIBUTIONS.txt",
+      "bytes": 1136,
+      "sha256": "ddb19759d8c240b35ce8ba75a92ede6d5888ff9c68c800bcfa838cb5d77ccba4",
+      "source": "https://github.com/csukuangfj/kaldi-native-fbank/tree/v1.22.3"
+    },
+    {
+      "path": "SHERPA-SOURCE-ATTRIBUTIONS.txt",
+      "bytes": 1624,
+      "sha256": "502afd1cc84e16fc5a33390a471061b06e3349ebd81276f1c36a88e67064937c",
+      "source": "https://github.com/k2-fsa/sherpa-onnx/tree/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf"
+    },
+    {
+      "path": "SOURCE-ACCESS.txt",
+      "bytes": 1294,
+      "sha256": "2301faa598893d477b31435bc007ca6210554b49139642b22603b1da7b4329de",
+      "source": "DORA admission source-availability instructions"
+    }
+  ],
+  "material_review_remaining": [],
+  "not_distributed": [
+    "ORT Java classes and libonnxruntime4j_jni.so",
+    "unselected generic sherpa JNI/API classes outside exact8 VAD Java sources",
+    "TTS/eSpeak/piper",
+    "XNNPACK EP (copied BSD kernel separately listed)",
+    "kaldi-decoder, kaldifst, OpenFST, simple-sentencepiece",
+    "TEN VAD model"
+  ],
+  "ort_provenance": {
+    "source_commit": "33ca9628233dc8f002435e868d4c2e9f82766ca1",
+    "producer_run": 33892225094,
+    "producer_job": 101086389995,
+    "producer_repository_commit": "bb069649de9edc4689b2c5f9609e5499ae0bee9d",
+    "source_archive_sha256": "fe3ef960659c21aff06ab864b2d7d1d786df28c8354cc67aacbd357b7cca97cc"
+  },
+  "packaged_notice": {
+    "entry": "META-INF/LICENSES/NOTICE.txt",
+    "sha256": "0caaabf2b9d78f600fd7b3392163753dd50603eee89069341ec5416fd9e4141c",
+    "bytes": 511785
+  }
+}
