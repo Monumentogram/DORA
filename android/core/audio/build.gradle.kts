@@ -29,6 +29,7 @@ extensions.configure<com.android.build.api.variant.LibraryAndroidComponentsExten
 }
 
 dependencies {
+    implementation(project(":ml:vad-api"))
     implementation(project(":core:model"))
     implementation("com.google.crypto.tink:tink-android:1.23.0") {
         exclude(group = "com.google.code.findbugs", module = "jsr305")

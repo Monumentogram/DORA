@@ -151,6 +151,9 @@ def main() -> None:
         contract = persistence.validate_checkout(ROOT)
         approved = persistence.approved_release_graph(ROOT, contract)
         allowed_projects = persistence.RELEASE_PROJECTS
+        if contract.get('vad_runtime_graph'):
+            import validate_vad_runtime as runtime
+            allowed_projects = runtime.PROJECTS
     else:
         approved = json.loads(APPROVED.read_text())
         allowed_projects = HISTORICAL_PROJECTS

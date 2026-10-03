@@ -36,7 +36,7 @@ class AsyncCaptureIntegrationTest {
                 assertTrue(rig.session.canCapture)
                 it()
             },
-            physicalId = "B",
+            captureEpochId = "B",
         )
         assertFalse(rig.session.resume("B"))
         rig.capture.stop()
@@ -51,7 +51,7 @@ class AsyncCaptureIntegrationTest {
     fun failedOldAppendImmediatelyStopsAlreadyResumedNativeReader() {
         val rig = Rig()
         rig.pauseFirstSegment()
-        rig.capture.start({ it() }, physicalId = "B")
+        rig.capture.start({ it() }, captureEpochId = "B")
         assertTrue(rig.session.resume("B"))
         assertTrue(rig.next.entered.await(5, TimeUnit.SECONDS))
         rig.writer.failure = AudioFailure.UNCERTAIN
@@ -68,7 +68,7 @@ class AsyncCaptureIntegrationTest {
     fun resumedReaderHitsSharedBackpressureEvenAfterOldQueueWasDrained() {
         val rig = Rig()
         rig.pauseFirstSegment()
-        rig.capture.start({ it() }, physicalId = "B")
+        rig.capture.start({ it() }, captureEpochId = "B")
         assertTrue(rig.session.resume("B"))
         repeat(320) { rig.next.reads.put(1600) }
         assertTrue(rig.next.released.await(5, TimeUnit.SECONDS))
@@ -110,14 +110,14 @@ class AsyncCaptureIntegrationTest {
         fun pauseFirstSegment() {
             session.start()
             val admitted = CountDownLatch(1)
-            capture.start({ it() }, physicalId = session.physicalId) {
+            capture.start({ it() }, captureEpochId = session.captureEpochId) {
                 if (it == "first_pcm") admitted.countDown()
             }
             first.reads.put(1600)
             assertTrue(admitted.await(5, TimeUnit.SECONDS))
             capture.requestStop()
             capture.stop()
-            capture.drainOwned { session.accept(it.pcm, it.physicalId, it.firstFrame) }
+            capture.drainOwned { session.accept(it.pcm, it.captureEpochId, it.firstFrame) }
             session.pause()
             assertEquals(RecordingPhase.PAUSED, session.state.phase)
             assertEquals(0L, session.state.durableFrames)

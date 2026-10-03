@@ -27,10 +27,17 @@ import org.junit.Test
 
 class OriginalAudioFullMigrationTest {
     @Test
+    fun finalizedAudioRecoveryQuarantineAndPendingDeletionSurviveExactV1Migration() =
+        assertMigration(1)
+
+    @Test
+    fun finalizedAudioRecoveryQuarantineAndPendingDeletionSurviveExactV2Migration() =
+        assertMigration(2)
+
     @Suppress(
         "LongMethod"
     ) // Full real encrypted source and pending deletion survive one migration.
-    fun finalizedAudioRecoveryQuarantineAndPendingDeletionSurviveExactV1Migration() {
+    private fun assertMigration(oldVersion: Int) {
         val f = EncryptedAudioVaultFaultFixture()
         val deleting = f.audio.copy(recordingId = RecordingId(id()), assetId = AudioAssetId(id()))
         val ref =
@@ -63,7 +70,7 @@ class OriginalAudioFullMigrationTest {
             assertTrue(vault.deleteAudio(deleting) is AudioResult.Failed)
         }
         lateinit var before: Map<String, List<List<String?>>>
-        raw(f, 2) { db ->
+        raw(f, 3) { db ->
             before = snapshot(db)
             listOf(
                     "bootstrap",
@@ -80,15 +87,17 @@ class OriginalAudioFullMigrationTest {
             // Test fixture only: baseline writer produced the original twelve tables unchanged.
             // Remove the additive v2 table, restore the exact exported v1 Room identity/version,
             // and verify the complete accepted v1 DDL before allowing the product to open it.
-            db.execSQL("DROP TABLE original_audio_reference")
-            db.execSQL(
-                "UPDATE room_master_table SET identity_hash='d94287707e09654e0d36efae561f369b' WHERE id=42"
-            )
-            db.execSQL("PRAGMA user_version=1")
-            JournalSchemaVerifier.verify(db, 1)
+            db.execSQL("DROP TABLE audio_segmentation")
+            if (oldVersion == 1) db.execSQL("DROP TABLE original_audio_reference")
+            val roomIdentity =
+                if (oldVersion == 1) "d94287707e09654e0d36efae561f369b"
+                else "7665fb9df322bfee52df0e1b1f163a73"
+            db.execSQL("UPDATE room_master_table SET identity_hash='$roomIdentity' WHERE id=42")
+            db.execSQL("PRAGMA user_version=$oldVersion")
+            JournalSchemaVerifier.verify(db, oldVersion)
         }
         f.open(create = false).close()
-        raw(f, 2) { db ->
+        raw(f, 3) { db ->
             assertTrue(
                 "Every existing encrypted row must survive migration",
                 before == snapshot(db),

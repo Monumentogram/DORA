@@ -1,0 +1,13 @@
+{
+  "scope": "CALIBRATION_ONLY_NOT_FINAL_ACCEPTANCE",
+  "sampleRate": 16000,
+  "seed": 84031,
+  "probabilityThresholdCandidates": [0.5, 0.6, 0.7],
+  "onsetFrameCandidates": [4800, 6400, 8000],
+  "hysteresisFrameCandidates": [12800, 16000, 19200],
+  "overlapFrames": 32000,
+  "overlapRationale": "Upper accepted context range preserves most available context at zero canonical byte cost; independent of acoustic outcomes",
+  "selection": "Reject any candidate with accepted onset on noise-only fixtures or no onset on any speech fixture. Among remaining select smallest onset to preserve brief utterances; threshold tie chooses0.5 then0.6 then0.7. Hysteresis chooses smallest allowed value covering95percent of interior negative runs shorter than1.2seconds in the natural-pause speech fixture; otherwise largest permitted value and explicit calibration limitation. No final acceptance retuning.",
+  "categories": ["clean_speech", "natural_short_pauses", "silence", "hvac", "keyboard", "environment_noise", "near_speech", "far_speech"],
+  "fixtures": "Synthetic source speech plus deterministic attenuation/noise; not recorded owner audio; no claim of exhaustive acoustic representativeness"
+}

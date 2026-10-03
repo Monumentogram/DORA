@@ -15,6 +15,6 @@ internal object OriginalAudioMigration : Migration(1, 2) {
         JournalSchemaVerifier.verify(db, 1)
         db.execSQL(TABLE_SQL)
         db.execSQL(INDEX_SQL)
-        JournalSchemaVerifier.verify(db)
+        JournalSchemaVerifier.verify(db, 2)
     }
 }

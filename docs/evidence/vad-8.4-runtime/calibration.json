@@ -1,0 +1,154 @@
+{
+  "status": "PROFILE_FROZEN_BEFORE_FINAL_ACCEPTANCE",
+  "profileSha256": "1c5ceb70f08593dfa96e522f43c51b7b28e36ab8b65a423fae417cc4e1cd2292",
+  "protocolSha256": "e05a5ee1b4c94e83b76bb313ad54c6359e709ecb9e1f04e52982a671780c6cd4",
+  "resultsSha256": "de22752b4542399025766e65061b0c72fbebdf61cc751720280050e90802861b",
+  "apkSha256": "0bfd0a634770797119ac2ff173797ac19b752fc415adad33114895aa6d10cfa7",
+  "device": "POCO M5 Android14 API34 arm64-v8a",
+  "scope": "Synthetic calibration only; no microphone; no owner audio; no final acoustic acceptance claim",
+  "matrix": [
+    {
+      "threshold": 0.5,
+      "fixture": "clean_speech",
+      "longestPositiveFrames": 72192
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "natural_short_pauses",
+      "longestPositiveFrames": 72192
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "silence",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "hvac",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "keyboard",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "environment_noise",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "near_speech",
+      "longestPositiveFrames": 72704
+    },
+    {
+      "threshold": 0.5,
+      "fixture": "far_speech",
+      "longestPositiveFrames": 71680
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "clean_speech",
+      "longestPositiveFrames": 71680
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "natural_short_pauses",
+      "longestPositiveFrames": 71680
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "silence",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "hvac",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "keyboard",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "environment_noise",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "near_speech",
+      "longestPositiveFrames": 72192
+    },
+    {
+      "threshold": 0.6,
+      "fixture": "far_speech",
+      "longestPositiveFrames": 71168
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "clean_speech",
+      "longestPositiveFrames": 71680
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "natural_short_pauses",
+      "longestPositiveFrames": 71680
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "silence",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "hvac",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "keyboard",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "environment_noise",
+      "longestPositiveFrames": 0
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "near_speech",
+      "longestPositiveFrames": 72192
+    },
+    {
+      "threshold": 0.7,
+      "fixture": "far_speech",
+      "longestPositiveFrames": 70656
+    }
+  ],
+  "interiorNegativeRunsFrames": [
+    13312,
+    4608,
+    13312
+  ],
+  "interiorNegativeP95Frames": 13312,
+  "fixtureHashes": {
+    "clean_speech": "930921502c8ea7a70c36cf36ed52d136a23019d0b634b8cb61a4ad0f2ddcd862",
+    "natural_short_pauses": "930921502c8ea7a70c36cf36ed52d136a23019d0b634b8cb61a4ad0f2ddcd862",
+    "silence": "59d5139ba463d96139535d52dd61e37da801f127e0ece748e772b8aed9d05444",
+    "hvac": "883132287c5450947c36f7e4e1b1fe6e5a00999c007954256907f563dd2f75e3",
+    "keyboard": "85e663a51f3e51a31153e25bb909c56d2b762ce3fd330073cd537696cc30f540",
+    "environment_noise": "48bdf997f19e31d72d6dce3ec17646a4b04b3b81a82bbb4dcaa3c0599450d55d",
+    "near_speech": "8608d0db84a979ba260643e31eae8fbf3f68a615a872eaf6e7541e89aa3dbd83",
+    "far_speech": "d1bdcb716c1c32e3f89426d45b20b9c2316e5505aae672beece000fc970db683"
+  },
+  "selection": {
+    "onsetFrames": 4800,
+    "threshold": 0.5,
+    "hysteresisFrames": 16000,
+    "overlapFrames": 32000
+  },
+  "limitations": "Synthetic near/far attenuation and synthetic noise do not exhaust real room acoustics; final physical gates remain mandatory"
+}

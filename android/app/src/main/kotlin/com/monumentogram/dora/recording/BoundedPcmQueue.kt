@@ -5,7 +5,7 @@ import java.util.concurrent.ArrayBlockingQueue
 /** Single producer/consumer; bounded memory and work. No audio is written to disk here. */
 internal data class CapturedBlock(
     val generation: Long,
-    val physicalId: String,
+    val captureEpochId: String,
     val firstFrame: Long,
     val pcm: ByteArray,
 )

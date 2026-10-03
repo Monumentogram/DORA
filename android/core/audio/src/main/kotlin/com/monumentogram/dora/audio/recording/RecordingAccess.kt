@@ -8,6 +8,7 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.ProductAudioWriterPort
+import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.persistence.auth.AppLockedException
 import com.monumentogram.dora.audio.persistence.runtime.RuntimeVault
 
@@ -42,6 +43,12 @@ internal constructor(
 
     val writer: ProductAudioWriterPort =
         object : ProductAudioWriterPort {
+            override fun segmentation(identity: AudioIdentity, metadata: SegmentationMetadata) =
+                operation(identity) {
+                    if (!created) AudioResult.Failed(AudioFailure.COLLISION)
+                    else vault.writer.segmentation(identity, metadata)
+                }
+
             override fun create(identity: AudioIdentity) =
                 operation(identity) {
                     if (created) AudioResult.Failed(AudioFailure.COLLISION)

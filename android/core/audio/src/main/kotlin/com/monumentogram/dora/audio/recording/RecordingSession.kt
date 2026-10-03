@@ -14,6 +14,12 @@ import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.AudioTimeline
 import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.audio.ProductAudioWriterPort
+import com.monumentogram.dora.audio.SegmentationKind
+import com.monumentogram.dora.audio.SegmentationMetadata
+import com.monumentogram.dora.vad.FrameRange
+import com.monumentogram.dora.vad.SegmentationProfile
+import com.monumentogram.dora.vad.TechnicalTimeline
+import com.monumentogram.dora.vad.VadFailure
 import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicReference
@@ -42,6 +48,7 @@ data class RecordingState(
     val durableFrames: Long = 0,
     val stopConfirmation: Boolean = false,
     val persistenceFailure: AudioFailure? = null,
+    val segmentationFailure: VadFailure? = null,
 ) {
     val durability: RecordingDurability
         get() =
@@ -83,6 +90,16 @@ class RecordingSession(
     var physicalId = freshId()
         private set
 
+    var captureEpochId = physicalId
+        private set
+
+    private var technicalTimeline = newTechnicalTimeline(0)
+    private var epochStart = 0L
+    private var physicalOpened = false
+    private var physicalClosed = false
+    private val pendingMetadata = ArrayDeque<SegmentationMetadata>()
+    private val metadataFailed = AtomicReference<VadFailure?>(null)
+
     private var physicalStart = 0L
     private var sealedFrames = 0L
     var maximumAppendNanos: Long = 0
@@ -95,6 +112,8 @@ class RecordingSession(
         ordinal = nextOrdinal
         physicalStart = frames
         sealedFrames = frames
+        technicalTimeline = newTechnicalTimeline(frames)
+        epochStart = frames
         state = RecordingState(RecordingPhase.PAUSED, frames, frames)
     }
 
@@ -110,14 +129,33 @@ class RecordingSession(
     fun accept(pcm: ByteArray) {
         if (state.phase != RecordingPhase.RECORDING || failed.get() != null) return
         val frames = AudioTimeline.frames(pcm.size)
-        state = state.copy(frames = AudioTimeline.nextFrame(state.frames, frames))
+        val end = AudioTimeline.nextFrame(state.frames, frames)
+        val slices = technicalTimeline.accept(FrameRange(state.frames, end), captureEpochId)
         var offset = 0
-        while (offset < pcm.size && state.phase == RecordingPhase.RECORDING) {
-            val count = minOf(pcm.size - offset, pending.size - pendingBytes)
-            pcm.copyInto(pending, pendingBytes, offset, offset + count)
-            pendingBytes += count
-            offset += count
-            if (pendingBytes == pending.size) seal()
+        for (slice in slices) {
+            if (state.phase != RecordingPhase.RECORDING || failed.get() != null) break
+            if (slice.technicalId != physicalId) {
+                seal()
+                closePhysical("CAP")
+                physicalId = slice.technicalId
+                physicalStart = slice.technicalFirstFrame
+                physicalOpened = false
+                physicalClosed = false
+            }
+            var remaining = Math.toIntExact(slice.range.count * 2)
+            while (
+                remaining > 0 && state.phase == RecordingPhase.RECORDING && failed.get() == null
+            ) {
+                val count = minOf(remaining, pending.size - pendingBytes)
+                pcm.copyInto(pending, pendingBytes, offset, offset + count)
+                pendingBytes += count
+                offset += count
+                remaining -= count
+                state = state.copy(frames = AudioTimeline.nextFrame(state.frames, count / 2L))
+                if (pendingBytes == pending.size) seal()
+            }
+            if (state.frames - physicalStart == SegmentationProfile.FROZEN.technicalCapFrames)
+                closePhysical("CAP")
         }
     }
 
@@ -125,7 +163,7 @@ class RecordingSession(
     fun accept(pcm: ByteArray, physicalSegmentId: String, firstFrame: Long) {
         if (failed.get() != null) return
         if (
-            physicalSegmentId != physicalId ||
+            physicalSegmentId != captureEpochId ||
                 firstFrame != state.frames ||
                 state.phase != RecordingPhase.RECORDING
         ) {
@@ -140,12 +178,18 @@ class RecordingSession(
         if (state.phase != RecordingPhase.RECORDING) return
         state = state.copy(phase = RecordingPhase.PAUSED)
         seal()
+        closePhysical("PAUSE")
     }
 
     fun resume(physicalSegmentId: String = freshId()): Boolean {
         if (state.phase != RecordingPhase.PAUSED || failed.get() != null) return false
         physicalId = physicalSegmentId
+        captureEpochId = physicalSegmentId
+        technicalTimeline.resume(state.frames, captureEpochId)
         physicalStart = state.frames
+        epochStart = state.frames
+        physicalOpened = false
+        physicalClosed = false
         state = state.copy(phase = RecordingPhase.RECORDING)
         return true
     }
@@ -163,6 +207,7 @@ class RecordingSession(
         if (!state.stopConfirmation || state.phase !in ACTIVE_PHASES) return
         state = state.copy(phase = RecordingPhase.FINALIZING, stopConfirmation = false)
         seal()
+        closePhysical("STOP")
         if (failed.get() != null) return
         if (state.frames == 0L) {
             state = state.copy(phase = RecordingPhase.EMPTY)
@@ -186,6 +231,65 @@ class RecordingSession(
     /** Retire access only after every task has stopped borrowing its writer and plaintext. */
     fun whenSettled(action: () -> Unit) {
         persistence.execute { completion.execute(action) }
+    }
+
+    /** Control-owner entry. Metadata waits only for source sealing, never the microphone. */
+    fun retainMetadata(metadata: SegmentationMetadata) {
+        if (metadataFailed.get() != null || state.phase == RecordingPhase.INTERRUPTED) return
+        if (pendingMetadata.size >= MAX_PENDING_METADATA) {
+            metadataFailure()
+            return
+        }
+        pendingMetadata.addLast(metadata)
+        flushMetadata()
+    }
+
+    private fun metadataFailure() {
+        metadataFailed.set(VadFailure.METADATA_FAILED)
+        pendingMetadata.clear()
+        state = state.copy(segmentationFailure = VadFailure.METADATA_FAILED)
+        changed()
+    }
+
+    private fun flushMetadata() {
+        while (pendingMetadata.isNotEmpty() && metadataFailed.get() == null) {
+            val metadata = pendingMetadata.first()
+            if (metadata.endFrame > sealedFrames) return
+            pendingMetadata.removeFirst()
+            persistence.execute {
+                val result =
+                    try {
+                        if (failed.get() != null || metadataFailed.get() != null)
+                            AudioResult.Failed(AudioFailure.UNAVAILABLE)
+                        else writer.segmentation(identity, metadata)
+                    } catch (_: Exception) {
+                        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+                    }
+                if (result is AudioResult.Failed) {
+                    metadataFailed.set(VadFailure.METADATA_FAILED)
+                    completion.execute { metadataFailure() }
+                }
+            }
+        }
+    }
+
+    private fun physicalMetadata(kind: SegmentationKind, end: Long, reason: String) =
+        SegmentationMetadata(
+            kind,
+            physicalId,
+            physicalStart,
+            end,
+            captureEpochId,
+            if (physicalStart == epochStart) null
+            else maxOf(epochStart, physicalStart - SegmentationProfile.FROZEN.overlapFrames),
+            reason,
+        )
+
+    private fun closePhysical(reason: String) {
+        if (physicalOpened && !physicalClosed && state.frames > physicalStart) {
+            physicalClosed = true
+            retainMetadata(physicalMetadata(SegmentationKind.TECHNICAL_CLOSE, state.frames, reason))
+        }
     }
 
     /** Keeps the committed prefix and never converts abnormal termination into successful Stop. */
@@ -248,7 +352,22 @@ class RecordingSession(
                 changed()
             }
         }
+        if (!physicalOpened) {
+            physicalOpened = true
+            retainMetadata(
+                physicalMetadata(
+                    SegmentationKind.TECHNICAL_OPEN,
+                    physicalStart,
+                    if (physicalStart != epochStart) "CAP"
+                    else if (physicalStart == 0L) "START" else "RESUME",
+                )
+            )
+        }
+        flushMetadata()
     }
+
+    private fun newTechnicalTimeline(firstFrame: Long) =
+        TechnicalTimeline(SegmentationProfile.FROZEN, firstFrame, captureEpochId) { freshId() }
 
     private fun write(action: () -> AudioResult<Unit>): AudioResult<Unit> {
         failed.get()?.let {
@@ -277,6 +396,7 @@ class RecordingSession(
     companion object {
         // Existing accepted bridge limit. A persistence unit, never a semantic/VAD segment.
         const val TRANSPORT_BYTES = 160_000
+        private const val MAX_PENDING_METADATA = 128
         private val ACTIVE_PHASES = setOf(RecordingPhase.RECORDING, RecordingPhase.PAUSED)
 
         private fun freshId() = UUID.randomUUID().toString()

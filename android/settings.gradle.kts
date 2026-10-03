@@ -47,3 +47,7 @@ include(":core:model")
 include(":core:testing")
 
 include(":core:audio")
+
+include(":ml:vad-api")
+
+include(":ml:vad-sherpa")

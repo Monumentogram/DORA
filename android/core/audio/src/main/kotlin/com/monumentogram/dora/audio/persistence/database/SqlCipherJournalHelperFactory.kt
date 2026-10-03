@@ -142,11 +142,19 @@ private class GuardedHelper(
             override fun onCreate(db: SQLiteDatabase) = configuration.callback.onCreate(wrap(db))
 
             override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-                check(oldVersion == 1 && newVersion == 2) { "Unadmitted database migration" }
+                check(
+                    (oldVersion == 1 && newVersion == 2) ||
+                        (oldVersion in 1..2 &&
+                            newVersion ==
+                                com.monumentogram.dora.audio.persistence.journal
+                                    .SEGMENTATION_SCHEMA_VERSION)
+                ) {
+                    "Unadmitted database migration"
+                }
                 val connection = wrap(db)
-                JournalSchemaVerifier.verify(connection, 1)
+                JournalSchemaVerifier.verify(connection, oldVersion)
                 configuration.callback.onUpgrade(connection, oldVersion, newVersion)
-                JournalSchemaVerifier.verify(connection)
+                JournalSchemaVerifier.verify(connection, newVersion)
             }
 
             override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit =
