@@ -13,6 +13,8 @@ import com.monumentogram.dora.audio.EncryptedAudioCatalog
 import com.monumentogram.dora.audio.OriginalAudioLifecycle
 import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.OriginalAudioReferenceCodec
+import com.monumentogram.dora.audio.SegmentationKind
+import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.StoredAudioAsset
 import com.monumentogram.dora.audio.StoredAudioSegment
 import com.monumentogram.dora.poc.recovery.bootstrap.KeyConfirmationState
@@ -52,7 +54,7 @@ import java.util.concurrent.ConcurrentHashMap
  * gate.
  */
 // Explicit fail-closed returns and the accepted begin/mark/end ports remain visible for review.
-@Suppress("TooManyFunctions", "ReturnCount", "DEPRECATION")
+@Suppress("TooManyFunctions", "ReturnCount", "DEPRECATION", "LargeClass")
 internal class RoomAudioJournal
 private constructor(
     private val database: AudioJournalDatabase,
@@ -73,6 +75,113 @@ private constructor(
             uncertain = true
         }
     val catalog: EncryptedAudioCatalog = Catalog()
+
+    @Suppress(
+        "LongMethod"
+    ) // Validate source provenance then atomically insert the exact immutable row.
+    fun retainSegmentation(identity: AudioIdentity, metadata: SegmentationMetadata) {
+        requireOperation(identity)
+        requireMutable()
+        check(sourceState(identity) == null)
+        val source = checkNotNull(catalog.load(identity))
+        val frames = source.segments.sumOf { it.frames }
+        metadata.validate(frames)
+        if (
+            metadata.kind == SegmentationKind.TECHNICAL_OPEN ||
+                metadata.kind == SegmentationKind.TECHNICAL_CLOSE
+        ) {
+            val units =
+                source.segments.filter { it.identity.physicalSegmentId == metadata.segmentId }
+            check(
+                units.isNotEmpty() &&
+                    units.first().identity.physicalFirstFrame == metadata.firstFrame
+            )
+            check(metadata.endFrame <= units.last().identity.firstFrame + units.last().frames)
+            val epoch =
+                checkNotNull(
+                    source.segments.firstOrNull {
+                        it.identity.physicalSegmentId == metadata.captureEpochId
+                    }
+                )
+            val epochStart = epoch.identity.physicalFirstFrame
+            check(
+                metadata.firstFrame >= epochStart &&
+                    (metadata.firstFrame - epochStart) %
+                        com.monumentogram.dora.vad.SegmentationProfile.FROZEN.technicalCapFrames ==
+                        0L
+            )
+            check(
+                metadata.overlapFirstFrame ==
+                    if (metadata.firstFrame == epochStart) null
+                    else
+                        maxOf(
+                            epochStart,
+                            metadata.firstFrame -
+                                com.monumentogram.dora.vad.SegmentationProfile.FROZEN.overlapFrames,
+                        )
+            )
+            if (metadata.kind == SegmentationKind.TECHNICAL_CLOSE) {
+                check(metadata.endFrame == units.last().identity.firstFrame + units.last().frames)
+                val opened =
+                    checkNotNull(
+                        dao.segmentation(
+                            identity.assetId.value,
+                            "TECHNICAL_OPEN:${metadata.segmentId}",
+                        )
+                    )
+                check(
+                    opened.captureEpochId == metadata.captureEpochId &&
+                        opened.overlapFirstFrame == metadata.overlapFirstFrame
+                )
+            }
+        }
+        val row =
+            SegmentationEntity(
+                identity.assetId.value,
+                metadata.key,
+                metadata.kind.name,
+                metadata.segmentId,
+                metadata.firstFrame,
+                metadata.endFrame,
+                metadata.captureEpochId,
+                metadata.overlapFirstFrame,
+                metadata.reason,
+                metadata.degraded,
+                metadata.profileId,
+                metadata.profileSha256,
+            )
+        val old = dao.segmentation(row.assetId, row.recordKey)
+        if (old != null) {
+            check(old == row)
+            return
+        }
+        commits.commit({ dao.insert(row) }) { dao.segmentation(row.assetId, row.recordKey) == row }
+    }
+
+    fun segmentationPage(identity: AudioIdentity, afterKey: String): List<SegmentationMetadata> {
+        requireOperation(identity)
+        check(sourceState(identity) == null)
+        val source = checkNotNull(catalog.load(identity))
+        val frames = source.segments.sumOf { it.frames }
+        return dao.segmentationPage(identity.assetId.value, afterKey).map { row ->
+            SegmentationMetadata(
+                    SegmentationKind.valueOf(row.kind),
+                    row.segmentId,
+                    row.firstFrame,
+                    row.endFrame,
+                    row.captureEpochId,
+                    row.overlapFirstFrame,
+                    row.reason,
+                    row.degraded,
+                    row.profileId,
+                    row.profileSha256,
+                )
+                .also {
+                    it.validate(frames)
+                    check(it.key == row.recordKey)
+                }
+        }
+    }
 
     /** Bounded encrypted discovery; callers authenticate each source before describing audio. */
     fun recordingCandidates(after: String): List<AudioIdentity> {
@@ -1022,7 +1131,7 @@ private constructor(
                             file.path,
                         )
                         .openHelperFactory(helperFactory)
-                        .addMigrations(OriginalAudioMigration)
+                        .addMigrations(OriginalAudioMigration, SegmentationMigration)
                         .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                         .build()
                 } catch (error: Exception) {

@@ -22,10 +22,14 @@ import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntime
 import com.monumentogram.dora.audio.recording.RecordingAccess
 import com.monumentogram.dora.audio.recording.RecordingPhase
+import com.monumentogram.dora.audio.recording.RecordingSegmentation
 import com.monumentogram.dora.audio.recording.RecordingSession
 import com.monumentogram.dora.audio.recording.RecordingState
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
+import com.monumentogram.dora.vad.VadEngineFactory
+import com.monumentogram.dora.vad.VadException
+import com.monumentogram.dora.vad.VadFailure
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -52,6 +56,9 @@ data class RecordingViewState(
 class RecordingController(
     private val context: Context,
     private val runtime: AndroidProductAudioRuntime,
+    private val vadFactory: VadEngineFactory = VadEngineFactory {
+        throw VadException(VadFailure.RUNTIME_UNAVAILABLE)
+    },
 ) {
     private val mutable = MutableStateFlow(RecordingViewState())
     val state = mutable.asStateFlow()
@@ -130,6 +137,7 @@ class RecordingController(
             }
         }
     private var session: RecordingSession? = null
+    @Volatile private var segmentation: RecordingSegmentation? = null
     @Volatile private var maximumAppendNanos = 0L
     @Volatile private var access: RecordingAccess? = null
     @Volatile private var serviceActive = false
@@ -164,7 +172,10 @@ class RecordingController(
             "shortReads=${capture.shortReads} readErrors=${capture.readErrors} healthy=${capture.healthy}\n" +
             latency.dump() +
             "\nappend_stages " +
-            lastAppendStages.entries.joinToString(" ") { "${it.key}=${it.value}" }
+            lastAppendStages.entries.joinToString(" ") { "${it.key}=${it.value}" } +
+            "\n" +
+            (segmentation?.diagnostics() ?: "vad=NOT_STARTED") +
+            " segmentationMetadataFailure=${state.value.recording.segmentationFailure ?: "NONE"}"
 
     fun start(activity: Activity, recoveredIdentity: AudioIdentity? = null) {
         if (!starting.compareAndSet(false, true)) return
@@ -182,6 +193,7 @@ class RecordingController(
         actionToken = token
         worker.execute {
             session = null
+            segmentation = null
             retiring = false
             mutable.value =
                 RecordingViewState(recording = RecordingState(phase = RecordingPhase.PREPARING))
@@ -302,6 +314,7 @@ class RecordingController(
                     terminate()
                     return@execute
                 }
+                segmentation = RecordingSegmentation(created, vadFactory)
                 if (state.value.recording.stopConfirmation) created.requestStop()
                 if (stopRequested.get()) return@execute
                 val initialStart: (() -> Unit) -> Unit = { nativeStart ->
@@ -322,7 +335,7 @@ class RecordingController(
                     }
                 }
                 try {
-                    capture.start(initialStart, physicalId = created.physicalId)
+                    capture.start(initialStart, captureEpochId = created.captureEpochId)
                 } catch (_: ResumeCancelled) {
                     if (stopRequested.get() || !serviceOwner.isCurrent(owner)) return@execute
                     if (pauseRequested.get())
@@ -391,6 +404,7 @@ class RecordingController(
             drainOwned(current)
             latency.mark(timingOperation, "drain_end")
             latency.mark(timingOperation, "tail_start")
+            segmentation?.discontinuity(VadFailure.PAUSED)
             current.pause()
             latency.mark(timingOperation, "tail_end")
             publish()
@@ -439,7 +453,7 @@ class RecordingController(
                             !servicePresent
                     )
                         return@execute
-                    val physicalId = id()
+                    val captureEpochId = id()
                     capture.start(
                         withStartAuthority = { nativeStart ->
                             result.value.consume {
@@ -462,14 +476,15 @@ class RecordingController(
                             }
                         },
                         timing = { event -> latency.mark(operation, event) },
-                        physicalId = physicalId,
+                        captureEpochId = captureEpochId,
                     )
                     // Establish provenance even if Stop/Pause arrived during native start.
                     // Accepted frames are then drained by that command; they are never discarded.
-                    if (!current.resume(physicalId)) {
+                    if (!current.resume(captureEpochId)) {
                         capture.requestStop()
                         return@execute
                     }
+                    segmentation?.discontinuity(VadFailure.RESUMED)
                     latency.mark(operation, "segment_ready")
                     if (pauseRequested.get()) pauseNow()
                     else if (!stopRequested.get()) {
@@ -538,6 +553,7 @@ class RecordingController(
                             ),
                     )
                 }
+                segmentation?.stop()
                 current.confirmStop()
                 publish()
                 if (current.state.phase == RecordingPhase.EMPTY) retireAccess()
@@ -632,6 +648,7 @@ class RecordingController(
             return
         }
         shutdownUnconfirmed = false
+        segmentation?.stop()
         capture.drain {}
         if (session == null)
             mutable.update {
@@ -643,8 +660,12 @@ class RecordingController(
 
     private fun drainOwned(current: RecordingSession, maximum: Int = 320) {
         capture.drainOwned(maximum) { block ->
-            current.accept(block.pcm, block.physicalId, timeline.frames(block.firstFrame))
+            val firstFrame = timeline.frames(block.firstFrame)
+            current.accept(block.pcm, block.captureEpochId, firstFrame)
+            if (current.state.phase == RecordingPhase.RECORDING)
+                segmentation?.accept(block.pcm, firstFrame)
         }
+        segmentation?.drain()
     }
 
     private fun persistenceChanged() {

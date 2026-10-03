@@ -17,6 +17,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import vad_runtime_ci_profile
+    workflow = vad_runtime_ci_profile.normalize(workflow)
     if 'owner-authorized development device security' not in workflow:
         return workflow
     if workflow.count(GATE) != 1:

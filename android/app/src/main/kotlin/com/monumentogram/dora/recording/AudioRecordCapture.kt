@@ -100,13 +100,13 @@ internal class AudioRecordCapture(
 
     fun start(
         withStartAuthority: (() -> Unit) -> Unit,
-        physicalId: String = "",
+        captureEpochId: String = "",
         timing: (String) -> Unit = {},
     ) {
         check(recorder == null && thread?.isAlive != true)
         failure = null
         stopTiming = {}
-        val generation = admission.begin(physicalId)
+        val generation = admission.begin(captureEpochId)
         if (!permitted()) throw CaptureException(CaptureFailure.PERMISSION_DENIED)
         val created =
             try {

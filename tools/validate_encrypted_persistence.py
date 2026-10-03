@@ -424,6 +424,9 @@ def validate_compiled(root, contract, *, include_app=True):
 
 
 def approved_release_graph(root, contract):
+    if contract.get('vad_runtime_graph'):
+        import validate_vad_runtime as runtime
+        return runtime.approved_graph(root, contract)
     import alpha_release_sbom as sbom
     approved = json.loads((root / RELEASE_GRAPH).read_text(encoding='utf-8'))
     require(hashlib.sha256(sbom.canonical_bytes(approved)).hexdigest() == contract['release_graph_sha256'],

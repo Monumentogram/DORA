@@ -51,7 +51,7 @@ class CaptureAdmissionTest {
         admission.open(next)
         admission.offer(next, ByteArray(32_000))
         val blocks = mutableListOf<Triple<String, Long, Long>>()
-        queue.drainOwned(4) { blocks.add(Triple(it.physicalId, it.firstFrame, it.generation)) }
+        queue.drainOwned(4) { blocks.add(Triple(it.captureEpochId, it.firstFrame, it.generation)) }
         assertEquals(listOf("A", "B"), blocks.map { it.first })
         assertEquals(listOf(0L, 16_000L), blocks.map { it.second })
         assertEquals(listOf(first, next), blocks.map { it.third })

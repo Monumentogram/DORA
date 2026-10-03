@@ -33,7 +33,7 @@ class OriginalAudioMigrationTest {
                     assertNotNull(journal.catalog.load(fixture.pending)!!.pending)
                 }
             }
-        fixture.raw(2) { db ->
+        fixture.raw(3) { db ->
             assertEquals(fixture.before, snapshot(db))
             db.query("SELECT count(*) FROM original_audio_reference").use {
                 assertTrue(it.moveToFirst())

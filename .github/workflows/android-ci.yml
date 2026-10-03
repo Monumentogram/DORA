@@ -224,6 +224,14 @@ jobs:
           python3 tools/validate_product_recording.py
           python3 -m unittest discover -s tools -p 'test_product_recording.py'
 
+      - name: Verify Stage 8.4 repository logic without private runtime
+        run: |
+          python3 tools/validate_vad_runtime.py
+          python3 -m unittest discover -s tools -p 'test_vad_runtime*.py'
+          python3 -m unittest discover -s tools -p 'test_vad_artifact_admission.py'
+          cd android
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest :ml:vad-api:lintDebug :ml:vad-sherpa:lintDebug
+
       - name: Verify locked search dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check
 
@@ -424,7 +432,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/recording-latency-8.3-device-tests.json
+          --inventory docs/contracts/vad-runtime-8.4-device-tests.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
       - name: Verify abrupt process death at durable persistence phases
@@ -440,6 +448,21 @@ jobs:
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
           --receipt "${RUNNER_TEMP}/original-audio-process-death-receipt.json"
+
+      - name: Verify Stage 8.4 segmentation abrupt process death
+        run: >-
+          python3 tools/run_vad_segmentation_crash.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${{ runner.temp }}/vad-segmentation-process-death.json"
+
+      - name: Upload content-free Stage 8.4 process death receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: vad-segmentation-process-death-api${{ matrix.api }}
+          path: ${{ runner.temp }}/vad-segmentation-process-death.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Build Stage 8.3 product UI instrumentation
         working-directory: android

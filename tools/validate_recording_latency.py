@@ -34,6 +34,10 @@ def project_policy_sources(files):
     source = files.get(POLICY_PATH, '')
     if 'POLICY_QUERY' not in source:
         return files
+    if hashlib.sha256(source.replace('\r\n', '\n').encode()).hexdigest() != POLICY_SOURCE_SHA256:
+        import validate_vad_runtime as runtime
+        if runtime.candidate(ROOT):
+            source = runtime.project_policy_source(source)
     require(hashlib.sha256(source.replace('\r\n', '\n').encode()).hexdigest() == POLICY_SOURCE_SHA256,
             'Unreviewed combined SQL policy source')
     import validate_encrypted_persistence as persistence

@@ -49,6 +49,9 @@ def p95_thresholds(measurements):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_vad_runtime as runtime
+    if runtime.candidate(root):
+        return runtime.validate_checkout(root, allow_working=allow_working)
     import validate_recording_alpha_acceptance as owner
     import validate_vad_artifact_admission as vad
     governance_paths = owner.validate_overlay(root) if owner.candidate(root) else set()

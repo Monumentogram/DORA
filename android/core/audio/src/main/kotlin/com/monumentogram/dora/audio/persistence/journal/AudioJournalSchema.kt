@@ -11,6 +11,34 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Update
 
+@Entity(
+    tableName = "audio_segmentation",
+    primaryKeys = ["assetId", "recordKey"],
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = AssetEntity::class,
+                parentColumns = ["assetId"],
+                childColumns = ["assetId"],
+                onDelete = ForeignKey.RESTRICT,
+            )
+        ],
+)
+internal data class SegmentationEntity(
+    val assetId: String,
+    val recordKey: String,
+    val kind: String,
+    val segmentId: String,
+    val firstFrame: Long,
+    val endFrame: Long,
+    val captureEpochId: String?,
+    val overlapFirstFrame: Long?,
+    val reason: String,
+    val degraded: Boolean,
+    val profileId: String,
+    val profileSha256: String,
+)
+
 /** Derived immutable provenance; retained independently of removable Recovery source rows. */
 @Entity(
     tableName = "original_audio_reference",
@@ -370,6 +398,16 @@ internal data class DeletionTargetEntity(
 @Suppress("TooManyFunctions")
 @Dao
 internal interface AudioJournalDao {
+    @Query("SELECT * FROM audio_segmentation WHERE assetId=:asset AND recordKey=:key")
+    fun segmentation(asset: String, key: String): SegmentationEntity?
+
+    @Query(
+        "SELECT * FROM audio_segmentation WHERE assetId=:asset AND recordKey>:after ORDER BY recordKey LIMIT 64"
+    )
+    fun segmentationPage(asset: String, after: String): List<SegmentationEntity>
+
+    @Insert fun insert(value: SegmentationEntity)
+
     @Query(
         "SELECT * FROM audio_asset WHERE ownerId=:owner AND vaultId=:vault AND assetId>:after " +
             "AND assetId NOT IN (SELECT assetId FROM deletion_tombstone) ORDER BY assetId LIMIT 20"
@@ -501,8 +539,9 @@ internal interface AudioJournalDao {
             TombstoneEntity::class,
             DeletionTargetEntity::class,
             OriginalAudioReferenceEntity::class,
+            SegmentationEntity::class,
         ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 internal abstract class AudioJournalDatabase : RoomDatabase() {

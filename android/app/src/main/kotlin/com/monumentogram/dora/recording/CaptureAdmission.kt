@@ -20,14 +20,14 @@ internal class CaptureAdmission(
     private var frames = 0L
     private var lastAccepted = 0L
     private var fencedAt = 0L
-    private var physicalId = ""
+    private var captureEpochId = ""
     private val outstanding = ArrayDeque<Long>()
     private var durableFrames = 0L
 
     @Synchronized
-    fun begin(physicalSegmentId: String = ""): Long {
+    fun begin(captureEpochId: String = ""): Long {
         accepting = false
-        physicalId = physicalSegmentId
+        this.captureEpochId = captureEpochId
         return ++generation
     }
 
@@ -46,7 +46,7 @@ internal class CaptureAdmission(
                 frames - durableFrames + bytes.size / 2 > MAXIMUM_FRAMES
         )
             Result.FULL
-        else if (!queue.offer(CapturedBlock(expected, physicalId, frames, bytes))) Result.FULL
+        else if (!queue.offer(CapturedBlock(expected, captureEpochId, frames, bytes))) Result.FULL
         else {
             frames += bytes.size / 2
             outstanding.addLast(frames)

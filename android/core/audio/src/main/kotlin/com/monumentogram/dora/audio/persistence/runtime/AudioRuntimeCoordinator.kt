@@ -18,6 +18,7 @@ import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
+import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
 import com.monumentogram.dora.audio.persistence.auth.AppLockSession
 import com.monumentogram.dora.audio.persistence.auth.AppLockedException
@@ -251,6 +252,11 @@ internal class AudioRuntimeCoordinator(
         override val protection = vault.protection
         override val writer =
             object : ProductAudioWriterPort {
+                override fun segmentation(identity: AudioIdentity, metadata: SegmentationMetadata) =
+                    invoke {
+                        writer.segmentation(identity, metadata)
+                    }
+
                 override fun create(identity: AudioIdentity) = invoke { writer.create(identity) }
 
                 override fun append(
@@ -269,6 +275,10 @@ internal class AudioRuntimeCoordinator(
             }
         override val reader =
             object : ProductAudioReaderPort {
+                override fun segmentation(identity: AudioIdentity, afterKey: String) = invoke {
+                    reader.segmentation(identity, afterKey)
+                }
+
                 override fun extract(
                     identity: AudioIdentity,
                     consume: (Long, ByteArray) -> Unit,

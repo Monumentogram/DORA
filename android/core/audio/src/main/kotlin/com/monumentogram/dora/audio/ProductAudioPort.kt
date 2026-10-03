@@ -93,6 +93,10 @@ data class AudioReadSummary(
  * Each bounded storage unit is explicit; capture segment rotation/overlap is a separate concern.
  */
 interface ProductAudioWriterPort {
+    /** Derived metadata failure never grants permission to discard canonical PCM. */
+    fun segmentation(identity: AudioIdentity, metadata: SegmentationMetadata): AudioResult<Unit> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     fun create(identity: AudioIdentity): AudioResult<Unit>
 
     fun append(
@@ -112,6 +116,12 @@ interface ProductAudioWriterPort {
  * authenticated units were delivered. Receivers must not persist plaintext.
  */
 interface ProductAudioReaderPort {
+    /** Bounded source views; empty means NOT_EVALUATED for historical recordings. */
+    fun segmentation(
+        identity: AudioIdentity,
+        afterKey: String = "",
+    ): AudioResult<List<SegmentationMetadata>> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     fun extract(
         identity: AudioIdentity,
         consume: (firstFrame: Long, pcm: ByteArray) -> Unit,

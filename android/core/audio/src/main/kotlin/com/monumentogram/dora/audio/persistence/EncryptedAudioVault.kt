@@ -18,6 +18,7 @@ import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioRecoverySource
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.RecoveryAudioBridge
+import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
 import com.monumentogram.dora.audio.persistence.auth.AppLockedException
 import com.monumentogram.dora.audio.persistence.database.SqlCipherJournalHelperFactory
@@ -214,6 +215,15 @@ private constructor(
 
     override val writer: ProductAudioWriterPort =
         object : ProductAudioWriterPort {
+            override fun segmentation(identity: AudioIdentity, metadata: SegmentationMetadata) =
+                operation {
+                    val lease =
+                        journal.catalog.tryAcquire(identity)
+                            ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+                    lease.use { journal.retainSegmentation(identity, metadata) }
+                    AudioResult.Value(Unit)
+                }
+
             override fun create(identity: AudioIdentity) = operation { bridge.create(identity) }
 
             override fun append(
@@ -230,6 +240,13 @@ private constructor(
         }
     override val reader: ProductAudioReaderPort =
         object : ProductAudioReaderPort {
+            override fun segmentation(identity: AudioIdentity, afterKey: String) = operation {
+                val lease =
+                    journal.catalog.tryAcquire(identity)
+                        ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+                AudioResult.Value(lease.use { journal.segmentationPage(identity, afterKey) })
+            }
+
             override fun extract(
                 identity: AudioIdentity,
                 consume: (Long, ByteArray) -> Unit,
