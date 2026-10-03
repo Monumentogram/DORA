@@ -1,0 +1,16 @@
+{
+  "result": "BLOCKED / VAD_ANDROID_RUNTIME_ADMISSION_REQUIRED",
+  "apkBytes": 26145677,
+  "apkSha256": "45582dba448024058f6edfcbf11ef78489037dbdec7ce1b1fb364c181136100e",
+  "aarSha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+  "modelSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "device": "POCO M5 / Android14 / API34 / arm64-v8a",
+  "installation": "INSTALL_FAILED_USER_RESTRICTED: Install canceled by user",
+  "nativeSmoke": "NOT_RUN",
+  "speechFixture": "Windows local synthetic speech; no owner audio",
+  "syntheticPcmBytes": 381440,
+  "syntheticPcmSha256": "1e83d3eb15660d4776c3497d61e9d8a718a0be5a4c0ec780f1a0b042efda25a7",
+  "microphonePermission": false,
+  "networkPermission": false,
+  "productionIntegration": false
+}

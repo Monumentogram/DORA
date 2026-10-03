@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-03",
+  "stage": "8.4",
+  "publication_status": "PENDING_FINAL_PUBLICATION",
+  "admission_verdict": "BLOCKED / VAD_RUNTIME_MODEL_ADMISSION_REQUIRED",
+  "production_integration_allowed": false,
+  "production_integration_performed": false,
+  "parent_sha": "23adb618a39a014e5090ee2f32e27015de485f07",
+  "branch": "stage/8.4-vad-segmentation-rotation",
+  "base_branch": "stage/8.3-instant-recording-controls",
+  "candidate": {
+    "runtime": {
+      "name": "sherpa-onnx",
+      "version": "1.13.8",
+      "revision": "11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "artifact": {
+        "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar",
+        "file": "sherpa-onnx-1.13.8.aar",
+        "bytes": 50129134,
+        "sha256": "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+      },
+      "release_asset_id": 555224925,
+      "release_digest_matches": true,
+      "top_level_code_license": "Apache-2.0",
+      "complete_binary_license_disposition": "UNRESOLVED_GPL_AND_TRANSITIVE_NOTICES",
+      "manifest_min_sdk": 21,
+      "android_api28_compatibility": "NOT_EXECUTED",
+      "android_api36_compatibility": "NOT_EXECUTED"
+    },
+    "model": {
+      "name": "Silero VAD",
+      "version": "6.2.1",
+      "revision": "7e30209a3e901f9842f81b225f3e93d8199902b1",
+      "artifact": {
+        "url": "https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/src/silero_vad/data/silero_vad.onnx",
+        "file": "silero_vad-v6.2.1.onnx",
+        "bytes": 2327524,
+        "sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3"
+      },
+      "license": "MIT",
+      "commercial_and_redistribution": "PERMITTED_WITH_MIT_NOTICE_RETENTION",
+      "upstream_supported_sample_rates_hz": [
+        8000,
+        16000
+      ],
+      "sherpa_adapter_sample_rate_hz": 16000,
+      "sherpa_window_samples": 512,
+      "sherpa_context_samples": 64,
+      "exact_pair_runtime_execution": "NOT_EXECUTED"
+    }
+  },
+  "blockers": [
+    {
+      "id": "VAD-ADM-001",
+      "state": "OPEN",
+      "priority": "P1",
+      "finding": "Generic AAR includes statically linked eSpeak/TTS; Apache-2.0-only binary disposition is invalid. GPL-3.0-or-later redistribution obligations for this application are unresolved.",
+      "espeak_revision": "ed530aa113046142eb5115cf2fc9157854d0ffe1",
+      "actual_arm64_jni_markers": [
+        "Wrong version of espeak-ng-data",
+        "Failed to phonemize"
+      ],
+      "evidence": [
+        {
+          "url": "https://raw.githubusercontent.com/csukuangfj/espeak-ng/ed530aa113046142eb5115cf2fc9157854d0ffe1/COPYING",
+          "file": "espeak-COPYING",
+          "bytes": 35147,
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/csukuangfj/espeak-ng/ed530aa113046142eb5115cf2fc9157854d0ffe1/src/libespeak-ng/synthesize.c",
+          "file": "espeak-synthesize.c",
+          "bytes": 41662,
+          "sha256": "3e49673f6c8d488b688d37b41a0d18f66709eacc6261775ee73ae557e4b6d72c"
+        }
+      ]
+    },
+    {
+      "id": "VAD-ADM-002",
+      "state": "OPEN",
+      "priority": "P1",
+      "finding": "AAR and classes.jar contain no LICENSE/NOTICE/COPYING entries; complete transitive native SBOM and notice closure are unavailable in this candidate packet.",
+      "notice_entries": [],
+      "source_indicated_components": [
+        "ONNX Runtime 1.28.2 and transitives",
+        "kaldi-native-fbank 1.22.3 / kissfft",
+        "kaldi-decoder 0.3.0 / kaldifst / OpenFST",
+        "simple-sentencepiece 0.7 with Android patches",
+        "nlohmann-json 3.12.0",
+        "hclust 2026-02-25",
+        "eSpeak NG ed530aa113046142eb5115cf2fc9157854d0ffe1",
+        "piper-phonemize f3ff95afc03640bc1399e113e83361192a2fafb4",
+        "statically linked C++ support"
+      ],
+      "inventory_scope": "SOURCE_INDICATED_NOT_COMPLETE_SBOM"
+    }
+  ],
+  "build_provenance_limits": [
+    "Official release digest verifies origin/bytes, not full reproducibility.",
+    "Tagged workflow uses ANDROID_NDK_LATEST_HOME; arm64 JNI ELF note reports r29 / 14206865 / Android API21.",
+    "Build script ORT download is not hash-checked; separate CMake hash path does not prove script input verification."
+  ],
+  "native": {
+    "abi_inventory": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86",
+      "x86_64"
+    ],
+    "so_count": 16,
+    "elf_load_alignment": "ALL_16_STATICALLY_COMPATIBLE_WITH_16384_BYTE_ALIGNMENT",
+    "final_apk_alignment": "NOT_EXECUTED",
+    "physical_16k_runtime": "NOT_EXECUTED",
+    "sbom": "INCOMPLETE_NOT_ADMITTED",
+    "inventory_file": "native-inventory.json"
+  },
+  "source_evidence": [
+    {
+      "path": "CMakeLists.txt",
+      "sha256": "4df4359dc8ad360eadd0d125059622c12bcac99f32e7cf2aabe44aaa16a0c09c",
+      "bytes": 23792,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/CMakeLists.txt"
+    },
+    {
+      "path": "build-android-arm64-v8a.sh",
+      "sha256": "149923a58ba30b83fec3910ec09af6b5050a94a7d29aff994b28bb184480ed0a",
+      "bytes": 9892,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/build-android-arm64-v8a.sh"
+    },
+    {
+      "path": ".github/workflows/android.yaml",
+      "sha256": "cd692cbc4f0dfa739c0877e4dad3a4bed510c08171d7a6be28d03b1bc4c25d67",
+      "bytes": 10495,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/.github/workflows/android.yaml"
+    },
+    {
+      "path": "cmake/espeak-ng-for-piper.cmake",
+      "sha256": "d353f2becec6c8a2064e314b7d0d9c4e4388b48c7e5742a3ba8a62355952407c",
+      "bytes": 3602,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/cmake/espeak-ng-for-piper.cmake"
+    },
+    {
+      "path": "cmake/piper-phonemize.cmake",
+      "sha256": "b062750c938e4f4e778b9c0605a250f4abebdf17656c0d654fbace43a800258b",
+      "bytes": 2456,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/cmake/piper-phonemize.cmake"
+    },
+    {
+      "path": "cmake/onnxruntime.cmake",
+      "sha256": "4dad1ee8f3e09d6270c5b752629f4ddbb3c8584a93a424d9aa8a4c4d66bf2fc5",
+      "bytes": 9593,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/cmake/onnxruntime.cmake"
+    },
+    {
+      "path": "sherpa-onnx/csrc/silero-vad-model.cc",
+      "sha256": "a78f9205159e264138647660353f7a7a2cd01204574fa33b1c31a2ab9d278af8",
+      "bytes": 14211,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/sherpa-onnx/csrc/silero-vad-model.cc"
+    },
+    {
+      "path": "sherpa-onnx/jni/voice-activity-detector.cc",
+      "sha256": "8d2eeccc1660d3d266d16762eb230a9c7ca84ebe19c2463050496e765edbccd6",
+      "bytes": 9596,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/sherpa-onnx/jni/voice-activity-detector.cc"
+    },
+    {
+      "path": "sherpa-onnx/kotlin-api/Vad.kt",
+      "sha256": "dc3fe3b63cea2becd4780a9cc8ef2aaee552eed9533d4c0f178db1172a53662c",
+      "bytes": 4112,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/sherpa-onnx/kotlin-api/Vad.kt"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "url": "https://github.com/k2-fsa/sherpa-onnx/blob/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/LICENSE"
+    }
+  ],
+  "downloads": [
+    {
+      "url": "https://api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/v1.13.8",
+      "file": "sherpa-release.json",
+      "bytes": 498062,
+      "sha256": "028712435a0ce981458f17c9443d5f64f00839408236c53bbe825918c2f2d7f8"
+    },
+    {
+      "url": "https://api.github.com/repos/k2-fsa/sherpa-onnx/git/ref/tags/v1.13.8",
+      "file": "sherpa-tag.json",
+      "bytes": 341,
+      "sha256": "30c1ea72fd153905bed0ebf7f406bfaa7d9437a73040be14380c8b8d738c020a"
+    },
+    {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar",
+      "file": "sherpa-onnx-1.13.8.aar",
+      "bytes": 50129134,
+      "sha256": "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+    },
+    {
+      "url": "https://api.github.com/repos/snakers4/silero-vad/git/ref/tags/v6.2.1",
+      "file": "silero-tag.json",
+      "bytes": 347,
+      "sha256": "0c5207dded28073bb69e286d6405f8c5bacdab83d1bbcbd17e73bbb454cbfc5c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/src/silero_vad/data/silero_vad.onnx",
+      "file": "silero_vad-v6.2.1.onnx",
+      "bytes": 2327524,
+      "sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/LICENSE",
+      "file": "silero-LICENSE",
+      "bytes": 1075,
+      "sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakers4/silero-vad/v6.2.1/README.md",
+      "file": "silero-README.md",
+      "bytes": 7923,
+      "sha256": "e889f0cd49b957ad2d7db339c4f2ff1a81c4e5f64812674d42c52e811a5dead8"
+    },
+    {
+      "url": "https://github.com/k2-fsa/sherpa-onnx/archive/refs/tags/v1.13.8.zip",
+      "file": "sherpa-source-v1.13.8.zip",
+      "bytes": 15384893,
+      "sha256": "b63b7613812346f2d1396a3a7f94accd47539e3dadc3ea385ba6474c70ab9897"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/csukuangfj/espeak-ng/ed530aa113046142eb5115cf2fc9157854d0ffe1/COPYING",
+      "file": "espeak-COPYING",
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/csukuangfj/espeak-ng/ed530aa113046142eb5115cf2fc9157854d0ffe1/src/libespeak-ng/synthesize.c",
+      "file": "espeak-synthesize.c",
+      "bytes": 41662,
+      "sha256": "3e49673f6c8d488b688d37b41a0d18f66709eacc6261775ee73ae557e4b6d72c"
+    }
+  ],
+  "calibration": "NOT_STARTED",
+  "segmentation_profile": null,
+  "deterministic_acceptance": "NOT_EXECUTED_ADMISSION_BLOCKED",
+  "integration_acceptance": "NOT_EXECUTED_ADMISSION_BLOCKED",
+  "physical_acoustic_acceptance": "NOT_EXECUTED_ADMISSION_BLOCKED",
+  "physical_rotation": "NOT_EXECUTED_ADMISSION_BLOCKED",
+  "cpu_pss_inference_deadline_metrics": null,
+  "screen_off": "NOT_EXECUTED_ADMISSION_BLOCKED",
+  "recovery_low_space_regressions": "NOT_EXECUTED_NO_PRODUCT_CHANGE",
+  "stage84_unit_test_count": 0,
+  "independent_review": {
+    "kind": "AI_ADVERSARIAL_STATIC_ADMISSION_REVIEW",
+    "formal_legal_approval": false,
+    "unresolved_p0": 0,
+    "unresolved_p1": 2,
+    "unresolved_p2": 0,
+    "full_runtime_review": "NOT_EXECUTED"
+  },
+  "stage_state": {
+    "8.3": "PASS_FUNCTIONAL_OWNER_ACCEPTED_FOR_ALPHA",
+    "8.4": "ADMISSION_BLOCKED",
+    "8.4C": "NOT_STARTED",
+    "8.5": "NOT_STARTED",
+    "8": "IN_PROGRESS",
+    "PERF-REC-001": "DEFERRED_NON_BLOCKING_ALPHA",
+    "DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE": "OPEN"
+  },
+  "sheet": {
+    "operation": "READ_ONLY_NO_WRITE",
+    "range": "'Этапы'!A74:F77",
+    "C74": "ПРОЙДЕНО",
+    "C75": "ЗАПЛАНИРОВАНО",
+    "C76": "НЕ НАЧАТО",
+    "C77": "ЗАПЛАНИРОВАНО",
+    "note": "8.5 remains logically NOT_STARTED; its existing Sheet label is planned."
+  },
+  "remediation": "Produce a new exact pinned sherpa build without TTS/eSpeak/piper and unnecessary APIs; close all transitive licenses/notices and SBOM; repeat native/API/packaging checks and admission before production integration. No alternative VAD engine is selected."
+}

@@ -27,3 +27,7 @@ android/app/src/main/assets/third_party/sqlcipher/SQLite.txt -text
 # Keep their frozen suffix bytes when adding a new stage header.
 docs/DORA_MVP1_STAGE_STATUS.md -text
 docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md -text
+
+# Preserve the exact isolated VAD candidate attribution bytes.
+docs/evidence/vad-8.4-remediation/NOTICE.txt -text
+tools/vad_admission/SmokeActivity.java text eol=lf

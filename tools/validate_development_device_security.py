@@ -50,7 +50,9 @@ def p95_thresholds(measurements):
 
 def validate_checkout(root=ROOT, *, allow_working=None):
     import validate_recording_alpha_acceptance as owner
+    import validate_vad_artifact_admission as vad
     governance_paths = owner.validate_overlay(root) if owner.candidate(root) else set()
+    expected_branch = vad.BRANCH if vad.candidate(root) else BRANCH
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_product_recording as recording
@@ -94,12 +96,12 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     head = git('rev-parse', 'HEAD').decode().strip()
     branch = git('branch', '--show-current').decode().strip()
     dirty = bool(git('status', '--porcelain', '--untracked-files=all'))
-    require(branch == BRANCH or (branch == '' and os.environ.get('GITHUB_ACTIONS') == 'true'), 'Wrong latency branch')
+    require(branch == expected_branch or (branch == '' and os.environ.get('GITHUB_ACTIONS') == 'true'), 'Wrong latency branch')
     require(allow_working or not dirty, 'Instant-control checkout must be clean')
     require(git('merge-base', PARENT, head).decode().strip() == PARENT, 'Wrong latency parent')
     if os.environ.get('GITHUB_ACTIONS'):
         require(not allow_working and not dirty and os.environ.get('GITHUB_SHA') == head
-                and os.environ.get('GITHUB_REF') == 'refs/heads/' + BRANCH
+                and os.environ.get('GITHUB_REF') == 'refs/heads/' + expected_branch
                 and os.environ.get('GITHUB_EVENT_NAME') == 'push'
                 and Path(os.environ.get('GITHUB_WORKSPACE', '')).resolve() == root.resolve(), 'Wrong exact-SHA CI context')
     expected = set(contract['implementation_paths'])

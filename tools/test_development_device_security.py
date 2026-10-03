@@ -90,5 +90,11 @@ class DevelopmentDeviceSecurityAdmissionTests(unittest.TestCase):
             gate.validate_status_projection(gate.STATUS_HEADER + 'rewritten\n', 'history\n')
 
 
+def load_tests(loader, tests, pattern):
+    # Existing mandatory CI job also executes the successor's negative controls.
+    tests.addTests(loader.loadTestsFromName('test_vad_artifact_admission'))
+    return tests
+
+
 if __name__ == '__main__':
     unittest.main()

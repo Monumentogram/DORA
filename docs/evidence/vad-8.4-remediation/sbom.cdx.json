@@ -1,0 +1,1218 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "library",
+      "bom-ref": "custom-aar",
+      "name": "DORA custom sherpa-onnx VAD-only Android",
+      "version": "1.13.8-dora.1-arm64",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "component-0",
+      "name": "sherpa-onnx VAD JNI",
+      "version": "1.13.8 / 11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/k2-fsa/sherpa-onnx/tree/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "packaged-shared-library"
+        },
+        {
+          "name": "dora:packagedPath",
+          "value": "jni/arm64-v8a/libsherpa-onnx-jni.so"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2e7412da436e02b705cea92d6fe6e3d2f2bf97a483b12d9ae2cc65ad6b723cc7"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-1",
+      "name": "sherpa-onnx VAD Java bindings",
+      "version": "1.13.8 / 11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/k2-fsa/sherpa-onnx/tree/11afbd009a7f8c08f4bcf2fc1b265d0df4670fbf/sherpa-onnx/java-api/src/main/java/com/k2fsa/sherpa/onnx"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "packaged-bytecode"
+        },
+        {
+          "name": "dora:packagedPath",
+          "value": "classes.jar"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8eec92205eba73fe5965a6ac4b448f16ab9a207c58557860c5d9217618dbab6a"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-2",
+      "name": "ONNX Runtime",
+      "version": "1.28.2 / 33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "packaged-shared-library"
+        },
+        {
+          "name": "dora:packagedPath",
+          "value": "jni/arm64-v8a/libonnxruntime.so"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-3",
+      "name": "abseil-cpp",
+      "version": "20250814.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/abseil/abseil-cpp/archive/refs/tags/20250814.0.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-4",
+      "name": "protobuf",
+      "version": "21.12",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v21.12.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-5",
+      "name": "ONNX",
+      "version": "1.22.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/onnx/onnx/archive/refs/tags/v1.22.0.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-6",
+      "name": "flatbuffers",
+      "version": "23.5.26",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/google/flatbuffers/archive/refs/tags/v23.5.26.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-7",
+      "name": "RE2",
+      "version": "2024-07-02",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/google/re2/archive/refs/tags/2024-07-02.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-8",
+      "name": "CPUInfo",
+      "version": "4628dc060ce4e82345dc166bbac875609db4ff69",
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/pytorch/cpuinfo/archive/4628dc060ce4e82345dc166bbac875609db4ff69.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-9",
+      "name": "KleidiAI",
+      "version": "1.20.0",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/ARM-software/kleidiai/archive/refs/tags/v1.20.0.tar.gz"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-10",
+      "name": "Eigen (ORT)",
+      "version": "1d8b82b0740839c0de7f1242a3585e3390ff5f33",
+      "licenses": [
+        {
+          "expression": "MPL-2.0 AND BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/eigen-mirror/eigen/archive/1d8b82b0740839c0de7f1242a3585e3390ff5f33/eigen-1d8b82b0740839c0de7f1242a3585e3390ff5f33.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-11",
+      "name": "Microsoft GSL",
+      "version": "4.2.1",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/GSL/archive/refs/tags/v4.2.1.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-12",
+      "name": "Boost MP11",
+      "version": "boost-1.82.0",
+      "licenses": [
+        {
+          "expression": "BSL-1.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/boostorg/mp11/archive/refs/tags/boost-1.82.0.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-13",
+      "name": "SafeInt",
+      "version": "3.0.28",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/dcleblanc/SafeInt/archive/refs/tags/3.0.28.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-14",
+      "name": "Howard Hinnant date",
+      "version": "3.0.1",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-15",
+      "name": "nlohmann/json (ORT)",
+      "version": "3.11.3",
+      "licenses": [
+        {
+          "expression": "MIT AND Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-16",
+      "name": "clog (CPUInfo embedded)",
+      "version": "CPUInfo 4628dc060ce4e82345dc166bbac875609db4ff69",
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/pytorch/cpuinfo/tree/4628dc060ce4e82345dc166bbac875609db4ff69/deps/clog"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-17",
+      "name": "kaldi-native-fbank",
+      "version": "1.22.3",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/csukuangfj/kaldi-native-fbank/archive/refs/tags/v1.22.3.tar.gz"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-18",
+      "name": "kissfft",
+      "version": "febd4caeed32e33ad8b2e0bb5ea77542c40f18ec",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/mborgerding/kissfft/archive/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec.zip"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-19",
+      "name": "Eigen (sherpa)",
+      "version": "5.0.1",
+      "licenses": [
+        {
+          "expression": "MPL-2.0 AND BSD-3-Clause AND Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.gz"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "compiled-header"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-20",
+      "name": "TensorFlow-derived ORT code",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-21",
+      "name": "Caffe2/PyTorch-derived ORT code",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-22",
+      "name": "Caffe-derived math fragment",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "BSD-2-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-23",
+      "name": "XNNPACK-derived ORT kernel",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-24",
+      "name": "MurmurHash3 and scikit-learn adaptation",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "LicenseRef-Public-Domain AND BSD-3-Clause"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-25",
+      "name": "AOSP/TensorFlow NNAPI wrapper sources",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "Apache-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-26",
+      "name": "Eigen-derived ORT threadpool",
+      "version": "as-vendored-in-ORT-33ca9628233dc8f002435e868d4c2e9f82766ca1",
+      "licenses": [
+        {
+          "expression": "MPL-2.0"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/microsoft/onnxruntime/tree/33ca9628233dc8f002435e868d4c2e9f82766ca1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "copied-source"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-27",
+      "name": "libc++ (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-28",
+      "name": "libc++abi (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-29",
+      "name": "libunwind (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-30",
+      "name": "compiler-rt builtins (NDK 27.3.13750724)",
+      "version": "27.3.13750724",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-31",
+      "name": "libc++ (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-32",
+      "name": "libc++abi (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-33",
+      "name": "libunwind (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "component-34",
+      "name": "compiler-rt builtins (NDK 28.2.13676358)",
+      "version": "28.2.13676358",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 WITH LLVM-exception) AND (MIT OR NCSA)"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "true"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "statically-linked"
+        }
+      ]
+    },
+    {
+      "type": "data",
+      "bom-ref": "component-35",
+      "name": "Silero VAD model",
+      "version": "6.2.1",
+      "licenses": [
+        {
+          "expression": "MIT"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/snakers4/silero-vad/tree/7e30209a3e901f9842f81b225f3e93d8199902b1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dora:distributedInAar",
+          "value": "false"
+        },
+        {
+          "name": "dora:linkage",
+          "value": "separate-model"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "custom-aar",
+      "dependsOn": [
+        "component-0",
+        "component-2",
+        "component-1"
+      ]
+    },
+    {
+      "ref": "component-0",
+      "dependsOn": [
+        "component-2",
+        "component-17",
+        "component-18",
+        "component-19",
+        "component-31",
+        "component-32",
+        "component-33",
+        "component-34"
+      ]
+    },
+    {
+      "ref": "component-2",
+      "dependsOn": [
+        "component-3",
+        "component-4",
+        "component-5",
+        "component-6",
+        "component-7",
+        "component-8",
+        "component-9",
+        "component-10",
+        "component-11",
+        "component-12",
+        "component-13",
+        "component-14",
+        "component-15",
+        "component-16",
+        "component-20",
+        "component-21",
+        "component-22",
+        "component-23",
+        "component-24",
+        "component-25",
+        "component-26",
+        "component-27",
+        "component-28",
+        "component-29",
+        "component-30"
+      ]
+    },
+    {
+      "ref": "component-1",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-3",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-4",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-5",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-6",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-7",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-8",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-9",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-10",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-11",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-12",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-13",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-14",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-15",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-16",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-17",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-18",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-19",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-20",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-21",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-22",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-23",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-24",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-25",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-26",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-27",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-28",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-29",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-30",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-31",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-32",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-33",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-34",
+      "dependsOn": []
+    },
+    {
+      "ref": "component-35",
+      "dependsOn": []
+    }
+  ]
+}

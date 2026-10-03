@@ -1,0 +1,36 @@
+{
+  "status": "PASS_PRIVATE_OWNER_RETRIEVAL_AND_HARNESS_CONSUMPTION",
+  "aarFileId": "1CRzSEnh6HOqIVt5l0cxPQc5VUM5dM_3N",
+  "aarBytes": 23396212,
+  "aarSha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+  "source": "AUTHENTICATED_GOOGLE_DRIVE_FETCH",
+  "destination": "NEW_EMPTY_LOCAL_DIRECTORY",
+  "originalBuildOutputUsed": false,
+  "aarEntries": 6,
+  "nativeNames": [
+    "libonnxruntime.so",
+    "libsherpa-onnx-jni.so"
+  ],
+  "permissionsReadback": {
+    "shared": false,
+    "roles": [
+      "owner"
+    ],
+    "publicOrDomainGrant": false
+  },
+  "harnessBuild": "PASS_EXISTING_ISOLATED_HARNESS_FROM_RETRIEVED_AAR",
+  "harnessApkBytes": 26145677,
+  "harnessApkSha256": "3f3b20e4c09068ba276bf747dda6734a837d3349f90ef7f1ae277f5b2946b756",
+  "modelSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "physicalRuntimeProved": false,
+  "machineLoss": "AAR_AND_RECOVERY_KIT_IN_OWNER_ACCOUNT_OUTSIDE_WORKSTATION; OWNER_ACCOUNT_ACCESS_REQUIRED",
+  "storageEnforcedNoOverwrite": false,
+  "ciPrivateArtifactRetrieval": "NOT_ENABLED",
+  "recoveryKitRetrieval": {
+    "source": "AUTHENTICATED_GOOGLE_DRIVE_FETCH",
+    "bytes": 653358,
+    "sha256": "a8be2542f96dbff97e09ff8a9e34070021bd514b636e9d1ec84c54cdc39a9e21",
+    "indexedFilesVerified": 14,
+    "result": "PASS"
+  }
+}
