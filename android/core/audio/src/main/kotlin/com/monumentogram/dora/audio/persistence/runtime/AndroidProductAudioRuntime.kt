@@ -30,6 +30,9 @@ import java.io.File
  * Install once in Application.onCreate, before any Activity resumes. No test delegate is exposed.
  */
 class AndroidProductAudioRuntime(private val application: Application) : ProductAudioRuntime {
+    var previousProcessExit: RecordingProcessExit? = null
+        private set
+
     private val main = Handler(Looper.getMainLooper())
     private val coordinator =
         AudioRuntimeCoordinator({ Looper.myLooper() == Looper.getMainLooper() }) {
@@ -61,6 +64,7 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
         after: String = "",
         completion: (AudioResult<List<RecordingRecovery>>) -> Unit,
     ) {
+        previousProcessExit = RecordingProcessExit.read(application)
         requestOpen(activity, AudioOpenMode.OPEN_EXISTING) { available ->
             if (available !is AudioAvailability.Available) {
                 completion(

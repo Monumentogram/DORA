@@ -256,20 +256,26 @@ class RecordingSession(
             val metadata = pendingMetadata.first()
             if (metadata.endFrame > sealedFrames) return
             pendingMetadata.removeFirst()
-            persistence.execute {
-                val result =
-                    try {
-                        if (failed.get() != null || metadataFailed.get() != null)
-                            AudioResult.Failed(AudioFailure.UNAVAILABLE)
-                        else writer.segmentation(identity, metadata)
-                    } catch (_: Exception) {
-                        AudioResult.Failed(AudioFailure.UNAVAILABLE)
-                    }
-                if (result is AudioResult.Failed) {
-                    metadataFailed.set(VadFailure.METADATA_FAILED)
-                    completion.execute { metadataFailure() }
-                }
+            enqueueMetadata(metadata)
+        }
+    }
+
+    private fun enqueueMetadata(metadata: SegmentationMetadata) {
+        persistence.execute { persistMetadata(metadata) }
+    }
+
+    private fun persistMetadata(metadata: SegmentationMetadata) {
+        val result =
+            try {
+                if (failed.get() != null || metadataFailed.get() != null)
+                    AudioResult.Failed(AudioFailure.UNAVAILABLE)
+                else writer.segmentation(identity, metadata)
+            } catch (_: Exception) {
+                AudioResult.Failed(AudioFailure.UNAVAILABLE)
             }
+        if (result is AudioResult.Failed) {
+            metadataFailed.set(VadFailure.METADATA_FAILED)
+            completion.execute { metadataFailure() }
         }
     }
 
@@ -325,7 +331,19 @@ class RecordingSession(
         ordinal++
         sealedFrames = AudioTimeline.nextFrame(sealedFrames, count)
         val durableEnd = sealedFrames
+        // OPEN precedes publication so a crash cannot lose the chunk's epoch provenance.
+        val opening =
+            if (!physicalOpened) {
+                physicalOpened = true
+                physicalMetadata(
+                    SegmentationKind.TECHNICAL_OPEN,
+                    physicalStart,
+                    if (physicalStart != epochStart) "CAP"
+                    else if (physicalStart == 0L) "START" else "RESUME",
+                )
+            } else null
         persistence.execute {
+            opening?.let(::persistMetadata)
             var elapsed = 0L
             val result =
                 try {
@@ -351,17 +369,6 @@ class RecordingSession(
                 if (checkResult(result)) state = state.copy(durableFrames = durableEnd)
                 changed()
             }
-        }
-        if (!physicalOpened) {
-            physicalOpened = true
-            retainMetadata(
-                physicalMetadata(
-                    SegmentationKind.TECHNICAL_OPEN,
-                    physicalStart,
-                    if (physicalStart != epochStart) "CAP"
-                    else if (physicalStart == 0L) "START" else "RESUME",
-                )
-            )
         }
         flushMetadata()
     }

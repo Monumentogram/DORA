@@ -32,30 +32,8 @@ internal object LogicalRecordingProjection {
         source: OriginalAudioReference,
         rows: List<SegmentationMetadata>,
     ): LogicalRecordingResult {
-        val opens =
-            rows.filter { it.kind == SegmentationKind.TECHNICAL_OPEN }.sortedBy { it.firstFrame }
-        val closes =
-            rows.filter { it.kind == SegmentationKind.TECHNICAL_CLOSE }.associateBy { it.segmentId }
-        requireProjection(
-            opens.isNotEmpty() && opens.size == closes.size && opens.all { it.segmentId in closes },
-            ProjectionFailure.INCOMPLETE_PAIRS,
-        )
-        val chunks = mutableListOf<TechnicalChunkReference>()
-        val epochs = mutableSetOf<String>()
-        var next = 0L
-        var epochStart = 0L
-        for (open in opens) {
-            val close = closes.getValue(open.segmentId)
-            require(
-                close.firstFrame == open.firstFrame &&
-                    close.captureEpochId == open.captureEpochId &&
-                    close.overlapFirstFrame == open.overlapFirstFrame
-            )
-            require(!open.degraded && !close.degraded)
-            requireProjection(open.firstFrame == next, ProjectionFailure.COVERAGE)
-            val previous = chunks.lastOrNull()
-            epochStart = validateTransition(open, previous, epochs, epochStart)
-            chunks +=
+        val chunks =
+            technicalPairs(source.frames, rows).map { (open, close) ->
                 TechnicalChunkReference(
                     open.segmentId,
                     source,
@@ -68,12 +46,13 @@ internal object LogicalRecordingProjection {
                     open.profileId,
                     open.profileSha256,
                 )
-            next = close.endFrame
-        }
-        requireProjection(next == source.frames, ProjectionFailure.COVERAGE)
+            }
         val degraded =
             rows
-                .filter { it.kind == SegmentationKind.DEGRADED }
+                .filter {
+                    it.kind in
+                        setOf(SegmentationKind.DEGRADED, SegmentationKind.RECOVERY_INTERRUPTED)
+                }
                 .sortedWith(compareBy({ it.firstFrame }, { it.segmentId }))
         return LogicalRecordingResult.Ready(
             LogicalRecordingReference(
@@ -85,6 +64,79 @@ internal object LogicalRecordingProjection {
         )
     }
 
+    /** Same validation for a recovery observation; never requires a provisional final reference. */
+    internal fun technicalPairs(
+        frames: Long,
+        rows: List<SegmentationMetadata>,
+    ): List<Pair<SegmentationMetadata, SegmentationMetadata>> {
+        rows.forEach { it.validate(frames) }
+        require(rows.map { it.key }.distinct().size == rows.size)
+        val allOpens = rows.filter { it.kind == SegmentationKind.TECHNICAL_OPEN }
+        val aborted = rows.filter { it.kind == SegmentationKind.TECHNICAL_ABORT }
+        validateAborts(rows, allOpens, aborted)
+        val opens =
+            allOpens
+                .filter { open -> aborted.none { it.segmentId == open.segmentId } }
+                .sortedBy { it.firstFrame }
+        val closes =
+            rows.filter { it.kind == SegmentationKind.TECHNICAL_CLOSE }.associateBy { it.segmentId }
+        requireProjection(
+            opens.isNotEmpty() && opens.size == closes.size && opens.all { it.segmentId in closes },
+            ProjectionFailure.INCOMPLETE_PAIRS,
+        )
+        val pairs = mutableListOf<Pair<SegmentationMetadata, SegmentationMetadata>>()
+        val epochs = mutableSetOf<String>()
+        var next = 0L
+        var epochStart = 0L
+        for (open in opens) {
+            val close = closes.getValue(open.segmentId)
+            require(
+                close.firstFrame == open.firstFrame &&
+                    close.captureEpochId == open.captureEpochId &&
+                    close.overlapFirstFrame == open.overlapFirstFrame
+            )
+            require(!open.degraded && !close.degraded)
+            requireProjection(open.firstFrame == next, ProjectionFailure.COVERAGE)
+            val previous = pairs.lastOrNull()?.second
+            val interruptedStop =
+                previous != null &&
+                    rows.any {
+                        it.kind == SegmentationKind.RECOVERY_INTERRUPTED &&
+                            it.segmentId == previous.segmentId &&
+                            it.firstFrame == previous.firstFrame &&
+                            it.endFrame == previous.endFrame
+                    }
+            epochStart = validateTransition(open, previous, epochs, epochStart, interruptedStop)
+            pairs += open to close
+            next = close.endFrame
+        }
+        requireProjection(next == frames, ProjectionFailure.COVERAGE)
+        require(
+            aborted.all { abort ->
+                abort.firstFrame == frames || opens.any { it.firstFrame == abort.firstFrame }
+            }
+        )
+        return pairs
+    }
+
+    private fun validateAborts(
+        rows: List<SegmentationMetadata>,
+        allOpens: List<SegmentationMetadata>,
+        aborted: List<SegmentationMetadata>,
+    ) {
+        aborted.forEach { abort ->
+            val open = requireNotNull(allOpens.singleOrNull { it.segmentId == abort.segmentId })
+            require(
+                abort == open.copy(kind = SegmentationKind.TECHNICAL_ABORT, reason = "RECOVERY")
+            )
+            require(
+                rows.none {
+                    it.kind == SegmentationKind.TECHNICAL_CLOSE && it.segmentId == abort.segmentId
+                }
+            )
+        }
+    }
+
     private class InvalidProjection(val failure: ProjectionFailure) : IllegalArgumentException()
 
     private fun requireProjection(valid: Boolean, failure: ProjectionFailure) {
@@ -93,9 +145,10 @@ internal object LogicalRecordingProjection {
 
     private fun validateTransition(
         open: SegmentationMetadata,
-        previous: TechnicalChunkReference?,
+        previous: SegmentationMetadata?,
         epochs: MutableSet<String>,
         epochStart: Long,
+        interruptedStop: Boolean,
     ): Long {
         var currentEpochStart = epochStart
         val valid =
@@ -103,11 +156,12 @@ internal object LogicalRecordingProjection {
                 "START" -> previous == null && open.firstFrame == 0L
                 "RESUME" ->
                     previous != null &&
-                        previous.closeReason in setOf("PAUSE", "CAP") &&
+                        (previous.reason in setOf("PAUSE", "CAP", "RECOVERY") ||
+                            (previous.reason == "STOP" && interruptedStop)) &&
                         previous.captureEpochId != open.captureEpochId
                 "CAP" ->
                     previous != null &&
-                        previous.closeReason == "CAP" &&
+                        previous.reason == "CAP" &&
                         previous.captureEpochId == open.captureEpochId
                 else -> false
             }

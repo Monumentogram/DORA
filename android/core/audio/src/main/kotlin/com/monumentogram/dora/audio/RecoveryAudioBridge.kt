@@ -237,6 +237,21 @@ internal class RecoveryAudioBridge(
     override fun reconcile(identity: AudioIdentity): AudioResult<Unit> =
         withAsset(identity, ::reconcileAsset)
 
+    /** The caller owns the exact catalog lease across the whole recovery observation. */
+    internal fun reconcileHeld(identity: AudioIdentity): AudioResult<Unit> = guarded {
+        reconcileAsset(checkNotNull(catalog.load(identity)))
+    }
+
+    internal fun inspectHeld(
+        identity: AudioIdentity,
+        strict: Boolean,
+    ): AudioResult<AudioReadSummary> = guarded {
+        val asset = checkNotNull(catalog.load(identity))
+        if (strict && (asset.pending != null || asset.finalization != null))
+            failed(AudioFailure.INCOMPLETE)
+        else extractAsset(asset, requireComplete = strict) { _, _ -> }
+    }
+
     private fun reconcileAsset(asset: StoredAudioAsset): AudioResult<Unit> {
         validateOrder(asset)
         return when (val intent = asset.pending) {

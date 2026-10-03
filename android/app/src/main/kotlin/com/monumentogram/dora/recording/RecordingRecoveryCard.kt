@@ -20,14 +20,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.monumentogram.dora.DoraApplication
-import com.monumentogram.dora.audio.AudioCompletion
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.recording.RecordingCompletionState
 import com.monumentogram.dora.audio.recording.RecordingRecovery
 
 @Composable
@@ -38,21 +39,24 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
     var acknowledged by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<RecordingRecovery?>(null) }
     var loading by remember { mutableStateOf(false) }
+    val currentAuthorization by rememberUpdatedState(authorized)
     LaunchedEffect(authorized) {
         if (!authorized) {
             entries = emptyList()
             acknowledged = false
+            pending = null
         }
     }
     val permission =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             val selected = pending
             pending = null
-            if (granted && selected != null) app.recording.start(activity, selected.identity)
+            if (granted && currentAuthorization && selected?.identity != null)
+                app.recording.start(activity, selected.identity)
             else message = "Микрофон не разрешён. Запись не возобновлена"
         }
     fun load(after: String = "") {
-        if (loading) return
+        if (loading || !authorized) return
         if (app.audioRuntime.recordingOpenMode() == AudioOpenMode.CREATE_NEW) {
             message = "Сохранённых записей пока нет"
             return
@@ -60,6 +64,7 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         loading = true
         app.audioRuntime.requestRecordingRecovery(activity, after) { result ->
             loading = false
+            if (!currentAuthorization) return@requestRecordingRecovery
             when (result) {
                 is AudioResult.Value -> {
                     entries = result.value
@@ -70,7 +75,8 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
             }
         }
     }
-    TextButton(enabled = !loading, onClick = { load() }) {
+    LaunchedEffect(authorized) { if (authorized) load() }
+    TextButton(enabled = authorized && !loading, onClick = { load() }) {
         Text(if (loading) "Проверяем сохранение…" else "Проверить сохранённые записи")
     }
     message?.let { Text(it) }
@@ -89,22 +95,36 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         }
         entries.forEach { entry ->
             Column {
-                val summary = entry.summary
                 Text(
-                    when {
-                        summary == null -> "Не удалось подтвердить сохранённое аудио"
-                        summary.completion == AudioCompletion.FINALIZED ->
-                            "Запись сохранена · ${capturedTime(summary.frames)}"
-                        else -> "Часть записи восстановлена · ${capturedTime(summary.frames)}"
+                    when (entry.completionState) {
+                        RecordingCompletionState.FINALIZED ->
+                            "Запись сохранена · ${capturedTime(entry.recoveredFrames)}"
+                        RecordingCompletionState.RECOVERABLE_PARTIAL,
+                        RecordingCompletionState.PARTIAL_NOT_RESUMABLE ->
+                            "Часть записи восстановлена · ${capturedTime(entry.recoveredFrames)}"
+                        RecordingCompletionState.DELETION_PENDING -> "Удаление записи не завершено"
+                        RecordingCompletionState.DELETED -> "Аудио удалено"
+                        else -> "Не удалось подтвердить часть записи"
                     }
                 )
-                if (entry.failure != null || summary?.tailFailure != null)
+                if (
+                    entry.completionState in
+                        setOf(
+                            RecordingCompletionState.RECOVERABLE_PARTIAL,
+                            RecordingCompletionState.PARTIAL_NOT_RESUMABLE,
+                        )
+                ) {
                     Text(
-                        "Последняя часть требует восстановления. Продолжение этой записи недоступно"
+                        "Запись была неожиданно прервана. Последняя незавершённая часть не подтверждена."
                     )
-                if (entry.canResume)
+                    if (!entry.canResume)
+                        Text("Восстановлена сохранённая часть. Продолжение недоступно.")
+                }
+                if (entry.canResume && entry.identity != null) {
+                    if (!acknowledged)
+                        Text("Для продолжения подтвердите, что участники предупреждены о записи.")
                     Button(
-                        enabled = acknowledged,
+                        enabled = authorized && acknowledged,
                         onClick = {
                             acknowledged = false
                             if (
@@ -120,10 +140,11 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
                     ) {
                         Text("Продолжить эту запись")
                     }
+                }
             }
         }
         if (entries.size == RECOVERY_PAGE_SIZE)
-            TextButton(onClick = { load(entries.last().identity.assetId.value) }) {
+            TextButton(onClick = { load(entries.last().cursor) }) {
                 Text("Следующие записи")
             }
     }

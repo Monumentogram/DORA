@@ -13,6 +13,8 @@ enum class SegmentationKind {
     TECHNICAL_CLOSE,
     SEMANTIC_CLOSE,
     DEGRADED,
+    TECHNICAL_ABORT,
+    RECOVERY_INTERRUPTED,
 }
 
 /** Content-free immutable source views, inside the existing encrypted journal only. */
@@ -40,7 +42,14 @@ data class SegmentationMetadata(
                 profileSha256 == SegmentationProfile.FROZEN.sha256
         )
         require(reason in REASONS)
-        if (kind == SegmentationKind.TECHNICAL_OPEN || kind == SegmentationKind.TECHNICAL_CLOSE) {
+        if (
+            kind in
+                setOf(
+                    SegmentationKind.TECHNICAL_OPEN,
+                    SegmentationKind.TECHNICAL_CLOSE,
+                    SegmentationKind.TECHNICAL_ABORT,
+                )
+        ) {
             require(
                 captureEpochId != null &&
                     UUID.fromString(captureEpochId).toString() == captureEpochId
@@ -54,8 +63,12 @@ data class SegmentationMetadata(
             )
             if (kind == SegmentationKind.TECHNICAL_OPEN) {
                 require(firstFrame == endFrame && reason in setOf("START", "RESUME", "CAP"))
+            } else if (kind == SegmentationKind.TECHNICAL_ABORT) {
+                require(firstFrame == endFrame && reason == "RECOVERY")
             } else {
-                require(endFrame > firstFrame && reason in setOf("CAP", "PAUSE", "STOP"))
+                require(
+                    endFrame > firstFrame && reason in setOf("CAP", "PAUSE", "STOP", "RECOVERY")
+                )
                 if (reason == "CAP")
                     require(endFrame - firstFrame == SegmentationProfile.FROZEN.technicalCapFrames)
             }
@@ -63,13 +76,15 @@ data class SegmentationMetadata(
             require(captureEpochId == null && overlapFirstFrame == null)
             if (kind == SegmentationKind.SEMANTIC_CLOSE)
                 require(endFrame > firstFrame && reason in setOf("STOP", "SILENCE_90_SECONDS"))
+            else if (kind == SegmentationKind.RECOVERY_INTERRUPTED)
+                require(degraded && reason == "RECOVERY")
             else require(degraded && reason in VadFailure.entries.map { it.name })
         }
     }
 
     companion object {
         private val REASONS =
-            setOf("START", "RESUME", "CAP", "PAUSE", "STOP", "SILENCE_90_SECONDS") +
+            setOf("START", "RESUME", "CAP", "PAUSE", "STOP", "SILENCE_90_SECONDS", "RECOVERY") +
                 VadFailure.entries.map { it.name }
     }
 }
