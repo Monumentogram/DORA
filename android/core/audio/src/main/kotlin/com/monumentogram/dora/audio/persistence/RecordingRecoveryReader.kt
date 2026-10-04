@@ -33,15 +33,18 @@ internal class RecordingRecoveryReader(
             val asset =
                 journal.catalog.load(identity)
                     ?: return@use AudioResult.Failed(AudioFailure.INCOMPLETE)
-            val canResume =
+            val canonicalCanResume =
                 reconciliation is AudioResult.Value && cleanPrefix(asset, continuation, summary)
             val metadata =
                 metadata(
                     identity,
                     asset,
-                    canResume || (asset.segments.isEmpty() && asset.pending == null),
+                    canonicalCanResume || (asset.segments.isEmpty() && asset.pending == null),
                     summary?.completion == AudioCompletion.FINALIZED,
                 )
+            // Preserve readable PCM and legacy unknown metadata, but do not offer logical Resume
+            // when retained metadata is malformed or known chunk history has an unproven gap.
+            val canResume = canonicalCanResume && metadata.continuationSafe
             AudioResult.Value(
                 RecordingRecovery(
                     identity,
@@ -53,8 +56,8 @@ internal class RecordingRecoveryReader(
                         else null,
                     canResume,
                     asset.segments.size,
-                    technicalMetadataState = metadata.first,
-                    semanticMetadataState = metadata.second,
+                    technicalMetadataState = metadata.technical,
+                    semanticMetadataState = metadata.semantic,
                 )
             )
         }
@@ -80,7 +83,7 @@ internal class RecordingRecoveryReader(
         asset: StoredAudioAsset,
         repair: Boolean,
         finalized: Boolean,
-    ): Pair<RecoveryMetadataState, RecoveryMetadataState> =
+    ): RecoveryMetadata.Plan =
         try {
             val rows = mutableListOf<SegmentationMetadata>()
             var cursor = ""
@@ -93,23 +96,38 @@ internal class RecordingRecoveryReader(
                 cursor = page.last().key
             }
             if (rows.isEmpty())
-                RecoveryMetadataState.NOT_EVALUATED to RecoveryMetadataState.NOT_EVALUATED
+                RecoveryMetadata.Plan(
+                    emptyList(),
+                    RecoveryMetadataState.NOT_EVALUATED,
+                    RecoveryMetadataState.NOT_EVALUATED,
+                )
             else if (finalized) finalizedMetadata(rows, asset)
-            else if (!repair) RecoveryMetadataState.INCOMPLETE to RecoveryMetadataState.INCOMPLETE
+            else if (!repair)
+                RecoveryMetadata.Plan(
+                    emptyList(),
+                    RecoveryMetadataState.INCOMPLETE,
+                    RecoveryMetadataState.INCOMPLETE,
+                    false,
+                )
             else {
                 val plan =
                     RecoveryMetadata.plan(asset.segments, rows, asset.segments.sumOf { it.frames })
                 plan.additions.forEach { journal.retainSegmentation(identity, it) }
-                plan.technical to plan.semantic
+                plan
             }
         } catch (_: IllegalArgumentException) {
-            RecoveryMetadataState.MALFORMED to RecoveryMetadataState.MALFORMED
+            RecoveryMetadata.Plan(
+                emptyList(),
+                RecoveryMetadataState.MALFORMED,
+                RecoveryMetadataState.MALFORMED,
+                false,
+            )
         }
 
     private fun finalizedMetadata(
         rows: List<SegmentationMetadata>,
         asset: StoredAudioAsset,
-    ): Pair<RecoveryMetadataState, RecoveryMetadataState> {
+    ): RecoveryMetadata.Plan {
         com.monumentogram.dora.audio.logical.LogicalRecordingProjection.technicalPairs(
             asset.segments.sumOf { it.frames },
             rows,
@@ -126,7 +144,7 @@ internal class RecordingRecoveryReader(
             else if (rows.any { it.kind == SegmentationKind.SEMANTIC_CLOSE })
                 RecoveryMetadataState.INCOMPLETE
             else RecoveryMetadataState.NOT_EVALUATED
-        return technical to semantic
+        return RecoveryMetadata.Plan(emptyList(), technical, semantic, false)
     }
 
     internal companion object {

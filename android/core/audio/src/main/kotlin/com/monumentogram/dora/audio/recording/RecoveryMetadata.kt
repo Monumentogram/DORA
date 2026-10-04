@@ -12,6 +12,7 @@ internal object RecoveryMetadata {
         val additions: List<SegmentationMetadata>,
         val technical: RecoveryMetadataState,
         val semantic: RecoveryMetadataState,
+        val continuationSafe: Boolean = true,
     )
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
@@ -36,6 +37,13 @@ internal object RecoveryMetadata {
             rows.filter { it.kind == SegmentationKind.TECHNICAL_CLOSE }.associateBy { it.segmentId }
         val aborts =
             rows.filter { it.kind == SegmentationKind.TECHNICAL_ABORT }.associateBy { it.segmentId }
+        val missingGroups = groups.filterKeys { key -> opens.none { it.segmentId == key } }
+        val firstKnownFrame = opens.minOfOrNull { it.firstFrame }
+        val missingKnownHistory =
+            firstKnownFrame != null &&
+                missingGroups.values.any {
+                    it.first().identity.firstFrame >= firstKnownFrame
+                }
         require(closes.keys.all { key -> opens.any { it.segmentId == key } })
         require(aborts.keys.all { key -> opens.any { it.segmentId == key } })
         val additions = mutableListOf<SegmentationMetadata>()
@@ -58,20 +66,24 @@ internal object RecoveryMetadata {
                 )
                 require(group.first().identity.firstFrame == open.firstFrame)
                 val end = group.last().identity.firstFrame + group.last().frames
-                if (close == null) {
-                    require(end == frames)
-                    additions +=
-                        open.copy(
-                            kind = SegmentationKind.TECHNICAL_CLOSE,
-                            endFrame = end,
-                            reason = "RECOVERY",
+                when {
+                    close != null -> {
+                        require(close.firstFrame == open.firstFrame && close.endFrame == end)
+                        require(
+                            close.captureEpochId == open.captureEpochId &&
+                                close.overlapFirstFrame == open.overlapFirstFrame
                         )
-                } else {
-                    require(close.firstFrame == open.firstFrame && close.endFrame == end)
-                    require(
-                        close.captureEpochId == open.captureEpochId &&
-                            close.overlapFirstFrame == open.overlapFirstFrame
-                    )
+                    }
+                    end == frames -> {
+                        additions +=
+                            open.copy(
+                                kind = SegmentationKind.TECHNICAL_CLOSE,
+                                endFrame = end,
+                                reason = "RECOVERY",
+                            )
+                    }
+                    else ->
+                        require(missingKnownHistory) // Retain unknown historical close evidence.
                 }
             }
         }
@@ -94,14 +106,16 @@ internal object RecoveryMetadata {
                         SegmentationKind.RECOVERY_INTERRUPTED,
                         last.segmentId,
                         last.firstFrame,
-                        frames,
+                        groups[last.segmentId]?.lastOrNull()?.let {
+                            it.identity.firstFrame + it.frames
+                        } ?: last.endFrame,
                         reason = "RECOVERY",
                         degraded = true,
                     )
                 val old = rows.singleOrNull { it.key == marker.key }
                 if (old == null) additions += marker else require(old == marker)
             }
-        val missing = groups.keys.any { key -> opens.none { it.segmentId == key } }
+        val missing = missingGroups.isNotEmpty()
         if (!missing && frames > 0)
             com.monumentogram.dora.audio.logical.LogicalRecordingProjection.technicalPairs(
                 frames,
@@ -111,6 +125,7 @@ internal object RecoveryMetadata {
             additions.toList(),
             if (missing) RecoveryMetadataState.INCOMPLETE else RecoveryMetadataState.INTERRUPTED,
             RecoveryMetadataState.INTERRUPTED,
+            continuationSafe = !missingKnownHistory,
         )
     }
 }

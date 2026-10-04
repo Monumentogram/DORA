@@ -6,6 +6,7 @@ import com.monumentogram.dora.audio.AudioIntent
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.EncryptedAudioCatalog
 import com.monumentogram.dora.audio.OriginalAudioStatus
+import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.SegmentationKind
 import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.StoredAudioAsset
@@ -28,6 +29,67 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LogicalRecoveryRuntimeTest {
+    @Test
+    fun legacyUnknownPrefixKeepsCleanContinuationAcrossInterruptions() {
+        val f = EncryptedAudioVaultFaultFixture()
+        f.open().use { vault ->
+            success(vault.writer.create(f.audio))
+            success(f.append(vault))
+            repeat(3) { cycle ->
+                val before = recovery(vault, f.audio)
+                assertTrue(before.canResume)
+                assertEquals(160L + cycle * 80000L, before.recoveredFrames)
+                val session = RecordingSession(f.audio, vault.writer)
+                session.restore(before.recoveredFrames, before.nextOrdinal)
+                assertTrue(session.resume())
+                session.accept(ByteArray(160000))
+                session.interrupt()
+            }
+            val after = recovery(vault, f.audio)
+            assertTrue(after.canResume)
+            assertEquals(240160L, after.recoveredFrames)
+            assertEquals(RecoveryMetadataState.INCOMPLETE, after.technicalMetadataState)
+            assertEquals(after, recovery(vault, f.audio))
+            assertTrue(
+                metadata(vault, f.audio).none {
+                    it.kind == SegmentationKind.TECHNICAL_OPEN && it.firstFrame == 0L
+                }
+            )
+        }
+    }
+
+    @Test
+    fun metadataCommitFailurePreservesPrefixButFencesLogicalResume() {
+        val f = EncryptedAudioVaultFaultFixture()
+        f.open().use { vault ->
+            val first = RecordingSession(f.audio, vault.writer)
+            first.start()
+            first.accept(ByteArray(160000))
+            first.interrupt()
+            val before = recovery(vault, f.audio)
+            val rows = metadata(vault, f.audio)
+            val writer =
+                object : ProductAudioWriterPort by vault.writer {
+                    override fun segmentation(
+                        identity: AudioIdentity,
+                        row: SegmentationMetadata,
+                    ): AudioResult<Unit> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+                }
+            val next = RecordingSession(f.audio, writer)
+            next.restore(before.recoveredFrames, before.nextOrdinal)
+            assertTrue(next.resume())
+            next.accept(ByteArray(160000))
+            next.interrupt()
+            val after = recovery(vault, f.audio)
+            assertEquals(160000L, after.recoveredFrames)
+            assertFalse(after.canResume)
+            assertEquals(RecordingCompletionState.PARTIAL_NOT_RESUMABLE, after.completionState)
+            assertEquals(RecoveryMetadataState.INCOMPLETE, after.technicalMetadataState)
+            assertEquals(rows, metadata(vault, f.audio))
+            assertEquals(after, recovery(vault, f.audio))
+        }
+    }
+
     @Test
     // Keep the ordered fault scenario and its assertions together for review.
     @Suppress("LongMethod")
@@ -239,7 +301,7 @@ class LogicalRecoveryRuntimeTest {
     }
 
     @Test
-    fun malformedMetadataDoesNotDiscardCanonicalContinuation() {
+    fun malformedMetadataPreservesPrefixButFencesLogicalResume() {
         val f = EncryptedAudioVaultFaultFixture()
         val probe = DatabaseProbe()
         f.open(dependencies = EncryptedAudioVault.Dependencies(helperFactory = probe::factory))
@@ -254,8 +316,13 @@ class LogicalRecoveryRuntimeTest {
                 )
                 val snapshot = recovery(vault, f.audio)
                 assertEquals(80000L, snapshot.recoveredFrames)
-                assertTrue(snapshot.canResume)
+                assertFalse(snapshot.canResume)
+                assertEquals(
+                    RecordingCompletionState.PARTIAL_NOT_RESUMABLE,
+                    snapshot.completionState,
+                )
                 assertEquals(RecoveryMetadataState.MALFORMED, snapshot.technicalMetadataState)
+                assertEquals(snapshot, recovery(vault, f.audio))
             }
     }
 

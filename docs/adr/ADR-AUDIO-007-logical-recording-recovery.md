@@ -63,6 +63,14 @@ Discovery performs no microphone or playback action. Deletion and revocation win
 Cold preflight exposes an explicit saved-recordings unlock action through the
 existing app-lock authority; successful unlock automatically starts discovery.
 The action does not request microphone permission or create a capture session.
+Positively malformed metadata or missing internal/trailing chunk provenance after
+known technical history preserves the authenticated prefix but fences product
+Resume as PARTIAL_NOT_RESUMABLE. No metadata, or an unknown leading historical
+prefix before the first known OPEN, retains accepted legacy canonical continuation
+across interruption cycles. This compatibility path never claims a complete
+historical logical projection or invents epochs. INCOMPLETE metadata is reported
+independently of continuation eligibility. Existing interruption markers remain
+bounded by their own authenticated chunk, even when later metadata is missing.
 
 ## Tail-loss contract
 
