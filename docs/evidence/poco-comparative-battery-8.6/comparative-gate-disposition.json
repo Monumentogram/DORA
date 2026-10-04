@@ -1,0 +1,14 @@
+{
+  "name": "POCO_COMPARATIVE_BATTERY_ACCEPTANCE",
+  "status": "NOT_ADMITTED",
+  "primarySource": null,
+  "acceptanceFormula": null,
+  "sourcePreferenceUnchanged": [
+    "validated consumed charge counter",
+    "validated AccuBattery controller-derived comparative estimate",
+    "reviewed Batterystats UID estimate"
+  ],
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "basis": "Short A/B/C observations establish diagnostic extraction, not same-condition repeatability. AccuBattery whole-session rounded totals do not match exact monotonic windows. Per-app screen-off attribution unavailable. UID modeling semantics do not justify automatic 1.25x.",
+  "nextTask": "Validate repeatability and defensible session boundaries of the controller-derived estimate, or review a separately specified Batterystats estimate interpretation; no one-hour campaign until admission."
+}

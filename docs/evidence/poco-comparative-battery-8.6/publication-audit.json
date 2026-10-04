@@ -1,0 +1,16 @@
+{
+  "scope": "all comparative repository additions; source, receipts, sample keys manually reviewed separately",
+  "persistentDeviceIdentifierHits": 0,
+  "privateKeyTokenPatternHits": 0,
+  "forbiddenBinaryFiles": 0,
+  "positiveCanaries": {
+    "actualDeviceIdentifier": true,
+    "privateKeyHeader": true,
+    "tokenPattern": true,
+    "binaryExtension": true
+  },
+  "rawDumpsOrUiHistoryPublished": false,
+  "audioOrPrivateRuntimePublished": false,
+  "independentReview": "0 unresolved P0/P1/P2; final seal review follows",
+  "ciLogsArtifacts": "separate final-SHA audit after CI"
+}

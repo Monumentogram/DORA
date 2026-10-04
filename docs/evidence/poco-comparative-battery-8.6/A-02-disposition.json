@@ -1,0 +1,37 @@
+{
+  "probeId": "A-02",
+  "disposition": "INVALIDATED",
+  "reasons": [
+    "NO_SAMPLER_MEASUREMENT_WINDOW",
+    "SYSTEM_AND_ACCUBATTERY_REPORT_SCREEN_ON_FULL_DISCHARGE_SESSION"
+  ],
+  "shellSamplerRows": 6,
+  "shellSamplerMeasuringRows": 0,
+  "batterystats": {
+    "schema": "checkin9/report36",
+    "uid": 10300,
+    "estimatedUidChargeMah": "0",
+    "cpuMs": null,
+    "semantics": "MODEL_ESTIMATED_UID_CHARGE_NOT_MEASURED_ENERGY",
+    "systemBatteryTimeMs": {
+      "batteryRealtime": 776862,
+      "batteryUptime": 776862,
+      "totalRealtime": 809091,
+      "startEpochMs": 1791119058208,
+      "batteryScreenOffRealtime": 0
+    },
+    "systemEstimatedConsumedMah": "0"
+  },
+  "accubattery": {
+    "method": "SUPPORTED_UI_HIERARCHY",
+    "displayedSessionLocal": "16:04-16:17",
+    "totalDischargeMah": 20,
+    "displayedDuration": "12m",
+    "screenOn": "12m (100%)",
+    "screenOff": "0 mAh for 0m",
+    "role": "CONTROLLER_DERIVED_APP_ESTIMATE; DIAGNOSTIC_ONLY",
+    "percentageConvertedToEnergy": false
+  },
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "discarded": false
+}

@@ -20,6 +20,11 @@ ROUTE = '''    import validate_poco_acceptance as successor
 SEALED = {'docs/evidence/poco-recording-8.6/attempts.json': '41993ad345629651577ad94adfd80197d0fdd790cf391759beb3df2825c9764e', 'docs/evidence/poco-recording-8.6/batterystats-source-summary.txt': 'da3a563e0d942f48c2809ced7fe98a370018ffab5e05e7e11153915755e5ad07', 'docs/evidence/poco-recording-8.6/cleanup-diagnostic-files.txt': 'dd8375c9e37ee04796a5237f78923faca46245a35668894177cb2b8a85f5ad3e', 'docs/evidence/poco-recording-8.6/device-preflight.json': '2411808feedbcabef0754b5a59302bb2255efd534080d4411f9fb71a3982ea66', 'docs/evidence/poco-recording-8.6/EnergyProbe.java': '8e45cc34d14d9bd53b7f2a26edc4a1b7c822c1d05b104b29075abbeeb4ec856e', 'docs/evidence/poco-recording-8.6/fixture-manifest.json': 'c8f567882b06e4e03b0a00f03b5aa59921ac0f5f69cde167b40df3d5340a8408', 'docs/evidence/poco-recording-8.6/framework-energy-probe-screen-off.txt': 'bee070cd9160fa644e1fd366c9dbe28ea5ac9fab430e4c344111dec81a9bbd33', 'docs/evidence/poco-recording-8.6/framework-energy-probe.txt': '86488169581ac12fefb6ebf655608841c5be326633b724863254bf123b1dd9d4', 'docs/evidence/poco-recording-8.6/oracle-result.txt': '7934c2f52f3d66c9193320dd44ce801ef62716c4a3323a5b471d25e6586b2a56', 'docs/evidence/poco-recording-8.6/perfetto-consumer-summary.json': '43445acea8eccb372d834ee31dc3f614f2e1e5c4718c0dcc5fc5581b44d579c6', 'docs/evidence/poco-recording-8.6/perfetto-summary.json': 'ee9319553dc3f5846ccca191d3be01cf217a2557353885a811d6952a7bfa349d', 'docs/evidence/poco-recording-8.6/power-preflight-consumers.pbtxt': '58c22bb79ffebba89dc7f690df7fb7dd9dba8f6d8484901aa176b8863f85d613', 'docs/evidence/poco-recording-8.6/power-preflight-rails.pbtxt': 'ecce9d7b3fd2233ed862f04bb0aeb8947eedd6e87a9efa4a7ebe1139946da8e3', 'docs/evidence/poco-recording-8.6/protocol.json': '873df5993a2d14d0c054e0b9aa3afe68a1dc8c53e69d686d476cbb080c4e2364', 'docs/evidence/poco-recording-8.6/README.md': 'b3b8a9780d0e694982465d03c990e087a18598ebd431f3da9466d88fe53d763e', 'docs/evidence/poco-recording-8.6/result.json': '4cba9826f1f3afe8b6a40bff36f5cb59ad73687531477368a49a679b63a1591e', 'docs/evidence/poco-recording-8.6/screen-before.txt': '47af5ef8b5c76675798d0d3fd9e41b050f21c4c4472fd057d0bf02809223a8be', 'docs/evidence/poco-recording-8.6/screen-off-end.txt': 'b11c0847e108cea10d11e68469ab13c37eca4e6b43babd86b190dd36708c9c4a', 'docs/evidence/poco-recording-8.6/screen-off.txt': '8c2e9f24c621a6ff13aa55f27fde0aca2c8a737015b6a6093f28dd2778459c17', 'tools/test_logical_recovery_poco.py': '95b404a752b24850f6ffcfff15e18b40f15d200664279bc16f4eb47b034134b6'}
 
 
+# Separately reviewed comparative preflight; original SEALED bytes stay unchanged.
+COMPARATIVE_SEALED = {'docs/evidence/poco-comparative-battery-8.6/A-01-disposition.json': '3a84c57db534b00172708aea697e8d82bc199cdd11db0b664334c595afc1112e', 'docs/evidence/poco-comparative-battery-8.6/A-02-disposition.json': 'de9de13908252b8f0d230fcd71664632ec8a93311921b2b43cd357c99eb728cc', 'docs/evidence/poco-comparative-battery-8.6/A-03-disposition.json': '270dcfd89c40aacb1a439ae67a1bfde3b7ed4ee3c3ae54f7c4b21e4910b1b328', 'docs/evidence/poco-comparative-battery-8.6/A-04-disposition.json': '3bc5ed71dd6613a196fcc155176319640907abb1e4b775703fcbaf2b195dcfab', 'docs/evidence/poco-comparative-battery-8.6/A-04-samples.jsonl': '15d2ad47025f7a8f526d77f62743423cb6c92a4f2dee1b30adb6ba635293e1d4', 'docs/evidence/poco-comparative-battery-8.6/accubattery-final-package.json': '47df2ce7d7f46fdb6c6f9b394ae1e7c7f21197f12d0c5086e06cef6fc980414e', 'docs/evidence/poco-comparative-battery-8.6/B-01-disposition.json': '6c8d1d1f9b679cf0c64dd50b7b7510229feb418009b7c183d9908e14b17a6f5e', 'docs/evidence/poco-comparative-battery-8.6/B-01-samples.jsonl': '1daa888fab484dee313c088ba155028cf5f2d3fc9a43cb01244280cb8a0b4214', 'docs/evidence/poco-comparative-battery-8.6/baseline-build-identity.json': 'f3a6c854a5d2897e2bd9bbfe66bd3b903c31ba1d2071c5ab7357002b6eb76bdc', 'docs/evidence/poco-comparative-battery-8.6/C-01-disposition.json': '519f19845d9c915a20aa69a67419f81b1922cbcaa72ceed5f4df5256a5438071', 'docs/evidence/poco-comparative-battery-8.6/C-01-readback-deletion.json': 'b590a9e521ddb05773b5373e26c3a19a005164c346e8cd7b16c6bb284c6da3e3', 'docs/evidence/poco-comparative-battery-8.6/C-01-samples.jsonl': 'fb539dcf0b2861e521bc18c30f2fc81b89aebf30531edd84ed1ec791f833775d', 'docs/evidence/poco-comparative-battery-8.6/comparative-gate-disposition.json': '1e9f9c4e3a0dc9b6c21e44ff1a136dc8cef764a5eaca8108650994520ea47d36', 'docs/evidence/poco-comparative-battery-8.6/observer-build-identity.json': '030f55daa1ae52e9ad1ef8e9053ebbc27ffb83c4afef91561c706848b7f378d0', 'docs/evidence/poco-comparative-battery-8.6/publication-audit.json': 'a73a8026f8e4114610b5219628b5ba3d857909f27bcc39a3edcfdae41a78d5fe', 'docs/evidence/poco-comparative-battery-8.6/README.md': '8febf063e04960d3bbdb52852b19b63326c837032a8e6db7fad5e84ec048e704', 'docs/evidence/poco-comparative-battery-8.6/result.json': 'c9f3648330a86e1701aadcc783f097f5b4a24ec137a7e33b8eb78ba23faf3190', 'docs/evidence/poco-comparative-battery-8.6/short-probe-protocol-v2.json': 'bcd3d6e1e12948326a8df59cad1849cb7f2757edad3108d4370b339012fc0f79', 'docs/evidence/poco-comparative-battery-8.6/short-probe-protocol.json': '4515858471d178835db83b68595e93c993f5b82fd742f9fb39a137ae52988e82', 'docs/evidence/poco-comparative-battery-8.6/sysfs-readonly-inventory.json': 'd12e6921492cfa28b58fcdae05b57606a3ec7fa499d06c5afa4edf1f7e14ca28', 'docs/evidence/poco-comparative-battery-8.6/test-apk-payload-verification.json': 'bdc433e26af0e453bf19e05eba189191b73356a8200881afbb3797e1e15e2351', 'docs/evidence/poco-comparative-battery-8.6/test-helper-cleanup.json': 'ead5136cfd4299a4c7088ba0cfe2fc4c433d49518d8a76ca556df31bad6a39bb', 'docs/evidence/poco-comparative-battery-8.6/uid-additional-diagnostics.json': '8e6907339df0932a0e349a383f00c854792ab4f7ed69e793453cad9e778e93a6', 'tools/poco_comparative_battery/baseline/AndroidManifest.xml': '98ce55693bfcadfdd15679358c6798e60d4e076230ff953f775a2f442eed85d6', 'tools/poco_comparative_battery/baseline/CaptureService.java': '769a4b7cdff2ccf76e715bfdaa4f69632d8de44285129ff154b6b8d4c77dc677', 'tools/poco_comparative_battery/baseline/MainActivity.java': '903872ce661d2a5907d5b446838646def9fbed6499abed68cd4c882943b927c7', 'tools/poco_comparative_battery/build.py': 'c17401e5f1f5890cf3d46767bcb4196ab4686dd679173d40422192506273e9e0', 'tools/poco_comparative_battery/comparative_parser.py': 'e328eac2e57d772df7296908d08fd7f27ac7e2863b6ae37626b003ed855c098c', 'tools/poco_comparative_battery/observer/AndroidManifest.xml': 'cf7532e967dae6d30ccaf7541238e5b592199c801964d744c50f86e343e9c48e', 'tools/poco_comparative_battery/observer/ProbeInstrumentation.java': '1f7e38b0677a08db58bb29e8bc79dcc68e64b04ced33c656ce9dc4b87c932dfd', 'tools/poco_comparative_battery/test_comparative_parser.py': '541d2250637c114a382be5d272428c47109a527230fc38b668067c7c5b9aca39', 'tools/test_logical_recovery_poco_comparative.py': '103be4b43eeb93648cf9886d05c0b36216fbeac1c95320d3b62c88c7317154ef'}
+COMPARATIVE = 'docs/evidence/poco-comparative-battery-8.6/'
+
+
 def require(value, message):
     if not value:
         raise ValueError(message)
@@ -71,7 +76,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     dirty = bool(git('status', '--porcelain', '--untracked-files=all'))
     require(working or not dirty, 'Publication requires clean source')
     validate_ci(os.environ, head, dirty, working)
-    approved = set(SEALED) | {SELF, PARENT, GOVERNANCE}
+    approved = set(SEALED) | set(COMPARATIVE_SEALED) | {SELF, PARENT, GOVERNANCE}
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -79,7 +84,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         parts = line.split()
         require(len(parts) == 2, 'No merge or rewritten baseline')
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
-    for path, digest in SEALED.items():
+    for path, digest in {**SEALED, **COMPARATIVE_SEALED}.items():
         validate_seal((root / path).read_bytes(), digest)
     validate_parent_route((root / PARENT).read_bytes(), git('show', BASE + ':' + PARENT))
     governance = (root / GOVERNANCE).read_bytes().replace(b'\r\n', b'\n')
@@ -106,6 +111,10 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     require(receipt['verdict'] == 'BLOCKED / POCO_ENERGY_MEASUREMENT_UNAVAILABLE' and
             receipt['campaignSourceSha'] is None and receipt['campaignApkSha256'] is None,
             'Preflight cannot certify physical acceptance')
+    validate_comparative_disposition(
+        json.loads((root / COMPARATIVE / 'result.json').read_text(encoding='utf-8')),
+        json.loads((root / COMPARATIVE / 'comparative-gate-disposition.json').read_text(encoding='utf-8')),
+    )
     legacy = lifecycle.historical_parent(root)
     inherited = set(legacy['implementation_paths']) | set(
         git('diff', '--name-only', lifecycle.PARENT, BASE).decode().splitlines())
@@ -113,6 +122,22 @@ def validate_checkout(root=ROOT, *, allow_working=None):
               'vad_runtime_graph': True, 'release_graph_sha256': vad.read_contract(root)['releaseGraphSha256']}
     vad.approved_graph(root, result)
     return result
+
+
+def validate_comparative_disposition(receipt, gate):
+    require(receipt['verdict'] == 'PARTIAL / BATTERYSTATS_COMPARATIVE_ONLY',
+            'Comparative preflight is not acceptance')
+    for value in (receipt, gate):
+        require(value['hardwareMicroWhGate'] ==
+                'NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE' and
+                value['primarySource'] is None and value['acceptanceFormula'] is None,
+                'Unsupported measurement/source admission')
+    require(not receipt['ratiosComputed'] and not receipt['batteryPercentConverted'] and
+            not receipt['currentSnapshotsIntegrated'] and not receipt['hourCampaignExecuted'] and
+            not receipt['cycles200Executed'], 'Probe cannot replace acceptance or invent energy')
+    require(receipt['sheet'] == 'UNCHANGED' and receipt['groupD'] == 'NOT_STARTED' and
+            receipt['cloud'] == 'NOT_STARTED' and receipt['asr'] == 'NOT_STARTED',
+            'Comparative preflight scope changed')
 
 
 if __name__ == '__main__':

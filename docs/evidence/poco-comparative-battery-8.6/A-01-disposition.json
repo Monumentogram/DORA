@@ -1,0 +1,6 @@
+{
+  "probeId": "A-01",
+  "disposition": "TIMED_OUT_BEFORE_PHYSICAL_UNPLUG",
+  "measuringSamples": 0,
+  "retryId": "A-02"
+}

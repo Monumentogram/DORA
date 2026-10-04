@@ -1,0 +1,15 @@
+{
+  "package": "com.monumentogram.dora.stage86.baseline",
+  "versionCode": 1,
+  "versionName": "0.1-instrumentation",
+  "apkSha256": "d601efc0d16c54d485c91a213cdc1f83fccc3660f5304a65f727c38ed345f34d",
+  "sourceSha256": {
+    "AndroidManifest.xml": "98ce55693bfcadfdd15679358c6798e60d4e076230ff953f775a2f442eed85d6",
+    "CaptureService.java": "769a4b7cdff2ccf76e715bfdaa4f69632d8de44285129ff154b6b8d4c77dc677",
+    "MainActivity.java": "903872ce661d2a5907d5b446838646def9fbed6499abed68cd4c882943b927c7"
+  },
+  "signingCertificate": "a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72",
+  "productionDoraIncluded": false,
+  "privateRuntimeIncluded": false,
+  "networkPermission": false
+}

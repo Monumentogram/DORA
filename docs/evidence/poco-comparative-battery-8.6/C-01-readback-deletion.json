@@ -1,0 +1,39 @@
+{
+  "apkSha256": "17c71b24ffd320d76a8ce4b886f67edb9fb6cf9a56053cc7ab17bb407ec36ed3",
+  "expectedFrames": 15444800,
+  "phase": "DELETED_VERIFIED",
+  "matchingFrameCandidates": 1,
+  "frames": 15444800,
+  "chunks": [
+    {
+      "first": 0,
+      "end": 9600000,
+      "open": "START",
+      "close": "CAP"
+    },
+    {
+      "first": 9600000,
+      "end": 15444800,
+      "open": "CAP",
+      "close": "STOP"
+    }
+  ],
+  "readbackVerified": true,
+  "sourceStateAfterDeletion": "UserDeleted",
+  "nonTargetAssetsPreserved": 46,
+  "verifiedAbsentTargets": 1358,
+  "absenceCategories": {
+    "ARTIFACT": 970,
+    "KEY_REFERENCE": 194,
+    "RUN_DIRECTORY": 194
+  },
+  "productDeletionCompleted": true,
+  "selection": "Unique frame count plus all 970 artifacts bound to independently recorded C-01 capture/finalization time interval; full authenticated readback before normal product deletion confirmation.",
+  "helperApkSha256": "453c4e301bc1c987d966d477337a2da8df9378b1a0b3498b5d89ecb98a076a6b",
+  "earlierAttempts": [
+    "read-01 incomplete activity launch; no deletion",
+    "read-02 no safe candidate; no deletion",
+    "read-03 authenticated readback complete",
+    "delete-01 authenticated readback repeated; normal dialog confirmed; physical absence verified"
+  ]
+}
