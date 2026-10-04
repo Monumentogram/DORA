@@ -56,7 +56,7 @@ class LogicalRecoveryProcessDeathTest {
         val args = InstrumentationRegistry.getArguments()
         val action = args.getString("persistenceCrashAction")
         if (action == null)
-            // The separate host campaign executes all 21 phases with proven process absence.
+            // The separate host campaign executes all 22 phases with proven process absence.
             listOf("COMMITTED_OPEN").forEach { phase ->
                 Fixture(phase, UUID.randomUUID().toString()).apply {
                     prepare(false)
@@ -164,6 +164,10 @@ class LogicalRecoveryProcessDeathTest {
                             identity: AudioIdentity,
                             row: SegmentationMetadata,
                         ): AudioResult<Unit> {
+                            if (phase == "FIRST_OPEN_METADATA_FAILED")
+                                return AudioResult.Failed(
+                                    com.monumentogram.dora.audio.AudioFailure.UNAVAILABLE
+                                )
                             if (row.kind == SegmentationKind.SEMANTIC_CLOSE)
                                 checkpoint("SEMANTIC_BEFORE")
                             val result = vault.writer.segmentation(identity, row)
@@ -310,7 +314,7 @@ class LogicalRecoveryProcessDeathTest {
         }
 
         // Keep the ordered fault scenario and its assertions together for review.
-        @Suppress("LongMethod")
+        @Suppress("LongMethod", "CyclomaticComplexMethod")
         fun verify() {
             open(false).use { vault ->
                 val first = recovery(vault, audio)
@@ -344,12 +348,21 @@ class LogicalRecoveryProcessDeathTest {
                     assertTrue(retained.any { it.kind == SegmentationKind.TECHNICAL_ABORT })
                     return@use
                 }
-                if (phase in setOf("APPEND_RESERVED", "KEY_BOOTSTRAP")) {
+                if (
+                    phase in setOf("APPEND_RESERVED", "KEY_BOOTSTRAP", "FIRST_OPEN_METADATA_FAILED")
+                ) {
                     assertFalse(first.canResume)
                     assertEquals(
                         RecordingCompletionState.PARTIAL_NOT_RESUMABLE,
                         first.completionState,
                     )
+                    if (phase == "FIRST_OPEN_METADATA_FAILED") {
+                        assertEquals(listOf(SegmentationMetadata.origin(audio)), retained)
+                        assertEquals(
+                            com.monumentogram.dora.audio.recording.RecoveryMetadataState.INCOMPLETE,
+                            first.technicalMetadataState,
+                        )
+                    }
                     return@use
                 }
                 if (phase.startsWith("FINALIZE_")) {
@@ -429,6 +442,7 @@ class LogicalRecoveryProcessDeathTest {
     companion object {
         val PHASES =
             listOf(
+                "FIRST_OPEN_METADATA_FAILED",
                 "OPEN_BEFORE_PCM",
                 "COMMITTED_OPEN",
                 "APPEND_RESERVED",

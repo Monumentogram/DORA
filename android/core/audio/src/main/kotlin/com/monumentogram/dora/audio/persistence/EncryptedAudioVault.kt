@@ -215,6 +215,10 @@ private constructor(
 
             override fun create(identity: AudioIdentity) = operation { bridge.create(identity) }
 
+            override fun createLogicalRecording(identity: AudioIdentity) = operation {
+                bridge.createLogicalRecording(identity)
+            }
+
             override fun append(
                 segment: AudioStorageUnitIdentity,
                 format: AudioFormat,

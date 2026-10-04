@@ -120,7 +120,7 @@ class RecordingSession(
     fun start(): Boolean {
         if (state.phase != RecordingPhase.PREFLIGHT) return false
         state = state.copy(phase = RecordingPhase.PREPARING)
-        if (!checkResult(writer.create(identity))) return false
+        if (!checkResult(writer.createLogicalRecording(identity))) return false
         state = state.copy(phase = RecordingPhase.RECORDING)
         return true
     }

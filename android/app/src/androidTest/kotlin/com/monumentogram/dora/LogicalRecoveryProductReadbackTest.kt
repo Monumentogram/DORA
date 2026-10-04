@@ -12,6 +12,7 @@ import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.ProductAudioSession
+import com.monumentogram.dora.audio.SegmentationKind
 import com.monumentogram.dora.audio.logical.LogicalRecordingResult
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.audio.recording.RecordingRecovery
@@ -57,6 +58,7 @@ class LogicalRecoveryProductReadbackTest {
                 val receipt =
                     recoveryReceipt(snapshot)
                         .put("identityFingerprint", expectedIdentity)
+                        .put("logicalOrigin", logicalOrigin(session, identity))
                         .put("pid", android.os.Process.myPid())
                 destination.writeText(receipt.toString())
                 checkpoint("RECOVERED")
@@ -170,6 +172,7 @@ class LogicalRecoveryProductReadbackTest {
                 .put("version", source.version)
                 .put("finalized", true)
                 .put("authorizationUnits", 1)
+                .put("logicalOrigin", logicalOrigin(session, identity))
                 .put(
                     "chunks",
                     JSONArray(
@@ -187,6 +190,18 @@ class LogicalRecoveryProductReadbackTest {
                 .toString()
         )
         checkpoint("FINAL_COHERENT_SOURCE")
+    }
+
+    private fun logicalOrigin(session: ProductAudioSession, identity: AudioIdentity): Boolean {
+        val rows = (session.reader.segmentation(identity) as AudioResult.Value).value
+        val origin = rows.singleOrNull { it.kind == SegmentationKind.RECORDING_ORIGIN }
+        if (origin != null) {
+            origin.validate(0)
+            assertEquals(identity.sessionId, origin.segmentId)
+        }
+        if (InstrumentationRegistry.getArguments().getString("requireLogicalOrigin") == "true")
+            assertTrue(origin != null)
+        return origin != null
     }
 
     private fun recoveryReceipt(snapshot: RecordingRecovery) =

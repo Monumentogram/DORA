@@ -74,6 +74,8 @@ internal data class StoredAudioAsset(
 internal interface EncryptedAudioCatalog {
     fun create(identity: AudioIdentity): Boolean
 
+    fun createLogicalRecording(identity: AudioIdentity): Boolean = create(identity)
+
     fun tryAcquire(identity: AudioIdentity): AutoCloseable?
 
     fun load(identity: AudioIdentity): StoredAudioAsset?
@@ -108,6 +110,12 @@ internal class RecoveryAudioBridge(
     override fun create(identity: AudioIdentity): AudioResult<Unit> = guarded {
         if (!canonical(identity.sessionId)) failed(AudioFailure.INVALID_INPUT)
         else if (catalog.create(identity)) AudioResult.Value(Unit)
+        else failed(AudioFailure.COLLISION)
+    }
+
+    override fun createLogicalRecording(identity: AudioIdentity): AudioResult<Unit> = guarded {
+        if (!canonical(identity.sessionId)) failed(AudioFailure.INVALID_INPUT)
+        else if (catalog.createLogicalRecording(identity)) AudioResult.Value(Unit)
         else failed(AudioFailure.COLLISION)
     }
 

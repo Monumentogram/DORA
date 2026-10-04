@@ -18,7 +18,7 @@ import sys
 from run_encrypted_persistence_device import RUNNER, measure_page_sizes, parse_results, require
 
 TEST = 'com.monumentogram.dora.audio.persistence.LogicalRecoveryProcessDeathTest#verifyLogicalRecoveryProcessDeath'
-PHASES = ('OPEN_BEFORE_PCM', 'COMMITTED_OPEN', 'APPEND_RESERVED', 'KEY_BOOTSTRAP',
+PHASES = ('FIRST_OPEN_METADATA_FAILED', 'OPEN_BEFORE_PCM', 'COMMITTED_OPEN', 'APPEND_RESERVED', 'KEY_BOOTSTRAP',
           'PUBLICATION_COMMITTED', 'AUTHENTICATED_READBACK', 'CATALOG_COMMITTED',
           'TECHNICAL_CLOSE', 'SEMANTIC_BEFORE', 'SEMANTIC_AFTER', 'BEFORE_CAP',
           'CAP_CLOSED', 'CAP_OPEN_EMPTY', 'CAP_OVERLAP', 'PAUSE_PENDING',

@@ -34,7 +34,7 @@ class LogicalRecoveryAdmissionTest(unittest.TestCase):
         with self.assertRaises(ValueError): ci.normalize(ci.upgrade(old).replace(ci.GATE, ''))
 
     def test_all_process_death_phases_are_present(self):
-        self.assertEqual(21, len(crash.PHASES))
+        self.assertEqual(22, len(crash.PHASES))
         self.assertEqual(len(set(crash.PHASES)), len(crash.PHASES))
         source = (gate.ROOT / 'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/LogicalRecoveryProcessDeathTest.kt').read_text()
         for phase in crash.PHASES: self.assertIn('"' + phase + '"', source)

@@ -65,7 +65,15 @@ existing app-lock authority; successful unlock automatically starts discovery.
 The action does not request microphone permission or create a capture session.
 Positively malformed metadata or missing internal/trailing chunk provenance after
 known technical history preserves the authenticated prefix but fences product
-Resume as PARTIAL_NOT_RESUMABLE. No metadata, or an unknown leading historical
+Resume as PARTIAL_NOT_RESUMABLE. New RecordingSession creation atomically inserts
+the asset and RECORDING_ORIGIN in the existing encrypted segmentation table,
+with exact readback of both. Its fixed zero-frame LOGICAL_RECORDING observation
+is bound to the asset's session ID, carries no chunk/epoch/semantic meaning and
+cannot be inserted through ordinary metadata writes or synthesized by recovery.
+Failure to commit the origin admits no PCM. Subsequent metadata failure still
+preserves canonical PCM, but any missing OPEN (including the first) fences Resume.
+This additive string value requires no schema migration or new recovery engine.
+Legacy create remains unchanged. Without the origin, no metadata or an unknown leading historical
 prefix before the first known OPEN, retains accepted legacy canonical continuation
 across interruption cycles. This compatibility path never claims a complete
 historical logical projection or invents epochs. INCOMPLETE metadata is reported

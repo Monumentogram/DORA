@@ -40,10 +40,12 @@ internal object RecoveryMetadata {
         val missingGroups = groups.filterKeys { key -> opens.none { it.segmentId == key } }
         val firstKnownFrame = opens.minOfOrNull { it.firstFrame }
         val missingKnownHistory =
-            firstKnownFrame != null &&
-                missingGroups.values.any {
-                    it.first().identity.firstFrame >= firstKnownFrame
-                }
+            (rows.any { it.kind == SegmentationKind.RECORDING_ORIGIN } &&
+                missingGroups.isNotEmpty()) ||
+                (firstKnownFrame != null &&
+                    missingGroups.values.any {
+                        it.first().identity.firstFrame >= firstKnownFrame
+                    })
         require(closes.keys.all { key -> opens.any { it.segmentId == key } })
         require(aborts.keys.all { key -> opens.any { it.segmentId == key } })
         val additions = mutableListOf<SegmentationMetadata>()

@@ -82,25 +82,12 @@ private constructor(
     fun retainSegmentation(identity: AudioIdentity, metadata: SegmentationMetadata) {
         requireOperation(identity)
         requireMutable()
+        require(metadata.kind != SegmentationKind.RECORDING_ORIGIN)
         check(sourceState(identity) == null)
         val source = checkNotNull(catalog.load(identity))
         val frames = source.segments.sumOf { it.frames }
         metadata.validate(frames)
-        val row =
-            SegmentationEntity(
-                identity.assetId.value,
-                metadata.key,
-                metadata.kind.name,
-                metadata.segmentId,
-                metadata.firstFrame,
-                metadata.endFrame,
-                metadata.captureEpochId,
-                metadata.overlapFirstFrame,
-                metadata.reason,
-                metadata.degraded,
-                metadata.profileId,
-                metadata.profileSha256,
-            )
+        val row = metadata.entity(identity)
         val old = dao.segmentation(row.assetId, row.recordKey)
         if (old != null) {
             check(old == row)
@@ -234,6 +221,8 @@ private constructor(
                     .also {
                         it.validate(frames)
                         require(it.key == row.recordKey)
+                        if (it.kind == SegmentationKind.RECORDING_ORIGIN)
+                            require(it == SegmentationMetadata.origin(identity))
                     }
             } catch (_: IllegalArgumentException) {
                 throw com.monumentogram.dora.audio.InvalidSegmentationMetadata()
@@ -356,6 +345,22 @@ private constructor(
         return claim
     }
 
+    private fun SegmentationMetadata.entity(identity: AudioIdentity) =
+        SegmentationEntity(
+            identity.assetId.value,
+            key,
+            kind.name,
+            segmentId,
+            firstFrame,
+            endFrame,
+            captureEpochId,
+            overlapFirstFrame,
+            reason,
+            degraded,
+            profileId,
+            profileSha256,
+        )
+
     private inner class Catalog : EncryptedAudioCatalog {
         override fun tryAcquire(identity: AudioIdentity): AutoCloseable? {
             checkOpen()
@@ -363,7 +368,12 @@ private constructor(
             return lease.tryAcquire(identity.assetId.value)
         }
 
-        override fun create(identity: AudioIdentity): Boolean {
+        override fun create(identity: AudioIdentity): Boolean = createAsset(identity, false)
+
+        override fun createLogicalRecording(identity: AudioIdentity): Boolean =
+            createAsset(identity, true)
+
+        private fun createAsset(identity: AudioIdentity, logical: Boolean): Boolean {
             checkOpen()
             requireMutable()
             canonical(identity.sessionId)
@@ -378,7 +388,16 @@ private constructor(
                         binding.ownerId,
                         binding.vaultId,
                     )
-                commits.commit({ dao.insert(row) }) { dao.asset(row.assetId) == row }
+                val origin =
+                    if (logical) SegmentationMetadata.origin(identity).entity(identity) else null
+                commits.commit({
+                    dao.insert(row)
+                    if (origin != null) dao.insert(origin)
+                }) {
+                    dao.asset(row.assetId) == row &&
+                        (origin == null ||
+                            dao.segmentation(row.assetId, origin.recordKey) == origin)
+                }
                 return true
             }
         }

@@ -30,6 +30,29 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AudioRuntimeCoordinatorTest {
+    @Test
+    fun runtimeHandlePreservesLogicalCreateAndRevocation() {
+        val lock = AppLockSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                assertEquals(
+                    AudioResult.Value(Unit),
+                    session.writer.createLogicalRecording(identity),
+                )
+                assertEquals(1, vault.logicalCreates)
+                assertEquals(0, vault.writes)
+                lock.lock()
+                runtime.revoke()
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    session.writer.createLogicalRecording(identity),
+                )
+                assertEquals(1, vault.logicalCreates)
+            }
+    }
+
     private val identity =
         AudioIdentity(
             RecordingId("00000000-0000-0000-0000-000000000001"),
@@ -330,11 +353,17 @@ class AudioRuntimeCoordinatorTest {
             }
 
         var closed = false
+        var logicalCreates = 0
         var writes = 0
         var deletions = 0
         override val protection = VaultKeyProtection.SOFTWARE
         override val writer =
             object : ProductAudioWriterPort {
+                override fun createLogicalRecording(identity: AudioIdentity): AudioResult<Unit> {
+                    logicalCreates++
+                    return AudioResult.Value(Unit)
+                }
+
                 override fun create(identity: AudioIdentity): AudioResult<Unit> {
                     writes++
                     return AudioResult.Value(Unit)

@@ -15,6 +15,7 @@ enum class SegmentationKind {
     DEGRADED,
     TECHNICAL_ABORT,
     RECOVERY_INTERRUPTED,
+    RECORDING_ORIGIN,
 }
 
 /** Content-free immutable source views, inside the existing encrypted journal only. */
@@ -78,13 +79,34 @@ data class SegmentationMetadata(
                 require(endFrame > firstFrame && reason in setOf("STOP", "SILENCE_90_SECONDS"))
             else if (kind == SegmentationKind.RECOVERY_INTERRUPTED)
                 require(degraded && reason == "RECOVERY")
+            else if (kind == SegmentationKind.RECORDING_ORIGIN)
+                require(
+                    !degraded && firstFrame == 0L && endFrame == 0L && reason == "LOGICAL_RECORDING"
+                )
             else require(degraded && reason in VadFailure.entries.map { it.name })
         }
     }
 
     companion object {
         private val REASONS =
-            setOf("START", "RESUME", "CAP", "PAUSE", "STOP", "SILENCE_90_SECONDS", "RECOVERY") +
-                VadFailure.entries.map { it.name }
+            setOf(
+                "START",
+                "RESUME",
+                "CAP",
+                "PAUSE",
+                "STOP",
+                "SILENCE_90_SECONDS",
+                "RECOVERY",
+                "LOGICAL_RECORDING",
+            ) + VadFailure.entries.map { it.name }
+
+        internal fun origin(identity: AudioIdentity) =
+            SegmentationMetadata(
+                SegmentationKind.RECORDING_ORIGIN,
+                identity.sessionId,
+                0,
+                0,
+                reason = "LOGICAL_RECORDING",
+            )
     }
 }

@@ -99,6 +99,9 @@ interface ProductAudioWriterPort {
 
     fun create(identity: AudioIdentity): AudioResult<Unit>
 
+    /** New product recordings atomically retain their logical-metadata origin with the asset. */
+    fun createLogicalRecording(identity: AudioIdentity): AudioResult<Unit> = create(identity)
+
     fun append(
         segment: AudioStorageUnitIdentity,
         format: AudioFormat,

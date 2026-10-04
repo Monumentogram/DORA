@@ -30,6 +30,90 @@ import org.junit.Test
 
 class LogicalRecoveryRuntimeTest {
     @Test
+    fun originInsertFailureRollsBackAssetAndNeverAdmitsPcm() {
+        val f = EncryptedAudioVaultFaultFixture()
+        val probe = DatabaseProbe()
+        f.open(dependencies = EncryptedAudioVault.Dependencies(helperFactory = probe::factory))
+            .use { vault ->
+                probe.database.execSQL(
+                    "CREATE TRIGGER synthetic_origin_failure BEFORE INSERT ON audio_segmentation " +
+                        "WHEN NEW.kind='RECORDING_ORIGIN' " +
+                        "BEGIN SELECT RAISE(ABORT, 'SYNTHETIC_ORIGIN_FAILURE'); END"
+                )
+                val session = RecordingSession(f.audio, vault.writer)
+                assertFalse(session.start())
+                session.accept(ByteArray(160000))
+                probe.database
+                    .query(
+                        "SELECT COUNT(*) FROM audio_asset WHERE assetId=?",
+                        arrayOf(f.audio.assetId.value),
+                    )
+                    .use {
+                        assertTrue(it.moveToFirst())
+                        assertEquals(0, it.getInt(0))
+                    }
+                // Remove only the test's injected trigger before strict schema verification on
+                // reopen.
+                probe.database.execSQL("DROP TRIGGER synthetic_origin_failure")
+                probe.database
+                    .query(
+                        "SELECT COUNT(*) FROM audio_segmentation WHERE assetId=?",
+                        arrayOf(f.audio.assetId.value),
+                    )
+                    .use {
+                        assertTrue(it.moveToFirst())
+                        assertEquals(0, it.getInt(0))
+                    }
+            }
+        f.open(false).use { vault ->
+            assertTrue((vault.recordingRecoveryPage("") as AudioResult.Value).value.isEmpty())
+        }
+    }
+
+    @Test
+    fun logicalOriginIsAtomicAndCannotBeAddedOrChangedByMetadataWrites() {
+        val f = EncryptedAudioVaultFaultFixture()
+        f.open().use { vault ->
+            success(vault.writer.createLogicalRecording(f.audio))
+            val origin = SegmentationMetadata.origin(f.audio)
+            assertEquals(listOf(origin), metadata(vault, f.audio))
+            assertTrue(vault.writer.segmentation(f.audio, origin) is AudioResult.Failed)
+            assertTrue(
+                vault.writer.segmentation(f.audio, origin.copy(segmentId = id(55)))
+                    is AudioResult.Failed
+            )
+            assertEquals(listOf(origin), metadata(vault, f.audio))
+        }
+        f.open(false).use { vault ->
+            assertEquals(listOf(SegmentationMetadata.origin(f.audio)), metadata(vault, f.audio))
+        }
+    }
+
+    @Test
+    fun firstOpenFailurePreservesPrefixButCannotMasqueradeAsLegacy() {
+        val f = EncryptedAudioVaultFaultFixture()
+        f.open().use { vault ->
+            val writer =
+                object : ProductAudioWriterPort by vault.writer {
+                    override fun segmentation(
+                        identity: AudioIdentity,
+                        row: SegmentationMetadata,
+                    ): AudioResult<Unit> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+                }
+            val session = RecordingSession(f.audio, writer)
+            assertTrue(session.start())
+            session.accept(ByteArray(160000))
+            session.interrupt()
+            val snapshot = recovery(vault, f.audio)
+            assertEquals(80000L, snapshot.recoveredFrames)
+            assertFalse(snapshot.canResume)
+            assertEquals(RecordingCompletionState.PARTIAL_NOT_RESUMABLE, snapshot.completionState)
+            assertEquals(RecoveryMetadataState.INCOMPLETE, snapshot.technicalMetadataState)
+            assertEquals(snapshot, recovery(vault, f.audio))
+        }
+    }
+
+    @Test
     fun legacyUnknownPrefixKeepsCleanContinuationAcrossInterruptions() {
         val f = EncryptedAudioVaultFaultFixture()
         f.open().use { vault ->
