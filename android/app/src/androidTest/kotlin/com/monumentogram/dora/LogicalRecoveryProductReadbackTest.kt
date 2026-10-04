@@ -35,7 +35,7 @@ class LogicalRecoveryProductReadbackTest {
     fun observeControlledRecovery() {
         val args = InstrumentationRegistry.getArguments()
         val phase = args.getString("doraRecoveryCampaign")
-        org.junit.Assume.assumeTrue(phase in setOf("capture", "resume", "read"))
+        org.junit.Assume.assumeTrue(phase in setOf("capture", "resume", "read", "final-read"))
         val campaign = checkNotNull(args.getString("campaignId"))
         require(campaign.matches(Regex("[a-z0-9-]{1,64}")))
         val app =
@@ -50,20 +50,7 @@ class LogicalRecoveryProductReadbackTest {
             assertEquals(RecordingPhase.PREFLIGHT, app.recording.state.value.recording.phase)
             val expectedIdentity = args.getString("sourceIdentitySha256")
             if (phase != "capture") {
-                val opened = AtomicReference<AudioAvailability>()
-                val done = CountDownLatch(1)
-                onMain {
-                    app.audioRuntime.requestOpen(activity, AudioOpenMode.OPEN_EXISTING) {
-                        opened.set(it)
-                        done.countDown()
-                    }
-                }
-                check(done.await(30, TimeUnit.SECONDS))
-                val available = opened.get()
-                check(available is AudioAvailability.Available) {
-                    "Existing vault unavailable: $available"
-                }
-                val session = available.session
+                val session = openExisting(app, activity)
                 val identity =
                     existingIdentities(session).single { identityHash(it) == expectedIdentity }
                 val snapshot = exactRecovery(session, identity)
@@ -75,6 +62,11 @@ class LogicalRecoveryProductReadbackTest {
                 checkpoint("RECOVERED")
                 assertEquals(RecordingPhase.PREFLIGHT, app.recording.state.value.recording.phase)
                 if (phase == "read") return@withHostActivity
+                if (phase == "final-read") {
+                    assertFalse(snapshot.canResume)
+                    verifyFinal(session, identity, snapshot.recoveredFrames, destination)
+                    return@withHostActivity
+                }
                 assertTrue(snapshot.canResume)
             }
             checkpoint("WAITING_EXPLICIT_CAPTURE")
@@ -102,69 +94,99 @@ class LogicalRecoveryProductReadbackTest {
                 )
                 finish && state.phase == RecordingPhase.SAVED
             }
-            val opened = AtomicReference<AudioAvailability>()
-            val done = CountDownLatch(1)
-            onMain {
-                app.audioRuntime.requestOpen(activity, AudioOpenMode.OPEN_EXISTING) {
-                    opened.set(it)
-                    done.countDown()
-                }
-            }
-            check(done.await(30, TimeUnit.SECONDS))
-            val session = (opened.get() as AudioAvailability.Available).session
-            val source =
-                ((session.originals.acquire(identity) as AudioResult.Value).value
-                        as OriginalAudioStatus.Available)
-                    .reference
-            val logical =
-                ((session.logicalRecordings.read(source) as AudioResult.Value).value
-                        as LogicalRecordingResult.Ready)
-                    .recording
-            assertEquals(bound.state.frames, source.frames)
-            assertEquals(identity.recordingId, logical.authorizationUnitId.recordingId)
-            assertEquals(
-                source.frames,
-                logical.technicalChunks.sumOf { it.canonicalEndFrame - it.canonicalFirstFrame },
+            verifyFinal(
+                openExisting(app, activity),
+                identity,
+                onControl(app) { bound.state.frames },
+                destination,
             )
-            assertTrue(logical.technicalChunks.all { it.sourceAudioReference == source })
-            assertFalse(exactRecovery(session, identity).canResume)
-            destination.writeText(
-                JSONObject()
-                    .put("identityFingerprint", identityHash(identity))
-                    .put("frames", source.frames)
-                    .put(
-                        "sourceFingerprint",
-                        digest(
-                            listOf(
-                                    identityHash(identity),
-                                    source.version.toString(),
-                                    source.digest,
-                                    source.frames.toString(),
-                                )
-                                .joinToString("/")
-                        ),
-                    )
-                    .put("version", source.version)
-                    .put("finalized", true)
-                    .put("authorizationUnits", 1)
-                    .put(
-                        "chunks",
-                        JSONArray(
-                            logical.technicalChunks.map {
-                                JSONObject()
-                                    .put("idFingerprint", digest(it.chunkId))
-                                    .put("first", it.canonicalFirstFrame)
-                                    .put("end", it.canonicalEndFrame)
-                                    .put("open", it.openReason)
-                                    .put("close", it.closeReason)
-                            }
-                        ),
-                    )
-                    .put("pid", android.os.Process.myPid())
-                    .toString()
-            )
-            checkpoint("FINAL_COHERENT_SOURCE")
         }
+    }
+
+    private fun openExisting(app: DoraApplication, activity: MainActivity): ProductAudioSession {
+        val opened = AtomicReference<AudioAvailability>()
+        val done = CountDownLatch(1)
+        onMain {
+            app.audioRuntime.requestOpen(activity, AudioOpenMode.OPEN_EXISTING) {
+                opened.set(it)
+                done.countDown()
+            }
+        }
+        check(done.await(30, TimeUnit.SECONDS))
+        // An automatic UI discovery may supersede this observer's open request.
+        // Opening is an observation of the newer request, never a usable session.
+        if (opened.get() == AudioAvailability.Opening) {
+            awaitPhysical(30) {
+                onMain { opened.set(app.audioRuntime.availability) }
+                opened.get() != AudioAvailability.Opening
+            }
+        }
+        val available = opened.get()
+        check(available is AudioAvailability.Available) {
+            "Existing vault unavailable: $available"
+        }
+        return available.session
+    }
+
+    @Suppress("LongMethod") // Keep final-source identity and exact mapping assertions together.
+    private fun verifyFinal(
+        session: ProductAudioSession,
+        identity: AudioIdentity,
+        expectedFrames: Long,
+        destination: File,
+    ) {
+        val source =
+            ((session.originals.acquire(identity) as AudioResult.Value).value
+                    as OriginalAudioStatus.Available)
+                .reference
+        val logical =
+            ((session.logicalRecordings.read(source) as AudioResult.Value).value
+                    as LogicalRecordingResult.Ready)
+                .recording
+        assertEquals(expectedFrames, source.frames)
+        assertEquals(identity.recordingId, logical.authorizationUnitId.recordingId)
+        assertEquals(
+            source.frames,
+            logical.technicalChunks.sumOf { it.canonicalEndFrame - it.canonicalFirstFrame },
+        )
+        assertTrue(logical.technicalChunks.all { it.sourceAudioReference == source })
+        assertFalse(exactRecovery(session, identity).canResume)
+        destination.writeText(
+            JSONObject()
+                .put("identityFingerprint", identityHash(identity))
+                .put("frames", source.frames)
+                .put(
+                    "sourceFingerprint",
+                    digest(
+                        listOf(
+                                identityHash(identity),
+                                source.version.toString(),
+                                source.digest,
+                                source.frames.toString(),
+                            )
+                            .joinToString("/")
+                    ),
+                )
+                .put("version", source.version)
+                .put("finalized", true)
+                .put("authorizationUnits", 1)
+                .put(
+                    "chunks",
+                    JSONArray(
+                        logical.technicalChunks.map {
+                            JSONObject()
+                                .put("idFingerprint", digest(it.chunkId))
+                                .put("first", it.canonicalFirstFrame)
+                                .put("end", it.canonicalEndFrame)
+                                .put("open", it.openReason)
+                                .put("close", it.closeReason)
+                        }
+                    ),
+                )
+                .put("pid", android.os.Process.myPid())
+                .toString()
+        )
+        checkpoint("FINAL_COHERENT_SOURCE")
     }
 
     private fun recoveryReceipt(snapshot: RecordingRecovery) =
