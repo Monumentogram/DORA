@@ -10,6 +10,7 @@
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingRecoveryCard.kt": "647da29f9ff8eb9a2aef7fbcf9dd61fd8668cd2f80e8b0e0cb232e762ef6ba16",
     "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/LogicalRecoveryProcessDeathTest.kt": "7780d33dcc03c3acb999473c35984113387d676210a945f65d4a83e93a6fa08e",
     "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/LogicalRecoveryRuntimeTest.kt": "f11051b39d996f33fde2a74b23bb396171a9156dce71ee816530abb30817b207",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/SegmentationPersistenceTest.kt": "a1415508f15c9a3763be5f3eed2fb0aac2febd46bd07dcbef937a45799caa0c8",
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/ProductAudioPort.kt": "4a6b14e19e797726c74f6cdbae45b0ac6506992009092f9b8935c4aba7eeb9b7",
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/RecoveryAudioBridge.kt": "22b28f9f91b7db93b55f188393a8ff8c23dc4715e1ef49eb8927ad2b8727f52f",
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/SegmentationMetadata.kt": "9d9b12574eee9025025dca6c64ece3795a0b35369a8766fb42d05e4d6d082e2e",

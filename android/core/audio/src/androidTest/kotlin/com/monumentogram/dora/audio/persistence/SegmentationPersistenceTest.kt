@@ -112,8 +112,15 @@ class SegmentationPersistenceTest {
         f.open(false).use { v ->
             success(v.writer.reconcile(f.audio))
             val rows = (v.reader.segmentation(f.audio) as AudioResult.Value).value
-            assertEquals(1, rows.size)
-            assertEquals(SegmentationKind.TECHNICAL_OPEN, rows.single().kind)
+            assertEquals(2, rows.size)
+            assertEquals(
+                SegmentationMetadata.origin(f.audio),
+                rows.single { it.kind == SegmentationKind.RECORDING_ORIGIN },
+            )
+            assertEquals(
+                SegmentationKind.TECHNICAL_OPEN,
+                rows.single { it.kind != SegmentationKind.RECORDING_ORIGIN }.kind,
+            )
             success(v.reader.extract(f.audio) { _, _ -> })
         }
     }
