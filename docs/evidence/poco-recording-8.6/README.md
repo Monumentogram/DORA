@@ -102,7 +102,11 @@ accepted product recording path. No reduced or mocked product run was performed.
 
 A narrow evidence-only successor validator admits this new branch while sealing all
 public receipts and allowing only its explicit evidence/tooling paths. The historical
-validator receives only a reversible three-line dispatch. It checks the true current
+validator receives only a reversible three-line dispatch. Two historical Recovery
+branch guards also admit the new branch only through that same sealed current-tree
+validator; removing those two additions restores the exact accepted file. The first
+CI attempt on 793fe04 failed at this remaining branch guard; that failure is preserved
+as infrastructure history, not an energy attempt. The successor checks the true current
 CI ref/SHA, preserves every production/workflow/oracle byte, and cannot issue PASS
 for physical acceptance. The first local validation failed with Wrong Stage8.5 branch;
 this was reproduced before the scoped successor fix.

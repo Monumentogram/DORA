@@ -11,12 +11,13 @@ BRANCH = 'stage/8.6-poco-recording-acceptance'
 EVIDENCE = 'docs/evidence/poco-recording-8.6/'
 SELF = 'tools/validate_poco_acceptance.py'
 PARENT = 'tools/validate_logical_recovery.py'
+GOVERNANCE = 'tools/validate_poc_recovery_governance.py'
 ROUTE = '''    import validate_poco_acceptance as successor
     if successor.candidate(root):
         return successor.validate_checkout(root, allow_working=allow_working)
 '''
 # Exact content seals; additions/edits require a new reviewed evidence revision.
-SEALED = {'docs/evidence/poco-recording-8.6/attempts.json': '41993ad345629651577ad94adfd80197d0fdd790cf391759beb3df2825c9764e', 'docs/evidence/poco-recording-8.6/batterystats-source-summary.txt': 'da3a563e0d942f48c2809ced7fe98a370018ffab5e05e7e11153915755e5ad07', 'docs/evidence/poco-recording-8.6/cleanup-diagnostic-files.txt': 'dd8375c9e37ee04796a5237f78923faca46245a35668894177cb2b8a85f5ad3e', 'docs/evidence/poco-recording-8.6/device-preflight.json': '2411808feedbcabef0754b5a59302bb2255efd534080d4411f9fb71a3982ea66', 'docs/evidence/poco-recording-8.6/EnergyProbe.java': '8e45cc34d14d9bd53b7f2a26edc4a1b7c822c1d05b104b29075abbeeb4ec856e', 'docs/evidence/poco-recording-8.6/fixture-manifest.json': 'c8f567882b06e4e03b0a00f03b5aa59921ac0f5f69cde167b40df3d5340a8408', 'docs/evidence/poco-recording-8.6/framework-energy-probe-screen-off.txt': 'bee070cd9160fa644e1fd366c9dbe28ea5ac9fab430e4c344111dec81a9bbd33', 'docs/evidence/poco-recording-8.6/framework-energy-probe.txt': '86488169581ac12fefb6ebf655608841c5be326633b724863254bf123b1dd9d4', 'docs/evidence/poco-recording-8.6/oracle-result.txt': '7934c2f52f3d66c9193320dd44ce801ef62716c4a3323a5b471d25e6586b2a56', 'docs/evidence/poco-recording-8.6/perfetto-consumer-summary.json': '43445acea8eccb372d834ee31dc3f614f2e1e5c4718c0dcc5fc5581b44d579c6', 'docs/evidence/poco-recording-8.6/perfetto-summary.json': 'ee9319553dc3f5846ccca191d3be01cf217a2557353885a811d6952a7bfa349d', 'docs/evidence/poco-recording-8.6/power-preflight-consumers.pbtxt': '58c22bb79ffebba89dc7f690df7fb7dd9dba8f6d8484901aa176b8863f85d613', 'docs/evidence/poco-recording-8.6/power-preflight-rails.pbtxt': 'ecce9d7b3fd2233ed862f04bb0aeb8947eedd6e87a9efa4a7ebe1139946da8e3', 'docs/evidence/poco-recording-8.6/protocol.json': '873df5993a2d14d0c054e0b9aa3afe68a1dc8c53e69d686d476cbb080c4e2364', 'docs/evidence/poco-recording-8.6/README.md': 'c05ec739b552148cda9df8d7061fbf84daa51161486a76849071dfeb97d1df41', 'docs/evidence/poco-recording-8.6/result.json': '4cba9826f1f3afe8b6a40bff36f5cb59ad73687531477368a49a679b63a1591e', 'docs/evidence/poco-recording-8.6/screen-before.txt': '47af5ef8b5c76675798d0d3fd9e41b050f21c4c4472fd057d0bf02809223a8be', 'docs/evidence/poco-recording-8.6/screen-off-end.txt': 'b11c0847e108cea10d11e68469ab13c37eca4e6b43babd86b190dd36708c9c4a', 'docs/evidence/poco-recording-8.6/screen-off.txt': '8c2e9f24c621a6ff13aa55f27fde0aca2c8a737015b6a6093f28dd2778459c17', 'tools/test_logical_recovery_poco.py': '87afc12dcf8286fa4b2cc1fd1eb3d1e6d948e914c77797003126acb6aab182cc'}
+SEALED = {'docs/evidence/poco-recording-8.6/attempts.json': '41993ad345629651577ad94adfd80197d0fdd790cf391759beb3df2825c9764e', 'docs/evidence/poco-recording-8.6/batterystats-source-summary.txt': 'da3a563e0d942f48c2809ced7fe98a370018ffab5e05e7e11153915755e5ad07', 'docs/evidence/poco-recording-8.6/cleanup-diagnostic-files.txt': 'dd8375c9e37ee04796a5237f78923faca46245a35668894177cb2b8a85f5ad3e', 'docs/evidence/poco-recording-8.6/device-preflight.json': '2411808feedbcabef0754b5a59302bb2255efd534080d4411f9fb71a3982ea66', 'docs/evidence/poco-recording-8.6/EnergyProbe.java': '8e45cc34d14d9bd53b7f2a26edc4a1b7c822c1d05b104b29075abbeeb4ec856e', 'docs/evidence/poco-recording-8.6/fixture-manifest.json': 'c8f567882b06e4e03b0a00f03b5aa59921ac0f5f69cde167b40df3d5340a8408', 'docs/evidence/poco-recording-8.6/framework-energy-probe-screen-off.txt': 'bee070cd9160fa644e1fd366c9dbe28ea5ac9fab430e4c344111dec81a9bbd33', 'docs/evidence/poco-recording-8.6/framework-energy-probe.txt': '86488169581ac12fefb6ebf655608841c5be326633b724863254bf123b1dd9d4', 'docs/evidence/poco-recording-8.6/oracle-result.txt': '7934c2f52f3d66c9193320dd44ce801ef62716c4a3323a5b471d25e6586b2a56', 'docs/evidence/poco-recording-8.6/perfetto-consumer-summary.json': '43445acea8eccb372d834ee31dc3f614f2e1e5c4718c0dcc5fc5581b44d579c6', 'docs/evidence/poco-recording-8.6/perfetto-summary.json': 'ee9319553dc3f5846ccca191d3be01cf217a2557353885a811d6952a7bfa349d', 'docs/evidence/poco-recording-8.6/power-preflight-consumers.pbtxt': '58c22bb79ffebba89dc7f690df7fb7dd9dba8f6d8484901aa176b8863f85d613', 'docs/evidence/poco-recording-8.6/power-preflight-rails.pbtxt': 'ecce9d7b3fd2233ed862f04bb0aeb8947eedd6e87a9efa4a7ebe1139946da8e3', 'docs/evidence/poco-recording-8.6/protocol.json': '873df5993a2d14d0c054e0b9aa3afe68a1dc8c53e69d686d476cbb080c4e2364', 'docs/evidence/poco-recording-8.6/README.md': 'b3b8a9780d0e694982465d03c990e087a18598ebd431f3da9466d88fe53d763e', 'docs/evidence/poco-recording-8.6/result.json': '4cba9826f1f3afe8b6a40bff36f5cb59ad73687531477368a49a679b63a1591e', 'docs/evidence/poco-recording-8.6/screen-before.txt': '47af5ef8b5c76675798d0d3fd9e41b050f21c4c4472fd057d0bf02809223a8be', 'docs/evidence/poco-recording-8.6/screen-off-end.txt': 'b11c0847e108cea10d11e68469ab13c37eca4e6b43babd86b190dd36708c9c4a', 'docs/evidence/poco-recording-8.6/screen-off.txt': '8c2e9f24c621a6ff13aa55f27fde0aca2c8a737015b6a6093f28dd2778459c17', 'tools/test_logical_recovery_poco.py': '95b404a752b24850f6ffcfff15e18b40f15d200664279bc16f4eb47b034134b6'}
 
 
 def require(value, message):
@@ -70,7 +71,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     dirty = bool(git('status', '--porcelain', '--untracked-files=all'))
     require(working or not dirty, 'Publication requires clean source')
     validate_ci(os.environ, head, dirty, working)
-    approved = set(SEALED) | {SELF, PARENT}
+    approved = set(SEALED) | {SELF, PARENT, GOVERNANCE}
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -81,11 +82,17 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     for path, digest in SEALED.items():
         validate_seal((root / path).read_bytes(), digest)
     validate_parent_route((root / PARENT).read_bytes(), git('show', BASE + ':' + PARENT))
+    governance = (root / GOVERNANCE).read_bytes().replace(b'\r\n', b'\n')
+    addition = b', "stage/8.6-poco-recording-acceptance"'
+    require(governance.count(addition) == 2 and governance.replace(addition, b'') ==
+            git('show', BASE + ':' + GOVERNANCE).replace(b'\r\n', b'\n'),
+            'Recovery governance changed beyond two verified branch guards')
     # The path allowlist freezes every Android/build/workflow/oracle/historical byte.
     # Re-run inherited source, dependency-graph and test-inventory validations as well.
     contract = parent.read_contract(root)
     for path, digest in contract['files'].items():
-        validate_seal((root / path).read_bytes(), digest)
+        raw = governance.replace(addition, b'') if path == GOVERNANCE else (root / path).read_bytes()
+        validate_seal(raw, digest)
     security.validate_development_sources(root)
     require(json.loads((root / security.BLOCKER_PATH).read_text()) == security.RESTORATION_BLOCKER,
             'Security restoration remains OPEN')

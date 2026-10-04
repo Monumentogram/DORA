@@ -15,6 +15,16 @@ class PocoEvidenceSuccessorTest(unittest.TestCase):
             self.fail(str(error))
         self.assertTrue(result['vad_runtime_graph'])
 
+    def test_release_entry_point_accepts_sealed_child(self):
+        import validate_alpha_release as release
+        from unittest.mock import patch
+        # Local work opt-in only; never alter real CI identity or bypass clean CI.
+        if os.environ.get('GITHUB_ACTIONS'):
+            release.validate_recovery_closure_checkout()
+        else:
+            with patch.dict(os.environ, {'DORA_PERSISTENCE_WORKING_CHECK':'1'}):
+                release.validate_recovery_closure_checkout()
+
     def test_runtime_path_is_rejected(self):
         import validate_poco_acceptance as child
         with self.assertRaisesRegex(ValueError, 'Unapproved'):
