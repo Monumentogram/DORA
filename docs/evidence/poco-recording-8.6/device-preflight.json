@@ -1,0 +1,70 @@
+{
+  "collectedAtUtc": "2026-10-04T06:28:44.521959+00:00",
+  "deviceProfile": {
+    "manufacturer": "Xiaomi",
+    "model": "22071219CG",
+    "marketName": "POCO M5",
+    "androidRelease": "14",
+    "androidApi": "34",
+    "securityPatch": "2024-10-01",
+    "abi": "arm64-v8a",
+    "firmwareBuild": "V816.0.6.0.ULURUXM",
+    "fingerprintSha256": "353ee2c1ce2f8136b80323986fbfe1ffe010cff6e8ebd9c5c22364fb70ba4791",
+    "pageSizeBytes": 4096,
+    "freeStorageBytesAtPreflight": 95100592128,
+    "batteryDiagnostics": {
+      "USB powered": "true",
+      "Wireless powered": "false",
+      "Dock powered": "false",
+      "Charge counter": "2796000",
+      "status": "5",
+      "health": "2",
+      "level": "100",
+      "scale": "100",
+      "voltage": "4402",
+      "temperature": "330"
+    },
+    "batteryDiagnosticsAreEnergyEvidence": false,
+    "thermalStatus": 0,
+    "thermalOverride": "false",
+    "settings": {
+      "low_power": "0",
+      "wifi_on": "1",
+      "bluetooth_on": "1",
+      "airplane_mode_on": "0",
+      "mobile_data": "0",
+      "screen_brightness": "15",
+      "screen_brightness_mode": "1"
+    },
+    "installedDoraApkSha256": "17c71b24ffd320d76a8ce4b886f67edb9fb6cf9a56053cc7ab17bb407ec36ed3",
+    "doraMicrophoneRunningAtPreflight": false,
+    "powerstatsDump": {
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "sysfsBatteryDirectory": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "ls: /sys/class/power_supply/battery: Permission denied"
+    }
+  },
+  "parentPrs": [
+    {
+      "number": 98,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "headSha": "b8cac85f30f446d98c1a6b1d21490d8c10bc5b41",
+      "headRef": "stage/8.5-logical-recording-recovery"
+    },
+    {
+      "number": 97,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "headSha": "b035d8e35e3fc604ae3b805a1cfd23ea66963804",
+      "headRef": "stage/8.4c-logical-recording-chunks"
+    }
+  ]
+}

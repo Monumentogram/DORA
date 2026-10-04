@@ -1,0 +1,138 @@
+{
+  "id": "POCO86-PHYSICAL-V1",
+  "status": "PREDECLARED_NOT_EXECUTABLE_ENERGY_SOURCE_UNAVAILABLE",
+  "createdAtUtc": "2026-10-04T06:32:23.011759+00:00",
+  "baselineSourceSha": "b8cac85f30f446d98c1a6b1d21490d8c10bc5b41",
+  "oraclePath": "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java",
+  "oracleSha256": "62e203ba494d7e108a9de82498ae54b572b5282749b046e0eb891689d0917ab4",
+  "fixtureDigest": "sha256:c8f567882b06e4e03b0a00f03b5aa59921ac0f5f69cde167b40df3d5340a8408",
+  "pairs": [
+    {
+      "pairId": "PAIR-01",
+      "baseline": "BASELINE-01",
+      "capture": "DORA-01"
+    },
+    {
+      "pairId": "PAIR-02",
+      "baseline": "BASELINE-02",
+      "capture": "DORA-02"
+    },
+    {
+      "pairId": "PAIR-03",
+      "baseline": "BASELINE-03",
+      "capture": "DORA-03"
+    }
+  ],
+  "runOrder": [
+    "BASELINE-01",
+    "DORA-01",
+    "DORA-02",
+    "BASELINE-02",
+    "BASELINE-03",
+    "DORA-03"
+  ],
+  "modes": [
+    "MINIMAL_AUDIO_RECORD_FGS_BASELINE",
+    "DORA_CAPTURE_ONLY"
+  ],
+  "window": {
+    "durationUnit": "MILLISECONDS",
+    "plannedDuration": 3600000,
+    "monotonicDurationNs": 3600000000000,
+    "warmupIncluded": false,
+    "finalizeIncluded": false
+  },
+  "energy": {
+    "sourceId": null,
+    "conversion": null,
+    "sourceMustBeValidatedBeforeCampaign": true,
+    "condition": "4 * captureMicroWh <= 5 * baselineMicroWh",
+    "aggregation": "NONE_ALL_THREE_PAIRS_MUST_PASS"
+  },
+  "storage": {
+    "maximumBytesPer3600SecondCaptureSlice": 125000000,
+    "includes": [
+      "encrypted audio payload",
+      "recording journal/database growth",
+      "recording metadata"
+    ],
+    "excludes": [
+      "APK",
+      "pre-existing private AAR/model",
+      "unrelated caches"
+    ],
+    "eachRunMustPass": true
+  },
+  "controls": {
+    "screen": "OFF_ENTIRE_WINDOW",
+    "batterySaver": "OFF",
+    "bluetooth": "OFF",
+    "route": "BUILT_IN_MIC_NO_HEADSET",
+    "charger": "PHYSICALLY_UNPLUGGED",
+    "powerSource": "BATTERY",
+    "startingThermal": "NONE",
+    "activeCooling": "PROHIBITED",
+    "brightness": "freeze exact setting before execution",
+    "radioAndSignal": "freeze exact state before execution; unresolved until non-charging control is available",
+    "telemetryCadenceSeconds": 5
+  },
+  "equalControlFields": [
+    "deviceProfile",
+    "deviceKind",
+    "deviceInstanceId (internal only)",
+    "firmwareId",
+    "Android API",
+    "ABI",
+    "approvedSliceId",
+    "fixtureDigest",
+    "duration unit",
+    "planned duration",
+    "actual eligible duration",
+    "completion state",
+    "screen state",
+    "Battery Saver",
+    "brightness setting",
+    "radio state",
+    "signal state",
+    "starting Android thermal status",
+    "charger state",
+    "power source",
+    "protocol ID",
+    "measurement source ID"
+  ],
+  "invalidateAndRetain": [
+    "screen becomes interactive",
+    "charging",
+    "call or media playback",
+    "route change",
+    "Bluetooth route or headset connected",
+    "user interaction",
+    "OS/app update",
+    "unrelated foreground workload",
+    "missing or invalid/reset/impossible energy counter",
+    "missing thermal telemetry",
+    "control mismatch",
+    "window duration mismatch"
+  ],
+  "startAttempts": 200,
+  "startMinimumSuccesses": 199,
+  "finalizeCondition": "1000 * successfulCorrectFinalizations >= 995 * eligibleStartedRecordings",
+  "wholeRecordingLossesAllowed": 0,
+  "thermalForbidden": [
+    "SEVERE",
+    "CRITICAL",
+    "EMERGENCY",
+    "SHUTDOWN"
+  ],
+  "canonicalIntegrity": {
+    "unexplainedGaps": 0,
+    "unexplainedDuplicates": 0,
+    "corruptedProductionSegments": 0,
+    "fatalAudioRecordErrors": 0,
+    "technicalCapFrames": 9600000,
+    "maximumDeviationFrames": 1,
+    "overlapFrames": 32000,
+    "sampleDeltaThreshold": "PROPOSED_NOT_A_NEW_HARD_GATE"
+  },
+  "implementationDisposition": "No comparator APK or product/instrumentation change made after energy preflight failed. This manifest freezes intended pairing and gates, not an admitted executable campaign."
+}

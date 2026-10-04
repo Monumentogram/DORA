@@ -1,0 +1,4 @@
+mWakefulness=Awake
+  mIsPowered=true
+  mPlugType=2
+  mIsPowered=true

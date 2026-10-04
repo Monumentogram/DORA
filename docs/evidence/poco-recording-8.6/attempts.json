@@ -1,0 +1,54 @@
+{
+  "preflightAttempts": [
+    {
+      "id": "PREFLIGHT-01",
+      "kind": "binder property diagnostics",
+      "result": "energy status nonzero and sentinel; charge property returns positive value",
+      "eligibleEnergyRun": false
+    },
+    {
+      "id": "PREFLIGHT-02",
+      "kind": "BatteryManager framework screen-on",
+      "result": "3/3 Long.MIN_VALUE; chargeCounterMicroAh=2796000",
+      "eligibleEnergyRun": false
+    },
+    {
+      "id": "PREFLIGHT-03",
+      "kind": "Perfetto config file transport",
+      "result": "INVALID_SETUP_PERMISSION_DENIED",
+      "traceProduced": false,
+      "eligibleEnergyRun": false
+    },
+    {
+      "id": "PREFLIGHT-04",
+      "kind": "Perfetto config via stdin",
+      "result": "INVALID_SETUP_UNSUPPORTED_BATTERY_COUNTER_VOLTAGE",
+      "traceProduced": false,
+      "eligibleEnergyRun": false
+    },
+    {
+      "id": "PREFLIGHT-05",
+      "kind": "Perfetto rails 15-second diagnostic",
+      "result": "16 charge/current samples; zero rail descriptors or energy samples",
+      "traceSha256": "c5fa85115402b41bf54a4272afea4155a8553a1ded3b73b080db21fc269a6c52",
+      "eligibleEnergyRun": false
+    },
+    {
+      "id": "PREFLIGHT-06",
+      "kind": "BatteryManager framework screen-off",
+      "result": "3/3 Long.MIN_VALUE; chargeCounterMicroAh=2796000",
+      "eligibleEnergyRun": false
+    },
+    {
+      "id": "PREFLIGHT-07",
+      "kind": "Perfetto rails and energy-consumers 15-second diagnostic",
+      "result": "16 charge/current samples; empty rails and energy-consumer descriptor; no energy values",
+      "traceSha256": "b0cf9b1e7eea7417fa1a8d53b9f272e8ac069381fee74e696cb47e71a9b14bbc",
+      "eligibleEnergyRun": false
+    }
+  ],
+  "campaignAttempts": [],
+  "eligiblePairs": [],
+  "chargingDuringDiagnostics": true,
+  "diagnosticsAreNotEnergySlices": true
+}

@@ -1,0 +1,4 @@
+mWakefulness=Dozing
+  mIsPowered=true
+  mPlugType=2
+  mIsPowered=true

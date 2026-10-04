@@ -61,6 +61,9 @@ def read_contract(root=ROOT):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_poco_acceptance as successor
+    if successor.candidate(root):
+        return successor.validate_checkout(root, allow_working=allow_working)
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_vad_runtime as parent
