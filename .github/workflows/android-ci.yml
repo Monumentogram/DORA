@@ -445,6 +445,15 @@ jobs:
           --inventory docs/contracts/logical-recovery-8.5-device-tests.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
+      - name: Preserve content-free persistence instrumentation diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: persistence-instrumentation-diagnostics-api${{ matrix.api }}
+          path: ${{ runner.temp }}/persistence-runtime-receipt-diagnostics/*.json*
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Verify abrupt process death at durable persistence phases
         run: >-
           python3 tools/run_encrypted_persistence_crash.py

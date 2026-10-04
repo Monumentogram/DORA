@@ -24,6 +24,25 @@ SEALED = {'docs/evidence/poco-recording-8.6/attempts.json': '41993ad345629651577
 COMPARATIVE_SEALED = {'docs/evidence/poco-comparative-battery-8.6/A-01-disposition.json': '3a84c57db534b00172708aea697e8d82bc199cdd11db0b664334c595afc1112e', 'docs/evidence/poco-comparative-battery-8.6/A-02-disposition.json': 'de9de13908252b8f0d230fcd71664632ec8a93311921b2b43cd357c99eb728cc', 'docs/evidence/poco-comparative-battery-8.6/A-03-disposition.json': '270dcfd89c40aacb1a439ae67a1bfde3b7ed4ee3c3ae54f7c4b21e4910b1b328', 'docs/evidence/poco-comparative-battery-8.6/A-04-disposition.json': '3bc5ed71dd6613a196fcc155176319640907abb1e4b775703fcbaf2b195dcfab', 'docs/evidence/poco-comparative-battery-8.6/A-04-samples.jsonl': '15d2ad47025f7a8f526d77f62743423cb6c92a4f2dee1b30adb6ba635293e1d4', 'docs/evidence/poco-comparative-battery-8.6/accubattery-final-package.json': '47df2ce7d7f46fdb6c6f9b394ae1e7c7f21197f12d0c5086e06cef6fc980414e', 'docs/evidence/poco-comparative-battery-8.6/B-01-disposition.json': '6c8d1d1f9b679cf0c64dd50b7b7510229feb418009b7c183d9908e14b17a6f5e', 'docs/evidence/poco-comparative-battery-8.6/B-01-samples.jsonl': '1daa888fab484dee313c088ba155028cf5f2d3fc9a43cb01244280cb8a0b4214', 'docs/evidence/poco-comparative-battery-8.6/baseline-build-identity.json': 'f3a6c854a5d2897e2bd9bbfe66bd3b903c31ba1d2071c5ab7357002b6eb76bdc', 'docs/evidence/poco-comparative-battery-8.6/C-01-disposition.json': '519f19845d9c915a20aa69a67419f81b1922cbcaa72ceed5f4df5256a5438071', 'docs/evidence/poco-comparative-battery-8.6/C-01-readback-deletion.json': 'b590a9e521ddb05773b5373e26c3a19a005164c346e8cd7b16c6bb284c6da3e3', 'docs/evidence/poco-comparative-battery-8.6/C-01-samples.jsonl': 'fb539dcf0b2861e521bc18c30f2fc81b89aebf30531edd84ed1ec791f833775d', 'docs/evidence/poco-comparative-battery-8.6/comparative-gate-disposition.json': '1e9f9c4e3a0dc9b6c21e44ff1a136dc8cef764a5eaca8108650994520ea47d36', 'docs/evidence/poco-comparative-battery-8.6/observer-build-identity.json': '030f55daa1ae52e9ad1ef8e9053ebbc27ffb83c4afef91561c706848b7f378d0', 'docs/evidence/poco-comparative-battery-8.6/publication-audit.json': 'a73a8026f8e4114610b5219628b5ba3d857909f27bcc39a3edcfdae41a78d5fe', 'docs/evidence/poco-comparative-battery-8.6/README.md': '8febf063e04960d3bbdb52852b19b63326c837032a8e6db7fad5e84ec048e704', 'docs/evidence/poco-comparative-battery-8.6/result.json': 'c9f3648330a86e1701aadcc783f097f5b4a24ec137a7e33b8eb78ba23faf3190', 'docs/evidence/poco-comparative-battery-8.6/short-probe-protocol-v2.json': 'bcd3d6e1e12948326a8df59cad1849cb7f2757edad3108d4370b339012fc0f79', 'docs/evidence/poco-comparative-battery-8.6/short-probe-protocol.json': '4515858471d178835db83b68595e93c993f5b82fd742f9fb39a137ae52988e82', 'docs/evidence/poco-comparative-battery-8.6/sysfs-readonly-inventory.json': 'd12e6921492cfa28b58fcdae05b57606a3ec7fa499d06c5afa4edf1f7e14ca28', 'docs/evidence/poco-comparative-battery-8.6/test-apk-payload-verification.json': 'bdc433e26af0e453bf19e05eba189191b73356a8200881afbb3797e1e15e2351', 'docs/evidence/poco-comparative-battery-8.6/test-helper-cleanup.json': 'ead5136cfd4299a4c7088ba0cfe2fc4c433d49518d8a76ca556df31bad6a39bb', 'docs/evidence/poco-comparative-battery-8.6/uid-additional-diagnostics.json': '8e6907339df0932a0e349a383f00c854792ab4f7ed69e793453cad9e778e93a6', 'tools/poco_comparative_battery/baseline/AndroidManifest.xml': '98ce55693bfcadfdd15679358c6798e60d4e076230ff953f775a2f442eed85d6', 'tools/poco_comparative_battery/baseline/CaptureService.java': '769a4b7cdff2ccf76e715bfdaa4f69632d8de44285129ff154b6b8d4c77dc677', 'tools/poco_comparative_battery/baseline/MainActivity.java': '903872ce661d2a5907d5b446838646def9fbed6499abed68cd4c882943b927c7', 'tools/poco_comparative_battery/build.py': 'c17401e5f1f5890cf3d46767bcb4196ab4686dd679173d40422192506273e9e0', 'tools/poco_comparative_battery/comparative_parser.py': 'e328eac2e57d772df7296908d08fd7f27ac7e2863b6ae37626b003ed855c098c', 'tools/poco_comparative_battery/observer/AndroidManifest.xml': 'cf7532e967dae6d30ccaf7541238e5b592199c801964d744c50f86e343e9c48e', 'tools/poco_comparative_battery/observer/ProbeInstrumentation.java': '1f7e38b0677a08db58bb29e8bc79dcc68e64b04ced33c656ce9dc4b87c932dfd', 'tools/poco_comparative_battery/test_comparative_parser.py': '541d2250637c114a382be5d272428c47109a527230fc38b668067c7c5b9aca39', 'tools/test_logical_recovery_poco_comparative.py': '103be4b43eeb93648cf9886d05c0b36216fbeac1c95320d3b62c88c7317154ef'}
 COMPARATIVE = 'docs/evidence/poco-comparative-battery-8.6/'
 
+# Explicit harness-only successor. Historical seals are never replaced.
+REMEDIATION_SEALED = {'.github/workflows/android-ci.yml': '78c2dc6b541531570873682b2a4a82b52a5015845ada9c8f0ebefc2f3aad0e26', 'tools/logical_recovery_ci_profile.py': 'fd0ce7803067710efd00b45b88ac26657076129f3c0cbd6f28d13bbfe69de39c', 'tools/run_encrypted_persistence_device.py': 'b94b634f93773fe3c30614d1151d1ce1ca6b3b0a502716ca66df2c727ee538f4', 'tools/persistence_instrumentation_diagnostics.py': 'd18fdaa4268e128055986d4642875fd1e599673acfdae3fd16a6c7446206e4ba', 'tools/poco_remediation_ci_profile.py': 'e5076c2fdaafd5b6a21cf5fa38bf8fd5866ea8af99c17eeff0d994c78ff279ff', 'tools/test_logical_recovery_stream_diagnostics.py': '039c4cf58d2a3daad81983f93873d8edd352c45611e928d0c7a7cf62bc435288', 'docs/superpowers/plans/2026-10-04-stage86-remediation.md': 'edae98811f248e8efd669f4eab9658135598062947de298c1c78d3b120f338a8'}
+REMEDIATION_OVERRIDES = {'.github/workflows/android-ci.yml', 'tools/logical_recovery_ci_profile.py'}
+REMEDIATION_ROUTE = '    import poco_remediation_ci_profile as remediation\n    workflow = remediation.normalize(workflow)\n'
+
+
+def validate_remediation_override(path, current, original):
+    current, original = (raw.replace(b'\r\n', b'\n') for raw in (current, original))
+    if path == '.github/workflows/android-ci.yml':
+        import poco_remediation_ci_profile as profile
+        require(profile.normalize(current.decode()).encode() == original,
+                'Remediation workflow changed beyond diagnostic upload')
+    elif path == 'tools/logical_recovery_ci_profile.py':
+        route = REMEDIATION_ROUTE.encode()
+        require(current.count(route) == 1 and current.replace(route, b'', 1) == original,
+                'Recovery CI profile changed beyond reversible diagnostic route')
+    else:
+        raise ValueError('Unapproved remediation override')
+
 
 def require(value, message):
     if not value:
@@ -76,7 +95,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     dirty = bool(git('status', '--porcelain', '--untracked-files=all'))
     require(working or not dirty, 'Publication requires clean source')
     validate_ci(os.environ, head, dirty, working)
-    approved = set(SEALED) | set(COMPARATIVE_SEALED) | {SELF, PARENT, GOVERNANCE}
+    approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | {SELF, PARENT, GOVERNANCE}
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -84,7 +103,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         parts = line.split()
         require(len(parts) == 2, 'No merge or rewritten baseline')
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
-    for path, digest in {**SEALED, **COMPARATIVE_SEALED}.items():
+    for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED}.items():
         validate_seal((root / path).read_bytes(), digest)
     validate_parent_route((root / PARENT).read_bytes(), git('show', BASE + ':' + PARENT))
     governance = (root / GOVERNANCE).read_bytes().replace(b'\r\n', b'\n')
@@ -97,6 +116,10 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     contract = parent.read_contract(root)
     for path, digest in contract['files'].items():
         raw = governance.replace(addition, b'') if path == GOVERNANCE else (root / path).read_bytes()
+        if path in REMEDIATION_OVERRIDES:
+            original = git('show', BASE + ':' + path)
+            validate_remediation_override(path, raw, original)
+            raw = original
         validate_seal(raw, digest)
     security.validate_development_sources(root)
     require(json.loads((root / security.BLOCKER_PATH).read_text()) == security.RESTORATION_BLOCKER,

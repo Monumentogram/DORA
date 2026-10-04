@@ -34,6 +34,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import poco_remediation_ci_profile as remediation
+    workflow = remediation.normalize(workflow)
     if 'Stage 8.5' not in workflow and INVENTORY not in workflow:
         return workflow
     if workflow.count(GATE) != 1 or workflow.count(CRASH_GATE) != 1 or workflow.count(INVENTORY) != 1 or OLD_INVENTORY in workflow:
