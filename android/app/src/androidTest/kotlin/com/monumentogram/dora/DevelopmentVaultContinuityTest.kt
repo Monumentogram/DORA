@@ -159,13 +159,14 @@ class DevelopmentVaultContinuityTest {
     }
 
     private fun readback(session: ProductAudioSession, entry: RecordingRecovery): JSONObject {
+        val identity = checkNotNull(entry.identity)
         assertTrue(
             "Existing source is not readable",
             entry.failure == null && entry.summary != null,
         )
         var frames = 0L
         val read =
-            session.reader.extract(entry.identity) { firstFrame, pcm ->
+            session.reader.extract(identity) { firstFrame, pcm ->
                 assertEquals(frames, firstFrame)
                 assertTrue(pcm.isNotEmpty() && pcm.size % 2 == 0)
                 frames += pcm.size / 2
@@ -181,9 +182,9 @@ class DevelopmentVaultContinuityTest {
                 "identitySha256",
                 digest(
                     listOf(
-                            entry.identity.recordingId.value,
-                            entry.identity.assetId.value,
-                            entry.identity.sessionId,
+                            identity.recordingId.value,
+                            identity.assetId.value,
+                            identity.sessionId,
                         )
                         .joinToString("/")
                 ),

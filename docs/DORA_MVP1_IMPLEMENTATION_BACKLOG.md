@@ -1,3 +1,12 @@
+## 2026-10-04 — Stage 8.5 logical recording recovery
+
+8.5 = PENDING_FINAL_PUBLICATION
+8.3 / 8.4 / 8.4C = accepted predecessor PASS (external receipts).
+8.6 = NOT_STARTED; Stage 8 = IN_PROGRESS.
+Authenticated durable prefix only; explicit Resume preserves logical identity and authorization unit.
+See ADR-AUDIO-007. No automatic microphone, Cloud/ASR implementation or VAD/profile changes.
+PERF-REC-001 remains deferred/non-blocking; DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE remains OPEN.
+
 ## 2026-10-03 — Stage 8.4C logical recording and technical chunks
 
 8.4C = PENDING_FINAL_PUBLICATION

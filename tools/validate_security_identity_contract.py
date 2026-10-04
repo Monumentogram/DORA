@@ -130,6 +130,11 @@ def validate_ci_provenance_order(workflow):
 def validate_status(root):
     for name in ("DORA_MVP1_STAGE_STATUS.md", "DORA_MVP1_IMPLEMENTATION_BACKLOG.md"):
         text = (root / "docs" / name).read_text(encoding="utf-8")
+        import validate_logical_recovery as recovery
+        if recovery.candidate(root):
+            import validate_encrypted_persistence as persistence
+            historical = persistence.git(root, 'show', recovery.BASE + ':docs/' + name).decode()
+            text = recovery.validate_status_projection(text, historical)
         import validate_logical_recording as logical
         if logical.candidate(root):
             import validate_encrypted_persistence as persistence

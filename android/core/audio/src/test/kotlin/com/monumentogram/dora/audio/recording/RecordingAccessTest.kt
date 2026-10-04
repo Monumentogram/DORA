@@ -19,6 +19,29 @@ import org.junit.Test
 
 class RecordingAccessTest {
     @Test
+    fun logicalCreateForwardsOriginAndKeepsAuthorityAndSingleCreateChecks() {
+        val vault = WriterVault()
+        val identity = identity()
+        val access = access(identity, vault)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.INVALID_INPUT),
+            access.writer.createLogicalRecording(identity()),
+        )
+        assertEquals(AudioResult.Value(Unit), access.writer.createLogicalRecording(identity))
+        assertEquals(1, vault.logicalCreates)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.COLLISION),
+            access.writer.createLogicalRecording(identity),
+        )
+        access.close()
+        assertEquals(
+            AudioResult.Failed(AudioFailure.LOCKED),
+            access.writer.createLogicalRecording(identity),
+        )
+        assertEquals(1, vault.logicalCreates)
+    }
+
+    @Test
     fun exactIdentityAndSingleCreateAreEnforcedBeforeStorage() {
         val vault = WriterVault()
         val identity = identity()
@@ -77,6 +100,7 @@ class RecordingAccessTest {
         }
 
     private class WriterVault : RuntimeVault {
+        var logicalCreates = 0
         var writes = 0
         var closes = 0
         override val originals: OriginalAudioPort
@@ -88,6 +112,11 @@ class RecordingAccessTest {
         override val protection = VaultKeyProtection.SOFTWARE
         override val writer =
             object : ProductAudioWriterPort {
+                override fun createLogicalRecording(identity: AudioIdentity): AudioResult<Unit> {
+                    logicalCreates++
+                    return AudioResult.Value(Unit)
+                }
+
                 override fun create(identity: AudioIdentity): AudioResult<Unit> {
                     writes++
                     return AudioResult.Value(Unit)

@@ -269,6 +269,10 @@ internal class AudioRuntimeCoordinator(
 
                 override fun create(identity: AudioIdentity) = invoke { writer.create(identity) }
 
+                override fun createLogicalRecording(identity: AudioIdentity) = invoke {
+                    writer.createLogicalRecording(identity)
+                }
+
                 override fun append(
                     segment: AudioStorageUnitIdentity,
                     format: AudioFormat,

@@ -58,6 +58,15 @@ internal constructor(
                     }
                 }
 
+            override fun createLogicalRecording(identity: AudioIdentity) =
+                operation(identity) {
+                    if (created) AudioResult.Failed(AudioFailure.COLLISION)
+                    else {
+                        created = true
+                        vault.writer.createLogicalRecording(identity)
+                    }
+                }
+
             override fun append(
                 segment: AudioStorageUnitIdentity,
                 format: AudioFormat,

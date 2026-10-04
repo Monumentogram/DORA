@@ -34,6 +34,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import logical_recovery_ci_profile as successor
+    workflow = successor.normalize(workflow)
     if 'Stage 8.4C' not in workflow and INVENTORY not in workflow:
         return workflow
     if workflow.count(GATE) != 1 or workflow.count(CRASH_GATE) != 1 or workflow.count(INVENTORY) != 1 or OLD_INVENTORY in workflow:

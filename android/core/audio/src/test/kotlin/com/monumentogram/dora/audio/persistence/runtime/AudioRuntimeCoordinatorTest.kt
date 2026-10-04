@@ -18,15 +18,41 @@ import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.VaultKeyProtection
 import com.monumentogram.dora.audio.persistence.auth.AppLockSession
+import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.recording.RecordingRecovery
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AudioRuntimeCoordinatorTest {
+    @Test
+    fun runtimeHandlePreservesLogicalCreateAndRevocation() {
+        val lock = AppLockSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                assertEquals(
+                    AudioResult.Value(Unit),
+                    session.writer.createLogicalRecording(identity),
+                )
+                assertEquals(1, vault.logicalCreates)
+                assertEquals(0, vault.writes)
+                lock.lock()
+                runtime.revoke()
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    session.writer.createLogicalRecording(identity),
+                )
+                assertEquals(1, vault.logicalCreates)
+            }
+    }
+
     private val identity =
         AudioIdentity(
             RecordingId("00000000-0000-0000-0000-000000000001"),
@@ -228,7 +254,79 @@ class AudioRuntimeCoordinatorTest {
             }
     }
 
-    private class FixtureVault : RuntimeVault {
+    @Test
+    fun recoveryScanRevokedDuringReadCompletesLocked() {
+        val lock = AppLockSession { true }
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val done = CountDownLatch(1)
+        var delivered: AudioResult<List<RecordingRecovery>>? = null
+        val vault = FixtureVault {
+            entered.countDown()
+            check(release.await(5, TimeUnit.SECONDS))
+            AudioResult.Value(
+                listOf(
+                    RecordingRecovery(
+                        identity,
+                        AudioReadSummary(identity, 160, AudioCompletion.PARTIAL_RECOVERED),
+                        null,
+                        true,
+                        1,
+                    )
+                )
+            )
+        }
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                try {
+                    runtime.recordingRecoveryPage(session, "") {
+                        delivered = it
+                        done.countDown()
+                    }
+                    assertTrue(entered.await(5, TimeUnit.SECONDS))
+                    lock.lock()
+                    runtime.revoke()
+                } finally {
+                    release.countDown()
+                }
+                assertTrue(done.await(5, TimeUnit.SECONDS))
+                assertEquals(AudioResult.Failed(AudioFailure.LOCKED), delivered)
+                assertEquals(0, vault.writes)
+            }
+    }
+
+    @Test
+    fun recoveredPageQueuedForUiCannotPassCurrentSessionFenceAfterLock() {
+        val lock = AppLockSession { true }
+        val done = CountDownLatch(1)
+        var delivered: AudioResult<List<RecordingRecovery>>? = null
+        val vault = FixtureVault { AudioResult.Value(emptyList()) }
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                runtime.recordingRecoveryPage(session, "") {
+                    delivered = it
+                    done.countDown()
+                }
+                assertTrue(done.await(5, TimeUnit.SECONDS))
+                assertTrue(delivered is AudioResult.Value)
+                lock.lock()
+                runtime.revoke()
+                // AndroidProductAudioRuntime applies this fence on main before invoking UI
+                // completion.
+                assertThrows(AppLockedException::class.java) { runtime.requireCurrent(session) }
+                assertEquals(0, vault.writes)
+            }
+    }
+
+    private class FixtureVault(
+        private val recovery: () -> AudioResult<List<RecordingRecovery>> = {
+            AudioResult.Value(emptyList())
+        }
+    ) : RuntimeVault {
+        override fun recordingRecoveryPage(after: String) = recovery()
+
         override val originals =
             object : OriginalAudioPort {
                 override fun acquire(identity: AudioIdentity) =
@@ -255,11 +353,17 @@ class AudioRuntimeCoordinatorTest {
             }
 
         var closed = false
+        var logicalCreates = 0
         var writes = 0
         var deletions = 0
         override val protection = VaultKeyProtection.SOFTWARE
         override val writer =
             object : ProductAudioWriterPort {
+                override fun createLogicalRecording(identity: AudioIdentity): AudioResult<Unit> {
+                    logicalCreates++
+                    return AudioResult.Value(Unit)
+                }
+
                 override fun create(identity: AudioIdentity): AudioResult<Unit> {
                     writes++
                     return AudioResult.Value(Unit)

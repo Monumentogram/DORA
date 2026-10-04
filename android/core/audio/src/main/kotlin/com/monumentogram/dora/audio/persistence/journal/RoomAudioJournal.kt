@@ -82,28 +82,44 @@ private constructor(
     fun retainSegmentation(identity: AudioIdentity, metadata: SegmentationMetadata) {
         requireOperation(identity)
         requireMutable()
+        require(metadata.kind != SegmentationKind.RECORDING_ORIGIN)
         check(sourceState(identity) == null)
         val source = checkNotNull(catalog.load(identity))
         val frames = source.segments.sumOf { it.frames }
         metadata.validate(frames)
-        if (
+        val row = metadata.entity(identity)
+        val old = dao.segmentation(row.assetId, row.recordKey)
+        if (old != null) {
+            check(old == row)
+            return
+        }
+        if (metadata.kind == SegmentationKind.TECHNICAL_ABORT) {
+            validateAbort(identity, metadata, source, frames)
+        } else if (
             metadata.kind == SegmentationKind.TECHNICAL_OPEN ||
                 metadata.kind == SegmentationKind.TECHNICAL_CLOSE
         ) {
             val units =
                 source.segments.filter { it.identity.physicalSegmentId == metadata.segmentId }
+            validateTechnicalRange(metadata, source, units, frames)
+            val epochStart =
+                if (metadata.captureEpochId == metadata.segmentId) metadata.firstFrame
+                else
+                    checkNotNull(
+                            dao.segmentation(
+                                identity.assetId.value,
+                                "TECHNICAL_OPEN:${metadata.captureEpochId}",
+                            )
+                        )
+                        .firstFrame
             check(
-                units.isNotEmpty() &&
-                    units.first().identity.physicalFirstFrame == metadata.firstFrame
+                (metadata.reason == "CAP" || metadata.kind == SegmentationKind.TECHNICAL_CLOSE) ||
+                    metadata.captureEpochId == metadata.segmentId
             )
-            check(metadata.endFrame <= units.last().identity.firstFrame + units.last().frames)
-            val epoch =
-                checkNotNull(
-                    source.segments.firstOrNull {
-                        it.identity.physicalSegmentId == metadata.captureEpochId
-                    }
-                )
-            val epochStart = epoch.identity.physicalFirstFrame
+            check(
+                dao.segmentation(identity.assetId.value, "TECHNICAL_ABORT:${metadata.segmentId}") ==
+                    null
+            )
             check(
                 metadata.firstFrame >= epochStart &&
                     (metadata.firstFrame - epochStart) %
@@ -135,27 +151,52 @@ private constructor(
                 )
             }
         }
-        val row =
-            SegmentationEntity(
-                identity.assetId.value,
-                metadata.key,
-                metadata.kind.name,
-                metadata.segmentId,
-                metadata.firstFrame,
-                metadata.endFrame,
-                metadata.captureEpochId,
-                metadata.overlapFirstFrame,
-                metadata.reason,
-                metadata.degraded,
-                metadata.profileId,
-                metadata.profileSha256,
-            )
-        val old = dao.segmentation(row.assetId, row.recordKey)
-        if (old != null) {
-            check(old == row)
-            return
-        }
         commits.commit({ dao.insert(row) }) { dao.segmentation(row.assetId, row.recordKey) == row }
+    }
+
+    private fun validateTechnicalRange(
+        metadata: SegmentationMetadata,
+        source: StoredAudioAsset,
+        units: List<StoredAudioSegment>,
+        frames: Long,
+    ) {
+        if (units.isEmpty()) {
+            check(metadata.kind == SegmentationKind.TECHNICAL_OPEN)
+            check(
+                source.pending == null &&
+                    source.finalization == null &&
+                    metadata.firstFrame == frames
+            )
+            check(metadata.reason != "START" || frames == 0L)
+            check(metadata.reason != "RESUME" || frames > 0L)
+        } else {
+            check(units.first().identity.physicalFirstFrame == metadata.firstFrame)
+            check(metadata.endFrame <= units.last().identity.firstFrame + units.last().frames)
+        }
+    }
+
+    private fun validateAbort(
+        identity: AudioIdentity,
+        metadata: SegmentationMetadata,
+        source: StoredAudioAsset,
+        frames: Long,
+    ) {
+        check(source.pending == null && source.finalization == null)
+        check(source.segments.none { it.identity.physicalSegmentId == metadata.segmentId })
+        check(metadata.firstFrame == frames)
+        val opened =
+            checkNotNull(
+                dao.segmentation(identity.assetId.value, "TECHNICAL_OPEN:${metadata.segmentId}")
+            )
+        check(opened.firstFrame == metadata.firstFrame && opened.endFrame == metadata.endFrame)
+        check(
+            opened.captureEpochId == metadata.captureEpochId &&
+                opened.overlapFirstFrame == metadata.overlapFirstFrame
+        )
+        check(
+            dao.segmentation(identity.assetId.value, "TECHNICAL_CLOSE:${metadata.segmentId}") ==
+                null
+        )
     }
 
     fun segmentationPage(identity: AudioIdentity, afterKey: String): List<SegmentationMetadata> {
@@ -180,6 +221,8 @@ private constructor(
                     .also {
                         it.validate(frames)
                         require(it.key == row.recordKey)
+                        if (it.kind == SegmentationKind.RECORDING_ORIGIN)
+                            require(it == SegmentationMetadata.origin(identity))
                     }
             } catch (_: IllegalArgumentException) {
                 throw com.monumentogram.dora.audio.InvalidSegmentationMetadata()
@@ -188,11 +231,19 @@ private constructor(
     }
 
     /** Bounded encrypted discovery; callers authenticate each source before describing audio. */
-    fun recordingCandidates(after: String): List<AudioIdentity> {
+    fun recordingCandidates(after: String): List<AudioIdentity> =
+        recordingCandidatePage(after).mapNotNull { it.second }
+
+    fun recordingCandidatePage(after: String): List<Pair<String, AudioIdentity?>> {
         checkOpen()
         if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
         return dao.recordingCandidates(binding.ownerId, binding.vaultId, after).map {
-            it.identity()
+            it.assetId to
+                try {
+                    it.identity()
+                } catch (_: IllegalArgumentException) {
+                    null
+                }
         }
     }
 
@@ -294,6 +345,22 @@ private constructor(
         return claim
     }
 
+    private fun SegmentationMetadata.entity(identity: AudioIdentity) =
+        SegmentationEntity(
+            identity.assetId.value,
+            key,
+            kind.name,
+            segmentId,
+            firstFrame,
+            endFrame,
+            captureEpochId,
+            overlapFirstFrame,
+            reason,
+            degraded,
+            profileId,
+            profileSha256,
+        )
+
     private inner class Catalog : EncryptedAudioCatalog {
         override fun tryAcquire(identity: AudioIdentity): AutoCloseable? {
             checkOpen()
@@ -301,7 +368,12 @@ private constructor(
             return lease.tryAcquire(identity.assetId.value)
         }
 
-        override fun create(identity: AudioIdentity): Boolean {
+        override fun create(identity: AudioIdentity): Boolean = createAsset(identity, false)
+
+        override fun createLogicalRecording(identity: AudioIdentity): Boolean =
+            createAsset(identity, true)
+
+        private fun createAsset(identity: AudioIdentity, logical: Boolean): Boolean {
             checkOpen()
             requireMutable()
             canonical(identity.sessionId)
@@ -316,7 +388,16 @@ private constructor(
                         binding.ownerId,
                         binding.vaultId,
                     )
-                commits.commit({ dao.insert(row) }) { dao.asset(row.assetId) == row }
+                val origin =
+                    if (logical) SegmentationMetadata.origin(identity).entity(identity) else null
+                commits.commit({
+                    dao.insert(row)
+                    if (origin != null) dao.insert(origin)
+                }) {
+                    dao.asset(row.assetId) == row &&
+                        (origin == null ||
+                            dao.segmentation(row.assetId, origin.recordKey) == origin)
+                }
                 return true
             }
         }

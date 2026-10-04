@@ -1,4 +1,4 @@
-"""Exact Stage 8.4C successor; never self-certifies physical/CI/publication acceptance."""
+"""Exact Stage 8.5 successor; never self-certifies physical/CI/publication acceptance."""
 import argparse
 import hashlib
 import json
@@ -6,22 +6,22 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = 'e7370bae6ee4d862d2a04e9d52c53bbeb68c6f6f'
-BASE_TREE = 'd9ca08b4b69681d610f5e0fb6385a03f52f2524f'
-BRANCH = 'stage/8.4c-logical-recording-chunks'
-CONTRACT = 'docs/contracts/DORA_LOGICAL_RECORDING_8_4C_V0_1.json'
-SELF = 'tools/validate_logical_recording.py'
-CONTRACT_SHA256 = '8c08dceb282f70566a53b8111d8257f99af19cb98b36d28f2403c9e13d193f0f'
-STATUS_HEADER = '''## 2026-10-03 — Stage 8.4C logical recording and technical chunks
+BASE = 'b035d8e35e3fc604ae3b805a1cfd23ea66963804'
+BASE_TREE = 'b024531db56df6d6167694685efd4310cb351962'
+BRANCH = 'stage/8.5-logical-recording-recovery'
+CONTRACT = 'docs/contracts/DORA_LOGICAL_RECOVERY_8_5_V0_1.json'
+SELF = 'tools/validate_logical_recovery.py'
+CONTRACT_SHA256 = 'c897bd8cae9b91daa353853314c9ce5c3ef6107190fe9b5fe97ec8f9c6266faf'
+STATUS_HEADER = """## 2026-10-04 — Stage 8.5 logical recording recovery
 
-8.4C = PENDING_FINAL_PUBLICATION
-8.3 / 8.4 = accepted predecessor PASS (external receipts).
-8.5 = NOT_STARTED; Stage 8 = IN_PROGRESS.
-One RecordingId, one exact OriginalAudioReference and one authorization unit across technical chunks.
-See ADR-AUDIO-006; no Cloud implementation, PCM copies, schema change or VAD/profile changes.
+8.5 = PENDING_FINAL_PUBLICATION
+8.3 / 8.4 / 8.4C = accepted predecessor PASS (external receipts).
+8.6 = NOT_STARTED; Stage 8 = IN_PROGRESS.
+Authenticated durable prefix only; explicit Resume preserves logical identity and authorization unit.
+See ADR-AUDIO-007. No automatic microphone, Cloud/ASR implementation or VAD/profile changes.
 PERF-REC-001 remains deferred/non-blocking; DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE remains OPEN.
 
-'''
+"""
 
 
 def validate_status_projection(current, historical):
@@ -47,7 +47,7 @@ def normalized(path):
 
 
 def validate_paths(actual, approved, complete=True):
-    require(set(actual) <= set(approved) and (not complete or set(actual) == set(approved)), 'Unapproved or missing Stage8.4C paths')
+    require(set(actual) <= set(approved) and (not complete or set(actual) == set(approved)), 'Unapproved or missing Stage8.5 paths')
     require(not any(Path(p).suffix.lower() in {'.aar', '.onnx', '.wav', '.pcm', '.apk', '.so', '.mp3'} for p in actual), 'No private/audio binaries')
 
 
@@ -56,19 +56,16 @@ def read_contract(root=ROOT):
     require(digest(raw) == CONTRACT_SHA256, 'Unsealed logical-recording contract')
     contract = json.loads(raw)
     require(contract['baseline'] == BASE and contract['status'] == 'PENDING_FINAL_PUBLICATION', 'Source cannot certify acceptance')
-    require(contract['8.5'] == 'NOT_STARTED' and contract['securityRestoration'] == 'OPEN' and contract['cloudImplemented'] is False, 'Stage scope expanded')
+    require(contract['8.6'] == 'NOT_STARTED' and contract['securityRestoration'] == 'OPEN' and contract['cloudImplemented'] is False, 'Stage scope expanded')
     return contract
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
-    import validate_logical_recovery as successor
-    if successor.candidate(root):
-        return successor.validate_checkout(root, allow_working=allow_working)
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_vad_runtime as parent
     import validate_development_device_security as security
-    import logical_recording_ci_profile as ci
+    import logical_recovery_ci_profile as ci
     contract = read_contract(root)
     git = lambda *args: persistence.git(root, *args)
     require(git('rev-parse', BASE + '^{tree}').decode().strip() == BASE_TREE, 'Accepted baseline changed')
@@ -77,7 +74,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     branch = git('branch', '--show-current').decode().strip()
     working = persistence.working_verification(allow_working, os.environ)
     dirty = bool(git('status', '--porcelain', '--untracked-files=all'))
-    require(branch == BRANCH or (not branch and os.environ.get('GITHUB_ACTIONS') == 'true'), 'Wrong Stage8.4C branch')
+    require(branch == BRANCH or (not branch and os.environ.get('GITHUB_ACTIONS') == 'true'), 'Wrong Stage8.5 branch')
     require(working or not dirty, 'Publication requires clean source')
     if os.environ.get('GITHUB_ACTIONS') or os.environ.get('GITHUB_EVENT_NAME'):
         require(not working and not dirty and os.environ.get('GITHUB_SHA') == head and os.environ.get('GITHUB_REF') == 'refs/heads/' + BRANCH
@@ -91,9 +88,10 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
     require(head != BASE or working, 'Implementation commit absent')
     for path, sha in contract['files'].items():
-        require(digest(normalized(root / path)) == sha, 'Stage8.4C file seal differs: ' + path)
+        require(digest(normalized(root / path)) == sha, 'Stage8.5 file seal differs: ' + path)
     # Verify the immutable accepted predecessor, including every old source seal.
-    old = parent.read_contract(root)
+    import validate_logical_recording as predecessor
+    old = predecessor.read_contract(root)
     for path, sha in old['files'].items():
         require(digest(git('show', BASE + ':' + path).replace(b'\r\n', b'\n')) == sha, 'Accepted Stage8.4 seal changed')
     historical = set(git('ls-tree', '-r', '--name-only', BASE, 'docs/evidence', 'docs/contracts', 'android/vendor', 'android/poc', 'android/ml').decode().splitlines())
@@ -110,7 +108,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     require(set(json.loads((root / ci.OLD_INVENTORY).read_text())['tests']) <= tests, 'Historical test removed')
     legacy = lifecycle.historical_parent(root)
     inherited = set(legacy['implementation_paths']) | set(git('diff', '--name-only', lifecycle.PARENT, BASE).decode().splitlines())
-    result = {**legacy, 'implementation_paths': sorted(inherited | approved), 'vad_runtime_graph': True, 'release_graph_sha256': old['releaseGraphSha256']}
+    result = {**legacy, 'implementation_paths': sorted(inherited | approved), 'vad_runtime_graph': True, 'release_graph_sha256': parent.read_contract(root)['releaseGraphSha256']}
     parent.approved_graph(root, result)
     return result
 
@@ -119,4 +117,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--working', action='store_true', default=None)
     validate_checkout(allow_working=parser.parse_args().working)
-    print('PASS Stage8.4C repository contract; external publication remains pending')
+    print('PASS Stage8.5 repository contract; external publication remains pending')
