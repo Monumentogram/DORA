@@ -19,6 +19,7 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    workflow = normalize_budget(workflow)
     if 'persistence-instrumentation-diagnostics-api' not in workflow and 'Preserve content-free persistence instrumentation diagnostics' not in workflow:
         return workflow
     if workflow.count(UPLOAD) != 1:
@@ -27,3 +28,18 @@ def normalize(workflow):
     if upgrade(original) != workflow:
         raise ValueError('Diagnostic preservation order changed')
     return original
+
+
+# Owner-approved aggregate API28 budget only; all per-command deadlines stay fixed.
+BUDGET_BASE = '  encrypted-persistence:\n    name: encrypted-persistence-api${{ matrix.api }}\n    runs-on: ubuntu-latest\n    timeout-minutes: 45'
+BUDGET_APPROVED = '  encrypted-persistence:\n    name: encrypted-persistence-api${{ matrix.api }}\n    runs-on: ubuntu-latest\n    timeout-minutes: ${{ matrix.api == 28 && 60 || 45 }}'
+
+
+def normalize_budget(workflow):
+    if '  encrypted-persistence:' not in workflow:
+        return workflow
+    if workflow.count(BUDGET_APPROVED) == 1:
+        return workflow.replace(BUDGET_APPROVED, BUDGET_BASE, 1)
+    if workflow.count(BUDGET_BASE) != 1:
+        raise ValueError('Unapproved persistence job budget')
+    return workflow

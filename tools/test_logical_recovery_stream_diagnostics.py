@@ -186,5 +186,16 @@ class StreamDiagnosticsTests(unittest.TestCase):
             validate_remediation_override('tools/logical_recovery_ci_profile.py', (changed+'# hidden edit').encode(), original.encode())
 
 
+    def test_api28_budget_does_not_extend_api36_or_instrumentation(self):
+        import poco_remediation_ci_profile as profile
+        original = profile.BUDGET_BASE+'\n'+profile.ANCHOR
+        changed = profile.upgrade(original).replace(profile.BUDGET_BASE, profile.BUDGET_APPROVED)
+        self.assertEqual(original, profile.normalize(changed))
+        for broken in [changed.replace('28 && 60 || 45', '28 && 61 || 45'),
+                       changed.replace('28 && 60 || 45', '28 && 60 || 60'),
+                       changed.replace('${{ matrix.api == 28 && 60 || 45 }}', '60')]:
+            with self.assertRaises(ValueError): profile.normalize(broken)
+
+
 if __name__ == '__main__':
     unittest.main()
