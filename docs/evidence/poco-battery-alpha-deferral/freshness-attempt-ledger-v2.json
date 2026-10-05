@@ -1,0 +1,95 @@
+{
+  "scope": "Short freshness diagnostics, not six repeatability runs",
+  "attempts": [
+    {
+      "id": "freshness-01",
+      "outcome": "INVALIDATED_INSTRUMENTATION_FAILURE",
+      "snapshots": 0,
+      "reason": "UiAutomation connection failure; crash while cleanup attempted",
+      "retained": true
+    },
+    {
+      "id": "freshness-02",
+      "outcome": "INVALIDATED_DIAGNOSTIC_COMMAND_FAILURE",
+      "snapshots": 0,
+      "reason": "RuntimeException before first snapshot",
+      "retained": true
+    },
+    {
+      "id": "freshness-03",
+      "outcome": "INVALIDATED_DIAGNOSTIC_COMMAND_FAILURE",
+      "snapshots": 0,
+      "reason": "RuntimeException before first snapshot; on-device nohup did not resolve failure. Protocol sequence discrepancy independently retained.",
+      "retained": true
+    },
+    {
+      "id": "freshness-04",
+      "receipt": "freshness-04-disposition.json",
+      "outcome": "EXPIRED_BEFORE_MEASUREMENT_WINDOW",
+      "retained": true
+    },
+    {
+      "id": "freshness-05",
+      "receipt": "freshness-05-disposition.json",
+      "outcome": "INVALIDATED_DIAGNOSTIC_CONNECTION_FAILURE",
+      "retained": true
+    },
+    {
+      "id": "freshness-06",
+      "receipt": "freshness-06-disposition.json",
+      "outcome": "COMPLETED_TRANSPORT_DIAGNOSTIC_ONLY",
+      "retained": true
+    },
+    {
+      "id": "freshness-07",
+      "receipt": "freshness-07-disposition.json",
+      "outcome": "INVALIDATED_USB_TRANSITION_DESTROYED_CONTROL_SESSION",
+      "retained": true
+    },
+    {
+      "id": "freshness-08",
+      "receipt": "freshness-08-disposition.json",
+      "outcome": "COMPLETED_DIAGNOSTIC_FROZEN_CRITERION_FAILED",
+      "retained": true
+    }
+  ],
+  "usbOnlyDiagnostics": [
+    {
+      "id": "usb-smoke-01",
+      "outcome": "READ_SUCCEEDED",
+      "acquisitionMs": 625,
+      "dischargeEvidence": false
+    },
+    {
+      "id": "usb-smoke-02",
+      "outcome": "READ_SUCCEEDED",
+      "acquisitionMs": 260,
+      "dischargeEvidence": false
+    },
+    {
+      "id": "usb-smoke-03",
+      "outcome": "INVALIDATED_COMMAND_STATUS_MISSING",
+      "reason": "UiAutomation command API does not interpret shell operators; corrected with fixed explicit shell scripts",
+      "dischargeEvidence": false
+    },
+    {
+      "id": "usb-smoke-04",
+      "outcome": "READ_SUCCEEDED",
+      "acquisitionMs": 312,
+      "commandExit": 0,
+      "dischargeEvidence": false
+    }
+  ],
+  "repeatability": "NOT_RUN",
+  "acceptanceRatio": "NOT_EVALUATED",
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "supersedesSnapshotOnly": "freshness-attempt-ledger.json; original file preserved",
+  "currentFreshness": "NOT_PROVEN",
+  "sourceAdmission": "NOT_ADMITTED",
+  "independentReview": {
+    "reviewer": "acceptance_review",
+    "p2": "ORACLE_SEMANTICS_UNVALIDATED",
+    "resolved": false,
+    "conclusion": "Attributed UID CPU is not universally equal to process CPU. Exact OEM discrepancy cause unproven. Preserve frozen rejection; prospective semantic validation and new preregistration required before further freshness measurement."
+  }
+}

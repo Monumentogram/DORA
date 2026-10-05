@@ -1,0 +1,92 @@
+{
+  "protocolId": "POCO_ISOLATED_WORKER_FRESHNESS_V1",
+  "status": "FROZEN_PROSPECTIVE_DIAGNOSTIC_ONLY",
+  "purpose": "Prospective repair of diagnostic oracle semantics; not battery source admission or repeatability acceptance",
+  "historicalAttempt08": "Preserved frozen FAIL UID_CPU_FRESHNESS_MISMATCH; ORACLE_SEMANTICS_UNVALIDATED. Never reevaluate with this oracle.",
+  "nextAttempt": "freshness-isolated-01",
+  "scope": "One short no-microphone diagnostic, approximately 90 seconds; no DORA recording",
+  "query": "dumpsys batterystats -c",
+  "archiveConsumingCheckin": false,
+  "reset": false,
+  "workerPackage": "com.monumentogram.dora.stage86.cpuworker",
+  "workerUid": 10282,
+  "observerPackage": "com.monumentogram.dora.stage86.freshness",
+  "observerUid": 10276,
+  "counter": {
+    "type": "ctf,A all-state first N counters only",
+    "unit": "milliseconds of UID CPU time by frequency, not energy",
+    "basis": "AOSP Android14 mCpuFreqTimeMs accumulates before wakelock redistribution. Forty-bin layout observed for earlier helper UID10276 while USB-powered. New worker UID10282 has no CTF in USB smoke; its availability during discharge is unproven and must pass fail-closed.",
+    "oemBackend": "NOT_PROVEN; candidate operational consistency will be tested, not assumed",
+    "neverSum": [
+      "second N screen-off array",
+      "process-state rows",
+      "attributed cpu row"
+    ],
+    "reject": [
+      "missing/duplicate target",
+      "unknown schema",
+      "wrong bin count",
+      "frequency order change",
+      "negative/noninteger",
+      "per-bin decrease",
+      "screen-off greater than all-state"
+    ]
+  },
+  "preparation": {
+    "helperStart": "Only after physical USB unplug and verified paired TLS Wi-Fi reconnection",
+    "workerLifecycle": "Normal force-stop of diagnostic worker and observer before each attempt, after prior receipt retrieval; no package data clear; no other packages touched",
+    "startState": "Unplugged, Android thermal NONE, screen off, same firmware; no calls/media/user interaction",
+    "oneWorkerProcess": "No sharedUid/no extra process in manifest; sampled numeric ps UID/PID must equal singleton worker PID at every boundary",
+    "identity": "Package UID, worker PID and process-start elapsed time stable; signed provider permission and stable provider client",
+    "controls": "Observer checks plugged/interactive about every 250ms while waiting; fail on observed violation. Boundary checks preserved. Periodic observations are not continuous proof of every possible transition."
+  },
+  "sequence": [
+    "READY",
+    "CPU_WORK_10000MS",
+    "WARMED",
+    "PRE_WORK",
+    "CPU_WORK_30000MS",
+    "END_WORK",
+    "QUIESCENT_3S",
+    "QUIESCENT_10S",
+    "QUIESCENT_20S",
+    "SECONDARY_COMPONENTS_SEPARATE_ACQUISITION",
+    "DONE_DIAGNOSTIC_ONLY_NOT_REPEATABILITY"
+  ],
+  "workerWorkload": "Pure arithmetic in separate thread; elapsed realtime deadline; no mic/files/network/wakelock and no Binder polling from CPU thread. Observer waits nominal duration before reading completion, checks its own power/screen state during wait.",
+  "boundary": {
+    "authority": "Android SystemClock.elapsedRealtime on same boot",
+    "order": "observer begin -> worker before RPC call/worker timestamp/return -> dumpsys plus numeric ps -> worker after RPC call/worker timestamp/return -> observer end",
+    "maximumAcquisitionMs": 1000,
+    "contains": "Both provider RPCs and dumpsys/ps; raw worker CPU and elapsed values retained",
+    "scopeLimit": "Collection width is not proof that every model backend input is <=1000ms old"
+  },
+  "criteria": {
+    "exactPhaseOrderAndCommandStatus": true,
+    "sameEpochReportVersionFrequencyOrder": true,
+    "stableWorkerIdentityAndIncreasingRpcSequence": true,
+    "rawUidCpuDeltaMustMatchWorkerProcessBracket": true,
+    "unchangedCandidateToleranceMs": 100,
+    "toleranceMeaning": "Preregistered experimental threshold, not guaranteed OEM counter accuracy. Never widen after a mismatch.",
+    "positiveModeledPulseRequired": true,
+    "pulseRoundingUncertaintyFractionMax": "0.05",
+    "quiescentWorkerCpuFractionMax": "0.05 of pulse raw UID CPU delta; otherwise INCONCLUSIVE_WORKER_LOAD",
+    "totalModeledLateDriftMax": "max(2 * final printed quantum, 0.05 * modeled pulse delta)",
+    "componentLimitation": "CPU-only consistency cannot override total modeled drift failure; secondary usage components are later separately timed snapshots, not reconstruction of an earlier pwi",
+    "missingResetNegativeChargingWakeError": "FRESHNESS_NOT_PROVEN; never zero or interpolated",
+    "noAfterResultTuning": true
+  },
+  "resultBoundary": {
+    "possibleSuccess": "OPERATIONAL_FRESHNESS_PRECONDITION_OBSERVED",
+    "sourceAdmission": "NOT_ADMITTED_PENDING_REVIEW_AND_SESSION_VALIDATION",
+    "sixRepeatabilityRuns": "NOT_RUN",
+    "acceptanceRatio": "NOT_EVALUATED",
+    "hardwareMicroWh": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+    "noLongCampaign": true,
+    "no200Cycles": true
+  },
+  "future600SecondContract": "OD2 target600000ms, measured monotonic boundaries <=1000ms uncertainty each, actual duration retained without normalization; unchanged",
+  "privacy": "Only target UID/global version/epoch/frequency counters, diagnostic process lifecycle and controls. No audio/model/APK export, account data, device identifiers or network addresses in receipts.",
+  "frozenUtc": "2026-10-05T07:49:30.685395+00:00",
+  "independentReview": "acceptance_review: no unresolved P0/P1/P2 after both parser findings fixed; scope clarification applied before seal"
+}

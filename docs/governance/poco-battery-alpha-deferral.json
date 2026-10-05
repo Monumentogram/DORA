@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "ownerDecision": "OD-86-ALPHA-BATTERY-DEFER",
+  "approvedDate": "2026-10-05 Europe/Moscow",
+  "implementationBaselineSha": "95834de7472cfb64f47e1b111bd1a2f024f79e32",
+  "acceptedStage85Sha": "b8cac85f30f446d98c1a6b1d21490d8c10bc5b41",
+  "stage86AlphaStatus": "NOT_READY / NON_BATTERY_ACCEPTANCE_GAPS_OPEN",
+  "batteryFreshness": "PASS / OPERATIONALLY_VALIDATED",
+  "batteryRepeatability": "DEFERRED / NOT_RUN",
+  "comparativeSourceAdmission": "DEFERRED",
+  "doraBaselineRatio": "NOT_EVALUATED",
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "batteryEfficiencyGate": "DEFERRED / NON_BLOCKING_FOR_ALPHA",
+  "securityRestorationBlocker": "OPEN",
+  "PERF-REC-001": "DEFERRED_NON_BLOCKING",
+  "deferredBacklogId": "PERF-REC-002",
+  "newOwnerDecisionRequiredToResume": true,
+  "sheet": "UNCHANGED",
+  "groupD": "NOT_STARTED",
+  "cloudAsrImplementation": "NOT_STARTED",
+  "stage86Closed": false,
+  "fullAlphaClosed": false,
+  "energyPassed": false,
+  "runtimeChanged": false,
+  "sixBatteryRepeatsExecuted": false,
+  "oneHourBatteryCampaignExecuted": false,
+  "cycles200Executed": false,
+  "hardwareEnergyInvented": false,
+  "historicalEvidenceRewritten": false,
+  "remainingGateGroups": [
+    {
+      "id": "START_FINALIZE",
+      "state": "NOT_RUN",
+      "requirement": "200 valid production cycles; Start >=199/200; correct finalize >=99.5%; zero whole-recording losses; meaningful error actions."
+    },
+    {
+      "id": "SCREEN_OFF_ENDURANCE",
+      "state": "NOT_RUN",
+      "requirement": "Three clean 60-minute production captures; FGS/microphone continuity and no unexplained process restart."
+    },
+    {
+      "id": "LONG_RUN_INTEGRITY",
+      "state": "SHORT_PROBE_ONLY",
+      "requirement": "Canonical frames/readback; zero unexplained gaps, duplicates or corrupt segments; every CAP <=9,600,000+1 frames; overlap 32,000 frames."
+    },
+    {
+      "id": "STORAGE",
+      "state": "NOT_EVALUATED",
+      "requirement": "Each 3,600-second capture slice <=125,000,000 bytes, including applicable journal/metadata; hour-budget UX and controlled low-storage checks."
+    },
+    {
+      "id": "THERMAL_RESOURCES",
+      "state": "SHORT_PROBE_ONLY",
+      "requirement": "No SEVERE-or-worse during sustained capture; no OOM/resource death; bounded memory, CPU, FD and thread diagnostics."
+    },
+    {
+      "id": "FUNCTIONAL_SMOKES",
+      "state": "NOT_RUN_FOR_STAGE86_CLOSURE",
+      "requirement": "Doze/Battery Saver, background notification controls, physical kill/durable-prefix/microphone-OFF/explicit-Resume; real VAD non-regression."
+    },
+    {
+      "id": "PHYSICAL_PUBLICATION",
+      "state": "INCOMPLETE",
+      "requirement": "Exact campaign APK/final HEAD binding, physical review/audit and Sheet closure after actual acceptance."
+    }
+  ],
+  "inheritedEvidence": {
+    "stages83_84_84C_85": "Accepted predecessor PASS; not new Stage 8.6 physical execution.",
+    "recovery414": "414/414 historical; not rerun by thisdecision",
+    "segmentation90Seconds": "Frozen predecessor acceptance retained; no recalibration",
+    "runtimePins": "Unchanged",
+    "ciReadinessSourceSha": "95834de7472cfb64f47e1b111bd1a2f024f79e32",
+    "ciReadinessRunId": 37269152815,
+    "ciReadinessJobs": "4/4 SUCCESS; not final successor CI.",
+    "persistenceInventory": 138,
+    "recoveryPhasesPerApi": 22
+  },
+  "nextUnfinishedTask": "Non-battery Stage 8.6 physical acceptance completion, scoped separately; then Stage 8 closure assessment.",
+  "nextProductStage": "Stage 9 ASR/versioning; 9.1C optional Local package/account-free operation; not started.",
+  "ownerRiskRationaleNotMeasuredClaim": "No obvious anomaly was reported in limited observations; neither this nor freshness proves efficiency or sustained thermal PASS."
+}

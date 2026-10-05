@@ -16,6 +16,10 @@ ROUTE = '''    import validate_poco_acceptance as successor
     if successor.candidate(root):
         return successor.validate_checkout(root, allow_working=allow_working)
 '''
+STATUS_ROUTE = '''    import poco_alpha_battery_defer as alpha
+    if current.startswith(alpha.PREFIX):
+        current = alpha.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()
+'''
 # Exact content seals; additions/edits require a new reviewed evidence revision.
 SEALED = {'docs/evidence/poco-recording-8.6/attempts.json': '41993ad345629651577ad94adfd80197d0fdd790cf391759beb3df2825c9764e', 'docs/evidence/poco-recording-8.6/batterystats-source-summary.txt': 'da3a563e0d942f48c2809ced7fe98a370018ffab5e05e7e11153915755e5ad07', 'docs/evidence/poco-recording-8.6/cleanup-diagnostic-files.txt': 'dd8375c9e37ee04796a5237f78923faca46245a35668894177cb2b8a85f5ad3e', 'docs/evidence/poco-recording-8.6/device-preflight.json': '2411808feedbcabef0754b5a59302bb2255efd534080d4411f9fb71a3982ea66', 'docs/evidence/poco-recording-8.6/EnergyProbe.java': '8e45cc34d14d9bd53b7f2a26edc4a1b7c822c1d05b104b29075abbeeb4ec856e', 'docs/evidence/poco-recording-8.6/fixture-manifest.json': 'c8f567882b06e4e03b0a00f03b5aa59921ac0f5f69cde167b40df3d5340a8408', 'docs/evidence/poco-recording-8.6/framework-energy-probe-screen-off.txt': 'bee070cd9160fa644e1fd366c9dbe28ea5ac9fab430e4c344111dec81a9bbd33', 'docs/evidence/poco-recording-8.6/framework-energy-probe.txt': '86488169581ac12fefb6ebf655608841c5be326633b724863254bf123b1dd9d4', 'docs/evidence/poco-recording-8.6/oracle-result.txt': '7934c2f52f3d66c9193320dd44ce801ef62716c4a3323a5b471d25e6586b2a56', 'docs/evidence/poco-recording-8.6/perfetto-consumer-summary.json': '43445acea8eccb372d834ee31dc3f614f2e1e5c4718c0dcc5fc5581b44d579c6', 'docs/evidence/poco-recording-8.6/perfetto-summary.json': 'ee9319553dc3f5846ccca191d3be01cf217a2557353885a811d6952a7bfa349d', 'docs/evidence/poco-recording-8.6/power-preflight-consumers.pbtxt': '58c22bb79ffebba89dc7f690df7fb7dd9dba8f6d8484901aa176b8863f85d613', 'docs/evidence/poco-recording-8.6/power-preflight-rails.pbtxt': 'ecce9d7b3fd2233ed862f04bb0aeb8947eedd6e87a9efa4a7ebe1139946da8e3', 'docs/evidence/poco-recording-8.6/protocol.json': '873df5993a2d14d0c054e0b9aa3afe68a1dc8c53e69d686d476cbb080c4e2364', 'docs/evidence/poco-recording-8.6/README.md': 'b3b8a9780d0e694982465d03c990e087a18598ebd431f3da9466d88fe53d763e', 'docs/evidence/poco-recording-8.6/result.json': '4cba9826f1f3afe8b6a40bff36f5cb59ad73687531477368a49a679b63a1591e', 'docs/evidence/poco-recording-8.6/screen-before.txt': '47af5ef8b5c76675798d0d3fd9e41b050f21c4c4472fd057d0bf02809223a8be', 'docs/evidence/poco-recording-8.6/screen-off-end.txt': 'b11c0847e108cea10d11e68469ab13c37eca4e6b43babd86b190dd36708c9c4a', 'docs/evidence/poco-recording-8.6/screen-off.txt': '8c2e9f24c621a6ff13aa55f27fde0aca2c8a737015b6a6093f28dd2778459c17', 'tools/test_logical_recovery_poco.py': '95b404a752b24850f6ffcfff15e18b40f15d200664279bc16f4eb47b034134b6'}
 
@@ -28,6 +32,9 @@ COMPARATIVE = 'docs/evidence/poco-comparative-battery-8.6/'
 REMEDIATION_SEALED = {'.github/workflows/android-ci.yml': '62a50fc609d7c6c15b50cf7f5b56d8a32611b174a443470af7cb9b9907169cd2', 'tools/logical_recovery_ci_profile.py': 'fd0ce7803067710efd00b45b88ac26657076129f3c0cbd6f28d13bbfe69de39c', 'tools/run_encrypted_persistence_device.py': 'b94b634f93773fe3c30614d1151d1ce1ca6b3b0a502716ca66df2c727ee538f4', 'tools/persistence_instrumentation_diagnostics.py': 'd18fdaa4268e128055986d4642875fd1e599673acfdae3fd16a6c7446206e4ba', 'tools/poco_remediation_ci_profile.py': 'f171c57ea438f17366623d7e6699ef0560deccb955ccb2afe429501daa07b821', 'tools/test_logical_recovery_stream_diagnostics.py': '83c68f7a5012be0b04fa51e05bf7f88352f4e21c9c4d74494024e70dc21f3c01', 'docs/superpowers/plans/2026-10-04-stage86-remediation.md': 'edae98811f248e8efd669f4eab9658135598062947de298c1c78d3b120f338a8'}
 REMEDIATION_OVERRIDES = {'.github/workflows/android-ci.yml', 'tools/logical_recovery_ci_profile.py'}
 REMEDIATION_ROUTE = '    import poco_remediation_ci_profile as remediation\n    workflow = remediation.normalize(workflow)\n'
+
+# Owner-approved additive governance; historical sealed evidence is not replaced.
+ALPHA_DEFER_SEALED = {'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md': '754fa358de7de4e814fcc27c18104639c3597b1d0336dbf58a85139356c9582a', 'docs/DORA_MVP1_PRODUCT_DECISIONS.md': '3649ad24d9e126f2ea2e8ce0f47b9656898a93210441082024f99bf6148219dc', 'docs/DORA_MVP1_STAGE_STATUS.md': '2748bb3334a308ef973967ae313a709c210edb51a035c0d819bf2ae6f60d21a9', 'docs/adr/ADR-PERF-002-alpha-battery-efficiency-deferral.md': 'bf87b64b9039df7812d992447187c3af22680fc597f302e19069e8f7ff3e946b', 'docs/evidence/poco-battery-alpha-deferral/ci-readiness.json': 'd636d061e4fc510311c2f5067e28320bb90e240ba83b07a19c1255e97ba32cc1', 'docs/evidence/poco-battery-alpha-deferral/freshness-attempt-ledger-v2.json': '619da9d3bbf71b7cf0fa7ea2543bf72133a2d5f1e21910547e9e97f30c8cbb4d', 'docs/evidence/poco-battery-alpha-deferral/freshness-isolated-01-disposition.json': '5e7f39c081291e7154093c91f8e4cbe9672b69949a47c2a3e1893d863e39d8aa', 'docs/evidence/poco-battery-alpha-deferral/freshness-isolated-02-evaluation.json': '4c04440feb700c9387d1b4c97a49dbb1af7acf322f3c634a00457543906d90bd', 'docs/evidence/poco-battery-alpha-deferral/freshness-isolated-02.jsonl': 'd3462d5284d70ee33bdff4a6233c315c61c7ad447bdf71fdbb2d1fcb31c6d43b', 'docs/evidence/poco-battery-alpha-deferral/isolated-freshness-protocol-v1.json': '9195c17cb6955a89acc30b304707e52874a9da4582e2150c47305698696ab2c4', 'docs/evidence/poco-battery-alpha-deferral/owner-defer-device-cleanup.json': '5f3c846920ff885ea50de84e16a478d0b1d31b6f876bbea2c370e72cf477fda9', 'docs/evidence/poco-battery-alpha-deferral/repeat-owner-recordings-preflight.json': '24be2291a296628de5025e732315533675a10de8e739f3e2f681632762ec3d61', 'docs/evidence/poco-battery-alpha-deferral/summary.json': '3346a94b78d85a935b3151170d877d8b2e712820e4de4c978f2a947d182ad920', 'docs/governance/poco-battery-alpha-deferral.json': '784d8d0e392338e28a5db965b656bd8dcaef93aaa0c29ac2524a2ac017ecd4c3', 'tools/poco_alpha_battery_defer.py': '9e1bc43cc8479db8d097033a8cbff277a2cbd6de3523d396160808a6391e9fca', 'tools/test_logical_recovery_alpha_battery_defer.py': '4ecfc407192bdf1df4bd9ca220dffec825088c7511736499af64f5da6a56f559'}
 
 
 def validate_remediation_override(path, current, original):
@@ -65,6 +72,9 @@ def validate_seal(raw, expected):
 
 def validate_parent_route(current, original):
     current = current.replace(b'\r\n', b'\n')
+    expected = int(b'def validate_status_projection(' in original)
+    require(current.count(STATUS_ROUTE.encode()) == expected, 'Parent status route changed')
+    current = current.replace(STATUS_ROUTE.encode(), b'', expected)
     require(current.count(ROUTE.encode()) == 1 and
             current.replace(ROUTE.encode(), b'', 1) == original.replace(b'\r\n', b'\n'),
             'Accepted parent changed beyond successor route')
@@ -95,7 +105,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     dirty = bool(git('status', '--porcelain', '--untracked-files=all'))
     require(working or not dirty, 'Publication requires clean source')
     validate_ci(os.environ, head, dirty, working)
-    approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | {SELF, PARENT, GOVERNANCE}
+    import poco_alpha_battery_defer as alpha
+    approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | {SELF, PARENT, GOVERNANCE}
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -103,8 +114,13 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         parts = line.split()
         require(len(parts) == 2, 'No merge or rewritten baseline')
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
-    for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED}.items():
+    for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED, **ALPHA_DEFER_SEALED}.items():
         validate_seal((root / path).read_bytes(), digest)
+    for path in alpha.DOCUMENTS:
+        require(alpha.normalize_document(path, (root / path).read_bytes()) ==
+                git('show', BASE + ':' + path).replace(b'\r\n', b'\n'),
+                'Alpha owner decision must preserve historical document body')
+    alpha.validate_file(root)
     validate_parent_route((root / PARENT).read_bytes(), git('show', BASE + ':' + PARENT))
     governance = (root / GOVERNANCE).read_bytes().replace(b'\r\n', b'\n')
     addition = b', "stage/8.6-poco-recording-acceptance"'
@@ -116,6 +132,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     contract = parent.read_contract(root)
     for path, digest in contract['files'].items():
         raw = governance.replace(addition, b'') if path == GOVERNANCE else (root / path).read_bytes()
+        if path in alpha.DOCUMENTS:
+            raw = alpha.normalize_document(path, raw)
         if path in REMEDIATION_OVERRIDES:
             original = git('show', BASE + ':' + path)
             validate_remediation_override(path, raw, original)
@@ -167,4 +185,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--working', action='store_true', default=None)
     validate_checkout(allow_working=parser.parse_args().working)
-    print('PASS sealed preflight repository contract; Stage8.6 physical acceptance BLOCKED')
+    print('PASS sealed repository contract; battery deferred; Stage8.6 non-battery acceptance gaps OPEN')

@@ -1,0 +1,14 @@
+{
+  "purpose": "Owner-directed end of Alpha battery experimentation; cleanup only",
+  "helperPackagesForceStopped": [
+    "com.monumentogram.dora.stage86.baseline",
+    "com.monumentogram.dora.stage86.freshness",
+    "com.monumentogram.dora.stage86.cpuworker",
+    "com.monumentogram.dora.stage86.cleanup"
+  ],
+  "wifiDebugEnabledAfter": "0",
+  "deviceAppDataDeleted": false,
+  "doraTouched": false,
+  "accubatteryRetained": true,
+  "newMeasurement": false
+}

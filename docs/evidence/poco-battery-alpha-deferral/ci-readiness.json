@@ -1,0 +1,33 @@
+{
+  "sourceSha": "95834de7472cfb64f47e1b111bd1a2f024f79e32",
+  "runId": 37269152815,
+  "jobs": [
+    {
+      "name": "encrypted-persistence-api36",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-smoke",
+      "conclusion": "success"
+    },
+    {
+      "name": "android-bootstrap",
+      "conclusion": "success"
+    },
+    {
+      "name": "encrypted-persistence-api28",
+      "conclusion": "success"
+    }
+  ],
+  "inventoryMethods": 138,
+  "passedExecutionsEachApi": 140,
+  "explicitAcceptedSkipsEachApi": 2,
+  "recoveryPhasesEachApi": 22,
+  "instrumentationHardTimeoutSeconds": 1800,
+  "api28JobMinutes": 60,
+  "api36JobMinutes": 45,
+  "initial1800SecondTimeoutRootCause": "UNKNOWN_NOT_REPRODUCED",
+  "api28CredentialSuiteSeconds": 644.562,
+  "api36CredentialSuiteSeconds": 500.391,
+  "finalSuccessorCi": "Must be verified externally against the new exact SHA; this is predecessor readiness only."
+}

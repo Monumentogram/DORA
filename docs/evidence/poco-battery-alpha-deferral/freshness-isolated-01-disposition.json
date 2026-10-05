@@ -1,0 +1,33 @@
+{
+  "probe": "freshness-isolated-01",
+  "status": "INVALIDATED_SCREEN_WAKE_DURING_CPU_PULSE",
+  "freshness": "NOT_PROVEN",
+  "helperError": "CONTROL_VIOLATION",
+  "screenWakeElapsedRealtimeMs": 109842998,
+  "screenSleepElapsedRealtimeMs": 109852996,
+  "wakeDurationMs": 9998,
+  "wakeReason": "UNAVAILABLE; do not attribute to owner",
+  "workerCtfAvailableDuringDischarge": true,
+  "completedSnapshots": 2,
+  "snapshotAcquisitionMs": [
+    493,
+    434
+  ],
+  "mainPulseDidNotReachEndSnapshot": true,
+  "hostMonitorStartupReadFailureRetained": true,
+  "hostFailureCause": "Not conclusively established; helper receipt subsequently readable",
+  "sourceAdmission": "NOT_ADMITTED",
+  "repeatability": "NOT_RUN",
+  "ratio": "NOT_EVALUATED",
+  "hardwareMicroWh": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "noAudioCreated": true,
+  "noDoraRecordingsTouched": true,
+  "diagnosticProcessesForceStoppedAfterEvidence": true,
+  "evidenceSha256": {
+    "freshness-isolated-01.jsonl": "c9bada745336507b492ea2026022e504bf36bd1f8a42355f51c6f0f38dd4536a",
+    "freshness-isolated-01-control-telemetry.jsonl": "c44d67dc4c1e493a8ae7d9049ef9852f3e9db4ac89ed2424041116cdb0008573",
+    "freshness-isolated-01-control-resumed.jsonl": "817180a302cb7c5043d1f77496546dc1b9b2a03ef27baa9c51240d1db1efc866",
+    "freshness-isolated-01-control-diagnosis.json": "5b821c9fd93f85aad6a6d8828b26f5e83ff6d36de6970b6248ff5b75e2e445e9",
+    "freshness-isolated-01-wake-reasons.json": "86d6e34e4115abc4f149b65b48a0509cbe2957f8b7fa92761cf1ab7ee4a1d3b0"
+  }
+}
