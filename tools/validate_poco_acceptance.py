@@ -1,4 +1,4 @@
-"""Admit only sealed Stage 8.6 BLOCKED evidence; all accepted runtime bytes stay frozen."""
+"""Admit sealed Stage 8.6 evidence and the explicit Stage 8.6A close-cycle correction."""
 import argparse
 import hashlib
 import json
@@ -35,6 +35,10 @@ REMEDIATION_ROUTE = '    import poco_remediation_ci_profile as remediation\n    
 
 # Owner-approved additive governance; historical sealed evidence is not replaced.
 ALPHA_DEFER_SEALED = {'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md': '754fa358de7de4e814fcc27c18104639c3597b1d0336dbf58a85139356c9582a', 'docs/DORA_MVP1_PRODUCT_DECISIONS.md': '3649ad24d9e126f2ea2e8ce0f47b9656898a93210441082024f99bf6148219dc', 'docs/DORA_MVP1_STAGE_STATUS.md': '2748bb3334a308ef973967ae313a709c210edb51a035c0d819bf2ae6f60d21a9', 'docs/adr/ADR-PERF-002-alpha-battery-efficiency-deferral.md': 'bf87b64b9039df7812d992447187c3af22680fc597f302e19069e8f7ff3e946b', 'docs/evidence/poco-battery-alpha-deferral/ci-readiness.json': 'd636d061e4fc510311c2f5067e28320bb90e240ba83b07a19c1255e97ba32cc1', 'docs/evidence/poco-battery-alpha-deferral/freshness-attempt-ledger-v2.json': '619da9d3bbf71b7cf0fa7ea2543bf72133a2d5f1e21910547e9e97f30c8cbb4d', 'docs/evidence/poco-battery-alpha-deferral/freshness-isolated-01-disposition.json': '5e7f39c081291e7154093c91f8e4cbe9672b69949a47c2a3e1893d863e39d8aa', 'docs/evidence/poco-battery-alpha-deferral/freshness-isolated-02-evaluation.json': '4c04440feb700c9387d1b4c97a49dbb1af7acf322f3c634a00457543906d90bd', 'docs/evidence/poco-battery-alpha-deferral/freshness-isolated-02.jsonl': 'd3462d5284d70ee33bdff4a6233c315c61c7ad447bdf71fdbb2d1fcb31c6d43b', 'docs/evidence/poco-battery-alpha-deferral/isolated-freshness-protocol-v1.json': '9195c17cb6955a89acc30b304707e52874a9da4582e2150c47305698696ab2c4', 'docs/evidence/poco-battery-alpha-deferral/owner-defer-device-cleanup.json': '5f3c846920ff885ea50de84e16a478d0b1d31b6f876bbea2c370e72cf477fda9', 'docs/evidence/poco-battery-alpha-deferral/repeat-owner-recordings-preflight.json': '24be2291a296628de5025e732315533675a10de8e739f3e2f681632762ec3d61', 'docs/evidence/poco-battery-alpha-deferral/summary.json': '3346a94b78d85a935b3151170d877d8b2e712820e4de4c978f2a947d182ad920', 'docs/governance/poco-battery-alpha-deferral.json': '784d8d0e392338e28a5db965b656bd8dcaef93aaa0c29ac2524a2ac017ecd4c3', 'tools/poco_alpha_battery_defer.py': '9e1bc43cc8479db8d097033a8cbff277a2cbd6de3523d396160808a6391e9fca', 'tools/test_logical_recovery_alpha_battery_defer.py': '4ecfc407192bdf1df4bd9ca220dffec825088c7511736499af64f5da6a56f559'}
+
+
+# Stage 8.6A has exactly two reversible historical source overrides. Old seals remain intact.
+FINAL_DELETION_SEALED = {'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/EncryptedAudioVaultDeletionFailureTest.kt': 'c2fabd69a11e0c129e011ade86878b2a3f99ba7e2cb41a72f06abe3c115bbddb', 'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/RoomInvalidationProbe.kt': 'c628f33ef03d38595de0c41f9875729c7974f3e45bd2ae080b4990000d84db64', 'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomAudioJournal.kt': '3a27cb7af7afd17d3b7245aacd61327d4311816732a999b370ad1a0e4d913d79', 'docs/adr/ADR-PERSISTENCE-003-room-invalidation-worker-ownership.md': '3be19d9b67654d3dbd1b37abef475b88597d45fe25898b7f7b1d648f17f43f25', 'docs/evidence/api28-final-deletion-8.6a/README.md': '134fc824a7317f0d4b5befc608de2f0d3701a67cb33d94c94ffc9cd03c213818', 'docs/evidence/api28-final-deletion-8.6a/api28-full.json': '16beb831e4ab7009358871e178fa288859599cc646ab32bdc147af22df21c2d5', 'docs/evidence/api28-final-deletion-8.6a/api28-green-class-01.json': '6de896663096ba3c1362d1e09aafe743aaa917d214f2dde86bae82e191e88e9f', 'docs/evidence/api28-final-deletion-8.6a/api28-green-target-02.json': 'f4e22ad8059fe34372d3f8e25e1da212e241f2b6f2e732a7d31421f9e00d646e', 'docs/evidence/api28-final-deletion-8.6a/api28-green-target-03.json': 'f4e22ad8059fe34372d3f8e25e1da212e241f2b6f2e732a7d31421f9e00d646e', 'docs/evidence/api28-final-deletion-8.6a/api28-green-target-04.json': 'f4e22ad8059fe34372d3f8e25e1da212e241f2b6f2e732a7d31421f9e00d646e', 'docs/evidence/api28-final-deletion-8.6a/api28-recovery.json': '8975496e5828a890731ed57d00eb08b18c8f0cdaecdaac8ebdfe9f5cfec415aa', 'docs/evidence/api28-final-deletion-8.6a/api36-full.json': '52f552c2ad7be1bf36b1b65c4542d71ad129e3e3e919ad344eef82f7de02045b', 'docs/evidence/api28-final-deletion-8.6a/api36-recovery.json': 'a8333ad18031bfaba3f3042ce90244036082ec2e88927e36042301120d18d178', 'docs/evidence/api28-final-deletion-8.6a/forced-before-probe.kt.txt': 'fc4daa7be5066f0f8ddb37e195b702bf5c80f01ed466629dbcfd48263a7d954d', 'docs/evidence/api28-final-deletion-8.6a/forced-before-trace.txt': 'e44ed2cbd2f4b032da148f8ae9f4a9bd69bae806d49bc88774291fe5b986e931', 'docs/evidence/api28-final-deletion-8.6a/local-validation.json': 'da15033021f5783e3e48f3bb61022e27448c4adcd4d22e35b3e1a847f7bbc1eb', 'tools/poco_final_deletion.py': '270b7222d76950eb7c14d7ffec4ebf70d1fe7a90ae3a3d10924f056ce1536cfc', 'tools/test_logical_recovery_final_deletion.py': '0f6c58a65f28b818cba031474ce92362415fa1934fe230831a3dea791c1d2070'}
 
 
 def validate_remediation_override(path, current, original):
@@ -106,7 +110,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     require(working or not dirty, 'Publication requires clean source')
     validate_ci(os.environ, head, dirty, working)
     import poco_alpha_battery_defer as alpha
-    approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | {SELF, PARENT, GOVERNANCE}
+    import poco_final_deletion as deletion
+    approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | set(FINAL_DELETION_SEALED) | {SELF, PARENT, GOVERNANCE}
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -114,8 +119,10 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         parts = line.split()
         require(len(parts) == 2, 'No merge or rewritten baseline')
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
-    for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED, **ALPHA_DEFER_SEALED}.items():
+    for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED, **ALPHA_DEFER_SEALED, **FINAL_DELETION_SEALED}.items():
         validate_seal((root / path).read_bytes(), digest)
+    for path in deletion.OVERRIDES:
+        deletion.normalize(path, (root / path).read_bytes(), git('show', BASE + ':' + path))
     for path in alpha.DOCUMENTS:
         require(alpha.normalize_document(path, (root / path).read_bytes()) ==
                 git('show', BASE + ':' + path).replace(b'\r\n', b'\n'),
@@ -127,7 +134,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     require(governance.count(addition) == 2 and governance.replace(addition, b'') ==
             git('show', BASE + ':' + GOVERNANCE).replace(b'\r\n', b'\n'),
             'Recovery governance changed beyond two verified branch guards')
-    # The path allowlist freezes every Android/build/workflow/oracle/historical byte.
+    # All other Android/build/workflow/oracle/historical bytes stay frozen.
     # Re-run inherited source, dependency-graph and test-inventory validations as well.
     contract = parent.read_contract(root)
     for path, digest in contract['files'].items():
@@ -138,6 +145,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
             original = git('show', BASE + ':' + path)
             validate_remediation_override(path, raw, original)
             raw = original
+        if path in deletion.OVERRIDES:
+            raw = deletion.normalize(path, raw, git('show', BASE + ':' + path))
         validate_seal(raw, digest)
     security.validate_development_sources(root)
     require(json.loads((root / security.BLOCKER_PATH).read_text()) == security.RESTORATION_BLOCKER,

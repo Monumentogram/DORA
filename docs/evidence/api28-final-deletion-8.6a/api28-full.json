@@ -1,0 +1,591 @@
+{
+  "abi": "x86_64",
+  "api": 28,
+  "apk_sha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+  "credential_tests": [
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioProcessDeathTest#verifyProcessDeathRecovery",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#readerAndAppendSerializeWithoutIntermediateMapping",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#duplicateRetryAfterRestartOwnsOneLeaseAndOneExactMapping",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#sameUnitWritersSerializeAfterActualReservation",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#durableDeletionLeaseBlocksReaderAndWriterThenRetryCompletesAfterRestart",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#deletionAndReadWriteSerializeAndDurableFencePreventsResurrection",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#writerAndFinalizationSerializeWithoutPrematureFinalizedState",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#differentUnitAppendsSerializeAndRetryInOrder",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultDeletionFailureTest#explicitDeletionIncludesPendingAppendAndRetainedEncryptedRemainder",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultDeletionFailureTest#actualFinalDeletionTransactionCompletionBeforeAndAfterRemainTruthful",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultDeletionFailureTest#interruptedDurableDeletionRetriesOnlyRemainingVerifiedSteps",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFailureTest#publishedBeforeCatalogCommitReconcilesExactlyAfterReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFailureTest#actualTransactionCompletionMatrixReopensExactOrFenced",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFailureTest#encryptedWritePhaseFailuresRetainDurableIntentWithoutReplacement",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#actualRunKeyProviderUnavailableUsesTypedFailureAndRecoversWithoutReplacement",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#laterCiphertextCorruptionRejectsEntireAttemptAndWipesBorrowedPrefix",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#operationalDatabaseFailureIsSanitizedAndExactSourceSurvivesReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#orphanEncryptedArtifactCannotJoinTheAuthenticatedSource",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#actualMissingRunKeyRetainsArtifactsAndCannotFinalizeOrReplace",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#missingMiddleAndTailNeverSkipLogicalHole",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#staleIntentOrOrphanMappingOrChangedSourceIsRejectedAfterReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#encryptedDatabasePageDamageRetainsCiphertextAndRejectsReplacement",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultIntegrityTest#finalizedReplayAndCrossAssetNamespaceStayImmutableAfterReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#unfinalizedSourceRequiresReconciliationAndDoesNotBecomeFinalizedOnReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#revocationBetweenUnitsStopsFurtherPlaintextDeliveryAndCleanupRemainsPossible",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#unsafeDeletionLeafLeavesADurableFenceAndRetryAfterReopenCompletes",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#uncommittedPreexistingAliasInTheSameVaultKeepsDeletionFenced",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#missingExistingDatabaseCannotBeSilentlyRecreated",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#finalizedSyntheticAudioSurvivesRealEncryptedReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#deletionAfterKeyLossCannotEraseASecondVaultUsingTheSameLogicalRun",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#explicitDeletionRemovesOnlyTheSelectedAudioAndCannotReuseItsNamespace",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultTest#sourceStatusAndRetryNeverInventADeletion",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingProcessDeathTest#verifyLogicalRecordingProcessDeath",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#sourceDeletionBlocksRetainedChunkAndLateCallbackAfterReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#historicalFinalizedAudioIsNotEvaluatedAndRemainsReadable",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#finalizedProjectionSurvivesVaultReopenExactly",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#corruptPersistedProfileReturnsIncompleteWithoutDisablingOriginalAudio",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#everyStaleReferenceFieldFailsClosed",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#incompleteMetadataNeverPublishesPartialProjection",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#partialSourceCannotInventFinalizedReference",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecordingRuntimeTest#sourceFinalizedBeforeFirstProjectionStillBindsPersistedIds",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryProcessDeathTest#verifyLogicalRecoveryProcessDeath",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#originInsertFailureRollsBackAssetAndNeverAdmitsPcm",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#malformedMetadataPreservesPrefixButFencesLogicalResume",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#recoveryLeaseFencesScanDeletionAndRecordingStart",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#legacyUnknownPrefixKeepsCleanContinuationAcrossInterruptions",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#badCandidateAndMalformedIdentityDoNotHideLaterPages",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#finalizedMetadataGapCannotBeReportedComplete",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#unpublishedReservationRetainsOldPrefixAndFencesResume",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#metadataCommitFailurePreservesPrefixButFencesLogicalResume",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#zeroOpenIsRetainedAndAbortedWithoutZeroAudioChunk",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#logicalOriginIsAtomicAndCannotBeAddedOrChangedByMetadataWrites",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#corruptMiddleNeverStitchesLaterUnit",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#firstOpenFailurePreservesPrefixButCannotMasqueradeAsLegacy",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#repeatedInterruptionResumesExactIdentityAndFinalSource",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest#deletionWinsAgainstStaleSnapshot",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioProcessDeathTest#verifyOriginalAudioProcessDeath",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#uncertainFinalizationEndRequiresReopenBeforeReferenceAdmission",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#deletionAndRestartFenceExactReferenceAndLateWorkWithoutTextCascade",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#referenceReadAndDependentRegistrationSerializeAgainstDeletionFence",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#finalizeIntentExcludesReferenceAndInterruptedFinalizeReconcilesExactly",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#lockRevocationDuringExactReadCannotAdmitWorkOrPersistPermanentLoss",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#retryableQuarantineNeverPermanentlyDisablesFinalizedOriginal",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#competingSourceVersionCannotSilentlySupersedeOrAdmitOldWork",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest#exactOriginalSurvivesOfflineReopenWithoutLocalOrCloudEngine",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#encryptedRotationPreservesCanonicalHashAndExactOverlapAcrossReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#metadataIsImmutableIdempotentAndCannotReferToFutureFrames",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#interruptedOpenSourceDoesNotInventSemanticCloseAfterRecovery",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#historicalRecordingHasNoInventedSegmentation",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.SegmentationProcessDeathTest#verifySegmentationProcessDeath",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.VadFrameContractTest#sourceFramesIgnorePauseWallClockAndDoNotCarryPrerollAcrossGap",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.VadFrameContractTest#exactSilenceMatrix",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.VadFrameContractTest#frozenHysteresisDoesNotAddTimeToSemanticBoundary",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.VadFrameContractTest#silenceWithoutSpeechNeverCreatesSegments",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.VadFrameContractTest#uncertaintyAndStaleGenerationCannotCompleteSilence",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.VadFrameContractTest#speechAt899CancelsAndSubsequentSilenceStartsFresh",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup",
+      "result": "SKIPPED"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#missingProcessRegistryAndInventedActivityIntentStayLocked",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#actualSystemCredentialUnlocksThenHomeRevokesCapturedCapability",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAuthProofTest#authenticatorPolicyUsesCombinedStrongOnlyOnSupportedApis",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAuthProofTest#recentProofRejectsOperationAfterAuthenticationWindow",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAuthProofTest#recentProofHasConfiguredOneSecondValidityAndIsNonExportable",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#rejectedConfigurationWipesOwnedSecret",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#everyConnectionPolicyDriftPermanentlyFencesStatementAndHelper",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#abandonedFactoryWipesOwnedSecretWithoutWipingCaller",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#ciphertextAndWalDoNotExposeBoundMetadataAndWrongKeyPreservesDatabase",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#combinedReadReturnsEveryPinnedConnectionPolicyValue",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#changedGlobalPoolPolicyFencesEpochEvenAfterPolicyRestored",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.database.SqlCipherConnectionPolicyTest#connectionOwnerCanReenterHelperWhileAnotherThreadWaitsForConnection",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.OriginalAudioFullMigrationTest#finalizedAudioRecoveryQuarantineAndPendingDeletionSurviveExactV2Migration",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.OriginalAudioFullMigrationTest#finalizedAudioRecoveryQuarantineAndPendingDeletionSurviveExactV1Migration",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.OriginalAudioMigrationTest#alteredV1DdlIsRejectedBeforeAnySourceAuthorityCanBeCreated",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.OriginalAudioMigrationTest#exportedV1MigratesWithoutLosingAssetsPendingIntentsOrDeletionTombstones",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#atomicPublicationRollbackAndExactFinalizationSurviveReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#pendingRetainedRowIsStructuralThroughAcceptedCallbackSource",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#deletionBootstrapRejectsRevocationDuringHeldOperation",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#openRecoveryTransactionCannotAuthorizeReservation",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#deletionBootstrapRequiresExactIdentityRunLeaseAndFence",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#retainedDatabaseFailureRemainsOperationalThroughAcceptedCallbackSource",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#deletionTombstoneBlocksReadWriteAndRequiresVerifiedCompletion",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#openRecoveryTransactionCannotAuthorizeDeletion",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#unverifiedKeyAbsenceBlocksFileCheckpointAndItsVerification",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#deletionResumesWithVerifiedKeyCompleteAndFilesPending",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#uncertainTransactionEndRetainsReceiptAndFencesFurtherWritesUntilReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#durableIntentSurvivesReopenAndCannotClaimRunForAnotherAsset",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#openRecoveryTransactionCannotAuthorizeCompareAndSet",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#holesAndForeignIdentityAreRejectedBeforeDurableReservation",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#quarantineInventoryAndRetainedRowsAreDurableAndExact",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#ownerSubstitutionCannotReopenExistingCatalog",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#deletionBootstrapDistinguishesAbsentAndCommittedRowsAfterReopen",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#ambiguousRetainedFilenameIsStructuralThroughAcceptedCallbackSource",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#sourceStateRequiresExactLeaseAndCommittedCertainState",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournalTest#ddlTamperingWithUnchangedRoomIdentityIsRejected",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#realKeystoreWrapReopenAndMissingKeyAreFailClosed",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#wrappedPermanentInvalidationAndAuthenticationFailuresRemainDistinct",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#generatedButOpenFailedRecoveryAliasIsRetainedAndWitnessed",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#recoveryProviderFailureRemainsOperationalWithoutProviderDetails",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#recoveryUsesOnlyExactCanonicalAliasAndIndependentKeys",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#uncertainAliasObservationCannotAuthorizeGenerationAndDiscardsProviderCause",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#realKeystoreRejectsWrongAadAndTamperedCiphertextWithoutLeakingCause",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyTest#recoveryProviderWrappedBadTagRemainsAuthenticationRejectedWithoutProviderDetails",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultStorageTest#symlinkAndOversizedBundleAreRetainedAndRejected",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultStorageTest#durableBundleReopensExactIdentityAndNoPlaintextIdentifiers",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultStorageTest#replacingLeafBetweenLstatAndOpenIsRejected",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultStorageTest#exactReadbackRecoversCompletedBundleAfterUncertainFsyncWithoutReplacement",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.AndroidVaultStorageTest#partialWriteAndFsyncFailureFenceNamespace",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyBoundaryTest#independentVaultsShareLogicalRunButNeverPhysicalKeysOrDeletion",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyBoundaryTest#absenceIsPermanentOnlyForExistingReadAndAliasProviderFailureIsTemporary",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyBoundaryTest#capturedAeadReportsAuthenticationAndMalformedOnlyInsideMatchingAttempt",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyBoundaryTest#originalWrappedFailuresAreObservedBeforeSanitizationAndRetryClears",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyBoundaryTest#invalidNamespaceRejectsBeforeKeystoreAndOldGlobalAliasIsNeverOpened",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyProductFailureTest#originalPlatformFailuresMapThroughAcceptedControllersAndSuccessfulRetryIsClean",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyProductFailureTest#corruptConfirmationWithMissingAliasNeverBecomesSuccessfulPartialRecovery",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyProductFailureTest#missingConfirmationWithMissingAliasPreservesAcceptedMissingArtifactReason",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyProductFailureTest#failedBootstrapAndPublicationKeepDurableIntentAndNeverRetryGeneration",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.keys.RunKeyProductFailureTest#laterTemporaryAndPermanentFailureKeepExactPriorPrefixAndPreventFinalization",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntimeTest#noCredentialCannotCreateStorage",
+      "result": "SKIPPED"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntimeTest#credentialVaultRoundTripRelockReopenConfirmedDeletion",
+      "result": "PASS"
+    }
+  ],
+  "diagnostic_only": false,
+  "initial_no_credential_tests": [
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntimeTest#noCredentialCannotCreateStorage",
+      "result": "PASS"
+    }
+  ],
+  "inventory_sha256": "33ce2e01376b62689209944b9f884c4f3ef26eacfd209a47790f437909f3a820",
+  "kernel_page_size": 4096,
+  "kernel_page_size_evidence": "PROC_SMAPS_KERNEL_PAGE_SIZE",
+  "no_credential_tests": [
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntimeTest#noCredentialCannotCreateStorage",
+      "result": "PASS"
+    }
+  ],
+  "page_size": 4096,
+  "page_size_evidence": "API28_KERNEL_MAPPING_FALLBACK",
+  "page_size_mode": "API28_4K_KERNEL_MAPPING_ONLY",
+  "physical_device": false,
+  "schema_version": 1,
+  "stage_acceptance": "NOT_CLAIMED",
+  "status": "PASS_COMPONENT_RUNTIME_ONLY",
+  "synthetic_credential_cleanup": "VERIFIED"
+}

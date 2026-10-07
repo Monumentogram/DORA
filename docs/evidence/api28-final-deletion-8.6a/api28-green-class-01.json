@@ -1,0 +1,51 @@
+{
+  "abi": "x86_64",
+  "api": 28,
+  "apk_sha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+  "credential_tests": [
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultDeletionFailureTest#explicitDeletionIncludesPendingAppendAndRetainedEncryptedRemainder",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultDeletionFailureTest#actualFinalDeletionTransactionCompletionBeforeAndAfterRemainTruthful",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultDeletionFailureTest#interruptedDurableDeletionRetriesOnlyRemainingVerifiedSteps",
+      "result": "PASS"
+    }
+  ],
+  "diagnostic_only": true,
+  "initial_no_credential_tests": [
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntimeTest#noCredentialCannotCreateStorage",
+      "result": "PASS"
+    }
+  ],
+  "inventory_sha256": "33ce2e01376b62689209944b9f884c4f3ef26eacfd209a47790f437909f3a820",
+  "kernel_page_size": 4096,
+  "kernel_page_size_evidence": "PROC_SMAPS_KERNEL_PAGE_SIZE",
+  "no_credential_tests": [
+    {
+      "name": "com.monumentogram.dora.audio.persistence.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup",
+      "result": "PASS"
+    },
+    {
+      "name": "com.monumentogram.dora.audio.persistence.runtime.AndroidProductAudioRuntimeTest#noCredentialCannotCreateStorage",
+      "result": "PASS"
+    }
+  ],
+  "page_size": 4096,
+  "page_size_evidence": "API28_KERNEL_MAPPING_FALLBACK",
+  "page_size_mode": "API28_4K_KERNEL_MAPPING_ONLY",
+  "physical_device": false,
+  "schema_version": 1,
+  "stage_acceptance": "NOT_CLAIMED",
+  "status": "DIAGNOSTIC_BATCH_COMPLETE",
+  "synthetic_credential_cleanup": "VERIFIED"
+}

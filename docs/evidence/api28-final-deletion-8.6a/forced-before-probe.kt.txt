@@ -1,0 +1,108 @@
+package com.monumentogram.dora.audio.forensics
+
+import android.util.Log
+import androidx.room.RoomDatabase
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.monumentogram.dora.audio.AudioFailure
+import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.persistence.EncryptedAudioVault
+import com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFaultFixture
+import com.monumentogram.dora.audio.persistence.TransactionFault
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/** Temporary forensic probe; outside the frozen persistence package/inventory. No product mocks. */
+@RunWith(AndroidJUnit4::class)
+class FinalDeletionHangProbe {
+    @Test
+    fun unfinishedTransactionWithInFlightInvalidation() {
+        val fixture = EncryptedAudioVaultFaultFixture()
+        val fault = TransactionFault("DELETE_COMPLETE", false)
+        val vault =
+            fixture.open(
+                dependencies =
+                    EncryptedAudioVault.Dependencies(
+                        helperFactory = fault::factory,
+                        deletionStep = { if (it == "COMPLETE") fault.arm("DELETE_COMPLETE") },
+                    )
+            )
+        EncryptedAudioVaultFaultFixture.success(vault.writer.create(fixture.audio))
+        EncryptedAudioVaultFaultFixture.success(fixture.append(vault))
+        assertEquals(AudioResult.Failed(AudioFailure.UNAVAILABLE), vault.deleteAudio(fixture.audio))
+        assertTrue(fault.fired)
+        assertEquals(AudioResult.Failed(AudioFailure.UNCERTAIN), vault.sourceState(fixture.audio))
+        mark("BEFORE_END_FAILURE_RETURNED")
+        val journalField = vault.javaClass.getDeclaredField("journal").apply { isAccessible = true }
+        val journal = journalField.get(vault)
+        val databaseField =
+            journal.javaClass.getDeclaredField("database").apply { isAccessible = true }
+        val database = databaseField.get(journal) as RoomDatabase
+        val blocked = CountDownLatch(1)
+        val samples = AtomicInteger()
+        val monitor = Executors.newSingleThreadScheduledExecutor { command ->
+            Thread(command, "Dora86A-probe").apply { isDaemon = true }
+        }
+        monitor.scheduleAtFixedRate(
+            {
+                val sample = samples.incrementAndGet()
+                if (sample <= 10) {
+                    Thread.getAllStackTraces().values.forEach { stack ->
+                        val waiting = stack.any {
+                            it.className.endsWith("SQLiteConnectionPool") &&
+                                it.methodName == "waitForConnection"
+                        }
+                        val closing = stack.any {
+                            it.className == "androidx.room.concurrent.CloseBarrier" &&
+                                it.methodName.startsWith("close")
+                        }
+                        if (waiting || closing) {
+                            mark(if (waiting) "SQL_CONNECTION_WAIT" else "ROOM_CLOSE_WAIT")
+                            stack
+                                .filter {
+                                    it.className.startsWith("androidx.room.") ||
+                                        it.className.startsWith("net.zetetic.") ||
+                                        it.className.startsWith("com.monumentogram.dora.audio.")
+                                }
+                                .take(32)
+                                .forEach {
+                                    mark(
+                                        "FRAME " +
+                                            it.className +
+                                            "." +
+                                            it.methodName +
+                                            ":" +
+                                            it.lineNumber
+                                    )
+                                }
+                            if (waiting && stack.any { it.className.startsWith("androidx.room.") })
+                                blocked.countDown()
+                        }
+                    }
+                }
+            },
+            0,
+            1,
+            TimeUnit.SECONDS,
+        )
+        try {
+            database.invalidationTracker.refreshAsync()
+            assertTrue(
+                "Real Room refresh must reach the held SQLCipher connection",
+                blocked.await(15, TimeUnit.SECONDS),
+            )
+            mark("CLOSE_ENTER")
+            vault.close()
+            mark("CLOSE_RETURNED")
+        } finally {
+            monitor.shutdownNow()
+        }
+    }
+
+    private fun mark(value: String) = Log.i("Dora86A", value)
+}

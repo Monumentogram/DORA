@@ -1,0 +1,206 @@
+{
+  "baselineSha": "60a38e13739c04f18cffc21783329b633cf68a8f",
+  "localApi28Image": "default x86_64",
+  "ciApi28Image": "google_apis x86_64",
+  "rootCause": "PROVEN_REPRODUCED_CLOSE_BARRIER_CONNECTION_CYCLE",
+  "historicalCiInternalStack": "UNAVAILABLE_NOT_RETROACTIVELY_ATTRIBUTED",
+  "acceptedInstrumentationLimitSeconds": 1800,
+  "attempts": [
+    {
+      "attempt": "before-target-01",
+      "originalLocalReceiptSha256": "241e6af2e1172178999b41097ec0a14435239a0b9cf3a046fa35ed8f7a99a85d",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 9.766,
+      "completedCount": 1,
+      "apkSha256": "23c61aacdeff841d4c7a94ad4cda94ed1d2c9487772e50138a29dcc8af3a9efc"
+    },
+    {
+      "attempt": "before-class-01",
+      "originalLocalReceiptSha256": "fc2cd872ae53b11ee8ba597826fbc1eec16f71dc8782df6ebcae7c6ebfb8285b",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 29.547,
+      "completedCount": 3,
+      "apkSha256": "23c61aacdeff841d4c7a94ad4cda94ed1d2c9487772e50138a29dcc8af3a9efc"
+    },
+    {
+      "attempt": "probe-01",
+      "originalLocalReceiptSha256": "a0fb91115f649bc3d048de38e9ea98d15910d5bfc9283cdfa021ac7fa41d4208",
+      "status": "HARD_TIMEOUT",
+      "instrumentationSeconds": 60.031,
+      "limitation": "SQL_WAIT_CAPTURED_CLOSE_FILTER_MISSED_GENERATED_SUFFIX; cleanup initially timed out, process subsequently killed, credential cleared"
+    },
+    {
+      "attempt": "probe-02",
+      "originalLocalReceiptSha256": "a75afeb568b671242812aa057b0415cdbe72aeb2dd3ba8e816a320da8f40623a",
+      "status": "HARD_TIMEOUT",
+      "instrumentationSeconds": 60.015,
+      "causalStacks": "BOTH_CAPTURED",
+      "apkSha256": "d04c4cfc32b256648d808966ec0ceddde2efbcce269a98d930cb5cd3856f60d4",
+      "hardTimeoutSeconds": 60,
+      "cleanup": "PROCESS_KILLED_CREDENTIAL_CONTEXT_EXITED"
+    },
+    {
+      "attempt": "regression-red",
+      "originalLocalReceiptSha256": "c9a8f63d8574b7868211da57a93d362809cdb5bc0fbfe945d9e6acc029942772",
+      "status": "EXPECTED_ASSERTION_FAILURE",
+      "instrumentationSeconds": 1.688,
+      "completedCount": 1,
+      "reason": "Refresh entry ran on arch_disk_io_1 instead of instrumentation caller",
+      "apkSha256": null
+    },
+    {
+      "attempt": "regression-green-01",
+      "originalLocalReceiptSha256": "8b7f62d7bf6e4d1024f4c38c5037ddf2c009c9cb68e07f2d5083dfacf74cc837",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 10.063,
+      "completedCount": 1,
+      "apkSha256": "4fd4c9dcbcd1ab40e0774321f4924cd74660ad103cd4304f319c10b440b6cd3b"
+    },
+    {
+      "attempt": "api28-green-target-02",
+      "originalLocalReceiptSha256": "f7455f8529af408bdba3efa9cb568d950c2d35d5800cf1af930b9ea783360a80",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 10.657,
+      "completedCount": 1,
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api28-green-target-02.json",
+      "publishedReceiptSha256": "f4e22ad8059fe34372d3f8e25e1da212e241f2b6f2e732a7d31421f9e00d646e"
+    },
+    {
+      "attempt": "api28-green-target-03",
+      "originalLocalReceiptSha256": "f7455f8529af408bdba3efa9cb568d950c2d35d5800cf1af930b9ea783360a80",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 9.235,
+      "completedCount": 1,
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api28-green-target-03.json",
+      "publishedReceiptSha256": "f4e22ad8059fe34372d3f8e25e1da212e241f2b6f2e732a7d31421f9e00d646e"
+    },
+    {
+      "attempt": "api28-green-target-04",
+      "originalLocalReceiptSha256": "f7455f8529af408bdba3efa9cb568d950c2d35d5800cf1af930b9ea783360a80",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 9.734,
+      "completedCount": 1,
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api28-green-target-04.json",
+      "publishedReceiptSha256": "f4e22ad8059fe34372d3f8e25e1da212e241f2b6f2e732a7d31421f9e00d646e"
+    },
+    {
+      "attempt": "api28-green-class-01",
+      "originalLocalReceiptSha256": "2c3dc1bce7fb00da1b456e5e1fb3f5000aadf4fb246d5090762072ccc346127d",
+      "status": "DIAGNOSTIC_BATCH_COMPLETE",
+      "instrumentationSeconds": 26.828,
+      "completedCount": 3,
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api28-green-class-01.json",
+      "publishedReceiptSha256": "6de896663096ba3c1362d1e09aafe743aaa917d214f2dde86bae82e191e88e9f"
+    },
+    {
+      "attempt": "api28-full",
+      "originalLocalReceiptSha256": "544d9f08ed5e2d9b2d432474c9260926348dd02bae288183280800fec1bef254",
+      "status": "PASS_COMPONENT_RUNTIME_ONLY",
+      "instrumentationSeconds": 681.843,
+      "completedCount": 138,
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api28-full.json",
+      "publishedReceiptSha256": "16beb831e4ab7009358871e178fa288859599cc646ab32bdc147af22df21c2d5"
+    },
+    {
+      "attempt": "api28-recovery",
+      "originalLocalReceiptSha256": "6282959d640753a18dc300e5290f43e5e30a288ba3a92a8e8ff5c64a2eefe0d7",
+      "status": "PASS_COMPONENT_PROCESS_DEATH_ONLY",
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api28-recovery.json",
+      "publishedReceiptSha256": "8975496e5828a890731ed57d00eb08b18c8f0cdaecdaac8ebdfe9f5cfec415aa"
+    },
+    {
+      "attempt": "api36-full",
+      "originalLocalReceiptSha256": "7c0ec42350960c828bd7e73231e08c476a31dbd4a4a2e8d49bf108c39e2c9dd3",
+      "status": "PASS_COMPONENT_RUNTIME_ONLY",
+      "instrumentationSeconds": 713.859,
+      "completedCount": 138,
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api36-full.json",
+      "publishedReceiptSha256": "52f552c2ad7be1bf36b1b65c4542d71ad129e3e3e919ad344eef82f7de02045b"
+    },
+    {
+      "attempt": "api36-recovery",
+      "originalLocalReceiptSha256": "9198ad95e1c2fe365e7f3f89125b971d4ee16fccd94c139161148f90921086b7",
+      "status": "PASS_COMPONENT_PROCESS_DEATH_ONLY",
+      "apkSha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+      "publishedReceipt": "api36-recovery.json",
+      "publishedReceiptSha256": "a8333ad18031bfaba3f3042ce90244036082ec2e88927e36042301120d18d178"
+    }
+  ],
+  "finalExactShaCi": "REQUIRED_SEPARATE_ACTIONS_RECEIPT",
+  "setupAndToolAttempts": [
+    {
+      "attempt": "regression-red-command-preflight",
+      "result": "SDK_ENV_MISSING_NO_DEVICE_TEST_RAN",
+      "corrected": "ANDROID_HOME supplied"
+    },
+    {
+      "attempt": "google-api28-sdkmanager",
+      "result": "IMAGE_NOT_FOUND_BY_LOCAL_SDKMANAGER",
+      "disposition": "default image used locally; CI google_apis still mandatory"
+    },
+    {
+      "attempt": "gradle-detekt-windows",
+      "result": "CREATEPROCESS_ERROR_206_COMMAND_LENGTH",
+      "disposition": "exact unchanged Gradle arguments executed using Java argument file"
+    },
+    {
+      "attempt": "combined-format-release-build",
+      "result": "SPOTLESS_INPUT_SNAPSHOT_FAILED_DURING_KSP_OUTPUT_WRITE",
+      "disposition": "separate code generation/lint/unit tasks and formatting completed; no source or CI task changed"
+    }
+  ],
+  "audioHostUnitTests": {
+    "tests": 217,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "skipReason": "Windows host cannot create symlinks; inherited negative test remains required on Linux CI"
+  },
+  "audioReleaseHostUnitTests": {
+    "tests": 208,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "historicalRecoveryHostTests": {
+    "tests": 414,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "execution": "FROM_GRADLE_CACHE; historical 414/414 bytes preserved, not a new physical campaign"
+  },
+  "hostGovernanceTests": {
+    "logicalRecovery": {
+      "tests": 63,
+      "seconds": 26.255,
+      "result": "PASS"
+    },
+    "persistence": {
+      "tests": 52,
+      "seconds": 3.538,
+      "result": "PASS"
+    },
+    "logicalRecording": {
+      "tests": 7,
+      "seconds": 0.002,
+      "result": "PASS"
+    },
+    "vad": {
+      "tests": 12,
+      "seconds": 0.025,
+      "result": "PASS"
+    }
+  },
+  "staticChecks": {
+    "lintDebug": "PASS",
+    "spotlessCheck": "PASS_SEPARATE_FROM_GENERATED_SOURCE_WRITES",
+    "detekt": "PASS_EXACT_GRADLE_ARGUMENTS_VIA_JAVA_ARGFILE"
+  }
+}

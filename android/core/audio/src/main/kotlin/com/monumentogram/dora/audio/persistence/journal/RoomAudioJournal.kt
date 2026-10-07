@@ -1,6 +1,7 @@
 package com.monumentogram.dora.audio.persistence.journal
 
 import android.content.Context
+import android.os.Looper
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
@@ -1216,6 +1217,18 @@ private constructor(
                             file.path,
                         )
                         .openHelperFactory(helperFactory)
+                        // All journal DAOs are synchronous and operations own the sole encrypted
+                        // connection. Finish Room invalidation on that same worker: an async
+                        // refresh
+                        // can otherwise hold Room's close barrier while waiting for a connection
+                        // retained by a failed endTransaction on the thread trying to close it.
+                        // Async DAO/observer admission requires revisiting this ownership contract.
+                        .setQueryExecutor { command ->
+                            check(Looper.myLooper() != Looper.getMainLooper()) {
+                                "Journal work requires a worker thread"
+                            }
+                            command.run()
+                        }
                         .addMigrations(OriginalAudioMigration, SegmentationMigration)
                         .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                         .build()
