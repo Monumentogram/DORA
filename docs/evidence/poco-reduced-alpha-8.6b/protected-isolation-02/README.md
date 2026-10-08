@@ -78,3 +78,23 @@ Isolation physical evidence is a subgate; final exact-SHA CI is still running.
 Fresh60 cycles and the successor hour are NOT_RUN at this checkpoint. Historical
 LONG01 failure/cause, battery deferral and overall Stage8.6 nonacceptance remain.
 The seven dated receipts here add evidence without replacing previous attempts.
+
+## 2026-10-09 successor campaign terminal
+
+The [current result](RESULT.md) is **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.
+Isolation and fresh60 cycles passed with authenticated preservation of47 sources,
+8547 immutable files and1710 keys. DORA-LONG-02 then failed between1980.082 and
+1982.475 seconds. Unlike LONG01, its fresh terminal identifies the native
+PERSISTENCE_BACKPRESSURE path at the unchanged256000-frame fence. The underlying
+latency cause remains unknown; no historical failure is reclassified.
+
+LONG02 is retained unfinalized. Its394 committed catalog units claim31,520,000
+frames; full PCM readback is NOT_RUN. All47 historical sources remain unchanged.
+Normal app launch, failed-source Recovery/deletion and another hour are not part
+of this disposition. Post-main functional smokes are NOT_RUN after the failure.
+All physical work ended with microphone OFF, FGS and process absent.
+
+Exact cefeb0f CI run37836070505 passed4/4. Final publication SHA needs its own CI,
+reported externally after commit; green CI cannot turn this physical failure into
+PASS. Protocol hashes use canonical JSON; host source digests use LF-normalized
+source bytes. No battery campaign, Sheet write or later-stage work occurred.

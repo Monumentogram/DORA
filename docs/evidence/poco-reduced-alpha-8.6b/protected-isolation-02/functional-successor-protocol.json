@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "state": "PREDECLARED_NOT_RUN",
+  "scope": "POST_MAIN_BOUNDED_FUNCTIONAL_SMOKES_NO_ENERGY",
+  "productApkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "helperApkSha256": "b9407af77641542e5c8cc1f6cc14a51911602a249c86c8145d2287e6d2e87810",
+  "ownerMapSha256": "8afa858a1ab230a4200d0b473ebd5dab9c48a4f44dc0c1df4c0892cec6165c49",
+  "helperSources": {
+    "AndroidManifest.xml": "a2ebc32c3527d35d1b8085a3f1853c6f7008650f1a718648f172f83f2895bdc3",
+    "CampaignInstrumentation.java": "c3c1253d734d8fb3d312d9b573fec4a24abc10d56c8ece8ebe30d4d0e6a4f2d4",
+    "FailureInspectionInstrumentation.java": "9ff6bdda8f1c82127a3ae2e56da71ea9870775a91318d85305cdc62ea7a80fc4",
+    "ForensicCatalogInstrumentation.java": "9b14ebd4124e33e7552afe450a8265e09868de2881ceea100ed39240517e29da",
+    "ForensicPrefix.java": "33fb9f050bc9093b7bff18ebe7e142c1318044f7e8dc3742c549f92bdfd3ae83",
+    "ForensicSnapshot.java": "6a4831038b9317752a2b35c80ee16871cf5579ad166023bc75c51ded7a30d98e",
+    "FunctionalInstrumentation.java": "69ab7a93f12b028a2aff65a9c5e8d905afde767750d0ec24179d82e298bb3f11",
+    "ProtectedCatalogSnapshot.java": "88529b90ed629cea51f9cd03004d5990675ab22cb26ad0458668fa602283286a",
+    "ProtectedKeyProofs.java": "806e0813706403e4fcaccc26de207b3c7d277b9f7e213a3c03e72c0cd1e45c9a",
+    "RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+    "SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+    "Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41",
+    "TerminalReceiptCheck.java": "a567f4104a50529ede5c0f6f34839c47c134ce5ae3ffb49746f6e0086f46438b"
+  },
+  "originalRecordings": 47,
+  "order": [
+    "lite-functional-storage-ui-01",
+    "lite-functional-notification-01",
+    "lite-functional-permission-01",
+    "lite-functional-recovery-seed-01",
+    "lite-functional-recovery-resume-01"
+  ],
+  "runs": {
+    "lite-functional-notification-01": {
+      "mode": "notification",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    },
+    "lite-functional-permission-01": {
+      "mode": "permission",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    },
+    "lite-functional-recovery-seed-01": {
+      "mode": "recovery-seed",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    },
+    "lite-functional-storage-ui-01": {
+      "mode": "storage-ui",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    }
+  },
+  "capture": "real product control, native microphone, pinned VAD and encrypted persistence",
+  "notification": "background screen-off; actual notification Pause and Stop PendingIntents; explicit product Resume",
+  "permission": "inject false at actual capture permission check before native creation; authenticate and prove exact failed-session empty shell has no storage claims before deletion; restore injection; real Start/Stop/readback retry",
+  "recovery": "Wait for real positive durable prefix (up to 30 s after initial 5 s); exact bound PID kill; OS mic/FGS absence; reference receipt SHA bound into separate immutable resume protocol before execution; explicit product Resume same RecordingId; full canonical readback before deletion",
+  "resumeBindingPolicy": "Only referenceRun/referenceReceiptSha256 derived from exact seed receipt; new protocol seal before Resume; original plan unchanged",
+  "cleanup": "Exact positively owned new sources only; all47 historical sources immutable; complete readback before deletion or verified empty denied-start shell.",
+  "batterySaver": "DEFERRED / USB_POWER_CONSTRAINT",
+  "doze": "DEFERRED / AUTONOMOUS_DEVICE_CONSTRAINT",
+  "dozeReason": "No independently acknowledged global idle restoration authority across process death in the admitted driver; force-idle code and mode excluded. Optional smoke deferral permitted by owner override. No idle state changed.",
+  "batteryEfficiency": "DEFERRED / NON_BLOCKING_FOR_ALPHA",
+  "hardwareMicroWh": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "noManualOwnerActions": true,
+  "storageUi": "Instrumentation UiAutomation; exact visible known product labels in DORA package/same window only; ambiguous matches fail closed; verify displayed free/required budget, refresh and insufficient-space next action with100000000B injection; actual unsafe product Start must fail without partial asset; restore actual supplier. No owner activity or Accessibility service grant.",
+  "protectedPolicySha256": "fa29032a62c21f94e5b907134efc6153a7e4db584a43f28b4a43d8cdcd747402",
+  "sourceSha": "c0f1587ed969f089b6eae03cb9851ae6ba388960",
+  "admission": "ONLY_AFTER_SUCCESSOR_MAIN_GATES_PASS"
+}

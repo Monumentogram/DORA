@@ -1,0 +1,316 @@
+{
+  "status": "PASS_COMPLETE_CI_EVIDENCE_AUDIT",
+  "sourceSha": "cefeb0f814d12d64c277ef0dea09cedd234c1848",
+  "runId": 37836070505,
+  "runAttempt": 1,
+  "completeRegressionEvidence": true,
+  "artifacts": [
+    {
+      "artifact": "logical-recovery-process-death-api28",
+      "archiveSha256": "e2f9825ee103b81a9597cf42fbc058ffbd7439dccd79ff43b5b2d080694a363f",
+      "files": [
+        {
+          "name": "logical-recovery-process-death.json",
+          "sha256": "85cd78162eee3680defe1199fbc231d092d361a7bcb66c48f9fafb54b9fc1842",
+          "bytes": 5140,
+          "passedPhases": 22
+        }
+      ]
+    },
+    {
+      "artifact": "persistence-runtime-api28",
+      "archiveSha256": "0794d3985ecc3c76a5523591a958341b918453e7816563e3edebad907c717f23",
+      "files": [
+        {
+          "name": "persistence-process-death-receipt.json",
+          "sha256": "3f6b35327619e031b24dd1030f44907051e46f8ba3443789b5184f6cfee7707b",
+          "bytes": 1254,
+          "passedPhases": 3
+        },
+        {
+          "name": "persistence-runtime-receipt.json",
+          "sha256": "2ce9cbb19f91ceaba7b462a7ab495d089f8ff1250a89b8780acf67db78b68adc",
+          "bytes": 26326,
+          "distinctPassedMethods": 138,
+          "passedExecutions": 140,
+          "expectedSkippedExecutions": 2
+        },
+        {
+          "name": "original-audio-process-death-receipt.json",
+          "sha256": "7f804453addfc0a51624a35ab248ffd9233c33ebc8b670acac1c5e9bee4cdab4",
+          "bytes": 1258,
+          "passedPhases": 3
+        }
+      ]
+    },
+    {
+      "artifact": "product-recording-ui-api28",
+      "archiveSha256": "bf58482f68445f9a38a0027929c065a9d8ea01e68819e0404be1d7af68b758fc",
+      "files": [
+        {
+          "name": "product-recording-ui-receipt.json",
+          "sha256": "66d3f89a6e540626d5548cd0e257706d1db0bc63aa3007d80e24c165bd9c96cd",
+          "bytes": 6488,
+          "uiPassed": 21,
+          "isolationPassed": 15
+        }
+      ]
+    },
+    {
+      "artifact": "vad-segmentation-process-death-api28",
+      "archiveSha256": "a7ae8b9106a405589f7df54a45c2a99ccc64add749c24d05a2a83b51216e53ba",
+      "files": [
+        {
+          "name": "vad-segmentation-process-death.json",
+          "sha256": "cf7333c2c620cc8c321bc13ffcd9ececb93caac7e95230e00134b89ad3fe85fa",
+          "bytes": 2232,
+          "passedPhases": 7
+        }
+      ]
+    },
+    {
+      "artifact": "logical-recording-process-death-api36",
+      "archiveSha256": "158181f80acf3267a0fd12f8262d4ede2aa9d3b00c163733125d89a7339421a2",
+      "files": [
+        {
+          "name": "logical-recording-process-death.json",
+          "sha256": "fafbe609afbab8dce4396ca1161b2afdfe962636e26ae454c05b61814e815db5",
+          "bytes": 1564,
+          "passedPhases": 4
+        }
+      ]
+    },
+    {
+      "artifact": "dora-alpha-foundation-debug-apk",
+      "archiveSha256": "b2521241776f14e6a692a1f2f1165943b2682f98e4275f9e6e1447fbe9c41057",
+      "files": [
+        {
+          "name": "app-debug.apk",
+          "sha256": "1faad661f86282ac3f8e420ceb3ec2cd6d2765aeaf2764b9495e6f260d719464",
+          "bytes": 44237280,
+          "apkEntries": 169
+        }
+      ]
+    },
+    {
+      "artifact": "persistence-runtime-api36",
+      "archiveSha256": "955e78a1642a6099c888ceb6d760cb3769dbb2c1b2178e0bcd943c35e010be7a",
+      "files": [
+        {
+          "name": "persistence-runtime-receipt.json",
+          "sha256": "42de7292c3f395dd44f919ce5b25c93a96712572556f35cfc3ffc36bed22f62c",
+          "bytes": 26316,
+          "distinctPassedMethods": 138,
+          "passedExecutions": 140,
+          "expectedSkippedExecutions": 2
+        },
+        {
+          "name": "persistence-process-death-receipt.json",
+          "sha256": "78677274cc9bf23cfd6c52bbcfbc6844e8ccb3c78f5ec7068a454e1b545dec4d",
+          "bytes": 1244,
+          "passedPhases": 3
+        },
+        {
+          "name": "original-audio-process-death-receipt.json",
+          "sha256": "082e9740ad7d94ae51d5028eae2d122207a080b617fe3e18d2e49cf733b861e2",
+          "bytes": 1248,
+          "passedPhases": 3
+        }
+      ]
+    },
+    {
+      "artifact": "product-recording-ui-api36",
+      "archiveSha256": "db3e23a7f92359c0e78a69f662d39f0157f3ae2d25eaf4c5d6c94feab9d58445",
+      "files": [
+        {
+          "name": "product-recording-ui-receipt.json",
+          "sha256": "53c5c9f996929bc5196950b941784b8e618e24489e3512e7bd44d5cca3057c99",
+          "bytes": 6488,
+          "uiPassed": 21,
+          "isolationPassed": 15
+        }
+      ]
+    },
+    {
+      "artifact": "vad-segmentation-process-death-api36",
+      "archiveSha256": "4b4048325da6b18e17c0b236f6baf55b4d82c701f5177cea920e0c41fb2f8011",
+      "files": [
+        {
+          "name": "vad-segmentation-process-death.json",
+          "sha256": "0e63dabe3c8238639ebe47ee4f9037c626b805c385888b5643c1340b18fcb4f2",
+          "bytes": 2222,
+          "passedPhases": 7
+        }
+      ]
+    },
+    {
+      "artifact": "persistence-instrumentation-diagnostics-api28",
+      "archiveSha256": "bc2cab5d8d6605bae680bbfe66a33e528e97ee49d3e4d8a2180a67fef0a3dc80",
+      "files": [
+        {
+          "name": "credential.json",
+          "sha256": "2410612c98efcfc546bcbe321abb8174c8d8907a4ff0c116c8af4c369efb053d",
+          "bytes": 21800,
+          "completedMethods": 138
+        },
+        {
+          "name": "credential.jsonl",
+          "sha256": "5f7d480b474c0be7061dd15a8289819b682d7ce760a1ff67720ae8e3a73399e6",
+          "bytes": 163019,
+          "completedMethods": 138
+        },
+        {
+          "name": "final-no-credential.json",
+          "sha256": "c53620b2a6dd4cd850f547125aec1b1249a0d1737b041930f1fc8766dd61e3e5",
+          "bytes": 931,
+          "completedMethods": 2
+        },
+        {
+          "name": "final-no-credential.jsonl",
+          "sha256": "29649b14f11ce4af49b521db2f80fde6eea85e9ce3bb387ba75c9437dde123a5",
+          "bytes": 2687,
+          "completedMethods": 2
+        },
+        {
+          "name": "initial-no-credential.json",
+          "sha256": "d45e8c5ef8ca6a1e28751a80d13cdd8279b8c36115dd0c3547d2711517fcc376",
+          "bytes": 930,
+          "completedMethods": 2
+        },
+        {
+          "name": "initial-no-credential.jsonl",
+          "sha256": "dc0584193690c665d4cbcdd11bf8984a4ef11e4637f4b4aceae039b03aa36fd0",
+          "bytes": 2687,
+          "completedMethods": 2
+        }
+      ]
+    },
+    {
+      "artifact": "logical-recovery-process-death-api36",
+      "archiveSha256": "d63f3abb7d31095e0c3eb8a3c81cf4612d72aa615fdfd35f2e530ae83656c06e",
+      "files": [
+        {
+          "name": "logical-recovery-process-death.json",
+          "sha256": "bb5c158e4cbd9c749b5c60ccfc1b19a1b6bf58be87f9ffad84aecdc92bb964df",
+          "bytes": 5096,
+          "passedPhases": 22
+        }
+      ]
+    },
+    {
+      "artifact": "logical-recording-process-death-api28",
+      "archiveSha256": "2c66aadf1a9287bbf2ef02c124b0400a63f03121167b649d4843cffaeaafda33",
+      "files": [
+        {
+          "name": "logical-recording-process-death.json",
+          "sha256": "d6252832d2b7dc31e0a55677fbd9c6daf5beb4fb7d965c7d5503cbf1e5088ae2",
+          "bytes": 1574,
+          "passedPhases": 4
+        }
+      ]
+    },
+    {
+      "artifact": "dora-poc-capture-debug-apk",
+      "archiveSha256": "05044cf2283452c02a062d5a2382d0b590c413c1d230a64d5fa53bc5b09aacff",
+      "files": [
+        {
+          "name": "capture-debug.apk",
+          "sha256": "9a00775e1363e4e8be6ec6187717b34131a3e091a2c5759dba9579932a44c505",
+          "bytes": 29676468,
+          "apkEntries": 137
+        }
+      ]
+    },
+    {
+      "artifact": "persistence-instrumentation-diagnostics-api36",
+      "archiveSha256": "76472e00475e5011cef6e720221b33af3321f5e823b4e53e2667c497f2e06f8a",
+      "files": [
+        {
+          "name": "credential.json",
+          "sha256": "7973cc0c5c1edc77f24cc6ec207ec07bf001d44ea2f39af766aafdc100d9158e",
+          "bytes": 21436,
+          "completedMethods": 138
+        },
+        {
+          "name": "credential.jsonl",
+          "sha256": "91a9a8765fe17cc48151d50040c7d1242677f9af09593390c2826ebf83a823fd",
+          "bytes": 161427,
+          "completedMethods": 138
+        },
+        {
+          "name": "final-no-credential.json",
+          "sha256": "454e6f34cd86fc44f571445768b1773f4831fce55b814c50c18104cdaa1679da",
+          "bytes": 931,
+          "completedMethods": 2
+        },
+        {
+          "name": "final-no-credential.jsonl",
+          "sha256": "74df770796ffd241bdeb09b483e2ea67743c6ad7630b8fb7a9857da1baaf6749",
+          "bytes": 2688,
+          "completedMethods": 2
+        },
+        {
+          "name": "initial-no-credential.json",
+          "sha256": "84a173e2b84d354a1d4fc6fc4f8bf610621475581687662029f523fea094747b",
+          "bytes": 932,
+          "completedMethods": 2
+        },
+        {
+          "name": "initial-no-credential.jsonl",
+          "sha256": "eb98e19efc169654811bf7af455ce2e2414c7c3bfb253ffdcef1758ca817efa3",
+          "bytes": 2691,
+          "completedMethods": 2
+        }
+      ]
+    }
+  ],
+  "logs": [
+    {
+      "name": "android-bootstrap",
+      "sha256": "fbfc9f576d9317447858cd0883c0c14caa0733126b01447d25d38742c9194a94",
+      "bytes": 258524
+    },
+    {
+      "name": "search-smoke",
+      "sha256": "a1bc4a7554dc9174ede6ede579e60e85e9e0b2047ce95baa01eec63c3447180d",
+      "bytes": 67505
+    },
+    {
+      "name": "encrypted-persistence-api28",
+      "sha256": "0efa6449b4b79689138230aba5068138ad16851b81fb49494b093852a6b64143",
+      "bytes": 298145
+    },
+    {
+      "name": "encrypted-persistence-api36",
+      "sha256": "1c5aa87a900bfe503c34e09f304f547004205bd0792affc540ffc14564a49fd6",
+      "bytes": 296716
+    }
+  ],
+  "missingArtifacts": [],
+  "positiveCanaries": 10,
+  "privateKnownNeedleCount": 2778,
+  "privateRuntimeAudioPolicyAndPinsPublished": false,
+  "jobs": [
+    {
+      "name": "android-bootstrap",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-smoke",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "encrypted-persistence-api28",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "encrypted-persistence-api36",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "scopeLimitation": "Exact cefeb0f only; successor final HEAD requires new CI; CI does not prove physical private-runtime measurements."
+}

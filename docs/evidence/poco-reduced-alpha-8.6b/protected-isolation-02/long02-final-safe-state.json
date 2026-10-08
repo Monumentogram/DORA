@@ -1,0 +1,14 @@
+{
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "productProcessPresent": false,
+  "apkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "terminalSha256": "5029b0712e72d8f0d19ceb2d1a266bc7d6b3921024d77b10fd081ae27384fc68",
+  "terminalUnchangedAfterReadonlyInspection": true,
+  "activeRecording": false,
+  "failedSourceDeleted": false,
+  "newCapturePlanned": false,
+  "normalDoraLaunch": "DO_NOT_LAUNCH_PENDING_FAILED_SOURCE_DISPOSITION"
+}

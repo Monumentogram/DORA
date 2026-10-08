@@ -1,3 +1,36 @@
+## 2026-10-09 — Protected POCO successor campaign result
+
+Stage 8.6B-LITE remains **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.
+The debug-only exact47 isolation and bounded physical smoke passed. Fresh60/60
+Start/Stop/Finalize/authenticated-readback cycles passed on the same protected APK;
+4,882,400 canonical frames were verified and all60 test sources were deleted.
+
+DORA-LONG-02 failed between the last healthy sample at1980.082s and the failure
+receipt at1982.475s. The new terminal records PERSISTENCE_BACKPRESSURE at the
+unchanged256,000-frame outstanding durability fence. The underlying persistence
+latency cause remains UNKNOWN. This does not prove the historical LONG01 cause.
+No further hour, functional campaign or normal Recovery was run after the failure.
+LONG02 remains unfinalized and retained; its full PCM readback is NOT_RUN.
+
+Authenticated post-failure inspection proves all47 historical sources,11,395
+prior catalog rows and1,710 retained key challenges unchanged; all8,547 immutable
+files remain byte-identical. Only the admitted shared DB/WAL/SHM lifecycle differs.
+The new failed source has394 committed catalog claims/31,520,000 claimed frames,
+not authenticated PCM proof. Microphone OFF, recording FGS/process absent.
+
+Current runtime/evidence-parent cefeb0f has exact CI4/4 SUCCESS. Publication-head
+CI must independently pass and is reported with its exact SHA in the task result.
+See [successor result](evidence/poco-reduced-alpha-8.6b/protected-isolation-02/RESULT.md).
+Next work is bounded async-persistence latency diagnosis and safe disposition of
+retained LONG02, not another automatic retry. Do not normally launch DORA while
+its new failed source remains outside the exact47 historical protection policy.
+
+Sheet unchanged; Stage8.6 not closed; battery efficiency deferred/non-blocking;
+GroupD/Stage9/Cloud/ASR NOT_STARTED; security restoration OPEN; PERF-REC-001 deferred.
+PR99 stays DRAFT / OPEN / UNMERGED. Earlier dated evidence remains verbatim.
+
+---
+
 ## 2026-10-08 — Protected historical Recovery owner admission
 
 [OD-86B-LITE-PROTECTED-HISTORICAL-RECOVERY](adr/ADR-RECORDING-009-protected-historical-recovery.md)

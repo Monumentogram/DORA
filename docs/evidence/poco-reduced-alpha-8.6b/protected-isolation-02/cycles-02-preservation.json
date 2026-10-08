@@ -1,0 +1,35 @@
+{
+  "stage": "cycles02",
+  "preservation": "PASS",
+  "cycleResult": {
+    "attempts": 60,
+    "started": 60,
+    "finalized": 60,
+    "wholeRecordingLoss": 0,
+    "pass": true,
+    "scope": "REDUCED_OWNER_ONLY_ALPHA_SAMPLE_NOT_99_5_PERCENT_RELIABILITY_PROOF"
+  },
+  "cycleCanonicalFrames": 4882400,
+  "cycleShortReads": 0,
+  "longResult": null,
+  "historicalSourcesPreserved": 47,
+  "immutableFilesByteIdentical": 8547,
+  "sharedFilesChangedOrAbsent": 3,
+  "sharedSidecarsAbsent": 2,
+  "finalVaultFiles": 8548,
+  "authenticatedCatalog": {
+    "historicalRows": 11395,
+    "historicalKeys": 1710,
+    "protectedRowsChanged": 0,
+    "protectedKeysChanged": 0,
+    "addedTestAssets": 61
+  },
+  "historicalKeyProofsVerified": 1710,
+  "newSourcesReadBackAndDeleted": 61,
+  "newVaultFilesRemaining": 0,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "historicalLong01Cause": "UNPROVEN"
+}

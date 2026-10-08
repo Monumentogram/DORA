@@ -1,0 +1,18 @@
+{
+  "run": "dora-long-02",
+  "apkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "recordingPid": 21256,
+  "failedReceiptSha256": "8da93758f03cb1485aeeddcf16812dbb982fc10a423fea681af4ec113ab61bd6",
+  "terminalSha256": "5029b0712e72d8f0d19ceb2d1a266bc7d6b3921024d77b10fd081ae27384fc68",
+  "collection": "Read-only run-as cat of the exact product package no_backup/recording-terminal-v1.txt after failed host exit; same saved physical target/config. No intervening normal launch or recording. Preserved before forensic inspection; identical afterward.",
+  "allPriorSamplesTerminalNone": true,
+  "sameProcessAcrossSamples": true,
+  "freshness": "Native/controller generations agree at1; frame counts follow the last healthy sample; native event follows last completed append span. The isolated TXT has no run/PID/APK and is not independently self-authenticating.",
+  "nativeToControllerPublicationNanos": 53234461,
+  "failureObservedWindowSeconds": [
+    1980.082,
+    1982.475
+  ],
+  "canonicalAdmittedDurationSeconds": 1981.0,
+  "durationNonclaim": "Canonical frame duration is not the exact native failure elapsed timestamp."
+}

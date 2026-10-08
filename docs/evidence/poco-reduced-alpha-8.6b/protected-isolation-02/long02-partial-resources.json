@@ -1,0 +1,77 @@
+{
+  "scope": "67 periodic observations up to1980.082s; not full-hour evidence",
+  "quantiles": "Nearest rank; no new hard memory/CPU threshold",
+  "metrics": {
+    "pssKiB": {
+      "start": 153670,
+      "p50": 149606,
+      "p95": 183219,
+      "peak": 185838,
+      "end": 109796
+    },
+    "rssKiB": {
+      "start": 280856,
+      "p50": 247976,
+      "p95": 313576,
+      "peak": 315224,
+      "end": 140920
+    },
+    "nativeHeapBytes": {
+      "start": 31604248,
+      "p50": 53549000,
+      "p95": 60274552,
+      "peak": 63380624,
+      "end": 49999312
+    },
+    "javaHeapBytes": {
+      "start": 17760240,
+      "p50": 17924048,
+      "p95": 22364112,
+      "peak": 24862672,
+      "end": 17850320
+    },
+    "threads": {
+      "start": 45,
+      "p50": 46,
+      "p95": 46,
+      "peak": 46,
+      "end": 46
+    },
+    "fds": {
+      "start": 171,
+      "p50": 147,
+      "p95": 147,
+      "peak": 171,
+      "end": 147
+    }
+  },
+  "cpuTimeMsStart": 17578,
+  "cpuTimeMsEnd": 1263147,
+  "cpuTimeMsDelta": 1245569,
+  "vadInferenceAtLastSample": 61878,
+  "vadDeadlineMissesAtLastSample": 41,
+  "canonicalQueueHighWater": 4,
+  "vadQueueHighWater": 4,
+  "readErrors": 0,
+  "shortReads": 0,
+  "thermalStart": 0,
+  "thermalMaximum": 0,
+  "thermalLastSample": 0,
+  "thermalTransitions": [
+    {
+      "kind": "THERMAL",
+      "elapsedMs": 414987474,
+      "sequence": 0,
+      "thermal": 0
+    }
+  ],
+  "sameProcessAllSamples": true,
+  "screenOffAllSamples": true,
+  "uniqueCompletedAppendSpans": 393,
+  "completedSpansOverFiveSeconds": 4,
+  "maximumCompletedSpanNanos": 9905659308,
+  "latestCompletedAppendDurationNanos": 9905677308,
+  "appendNonclaim": "Spans are completed observations reconstructed from a bounded256-span buffer, not all in-flight work. Latest append stage counters are nested and not additive or disk-only latency.",
+  "oneHourStorageGate": "NOT_EVALUATED_INCOMPLETE_CAPTURE",
+  "fullAuthenticatedReadback": "NOT_RUN"
+}

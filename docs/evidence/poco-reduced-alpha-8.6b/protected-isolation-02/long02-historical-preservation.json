@@ -1,0 +1,39 @@
+{
+  "verdict": "PASS_HISTORICAL_PRESERVATION_AFTER_FAILED_LONG02",
+  "snapshotSha256": "8e78d4e1a3016d1ce4a237d17b831e7ae336f12f21f258a8e7bdeec99a6ecdf1",
+  "protectedSources": 47,
+  "immutableFilesByteIdentical": 8547,
+  "historicalKeyProofsVerified": 1710,
+  "authenticatedCatalog": {
+    "historicalRows": 11395,
+    "historicalKeys": 1710,
+    "protectedRowsChanged": 0,
+    "protectedKeysChanged": 0,
+    "addedTestAssets": 62
+  },
+  "sharedSidecarsAbsent": 2,
+  "sharedFilesChangedOrAbsent": 3,
+  "finalVaultFiles": 10518,
+  "retainedNewSourceFiles": 1970,
+  "newKeysExactFailedSourceRunAliases": 394,
+  "newFailedSource": {
+    "finalized": false,
+    "deletionTombstone": false,
+    "committedUnits": 394,
+    "catalogClaimedFrames": 31520000,
+    "allClaimedUnits": 394,
+    "intentRows": 1,
+    "appliedIntentReceipts": 1,
+    "pendingIntents": 0,
+    "authenticatedPcmReadback": "NOT_RUN",
+    "wholeRecordingLoss": "UNKNOWN"
+  },
+  "deletedVerifiedTestSources": 61,
+  "inspectionChangedFiles": false,
+  "micOff": true,
+  "fgsAbsent": true,
+  "long01HistoricalCause": "UNPROVEN",
+  "long02NativeFailure": "PERSISTENCE_BACKPRESSURE",
+  "admissionSha256": "0c82bdfe551c74f356c32a06ddc648cfe1f6207fc17cedc2531fa25d55d5ab30",
+  "terminalSha256": "5029b0712e72d8f0d19ceb2d1a266bc7d6b3921024d77b10fd081ae27384fc68"
+}

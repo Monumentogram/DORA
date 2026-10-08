@@ -1,0 +1,33 @@
+{
+  "scope": "60 fresh short physical cycles on protected exact APK; not the historical 200-cycle gate",
+  "apkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "run": "lite-cycles-02",
+  "oracle": {
+    "attempts": 60,
+    "started": 60,
+    "finalized": 60,
+    "wholeRecordingLoss": 0,
+    "pass": true,
+    "scope": "REDUCED_OWNER_ONLY_ALPHA_SAMPLE_NOT_99_5_PERCENT_RELIABILITY_PROOF"
+  },
+  "minimumRecordingMs": 5118,
+  "canonicalFrames": {
+    "min": 80800,
+    "max": 81600,
+    "sum": 4882400
+  },
+  "readErrors": 0,
+  "shortReads": 0,
+  "vadInferenceBeforeStopTotal": 9374,
+  "vadInferenceAfterStopTotal": 9506,
+  "vadDeadlineMissesTotal": 0,
+  "canonicalQueueHighWaterMaximum": 2,
+  "vadQueueHighWaterMaximum": 4,
+  "maximumAndroidThermalStatus": 0,
+  "deletedOwnedRecordings": 60,
+  "protectedOwnerCountPerReceipt": 47,
+  "hostInterruptions": 0,
+  "retriedOrReplacedAttempts": 0,
+  "authenticatedHistoricalPreservation": "PASS_47_SOURCES_8547_IMMUTABLE_FILES_1710_KEYS",
+  "degradedObservationTotal": 60
+}
