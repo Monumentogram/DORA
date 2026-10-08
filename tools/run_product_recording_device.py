@@ -8,6 +8,7 @@ import re
 import subprocess
 
 from run_encrypted_persistence_device import parse_results, require
+from poco_non_battery.diagnostic_isolation import run as run_isolation
 
 PACKAGE = 'com.monumentogram.dora.debug'
 TEST_CLASS = 'com.monumentogram.dora.DoraBootstrapAppTest'
@@ -67,12 +68,14 @@ def main():
     rows = parse_results(command('shell', 'am', 'instrument', '-w', '-r', '-e', 'class', TEST_CLASS,
                                  PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner', timeout=600))
     require({row['name'] for row in rows} == TESTS, 'Product UI inventory mismatch')
+    isolation = run_isolation(command)
     receipt = {'schema_version': 1, 'status': 'PASS_PRODUCT_UI_COMPONENT_ONLY',
                'api': args.expected_api, 'tests': rows,
                'apk_sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
                'test_apk_sha256': hashlib.sha256(args.test_apk.read_bytes()).hexdigest(),
                'driver_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-               'physical_microphone': False, 'stage_acceptance': 'NOT_CLAIMED'}
+               'physical_microphone': False, 'stage_acceptance': 'NOT_CLAIMED',
+               'protected_source_isolation': isolation}
     require(not args.receipt.exists(), 'Existing receipt must not be overwritten')
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n', encoding='utf-8')

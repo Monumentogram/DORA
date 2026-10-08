@@ -4,6 +4,16 @@ import json
 from pathlib import PurePosixPath
 
 MANIFEST = 'docs/contracts/poco-reduced-alpha-8.6b.json'
+PROTECTED_BASE = '20057696c556a354d08e007dfcba736ff217fe6d'
+PROTECTED_OVERRIDES = {
+    'android/core/audio/build.gradle.kts',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/AndroidAudioDeletionStorage.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/EncryptedAudioVault.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomAudioJournal.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/VaultJournalLease.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/AndroidVaultKeyBackend.kt',
+    'tools/run_product_recording_device.py',
+}
 DOCUMENTS = {
     'docs/DORA_MVP1_STAGE_STATUS.md', 'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md',
     'docs/DORA_MVP1_PRODUCT_DECISIONS.md',
@@ -68,7 +78,8 @@ The earlier dated status and evidence below are retained verbatim.
 ---
 
 '''
-PREFIX = REMEDIATION_PREFIX + PREFIX
+PROTECTED_PREFIX = '## 2026-10-08 — Protected historical Recovery owner admission\n\n[OD-86B-LITE-PROTECTED-HISTORICAL-RECOVERY](adr/ADR-RECORDING-009-protected-historical-recovery.md)\nauthorizes temporary debug-only read-only protection of all 47 historical sources.\nImplementation/synthetic validation: IN_PROGRESS. Physical isolation and successor\nacceptance: NOT_RUN. No Stage 8.6 PASS. Original LONG01 failure remains unchanged.\n\nThe exact private snapshot restricts historical catalog, metadata, keys and files\nbefore mutation. New test sources retain full ordinary Recovery and deletion.\nOnly after isolation tests, independent review, exact-APK bounded physical smoke\nand complete preservation PASS may the fresh60 cycles and one powered hour run.\nNo battery work; deferrals, Sheet, GroupD/Stage9/Cloud/ASR and security blocker unchanged.\nSee [successor evidence](evidence/poco-reduced-alpha-8.6b/protected-isolation-02/README.md).\nEarlier dated statements below are retained as historical evidence.\n\n---\n\n'
+PREFIX = PROTECTED_PREFIX + REMEDIATION_PREFIX + PREFIX
 
 OVERRIDES = {
     # Owner-scoped LONG01/UI/build remediation; exact before/after bytes remain sealed.
@@ -84,6 +95,22 @@ OVERRIDES = {
     'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt',
 }
 EXACT_ADDITIONS = {
+    # OD-86B-LITE-PROTECTED-HISTORICAL-RECOVERY: exact additive diagnostic sources.
+    'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostic/DiagnosticKeyFenceTest.kt',
+    'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostic/DiagnosticPolicyLoaderTest.kt',
+    'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostic/ProtectedHistoricalVaultTest.kt',
+    'android/core/audio/src/debug/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticBuild.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticJournalFactory.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticPolicyBinding.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticPolicyLoader.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticSourcePolicy.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticStorageFence.kt',
+    'android/core/audio/src/release/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticBuild.kt',
+    'android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticPolicyBindingTest.kt',
+    'android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticSourcePolicyTest.kt',
+    'android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticStorageFenceTest.kt',
+    'android/core/audio/src/testRelease/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticReleaseFenceTest.kt',
+    'docs/adr/ADR-RECORDING-009-protected-historical-recovery.md',
     'android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/recording/ProtectedOriginalRecoveryRiskTest.kt',
     'docs/adr/ADR-RECORDING-008-protected-shared-catalog-exception.md',
     'tools/poco_protected_snapshot.py',
@@ -134,6 +161,8 @@ def load(root):
     value = json.loads((root / MANIFEST).read_text(encoding='utf-8'))
     if set(value['overrides']) != OVERRIDES:
         raise ValueError('Reduced runtime override scope changed')
+    if value.get('protectedBase') != PROTECTED_BASE or set(value.get('protectedOverrides', {})) != PROTECTED_OVERRIDES:
+        raise ValueError('Protected historical Recovery scope changed')
     for path in value['files']:
         validate_added_path(path)
     for path, expected in value['files'].items():

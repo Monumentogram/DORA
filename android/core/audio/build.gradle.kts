@@ -7,6 +7,23 @@ extensions.configure<com.android.build.api.dsl.LibraryExtension> {
     namespace = "com.monumentogram.dora.audio"
     sourceSets.getByName("androidTest").assets.srcDir("schemas")
 
+    val privatePolicyPin = providers.gradleProperty("doraProtectedPolicyPinDir")
+    if (privatePolicyPin.isPresent) {
+        check(providers.environmentVariable("GITHUB_ACTIONS").orNull != "true") {
+            "Private diagnostic packaging is local only"
+        }
+        val directory = file(privatePolicyPin.get())
+        check(directory.listFiles()?.map { it.name } == listOf("dora-protected-policy.sha256"))
+        check(
+            directory
+                .resolve("dora-protected-policy.sha256")
+                .readText()
+                .trim()
+                .matches(Regex("[a-f0-9]{64}"))
+        )
+        sourceSets.getByName("debug").assets.srcDir(directory)
+    }
+
     // Compile the accepted implementation in place; never fork the Recovery engine.
     sourceSets
         .getByName("main")

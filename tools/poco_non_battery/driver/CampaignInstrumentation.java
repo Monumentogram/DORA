@@ -24,6 +24,29 @@ public class CampaignInstrumentation extends Instrumentation {
   SafetyWatchdog watchdog;
   volatile boolean startPending;
   TreeMap<String,String> owners;
+  int expectedOwnerCount=46;
+  int configuredOwnerCount(){return args.getString("protectedPolicySha256","").isEmpty()?46:47;}
+  void protectedOwnerPolicy()throws Exception {
+    String pin=args.getString("protectedPolicySha256","");
+    if(pin.isEmpty())return;
+    RuntimeAccess.check(pin.matches("[a-f0-9]{64}"),"PROTECTED_POLICY_PIN");
+    File policy=new File(r.app.getNoBackupFilesDir(),"stage86-protected-policy.json");
+    RuntimeAccess.check(policy.isFile()&&RuntimeAccess.fileHash(policy).equals(pin),"PROTECTED_POLICY_FILE");
+    try(InputStream input=r.app.getAssets().open("dora-protected-policy.sha256")) {
+      byte[] bytes=new byte[67];int count=0,read;
+      while(count<bytes.length&&(read=input.read(bytes,count,bytes.length-count))!=-1)count+=read;
+      RuntimeAccess.check(count>=64&&count<=66&&input.read()==-1
+        &&new String(bytes,0,count,StandardCharsets.US_ASCII).trim().equals(pin),"PROTECTED_APK_PIN");
+    }
+    expectedOwnerCount=47;
+    int protectedCount=0;
+    for(Object identity:r.identities())if(owners.containsKey(RuntimeAccess.identityHash(identity))) {
+      RuntimeAccess.check(Boolean.TRUE.equals(RuntimeAccess.call(r.journal,"isProtected",identity)),"PROTECTED_SOURCE_FENCE_MISSING");
+      protectedCount++;
+    }
+    RuntimeAccess.check(protectedCount==47,"PROTECTED_SOURCE_COUNT");
+    evidence.put("protectedPolicySha256",pin).put("protectedHistoricalSources",protectedCount);
+  }
   @Override public void onCreate(Bundle values){super.onCreate(values);args=values;start();}
   void save(String phase)throws Exception {
     evidence.put("phase",phase).put("updatedElapsedMs",SystemClock.elapsedRealtime());
@@ -86,24 +109,27 @@ public class CampaignInstrumentation extends Instrumentation {
         JSONObject prior=new JSONObject(new String(java.nio.file.Files.readAllBytes(referenceFile.toPath()),StandardCharsets.UTF_8));
         RuntimeAccess.check(prior.getString("run").equals(reference)&&Arrays.asList("smoke","screen-smoke","lite-screen-smoke").contains(prior.getString("mode"))
           &&prior.getString("apkSha256").equals(apk)&&prior.getString("phase").equals("FAILED")
-          &&prior.getInt("ownerCount")==46&&prior.getString("ownerMapSha256").equals(args.getString("ownerMapSha256")),"CLEANUP_REFERENCE_BINDING");
+          &&prior.getInt("ownerCount")==configuredOwnerCount()&&prior.getString("ownerMapSha256").equals(args.getString("ownerMapSha256"))
+          &&prior.optString("protectedPolicySha256","").equals(args.getString("protectedPolicySha256","")),"CLEANUP_REFERENCE_BINDING");
         String owned=prior.getString("activeCampaignIdentity");JSONObject attempt=prior.getJSONObject("activeAttempt");
         RuntimeAccess.check(owned.matches("[0-9a-f]{64}")&&owned.equals(attempt.getString("campaignIdentity"))
           &&attempt.getBoolean("started")&&!attempt.getBoolean("ownerIdentity")&&attempt.getString("assetDisposition").equals("OWNED"),"CLEANUP_OWNERSHIP_RECEIPT");
-        RuntimeAccess.check(owners.size()==47&&owners.remove(owned)!=null,"CLEANUP_EXACT_ADDITION");
+        RuntimeAccess.check(owners.size()==configuredOwnerCount()+1&&owners.remove(owned)!=null,"CLEANUP_EXACT_ADDITION");
         for(Object candidate:r.identities())if(RuntimeAccess.identityHash(candidate).equals(owned)){
           RuntimeAccess.check(cleanupIdentity==null,"CLEANUP_DUPLICATE_IDENTITY");cleanupIdentity=candidate;
         }
         RuntimeAccess.check(cleanupIdentity!=null,"CLEANUP_SOURCE_MISSING");
         evidence.put("referenceRun",reference).put("referenceReceiptSha256",RuntimeAccess.fileHash(referenceFile)).put("campaignIdentity",owned);
       }
-      RuntimeAccess.check(owners.size()==46,"OWNER_COUNT");
+      protectedOwnerPolicy();
+      RuntimeAccess.check(owners.size()==expectedOwnerCount,"OWNER_COUNT");
       // Binding uses the exact owner map supplied from the authenticated pre-upgrade inventory.
       StringBuilder ownerText=new StringBuilder();
       for(Map.Entry<String,String> entry:owners.entrySet())ownerText.append(entry.getKey()).append('=').append(entry.getValue()).append('\n');
       String ownerHash=RuntimeAccess.hash(ownerText.toString());
       RuntimeAccess.check(ownerHash.equals(args.getString("ownerMapSha256")),"OWNER_INVENTORY_BINDING");
       evidence.put("ownerCount",owners.size()).put("ownerMapSha256",ownerHash);save("OWNER_INVENTORY_VERIFIED");
+      if(expectedOwnerCount==47&&mode.equals("lite-screen-smoke"))storage();
       if(mode.startsWith("lite-"))watchdog=new SafetyWatchdog(this);
       if(mode.equals("lite-cycles"))r.main(()->r.activity.getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
       if(cleanupIdentity!=null) {
@@ -176,7 +202,7 @@ public class CampaignInstrumentation extends Instrumentation {
         &&row.getLong("unexplainedGaps")==0&&row.getLong("unexplainedDuplicates")==0&&row.getLong("corruptSegments")==0
         &&row.getLong("readErrors")==0&&row.getBoolean("microphoneReleased")&&row.getBoolean("fgsStopped")
         &&row.getJSONObject("deletion").getBoolean("productDeletionCompleted")
-        &&row.getJSONObject("deletion").getInt("ownerRecordingsPreserved")==46
+        &&row.getJSONObject("deletion").getInt("ownerRecordingsPreserved")==expectedOwnerCount
         &&identities.add(row.getString("campaignIdentity")),"CONTINUATION_PREFIX_NOT_ACCEPTABLE");
     }
     evidence.put("continuationOf",priorRun).put("continuationReceiptSha256",RuntimeAccess.fileHash(source));
@@ -198,6 +224,8 @@ public class CampaignInstrumentation extends Instrumentation {
   }
   void storage()throws Exception {
     Object original=RuntimeAccess.field(r.controller,"freeStorageBytes");
+    long admittedBefore=RuntimeAccess.number(r.capture,"getAdmittedFrames");
+    long diagnosticStartNanos=System.nanoTime();
     try {
       Object low=r.function(0,unused->100000000L);RuntimeAccess.setField(r.controller,"freeStorageBytes",low);
       RuntimeAccess.check(!Boolean.TRUE.equals(RuntimeAccess.call(RuntimeAccess.call(r.controller,"storageBudget"),"getCanStart")),"LOW_STORAGE_BUDGET");
@@ -208,10 +236,28 @@ public class CampaignInstrumentation extends Instrumentation {
       Object view=RuntimeAccess.call(RuntimeAccess.call(r.controller,"getState"),"getValue");
       RuntimeAccess.check(RuntimeAccess.call(view,"getFailure").toString().equals("STORAGE_FULL"),"LOW_STORAGE_WRONG_ACTION");
       RuntimeAccess.check(r.released()&&r.inventory().equals(owners),"LOW_STORAGE_MUTATED_DATA");
+      RuntimeAccess.check(RuntimeAccess.number(r.capture,"getAdmittedFrames")==admittedBefore,"LOW_STORAGE_ADMITTED_PCM");
       evidence.put("injectedFreeBytes",100000000L).put("requiredBytes",141777216L)
         .put("unsafeStartRejected",true).put("noPartialAsset",true).put("ownerInventoryUnchanged",true);
+      if(expectedOwnerCount==47)terminalReceiptSmoke(diagnosticStartNanos);
       save("LOW_STORAGE_VERIFIED");
     }finally{RuntimeAccess.setField(r.controller,"freeStorageBytes",original);}
+  }
+  void terminalReceiptSmoke(long started)throws Exception {
+    File target=new File(r.app.getNoBackupFilesDir(),"recording-terminal-v1.txt");
+    long deadline=SystemClock.elapsedRealtime()+10000;String text="";
+    Object diagnostics=RuntimeAccess.field(r.controller,"terminalDiagnostics");
+    do {
+      if(target.isFile()&&target.length()>0&&target.length()<=4096)
+        text=new String(java.nio.file.Files.readAllBytes(target.toPath()),StandardCharsets.UTF_8);
+      if(text.equals(RuntimeAccess.call(diagnostics,"dump")))break;
+      Thread.sleep(50);
+    }while(SystemClock.elapsedRealtime()<deadline);
+    RuntimeAccess.check(text.equals(RuntimeAccess.call(diagnostics,"dump"))
+      &&text.matches("[A-Za-z0-9_= -]{1,4096}"),"TERMINAL_RECEIPT_ASYNC_WRITE");
+    TerminalReceiptCheck.requireNoCapture(text,started);
+    evidence.put("terminalDiagnosticInjection","CONTROLLED_STORAGE_PREFLIGHT_NO_AUDIO")
+      .put("terminalDiagnosticReceipt",text).put("terminalDiagnosticAsyncFileVerified",true);
   }
   JSONObject record(int attempt,boolean longRun)throws Exception {
     if(watchdog!=null){watchdog.healthy();watchdog.arm(mode.equals("lite-long")?5400000L:240000L);}

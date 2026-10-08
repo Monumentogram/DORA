@@ -1,3 +1,20 @@
+## 2026-10-08 — Protected historical Recovery owner admission
+
+[OD-86B-LITE-PROTECTED-HISTORICAL-RECOVERY](adr/ADR-RECORDING-009-protected-historical-recovery.md)
+authorizes temporary debug-only read-only protection of all 47 historical sources.
+Implementation/synthetic validation: IN_PROGRESS. Physical isolation and successor
+acceptance: NOT_RUN. No Stage 8.6 PASS. Original LONG01 failure remains unchanged.
+
+The exact private snapshot restricts historical catalog, metadata, keys and files
+before mutation. New test sources retain full ordinary Recovery and deletion.
+Only after isolation tests, independent review, exact-APK bounded physical smoke
+and complete preservation PASS may the fresh60 cycles and one powered hour run.
+No battery work; deferrals, Sheet, GroupD/Stage9/Cloud/ASR and security blocker unchanged.
+See [successor evidence](evidence/poco-reduced-alpha-8.6b/protected-isolation-02/README.md).
+Earlier dated statements below are retained as historical evidence.
+
+---
+
 ## 2026-10-08 — LONG01 forensic / UI / build remediation
 
 **PARTIAL / LONG_CAPTURE_ROOT_CAUSE_UNPROVEN**. The source-preserving inspector

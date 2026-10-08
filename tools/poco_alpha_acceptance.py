@@ -280,6 +280,11 @@ def execute(config, output, run, mode, config_path):
             raise RuntimeError('HOST_WATCHDOG_AWAKE_LEASE_UNPROVEN')
         with (output / f'{run}.local.log').open('xb') as log:
             continuation = []
+            if config.get('protectedPolicySha256'):
+                pin = config['protectedPolicySha256']
+                if not re.fullmatch('[a-f0-9]{64}', pin):
+                    raise ValueError('PROTECTED_POLICY_PIN_INVALID')
+                continuation.extend(['-e', 'protectedPolicySha256', pin])
             if admitted.get('firstAttempt', 1) > 1:
                 for key in ('firstAttempt', 'continuationOf', 'continuationReceiptSha256'):
                     continuation.extend(['-e', key, str(admitted[key])])

@@ -33,7 +33,8 @@ public final class FunctionalInstrumentation extends CampaignInstrumentation {
         RuntimeAccess.check(prior.getString("phase").equals("RECOVERY_KILL_READY")&&prior.getString("apkSha256").equals(apk)
           &&prior.getString("ownerMapSha256").equals(args.getString("ownerMapSha256")),"RECOVERY_REFERENCE_BINDING");
         String owned=prior.getString("activeCampaignIdentity");
-        RuntimeAccess.check(owners.size()==47&&owners.remove(owned)!=null,"RECOVERY_EXACT_ADDITION");
+        int baseCount=configuredOwnerCount();
+        RuntimeAccess.check(owners.size()==baseCount+1&&owners.remove(owned)!=null,"RECOVERY_EXACT_ADDITION");
         Object recovery=findRecovery(owned);recoveredIdentity=RuntimeAccess.call(recovery,"getIdentity");
         prefix=RuntimeAccess.number(recovery,"getRecoveredFrames");
         RuntimeAccess.check(Boolean.TRUE.equals(RuntimeAccess.call(recovery,"getCanResume"))
@@ -43,10 +44,11 @@ public final class FunctionalInstrumentation extends CampaignInstrumentation {
         evidence.put("referenceRun",reference).put("referenceReceiptSha256",RuntimeAccess.fileHash(priorFile))
           .put("recoveredFrames",prefix).put("noAutoMicrophone",true).put("recoveryEntry","RECOVERABLE_PARTIAL");
       }
-      RuntimeAccess.check(owners.size()==46,"OWNER_COUNT");StringBuilder ownerText=new StringBuilder();
+      protectedOwnerPolicy();
+      RuntimeAccess.check(owners.size()==expectedOwnerCount,"OWNER_COUNT");StringBuilder ownerText=new StringBuilder();
       for(Map.Entry<String,String> e:owners.entrySet())ownerText.append(e.getKey()).append('=').append(e.getValue()).append('\n');
       RuntimeAccess.check(RuntimeAccess.hash(ownerText.toString()).equals(args.getString("ownerMapSha256")),"OWNER_INVENTORY_BINDING");
-      evidence.put("ownerCount",46).put("ownerMapSha256",RuntimeAccess.hash(ownerText.toString()));save("OWNER_INVENTORY_VERIFIED");
+      evidence.put("ownerCount",owners.size()).put("ownerMapSha256",RuntimeAccess.hash(ownerText.toString()));save("OWNER_INVENTORY_VERIFIED");
       watchdog=new SafetyWatchdog(this);watchdog.arm(360000L);
       if(mode.equals("storage-ui"))storageUi();
       else if(mode.equals("permission")){permission();recording(null,0);evidence.put("retryAfterPermissionRestored",true);}

@@ -110,6 +110,10 @@ private constructor(
         }
 
     fun recordingRecovery(identity: AudioIdentity): AudioResult<RecordingRecovery> = operation {
+        if (journal.isProtected(identity))
+            return@operation AudioResult.Value(
+                RecordingRecovery(identity, null, AudioFailure.UNAVAILABLE, false, 0)
+            )
         RecordingRecoveryReader(journal, bridge).read(identity)
     }
 
@@ -118,7 +122,11 @@ private constructor(
             journal.sourceOwner,
             journal.sourceVault,
             journal.catalog,
-            journal::originalSourceState,
+            { identity ->
+                // OriginalAudioLifecycle may retain references or quarantine during a read.
+                journal.requireMutableSource(identity)
+                journal.originalSourceState(identity)
+            },
             journal::originalSourceLoss,
             journal::retainOriginalReference,
             bridge::extractFinalizedHeld,
@@ -137,6 +145,7 @@ private constructor(
         "CyclomaticComplexMethod"
     ) // Keep durable inventory and ordered destructive steps together.
     private fun delete(identity: AudioIdentity, allowNew: Boolean): AudioResult<Unit> = operation {
+        journal.requireMutableSource(identity)
         val lease =
             journal.catalog.tryAcquire(identity)
                 ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
@@ -191,6 +200,7 @@ private constructor(
     }
 
     override fun sourceState(identity: AudioIdentity): AudioResult<AudioSourceState> = operation {
+        journal.requireMutableSource(identity)
         val lease =
             journal.catalog.tryAcquire(identity)
                 ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
@@ -225,9 +235,13 @@ private constructor(
                 pcm: ByteArray,
             ) = operation { bridge.append(segment, format, pcm) }
 
-            override fun finalize(identity: AudioIdentity) = operation { bridge.finalize(identity) }
+            override fun finalize(identity: AudioIdentity) = operation {
+                journal.requireMutableSource(identity)
+                bridge.finalize(identity)
+            }
 
             override fun reconcile(identity: AudioIdentity) = operation {
+                journal.requireMutableSource(identity)
                 bridge.reconcile(identity)
             }
         }
@@ -244,6 +258,8 @@ private constructor(
                 identity: AudioIdentity,
                 consume: (Long, ByteArray) -> Unit,
             ): AudioResult<AudioReadSummary> = operation {
+                // Bridge reads may reconcile/quarantine; forensic inspection is a separate path.
+                journal.requireMutableSource(identity)
                 bridge.extract(identity) { frame, bytes ->
                     deliverAuthorized {
                         requireActive()
@@ -282,6 +298,7 @@ private constructor(
 
     /** Decorators receive real platform dependencies; production always uses these defaults. */
     internal data class Dependencies(
+        val diagnosticPolicy: (Context) -> DiagnosticSourcePolicy = DiagnosticPolicyLoader::load,
         val catalog: (EncryptedAudioCatalog) -> EncryptedAudioCatalog = { it },
         val runKeystore: (VaultKeystoreIo) -> VaultKeystoreIo = { it },
         val deletionStep: (String) -> Unit = {},
@@ -330,6 +347,7 @@ private constructor(
             "LongMethod",
             "TooGenericExceptionCaught",
             "ReturnCount",
+            "CyclomaticComplexMethod",
         ) // One construction/cleanup boundary for all vault resources.
         fun open(
             context: Context,
@@ -341,6 +359,11 @@ private constructor(
             var journal: RoomAudioJournal? = null
             return try {
                 operationGate()
+                val diagnostic = dependencies.diagnosticPolicy(context)
+                check(!diagnostic.active || DiagnosticBuild.ENABLED) {
+                    "Release diagnostic activation rejected"
+                }
+                check(!diagnostic.active || !create) { "Diagnostic vault creation rejected" }
                 failedOpenCleanup.retry()
                 if (!failedOpenCleanup.isEmpty) return AudioResult.Failed(AudioFailure.BUSY)
                 val storage = AndroidVaultBundleStorage(context)
@@ -349,6 +372,7 @@ private constructor(
                 if (result is KeyAccess.Unavailable)
                     return AudioResult.Failed(result.failure.audioFailure())
                 val secrets = (result as KeyAccess.Available).value
+                diagnostic.requireBinding(secrets.ownerId, secrets.vaultId)
                 operationGate()
                 val file =
                     File(storage.vaultDirectory, "journal-${secrets.databaseObjectSelector}.db")
@@ -363,6 +387,7 @@ private constructor(
                             secrets.ownerId,
                             secrets.vaultId,
                             operationGate,
+                            diagnostic,
                         )
                     } catch (error: Exception) {
                         try {
@@ -376,11 +401,19 @@ private constructor(
                 journal = openedJournal
                 val scoped = VaultStorageContext(context, storage.vaultDirectory)
                 val backend =
-                    NoLogRecoveryRunAeadBackend(
-                        context,
-                        secrets.vaultId,
-                        dependencies.runKeystore(AndroidVaultKeystoreIo),
-                    )
+                    if (diagnostic.active)
+                        NoLogRecoveryRunAeadBackend(
+                            context,
+                            secrets.vaultId,
+                            dependencies.runKeystore(AndroidVaultKeystoreIo),
+                            openedJournal::requireMutableRun,
+                        )
+                    else
+                        NoLogRecoveryRunAeadBackend(
+                            context,
+                            secrets.vaultId,
+                            dependencies.runKeystore(AndroidVaultKeystoreIo),
+                        )
                 val provider = RecoveryRunAeadProvider(backend)
                 val crypto = AndroidRecoveryMicrofileCrypto(provider)
                 val reconciliationStorage = AndroidOsRecoveryReconciliationStorage(scoped)
@@ -414,14 +447,24 @@ private constructor(
                         dependencies.catalog(openedJournal.catalog),
                         RecoveryKeyBootstrapController(
                             ProductRecoveryBootstrapCrypto(backend),
-                            AndroidOsRecoveryBootstrapStorage(scoped),
+                            if (diagnostic.active)
+                                DiagnosticStorageFence.bootstrap(
+                                    AndroidOsRecoveryBootstrapStorage(scoped),
+                                    openedJournal::requireMutableRun,
+                                )
+                            else AndroidOsRecoveryBootstrapStorage(scoped),
                             openedJournal.bootstrapJournal,
                             {},
                         ),
                         RecoveryMicrofilePublicationController(
                             crypto,
                             dependencies.candidateStorage(
-                                AndroidOsRecoveryCandidateStorage(scoped)
+                                if (diagnostic.active)
+                                    DiagnosticStorageFence.candidate(
+                                        AndroidOsRecoveryCandidateStorage(scoped),
+                                        openedJournal::requireMutableRun,
+                                    )
+                                else AndroidOsRecoveryCandidateStorage(scoped)
                             ),
                             dependencies.microfileJournal(openedJournal.microfileJournal),
                             { _, _ -> },
@@ -432,7 +475,12 @@ private constructor(
                             ExistingRecoveryRunAeadOpener(provider::openExisting)
                         ),
                         RecoveryQuarantineController(
-                            reconciliationStorage,
+                            if (diagnostic.active)
+                                DiagnosticStorageFence.quarantine(
+                                    reconciliationStorage,
+                                    openedJournal::requireMutableRun,
+                                )
+                            else reconciliationStorage,
                             openedJournal.quarantineJournal,
                             {},
                         ),
@@ -450,6 +498,7 @@ private constructor(
                             backend,
                             openedJournal::hasCommittedDeletionBootstrap,
                             dependencies.deletionFsync(Os::fsync),
+                            openedJournal::requireMutableRun,
                         ),
                         dependencies.deletionStep,
                         VaultKeyProtection.valueOf(result.protection.name),

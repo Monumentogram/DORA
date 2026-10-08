@@ -119,8 +119,14 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     import poco_final_deletion as deletion
     import poco_reduced_admission as reduced
     reduced_contract = reduced.load(root)
+    def before_protected(path, raw):
+        if path not in reduced.PROTECTED_OVERRIDES:
+            return raw
+        return reduced.normalize_override(raw, git('show', reduced.PROTECTED_BASE + ':' + path),
+                                          reduced_contract['protectedOverrides'][path])
     approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | set(FINAL_DELETION_SEALED) | {SELF, PARENT, GOVERNANCE}
     approved |= set(reduced_contract['files']) | reduced.OVERRIDES | {reduced.MANIFEST}
+    approved |= reduced.PROTECTED_OVERRIDES
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -129,14 +135,16 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         require(len(parts) == 2, 'No merge or rewritten baseline')
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
     for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED, **ALPHA_DEFER_SEALED, **FINAL_DELETION_SEALED}.items():
-        raw = (root / path).read_bytes()
+        raw = before_protected(path, (root / path).read_bytes())
         if path in reduced.DOCUMENTS:
             raw = reduced.normalize_document(path, raw)
         validate_seal(raw, digest)
     for path in deletion.OVERRIDES:
-        deletion.normalize(path, (root / path).read_bytes(), git('show', BASE + ':' + path))
+        deletion.normalize(path, before_protected(path, (root / path).read_bytes()), git('show', BASE + ':' + path))
     for path in reduced.OVERRIDES:
-        reduced.normalize_override((root / path).read_bytes(), git('show', BASE + ':' + path), reduced_contract['overrides'][path])
+        reduced.normalize_override(before_protected(path, (root / path).read_bytes()), git('show', BASE + ':' + path), reduced_contract['overrides'][path])
+    for path in reduced.PROTECTED_OVERRIDES:
+        before_protected(path, (root / path).read_bytes())
     for path in alpha.DOCUMENTS:
         require(alpha.normalize_document(path, reduced.normalize_document(path, (root / path).read_bytes())) ==
                 git('show', BASE + ':' + path).replace(b'\r\n', b'\n'),
@@ -153,6 +161,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     contract = parent.read_contract(root)
     for path, digest in contract['files'].items():
         raw = governance.replace(addition, b'') if path == GOVERNANCE else (root / path).read_bytes()
+        raw = before_protected(path, raw)
         if path in reduced.DOCUMENTS:
             raw = reduced.normalize_document(path, raw)
         if path in alpha.DOCUMENTS:

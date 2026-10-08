@@ -61,6 +61,7 @@ internal class NoLogRecoveryRunAeadBackend(
     private val context: Context,
     authenticatedVaultId: String,
     private val operations: VaultKeystoreIo = AndroidVaultKeystoreIo,
+    private val mutationGate: (RunId) -> Unit = {},
 ) : RecoveryRunAeadBackend {
     // Root-envelope authentication is the caller's responsibility; reject noncanonical selectors.
     private val vaultId = RunId.fromCanonicalString(authenticatedVaultId).toCanonicalString()
@@ -68,6 +69,7 @@ internal class NoLogRecoveryRunAeadBackend(
 
     override fun generateNew(keyUri: String) {
         val run = run(keyUri)
+        mutationGate(run)
         PersistenceLatency.measure("key_generation") { keystore(run).generate(alias(run)) }
     }
 
@@ -82,7 +84,10 @@ internal class NoLogRecoveryRunAeadBackend(
         }
 
     /** Internal only: caller must first prove the durable scoped deletion fence. */
-    fun removeAlias(runId: RunId) = keystore(runId).remove(alias(runId))
+    fun removeAlias(runId: RunId) {
+        mutationGate(runId)
+        keystore(runId).remove(alias(runId))
+    }
 
     private fun keystore(run: RunId) =
         NonExportableKeystore(
