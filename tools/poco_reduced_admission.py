@@ -84,6 +84,9 @@ OVERRIDES = {
     'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt',
 }
 EXACT_ADDITIONS = {
+    'android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/recording/ProtectedOriginalRecoveryRiskTest.kt',
+    'docs/adr/ADR-RECORDING-008-protected-shared-catalog-exception.md',
+    'tools/poco_protected_snapshot.py',
     'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingTerminalDiagnostics.kt',
     'android/app/src/test/kotlin/com/monumentogram/dora/recording/RecordingTerminalDiagnosticsTest.kt',
     'android/app/src/test/kotlin/com/monumentogram/dora/recording/CapturePersistenceBackpressureTest.kt',

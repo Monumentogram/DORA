@@ -1,0 +1,10 @@
+{
+  "status": "PASS_BOUNDED_PUBLICATION_AUDIT",
+  "startingSha": "b2d9408eaf06c04ab8ba363c8cda45fef01a5bfb",
+  "scope": "All changed/new repository files, including public receipts; excludes private raw data and unstarted successor CI artifacts",
+  "positiveCanaries": 5,
+  "privateSourceAndDeviceValuesChecked": 9620,
+  "findings": [],
+  "rawAudioRead": false,
+  "privateCatalogPublished": false
+}

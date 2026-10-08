@@ -1,0 +1,36 @@
+{
+  "tables": {
+    "audio_asset": 112,
+    "audio_intent": 47,
+    "audio_segmentation": 339,
+    "bootstrap": 1709,
+    "deletion_target": 2310,
+    "deletion_tombstone": 65,
+    "finalization_source": 1030,
+    "manifest": 1709,
+    "microfile": 1709,
+    "original_audio_reference": 69,
+    "physical_source": 255,
+    "quarantine_intent": 0,
+    "room_master_table": 1,
+    "unit_claim": 2039,
+    "vault_binding": 1
+  },
+  "liveSources": 47,
+  "liveFinalized": 37,
+  "historicalTombstones": 65,
+  "long": {
+    "committedUnits": 388,
+    "totalClaims": 388,
+    "committedFrames": 31040000,
+    "finalized": false,
+    "intents": 1,
+    "intentDisposition": "APPLIED_APPEND_NOT_PENDING"
+  },
+  "aliasCount": 1710,
+  "verifiedKeyProofs": 1710,
+  "keyAlgorithms": {
+    "AES": 1710
+  },
+  "pcmInspection": "NOT_RUN_THIS_TASK"
+}

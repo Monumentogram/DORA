@@ -26,6 +26,17 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
       RuntimeAccess.check(r.quiescent(),"FORENSIC_NOT_QUIESCENT");
       Object coordinator=RuntimeAccess.field(r.runtime,"coordinator");
       RuntimeAccess.check(RuntimeAccess.field(coordinator,"current")==null,"FORENSIC_ORIGINAL_ALREADY_OPEN");
+      RuntimeAccess.check(!RuntimeAccess.call(coordinator,"getAvailability").getClass().getSimpleName().equals("Opening"),"FORENSIC_OPEN_IN_FLIGHT");
+      // The capture manager has an independent direct-open path. Fence it before Activity.
+      Object recordings=RuntimeAccess.field(r.runtime,"recordings");
+      r.main(()->{
+        RuntimeAccess.check(Boolean.FALSE.equals(RuntimeAccess.field(recordings,"inUse"))
+          &&Boolean.FALSE.equals(RuntimeAccess.field(recordings,"opening"))
+          &&RuntimeAccess.field(recordings,"active")==null,"FORENSIC_CAPTURE_OPEN_IN_FLIGHT");
+        RuntimeAccess.setField(recordings,"inUse",true);
+        RuntimeAccess.setField(recordings,"opening",true); // Prevent request() from scheduling a reset.
+      });
+      evidence.put("separateCaptureOpenFenced",true);
       originalOpenGuard=r.function(2,a->{deniedOriginalOpens.incrementAndGet();throw new IllegalStateException("FORENSIC_ORIGINAL_OPEN_DENIED");});
       RuntimeAccess.setField(coordinator,"openVault",originalOpenGuard);
       String apk=RuntimeAccess.fileHash(new File(r.app.getApplicationInfo().sourceDir));
@@ -38,7 +49,7 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
       if(args.getString("mode","").equals("snapshot-self-test")) {
         selfTest(); complete=true; return;
       }
-      RuntimeAccess.check(Arrays.asList("catalog-snapshot","catalog-prefix").contains(args.getString("mode","")),"FORENSIC_MODE");
+      RuntimeAccess.check(Arrays.asList("catalog-snapshot","catalog-prefix","protected-snapshot").contains(args.getString("mode","")),"FORENSIC_MODE");
       File original=new File(r.app.getNoBackupFilesDir(),"dora-vault-v1");
       TreeMap<String,String> before=ForensicSnapshot.hashes(original);
       originalRoot=original;originalMap=before;
@@ -54,6 +65,37 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
       r.main(()->RuntimeAccess.call(r.runtime,"requestRecordingUiUnlock",r.activity,callback));
       RuntimeAccess.check(ready.await(60,TimeUnit.SECONDS)&&Boolean.TRUE.equals(unlocked.get()),"FORENSIC_AUTH_UNAVAILABLE");
       Object authorization=RuntimeAccess.call(RuntimeAccess.field(r.runtime,"appLock"),"captureAuthorization");
+      if(args.getString("mode").equals("protected-snapshot")) {
+        JSONObject snapshot=ProtectedCatalogSnapshot.collect(r,context,authorization);
+        String prior=args.getString("protectedPriorRun","");
+        JSONObject proofs;
+        if(prior.isEmpty())proofs=ProtectedKeyProofs.capture(snapshot.getJSONObject("keys"));
+        else {
+          RuntimeAccess.check(prior.matches("forensic-[a-z0-9-]{3,32}"),"PROTECTED_PRIOR_RUN");
+          File baseline=new File(directory,prior+".private.json");
+          RuntimeAccess.check(baseline.isFile()&&baseline.length()<=32L*1024*1024
+            &&RuntimeAccess.fileHash(baseline).equals(args.getString("protectedPriorSha256","")),"PROTECTED_PRIOR_BINDING");
+          proofs=new JSONObject(new String(java.nio.file.Files.readAllBytes(baseline.toPath()),StandardCharsets.UTF_8)).getJSONObject("keyProofs");
+        }
+        int verifiedKeys=ProtectedKeyProofs.verify(proofs);
+        snapshot.put("keyProofs",proofs).put("verifiedHistoricalKeyProofs",verifiedKeys);
+        RuntimeAccess.call(authorization,"requireActive");
+        File privateOutput=new File(directory,run+".private.json");
+        RuntimeAccess.check(privateOutput.createNewFile(),"PROTECTED_PRIVATE_RECEIPT_EXISTS");
+        try(FileOutputStream out=new FileOutputStream(privateOutput)) {
+          out.write(snapshot.toString().getBytes(StandardCharsets.UTF_8));out.getFD().sync();
+        }
+        int rows=0;JSONObject tables=snapshot.getJSONObject("tables");
+        for(Iterator<String> names=tables.keys();names.hasNext();)rows+=tables.getJSONObject(names.next()).getJSONArray("rows").length();
+        evidence.put("privateSnapshotSha256",RuntimeAccess.fileHash(privateOutput))
+          .put("snapshotSchemaVersion",snapshot.getInt("schemaVersion")).put("snapshotTableCount",tables.length())
+          .put("snapshotRowCount",rows).put("snapshotKeyCount",snapshot.getJSONObject("keys").length())
+          .put("verifiedHistoricalKeyProofs",verifiedKeys)
+          .put("snapshotOnlyDatabaseOpen",true).put("databaseOpenMode","DIRECT_SQLCIPHER_READONLY_NO_ROOM")
+          .put("normalRecoveryInvoked",false).put("pcmInspection","NOT_RUN");
+        RuntimeAccess.check(deniedOriginalOpens.get()==0,"FORENSIC_ORIGINAL_OPEN_ATTEMPTED");
+        complete=true;return;
+      }
       Object gate=r.function(0,a->{RuntimeAccess.call(authorization,"requireActive");return r.unit();});
       Class<?> vaultClass=Class.forName("com.monumentogram.dora.audio.persistence.EncryptedAudioVault",true,r.loader);
       Object companion=vaultClass.getField("Companion").get(null);
@@ -136,6 +178,9 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
       try {
         evidence.put("errorClass",failure.getClass().getSimpleName());
         String code=failure.getMessage();if(code!=null&&code.matches("[A-Z0-9_]+"))evidence.put("errorCode",code);
+        Throwable cause=failure;for(int depth=0;depth<8&&cause.getCause()!=null;depth++)cause=cause.getCause();
+        evidence.put("causeClass",cause.getClass().getSimpleName());
+        String reason=cause.getMessage();if(reason!=null&&reason.matches("[A-Z0-9_]+"))evidence.put("causeCode",reason);
       } catch(Exception ignored){}
     } finally {
       try { if(snapshotVault!=null)RuntimeAccess.call(snapshotVault,"close"); }
@@ -179,18 +224,41 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
     evidence.put("syntheticChecks",5).put("sourceCopyImmutable",true).put("snapshotContextIsolated",true)
       .put("audioExcluded",true).put("destinationCollisionRejected",true).put("symlinkRejected",true)
       .put("ownerVaultAccessed",false).put("ownerPcmDecrypted",false);
+    keyReplacementCanary();
     encryptedSelfTest(root);
+  }
+  private void keyReplacementCanary() throws Exception {
+    String alias="dora.protected.synthetic.canary."+UUID.randomUUID();
+    java.security.KeyStore store=java.security.KeyStore.getInstance("AndroidKeyStore");store.load(null);
+    RuntimeAccess.check(!store.containsAlias(alias),"SYNTHETIC_KEY_COLLISION");
+    android.security.keystore.KeyGenParameterSpec spec=new android.security.keystore.KeyGenParameterSpec.Builder(alias,3)
+      .setKeySize(256).setBlockModes("GCM").setEncryptionPaddings("NoPadding").build();
+    javax.crypto.KeyGenerator generator=javax.crypto.KeyGenerator.getInstance("AES","AndroidKeyStore");
+    generator.init(spec);generator.generateKey();
+    try {
+      JSONObject proofs=ProtectedKeyProofs.capture(new JSONObject().put(alias,new JSONObject()));
+      RuntimeAccess.check(ProtectedKeyProofs.verify(proofs)==1,"SYNTHETIC_KEY_CHALLENGE");
+      store.deleteEntry(alias);generator.init(spec);generator.generateKey();
+      boolean denied=false;try {ProtectedKeyProofs.verify(proofs);}catch(javax.crypto.AEADBadTagException expected){denied=true;}
+      RuntimeAccess.check(denied,"SYNTHETIC_KEY_REPLACEMENT_UNDETECTED");
+      store.deleteEntry(alias);
+      denied=false;try {ProtectedKeyProofs.verify(proofs);}catch(IllegalStateException expected){denied=true;}
+      RuntimeAccess.check(denied,"SYNTHETIC_KEY_REMOVAL_UNDETECTED");
+      evidence.put("sameAliasReplacementCanaryRejected",true).put("keyRemovalCanaryRejected",true);
+    } finally {if(store.containsAlias(alias))store.deleteEntry(alias);}
   }
   public static final class SyntheticAuthorization {
     int calls; int revokeAt=Integer.MAX_VALUE;
     public void requireActive() {RuntimeAccess.check(++calls<revokeAt,"SYNTHETIC_AUTH_REVOKED");}
   }
   private void encryptedSelfTest(File root) throws Exception {
+    evidence.put("syntheticStep","CREATE");
     File synthetic=new File(root,"encrypted-synthetic");Os.mkdir(synthetic.getPath(),0700);
     Context context=new ForensicSnapshot.ContextAt(r.app,synthetic);
     Class<?> vaultClass=Class.forName("com.monumentogram.dora.audio.persistence.EncryptedAudioVault",true,r.loader);
     Object companion=vaultClass.getField("Companion").get(null), gate=r.function(0,a->r.unit());
     Object originalVault=RuntimeAccess.call(RuntimeAccess.call(companion,"createNew",context,gate),"getValue");
+    evidence.put("syntheticStep","APPEND");
     Class<?> identityType=Class.forName("com.monumentogram.dora.audio.AudioIdentity",true,r.loader);
     Constructor<?> identityConstructor=identityType.getDeclaredConstructor(String.class,String.class,String.class);identityConstructor.setAccessible(true);
     Object identity=identityConstructor.newInstance(UUID.randomUUID().toString(),UUID.randomUUID().toString(),UUID.randomUUID().toString());
@@ -203,9 +271,21 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
     Object format=Class.forName("com.monumentogram.dora.audio.AudioFormat",true,r.loader).getConstructor(String.class,int.class,int.class).newInstance("PCM_S16LE",16000,1);
     byte[] pcm=new byte[1600];Arrays.fill(pcm,(byte)37);
     try {RuntimeAccess.check(RuntimeAccess.call(writer,"append",unit,format,pcm).getClass().getSimpleName().equals("Value"),"SYNTHETIC_APPEND");}
-    finally {Arrays.fill(pcm,(byte)0);RuntimeAccess.call(originalVault,"close");}
+    finally {Arrays.fill(pcm,(byte)0);}
     File original=new File(synthetic,"dora-vault-v1");TreeMap<String,String> before=ForensicSnapshot.hashes(original);
     Context copy=ForensicSnapshot.copy(r.app,original,new File(root,"encrypted-copy"));
+    evidence.put("syntheticStep","DIRECT_SNAPSHOT");
+    JSONObject complete=ProtectedCatalogSnapshot.collect(r,copy,new SyntheticAuthorization(),true);
+    RuntimeAccess.check(complete.getJSONObject("tables").getJSONObject("unit_claim").getJSONArray("rows").length()==1,"SYNTHETIC_WAL_ROW_MISSING");
+    boolean hasWal=false;for(String name:before.keySet())if(name.endsWith(".db-wal"))hasWal=true;
+    RuntimeAccess.check(hasWal,"SYNTHETIC_WAL_NOT_PRESENT");
+    evidence.put("walBackedCommittedRowIncluded",true).put("readOnlyWriteCanaryRejected",true);
+    JSONObject proofs=ProtectedKeyProofs.capture(complete.getJSONObject("keys"));
+    RuntimeAccess.check(ProtectedKeyProofs.verify(proofs)==complete.getJSONObject("keys").length(),"SYNTHETIC_KEY_PROOFS");
+    evidence.put("sameKeyChallengeProofCount",proofs.length());
+    RuntimeAccess.check(complete.getInt("schemaVersion")==3&&complete.getJSONObject("tables").length()==15,"SYNTHETIC_COMPLETE_CATALOG");
+    RuntimeAccess.check(ForensicSnapshot.hashes(original).equals(before),"SYNTHETIC_COMPLETE_SOURCE_CHANGED");
+    evidence.put("completeCatalogReadWithoutRoom",true).put("completeCatalogTableCount",15);
     Object vault=RuntimeAccess.call(RuntimeAccess.call(companion,"openExisting",copy,gate),"getValue");
     try {
       Object journal=RuntimeAccess.field(vault,"journal"),catalog=RuntimeAccess.call(journal,"getCatalog");
@@ -237,6 +317,6 @@ public final class ForensicCatalogInstrumentation extends CampaignInstrumentatio
           .put("syntheticPcmDecrypted",true).put("corruptCiphertextRejectedWithoutMutation",true)
           .put("writeGuardsRejectBeforeOsCall",true).put("providerInternalMemoryZeroingClaimed",false).put("syntheticChecks",9);
       }
-    } finally {RuntimeAccess.call(vault,"close");}
+    } finally {RuntimeAccess.call(vault,"close");RuntimeAccess.call(originalVault,"close");}
   }
 }

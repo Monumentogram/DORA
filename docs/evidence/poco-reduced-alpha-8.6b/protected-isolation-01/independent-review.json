@@ -1,0 +1,12 @@
+{
+  "reviewer": "independent instrumentation_review agent",
+  "scope": "Read-only snapshot tooling and comparator publication only",
+  "unresolvedP0P1P2": 0,
+  "independentlyRunComparatorTests": 23,
+  "productStartupRecordingDeletionAdmission": false,
+  "physicalIsolationGate": "NOT_RUN",
+  "acceptanceBlocker": "PROTECTED_SOURCE_RECOVERY_POLICY_CONFLICT",
+  "externalAcceptanceReviewer": "independent acceptance_review agent",
+  "externalReviewUnresolvedPublicationP0P1P2": 0,
+  "physicalAdmissionVerdict": "BLOCKED / PROTECTED_SOURCE_RECOVERY_POLICY_CONFLICT"
+}
