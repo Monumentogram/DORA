@@ -1,0 +1,10 @@
+{
+  "classCounts": [
+    96,
+    96
+  ],
+  "differentClasses": [],
+  "exactKeysetsEqual": true,
+  "method": "Retained AGP9 built_in_kotlinc classes; rejects empty inventories",
+  "initialReduction": "Obsolete tmp path gave empty manifests; rejected by independent review, corrected without rebuilding"
+}

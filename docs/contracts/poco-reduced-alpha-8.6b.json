@@ -3,7 +3,10 @@
   "status": "NOT_READY_SCREEN_OFF_CAPTURE_FAILED",
   "files": {
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingStorageBudget.kt": "6a3884e44285b608961845846af3dad742911962a3a12a008e6d4a19e3df256f",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingTerminalDiagnostics.kt": "31fee3fba1f754d6ac1a0fac24eaade27a42bc95c0718ec1f37ec27aef25b550",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/CapturePersistenceBackpressureTest.kt": "3d669316f8ee14162ccdf05cf96aa365bcd238467cc34596f1c2c8e553efef48",
     "android/app/src/test/kotlin/com/monumentogram/dora/recording/RecordingStorageBudgetTest.kt": "ca6e6a571e376e3c1669b96b60a01bfb07a69233d4c294627e7eec664d510476",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/RecordingTerminalDiagnosticsTest.kt": "3b4084d9b97aeba3300ea9fd1ce2e18b45cea2fecf8c7d848b47ca2ca56435cd",
     "docs/adr/ADR-RECORDING-005-hour-storage-admission.md": "789c8df68e83a37e7140eda3689ab2ccd2d9168050b3a2ade2bef9763aa944f0",
     "docs/adr/ADR-RECORDING-006-reduced-autonomous-alpha-acceptance.md": "6af7f935bb4fc7c56252c530303b2176786dd6bbd457b029c80722ea2849c423",
     "docs/adr/ADR-RECORDING-007-usb-battery-saver-deferral.md": "49c484fb878a0182ab896496936e6c2436d24e8e62785e69e1cd07165cf98525",
@@ -37,6 +40,19 @@
     "docs/evidence/poco-reduced-alpha-8.6b/pr-status.json": "00a0cfbcea4497f64f76a7ca0f8a2a404a15352438b7ed14da9eefa0d8850211",
     "docs/evidence/poco-reduced-alpha-8.6b/predecessor-ci.json": "6c937628654f322376e171fd0172def4b9409b80644ea47ea3fda636353b2e57",
     "docs/evidence/poco-reduced-alpha-8.6b/publication-audit.json": "2c9a49676d762c9fffe664f6d62db6363800b05ba477d1f8e194675778ec5906",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/README.md": "a7d15d733774c7c72dd22c1d0bd7a93b5ae77af2169127fe99f55dff242e6f4e",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/build-reproducibility.json": "5ae168981f9893fba3d971acd668cd89907947529eca2264da3e7696b429173b",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/forensic-callgraph-admission.json": "3766196ba83ecfaff27638493a0017be0a3860ea65358aeee489dd88e0135c93",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/forensic-host-preservation.json": "ca2a8bfee637d07768d0ee36c0c27cd8d0fc36cff2ef77832d6c54491d4f2b27",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/forensic-long01-prefix-01.json": "4ceef937d6734a66a581006af472ac3c8f70f577cd04292c2ae6a6939ceae97b",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/forensic-protocol.json": "bc96e1b897af351ea611112e1076e39e4767663ce3493a32c209094171697c9f",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/forensic-synthetic-proof.json": "97a64a40883692044c3a8a660b99c861b81ae2f9a5ff2f6fa0cbc2d7b2a3e45f",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/local-verification.json": "16d80f1c9a6ca57d3f77978bc9f50eb2249a66a502a07406a51d0ab6d88f0106",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/long01-causal-disposition.json": "89cba0beb1b3a66c6bc6163006e8ccd13e06858fe72ffba31324367dab9bbe33",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/physical-smoke-disposition.json": "d10b63bf90cb2c8ad425ddb8b43f8a36838a9cc29a7181bed7fafb2f9b3247aa",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/predex-comparison-corrected.json": "d992f9ca8b986bcacdc21be901352875050b8700d2a9b796215d3d029a787fd0",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/preservation-baseline.json": "81d1c166fc5f75ab325f57d089317afb96daff25b6304d23723da97dde16175c",
+    "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/work-plan.md": "bee3f8c83729c4d97cb21cd5f740041bd336c607f844fb8c8ea1f47c1d8dd1c1",
     "docs/evidence/poco-reduced-alpha-8.6b/result.json": "77762dc52fbcd66bc215a58c7a9660c06c54b43b0ff7ad9f22e3d114bcd5a4b0",
     "docs/evidence/poco-reduced-alpha-8.6b/review-checkpoints.json": "5523ed03580804438461f823e9ffd00ce5459bfcaeb2d28ae5e8113af0aed6fc",
     "docs/evidence/poco-reduced-alpha-8.6b/source-readiness.json": "830b82ec48970ff47c2683f1c22170f6e9496a3e9779e4989f0ee4e8afbeeea9",
@@ -46,9 +62,12 @@
     "tools/poco_alpha_acceptance.py": "1ef776ab2fe6845ae6aa75e5a4d5d3981366a5bf08b6d03561e9e8d2fe89e110",
     "tools/poco_non_battery/alpha_protocol.py": "032d845ef555ce8fef67a3469f39ecfe0ebda122d893818a4cfc5bd35766f5db",
     "tools/poco_non_battery/build_driver.py": "183cea2e0624efa4ffe15dd5fedbd3e571bcdfb480a527cb1dd93aecdcf2265d",
-    "tools/poco_non_battery/driver/AndroidManifest.xml": "777c8c2ab506c07c77ba57da86aa319276cdeda7122313e9a88a8031140a5de3",
+    "tools/poco_non_battery/driver/AndroidManifest.xml": "95491c4376b84555bdb6e91fe59a4c4c032ce1c7c5f5be29185dbd89942c0eeb",
     "tools/poco_non_battery/driver/CampaignInstrumentation.java": "702378ee0aba99de0b158449c28cf24a0e3875e08e42bcc7916ddf4c0ed6e0e5",
     "tools/poco_non_battery/driver/FailureInspectionInstrumentation.java": "8ebc384b8d20f4fe3e209a1c688134c3cb0e8ecf3d6c4e7133254e5ce5a034ca",
+    "tools/poco_non_battery/driver/ForensicCatalogInstrumentation.java": "a0535ce4c82b597a3c4846ac8a47cf1eefadb16dd251a9eff4ab4c6fde0e1a7d",
+    "tools/poco_non_battery/driver/ForensicPrefix.java": "33fb9f050bc9093b7bff18ebe7e142c1318044f7e8dc3742c549f92bdfd3ae83",
+    "tools/poco_non_battery/driver/ForensicSnapshot.java": "6a4831038b9317752a2b35c80ee16871cf5579ad166023bc75c51ded7a30d98e",
     "tools/poco_non_battery/driver/FunctionalInstrumentation.java": "a177806f9af40f2c36bfc396525106f427e867b1a4a00c85878628add9d1d607",
     "tools/poco_non_battery/driver/RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
     "tools/poco_non_battery/driver/SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
@@ -59,17 +78,49 @@
     "tools/poco_non_battery/test_alpha_protocol.py": "cfb815ade42a0a3e6659892e6c839852d1367b5646369d162b4c0dbd7bb35041",
     "tools/poco_non_battery/test_receipts.py": "b2c8501fe84a3b15dd12b4bdd84969f75c7c365467904f956509c2440e69fdf5",
     "tools/poco_non_battery/test_source_admission.py": "f535d0ce88604e298d42944c0a2a72dbceb0e92a89282f65d8436153e29d08bf",
-    "tools/poco_reduced_admission.py": "8efdc9876b423c84e36dbe52a1c3e47858b2fb9f88e85f90b310838db3616bfe",
+    "tools/poco_reduced_admission.py": "82dfe5448e3157a9f940baf5ac8a30d3d16b3ed84085e30585ecfc6843b7995c",
     "tools/test_logical_recovery_poco_reduced.py": "1fe91a602869ae60eec08188855ff5b175c2c9650e88077b31eb8cc3c65d8ceb"
   },
   "overrides": {
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt": {
       "before": "8ebd60c7fc62b84477d550e9927362df90f03cc20af2fc11ab864ca46bb548e2",
-      "after": "72bc4423191e30df625322facb82be033a40f2f7ba331c58185936cd675f312b"
+      "after": "b8f94432d6e22a05ac9c2826f29d28aadc68d8a486ed661e676986f9a90f3422"
     },
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt": {
       "before": "3853c22d01a0eb30dd08de29a1ac2e89a26a0542085080350d2cb1e008e52d38",
-      "after": "436197e250b595c32df270120aafced8856c8834b1f0c46e11aaf64a702fab5a"
+      "after": "886bb5d6c46ce33fa8bd293dc98830e57203ba5570330d4b79c6e60df63ebbb0"
+    },
+    "android/app/src/androidTest/kotlin/com/monumentogram/dora/DoraBootstrapAppTest.kt": {
+      "before": "8a7dba06041fc741aff6199581dfd5da0ec27819588180170fc65dcf16604bcc",
+      "after": "3186faac19d61bd238630a24083eb1bf640277ce8c8630c0019056c3658966eb"
+    },
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/AudioRecordCapture.kt": {
+      "before": "8b8b266422ee6824521950b53fe62c409618316221d493f3cffc108ec3fcd1aa",
+      "after": "ba7d6f8b96c4482726bb19a965cde40c71facfe4e7a81a2ce040e73bba223097"
+    },
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/CaptureAdmission.kt": {
+      "before": "7898edbfdf39a1ffdc512b7a2cbe88c4ee9aad46e248a4ece45282119a8ce4f3",
+      "after": "61d64e5e78917384d0d71e1234bc4d9b26f8335aaad65b6134197299ef129bf7"
+    },
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/CaptureAdmissionTest.kt": {
+      "before": "5ad5e3932f9e24de8f6bac6bfd616e725644bce65425c64e605648dc3b0f0e11",
+      "after": "b78cf7a84253f0049a7fa42f767af4150a5a66a78b56b68092eb8e0f1a453637"
+    },
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/NativeCaptureLifetimeTest.kt": {
+      "before": "7ef8454b6153478b9e149e7e2248593555f7de56e3e05522124d7b999b96991e",
+      "after": "eaa562906bcda40e847d0569d6f5e79ad199e3b3d6d5c957a1dddd27c58f4625"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSegmentation.kt": {
+      "before": "2ed50369a153339ec5324c9b545fcc5de0e3c4ec83d58d3db72273ee5a54ccd7",
+      "after": "ef17e92c9ee35a2fad6729f9f441b5b2d6936879ba753fb9b685f07529bd98a4"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSession.kt": {
+      "before": "822c25c3d086276f071070b5221024c1ca79c1afe49c3ff6d0ea1f14bd1c3db7",
+      "after": "eef3984a44230132facabc3836700b55863197fba42c9da62cd899700567d4ad"
+    },
+    "tools/run_product_recording_device.py": {
+      "before": "39abb27a2aa49eae248109a40c59418c34975fafb550fe53e03d9b43e3f013f5",
+      "after": "fdb46ab0756b22b66448a13fdb5c507acf25cb15a02c1154334ba399fae85743"
     }
   }
 }

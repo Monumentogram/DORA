@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -171,6 +172,58 @@ internal fun RecordingScreen(
     LaunchedEffect(scroll.value) {
         controller.latency.presentation("scroll", window, screen, "y=${scroll.value}")
     }
+    if (
+        state.phase in
+            setOf(
+                RecordingPhase.PREFLIGHT,
+                RecordingPhase.EMPTY,
+                RecordingPhase.SAVED,
+                RecordingPhase.INTERRUPTED,
+            )
+    ) {
+        Surface(
+            color = Color(palette.canvas.surfaceDeep),
+            contentColor = Color(palette.text.onDeep),
+        ) {
+            RecordingPreflight(
+                activity,
+                controller,
+                onBack,
+                header = {
+                    Text("Запись", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        when (state.phase) {
+                            RecordingPhase.SAVED -> "Запись сохранена"
+                            RecordingPhase.EMPTY -> "Запись завершена без аудио"
+                            RecordingPhase.INTERRUPTED -> "Запись прервана"
+                            else -> "Перед началом записи"
+                        },
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                    )
+                    if (state.phase == RecordingPhase.SAVED && authorized) {
+                        Text(capturedTime(state.frames))
+                        Text("Сохранено на устройстве: ${capturedTime(state.durableFrames)}")
+                    }
+                    if (state.phase == RecordingPhase.INTERRUPTED) {
+                        Text(
+                            persistenceMessage(state.persistenceFailure)
+                                ?: captureMessage(snapshot.failure)
+                        )
+                        if (state.persistenceFailure == AudioFailure.CREDENTIAL_SETUP_REQUIRED)
+                            Button(onClick = { app.audioRuntime.openCredentialSetup(activity) }) {
+                                Text("Настроить защиту устройства")
+                            }
+                        Text(
+                            "Сохранённое аудио остаётся на устройстве. Для проверки требуется разблокировка."
+                        )
+                    }
+                },
+                footer = { RecordingRecoveryCard(activity, authorized) },
+            )
+        }
+        return
+    }
     Surface(color = Color(palette.canvas.surfaceDeep), contentColor = Color(palette.text.onDeep)) {
         Column(
             Modifier.fillMaxSize()
@@ -298,7 +351,7 @@ internal fun RecordingScreen(
             when (state.phase) {
                 RecordingPhase.PREFLIGHT,
                 RecordingPhase.EMPTY,
-                RecordingPhase.SAVED -> RecordingPreflight(activity, controller, onBack)
+                RecordingPhase.SAVED -> Unit // Rendered in the bounded preflight surface above.
                 RecordingPhase.PREPARING ->
                     TextButton(onClick = controller::requestStop) { Text("Отмена") }
                 RecordingPhase.RECORDING,
@@ -324,32 +377,8 @@ internal fun RecordingScreen(
                             Text("Стоп")
                         }
                     }
-                RecordingPhase.INTERRUPTED -> {
-                    Text(
-                        persistenceMessage(state.persistenceFailure)
-                            ?: captureMessage(snapshot.failure)
-                    )
-                    if (state.persistenceFailure == AudioFailure.CREDENTIAL_SETUP_REQUIRED)
-                        Button(onClick = { app.audioRuntime.openCredentialSetup(activity) }) {
-                            Text("Настроить защиту устройства")
-                        }
-                    Text(
-                        "Сохранённое аудио остаётся на устройстве. Для проверки требуется разблокировка."
-                    )
-                    RecordingPreflight(activity, controller, onBack)
-                }
+                RecordingPhase.INTERRUPTED -> Unit
                 RecordingPhase.FINALIZING -> Text("Дождитесь подтверждения сохранения")
-            }
-            if (
-                state.phase in
-                    setOf(
-                        RecordingPhase.PREFLIGHT,
-                        RecordingPhase.SAVED,
-                        RecordingPhase.EMPTY,
-                        RecordingPhase.INTERRUPTED,
-                    )
-            ) {
-                RecordingRecoveryCard(activity, authorized)
             }
         }
     }
@@ -379,6 +408,8 @@ private fun RecordingPreflight(
     activity: Activity,
     controller: RecordingController,
     onCancel: () -> Unit,
+    header: @Composable () -> Unit,
+    footer: @Composable () -> Unit,
 ) {
     var acknowledged by rememberSaveable { mutableStateOf(false) }
     var storageBudget by remember { mutableStateOf(controller.storageBudget()) }
@@ -409,81 +440,99 @@ private fun RecordingPreflight(
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
             notifications = it
         }
-    Text("Микрофон: ${if (microphone) "доступ разрешён" else "нужно разрешение"}")
-    Text("Активный маршрут микрофона будет определён при запуске")
-    val available = storageBudget.availableBytes
-    Text(
-        if (available == null) "Не удалось проверить свободное место"
-        else "Доступно на устройстве: ${available / BYTES_PER_MB} МБ"
-    )
-    Text("Для часа записи нужно 125 МБ и резерв на завершение 16 MiB: всего не менее 142 МБ.")
-    Text("Резерв учитывается при запуске; место заранее не выделяется.")
-    if (!storageBudget.canStart) {
-        Text("Освободите место и обновите проверку. Сохранённые записи останутся доступны.")
-    }
-    TextButton(onClick = { storageBudget = controller.storageBudget() }) {
-        Text("Обновить проверку места")
-    }
-    Text("Аудио записывается только на этом устройстве и сохраняется в зашифрованном виде.")
-    Text(
-        "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» " +
-            "или не завершите запись. Запись продолжится при выключенном экране."
-    )
-    if (denied) {
-        Text("Микрофон не разрешён. Запись не началась.")
-        if (!activity.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO))
-            TextButton(
-                onClick = {
-                    activity.startActivity(
-                        Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.parse("package:${activity.packageName}"),
-                        )
-                    )
-                }
-            ) {
-                Text("Разрешить в настройках")
-            }
-    }
-    if (!notifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Text(
-            "Уведомления отключены. Android может показывать запись только в списке активных приложений."
-        )
-        TextButton(
-            onClick = { notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS) }
+    Column(
+        Modifier.fillMaxSize().safeDrawingPadding().imePadding().padding(DoraDimensions.space4),
+        verticalArrangement = Arrangement.spacedBy(DoraDimensions.space2),
+    ) {
+        Column(
+            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(DoraDimensions.space4),
         ) {
-            Text("Разрешить уведомления")
+            header()
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = acknowledged,
+                    onCheckedChange = { acknowledged = it },
+                    modifier =
+                        Modifier.semantics {
+                            contentDescription = "Я предупредил(а) участников о записи"
+                        },
+                )
+                Text("Я предупредил(а) участников о записи")
+            }
+            Text("Микрофон: ${if (microphone) "доступ разрешён" else "нужно разрешение"}")
+            Text("Активный маршрут микрофона будет определён при запуске")
+            val available = storageBudget.availableBytes
+            Text(
+                if (available == null) "Не удалось проверить свободное место"
+                else "Доступно на устройстве: ${available / BYTES_PER_MB} МБ"
+            )
+            Text(
+                "Для часа записи нужно 125 МБ и резерв на завершение 16 MiB: всего не менее 142 МБ."
+            )
+            Text("Резерв учитывается при запуске; место заранее не выделяется.")
+            if (!storageBudget.canStart) {
+                Text("Освободите место и обновите проверку. Сохранённые записи останутся доступны.")
+            }
+            TextButton(onClick = { storageBudget = controller.storageBudget() }) {
+                Text("Обновить проверку места")
+            }
+            Text("Аудио записывается только на этом устройстве и сохраняется в зашифрованном виде.")
+            Text(
+                "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» " +
+                    "или не завершите запись. Запись продолжится при выключенном экране."
+            )
+            if (denied) {
+                Text("Микрофон не разрешён. Запись не началась.")
+                if (
+                    !activity.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)
+                )
+                    TextButton(
+                        onClick = {
+                            activity.startActivity(
+                                Intent(
+                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.parse("package:${activity.packageName}"),
+                                )
+                            )
+                        }
+                    ) {
+                        Text("Разрешить в настройках")
+                    }
+            }
+            if (!notifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Text(
+                    "Уведомления отключены. Android может показывать запись только в списке активных приложений."
+                )
+                TextButton(
+                    onClick = { notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS) }
+                ) {
+                    Text("Разрешить уведомления")
+                }
+            }
+            footer()
         }
-    }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
-            checked = acknowledged,
-            onCheckedChange = { acknowledged = it },
-            modifier =
-                Modifier.semantics { contentDescription = "Я предупредил(а) участников о записи" },
-        )
-        Text("Я предупредил(а) участников о записи")
-    }
-    Button(
-        enabled = acknowledged && storageBudget.canStart,
-        onClick = {
-            if (
-                activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
-                    PackageManager.PERMISSION_GRANTED
-            ) {
-                acknowledged = false
-                controller.start(activity)
-            } else micRequest.launch(Manifest.permission.RECORD_AUDIO)
-        },
-        modifier = Modifier.fillMaxWidth().heightIn(min = DoraDimensions.buttonPrimaryHeight),
-    ) {
-        Text("Начать запись")
-    }
-    TextButton(
-        onClick = onCancel,
-        modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
-    ) {
-        Text("Отмена")
+        Button(
+            enabled = acknowledged && storageBudget.canStart,
+            onClick = {
+                if (
+                    activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
+                        PackageManager.PERMISSION_GRANTED
+                ) {
+                    acknowledged = false
+                    controller.start(activity)
+                } else micRequest.launch(Manifest.permission.RECORD_AUDIO)
+            },
+            modifier = Modifier.fillMaxWidth().heightIn(min = DoraDimensions.buttonPrimaryHeight),
+        ) {
+            Text("Начать запись")
+        }
+        TextButton(
+            onClick = onCancel,
+            modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
+        ) {
+            Text("Отмена")
+        }
     }
 }
 

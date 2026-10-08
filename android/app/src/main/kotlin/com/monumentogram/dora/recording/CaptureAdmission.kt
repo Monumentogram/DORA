@@ -15,6 +15,18 @@ internal class CaptureAdmission(
 
     data class Boundary(val frames: Long, val lastAcceptedNanos: Long, val fencedAtNanos: Long)
 
+    data class Diagnostics(
+        val generation: Long,
+        val frames: Long,
+        val durableFrames: Long,
+        val outstandingBlocks: Int,
+        val accepting: Boolean,
+    )
+
+    data class Rejection(val atNanos: Long, val admission: Diagnostics)
+
+    private var lastRejection: Rejection? = null
+
     private var generation = 0L
     private var accepting = false
     private var frames = 0L
@@ -28,6 +40,7 @@ internal class CaptureAdmission(
     fun begin(captureEpochId: String = ""): Long {
         accepting = false
         this.captureEpochId = captureEpochId
+        lastRejection = null
         return ++generation
     }
 
@@ -45,8 +58,8 @@ internal class CaptureAdmission(
             outstanding.size >= queue.capacity ||
                 frames - durableFrames + bytes.size / 2 > MAXIMUM_FRAMES
         )
-            Result.FULL
-        else if (!queue.offer(CapturedBlock(expected, captureEpochId, frames, bytes))) Result.FULL
+            rejected()
+        else if (!queue.offer(CapturedBlock(expected, captureEpochId, frames, bytes))) rejected()
         else {
             frames += bytes.size / 2
             outstanding.addLast(frames)
@@ -64,6 +77,16 @@ internal class CaptureAdmission(
     }
 
     @Synchronized fun snapshot(): Boundary = Boundary(frames, lastAccepted, fencedAt)
+
+    @Synchronized
+    fun diagnostics() = Diagnostics(generation, frames, durableFrames, outstanding.size, accepting)
+
+    @Synchronized fun rejection(): Rejection? = lastRejection
+
+    private fun rejected(): Result {
+        lastRejection = Rejection(now(), diagnostics())
+        return Result.FULL
+    }
 
     /** Only verified durable completion releases budget, never a memory-only queue drain. */
     @Synchronized

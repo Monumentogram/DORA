@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "sourceSha": "5f3d605a5e68367b5fe784cb22608b462042e1a5",
+  "environment": {"jdk": "Temurin 17.0.20.1+1", "gradle": "9.5.0", "kotlin": "2.2.10", "agp": "9.3.1", "composeBom": "2026.06.01", "variant": "debug", "privateVad": true},
+  "privateAarSha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+  "privateModelSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "attempts": [
+    {"id": "A", "result": "BUILD_SETUP_FAILED", "reason": "Archive lacks git metadata required by PoC BuildConfig configuration; no APK produced"},
+    {"id": "A2", "result": "DEPENDENCY_VERIFICATION_REJECTED", "reason": "Checkout converted pinned SQLCipher POM LF bytes to CRLF; verification remained enabled"},
+    {"id": "A3", "result": "DEPENDENCY_VERIFICATION_REJECTED", "reason": "core.autocrlf=false alone did not override host core.eol; same POM CRLF rejection"},
+    {"id": "A4", "result": "SUCCESS", "independentFreshCheckout": true, "buildCache": false, "kotlinIncremental": false, "apkSha256": "b10732953fd72742e236a1926af948a66c45f6956a6a075228a0f1bac6149564"},
+    {"id": "B4", "result": "SUCCESS", "independentFreshCheckout": true, "buildCache": false, "kotlinIncremental": false, "apkSha256": "b10732953fd72742e236a1926af948a66c45f6956a6a075228a0f1bac6149564"}
+  ],
+  "cleanComparison": {"apkByteIdentical": true, "differentZipEntries": 0, "preDexClassCounts": [96, 96], "differentPreDexKotlinClasses": 0, "preDexEvidence": "predex-comparison-corrected.json"},
+  "incrementalSequence": {
+    "freshCheckout": true,
+    "buildCache": false,
+    "kotlinIncremental": true,
+    "steps": [
+      {"sourceSha": "2cb4b470da88a52f2ce89ce0ae6c640c3222cfe1", "apkSha256": "0121250eb5ba181e6a87a52db293fd79e44c3939f89d203c00563dc19e94bd20"},
+      {"sourceSha": "71f94fd3b8b73b3659d07cdb5639547479759e4f", "apkSha256": "7413bca5e9e2c01b25ed4a644f68cdde25592dfee433f3cba3bad0815a449fa1"},
+      {"sourceSha": "5f3d605a5e68367b5fe784cb22608b462042e1a5", "apkSha256": "7413bca5e9e2c01b25ed4a644f68cdde25592dfee433f3cba3bad0815a449fa1"}
+    ],
+    "matchesPhysicalApkZipPayloads": "169/169",
+    "physicalApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+    "matchesPhysicalApkBytes": false,
+    "classes16DexSha256": "1c72ad2fc3be8ab389ac859612bfeb47a5dd8a02b934e06bb4c5452cc114120f"
+  },
+  "historicalDexDifference": {
+    "cleanDexSha256": "7107bb3ad42d28eda519e438cc670f87a5d19707d314e554606918bbad18819f",
+    "class": "com.monumentogram.dora.recording.RecordingScreenKt",
+    "methods": ["ProductRecordingHost", "RecordingPreflight", "RecordingScreen", "RecordingScreen$lambda$57"],
+    "instructions": "Compose changed/stability flags at seven TextButton calls and Surface, Column and Row calls; associated offsets/alignment change",
+    "mechanism": "PROVEN_BUILD_STATE_DEPENDENCE: same final source produces original physical DEX through incremental predecessor sequence and a different DEX through two fresh nonincremental builds",
+    "harmlessness": "NOT_CLAIMED",
+    "historicalLongInterruptionCausality": "NOT_PROVEN",
+    "oldPhysicalEvidenceTransferredToNewApk": false
+  },
+  "successorBuildPolicy": {
+    "freshCheckout": true,
+    "exactSourceSha": true,
+    "checkout": ["core.autocrlf=false", "core.eol=lf"],
+    "flags": ["--no-build-cache", "--no-configuration-cache", "--rerun-tasks", "-Pkotlin.incremental=false", "-Pkotlin.compiler.execution.strategy=in-process"],
+    "dependencyVerification": "STRICT_UNCHANGED",
+    "privateArtifacts": "EXACT_PINNED_LOCAL_ONLY",
+    "requireIndependentCleanBuildPair": true,
+    "requireExactApkPhysicalSmoke": true,
+    "physicalSmoke": "NOT_RUN_SOURCE_PRESERVATION_BLOCKER"
+  }
+}

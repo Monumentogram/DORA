@@ -140,6 +140,9 @@ class RecordingSegmentation(
         )
     }
 
+    val queueHighWater: Int
+        get() = observer.stats().queueHighWater
+
     fun diagnostics(): String {
         val s = observer.stats()
         return "vadProfile=${SegmentationProfile.FROZEN.id} vadFailure=${s.failure ?: "NONE"} " +

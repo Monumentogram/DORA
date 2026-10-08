@@ -13,6 +13,32 @@ import org.junit.Test
 
 class NativeCaptureLifetimeTest {
     @Test
+    fun readFailureRetainsItsAdmissionBoundaryBeforeShutdownAndRetirement() {
+        val mic = Microphone()
+        val capture = capture { mic }
+        val accepted = CountDownLatch(1)
+        capture.start({ it() }) { if (it == "first_pcm") accepted.countDown() }
+        mic.reads.put(1600)
+        assertTrue(accepted.await(5, TimeUnit.SECONDS))
+        mic.reads.put(-1)
+        assertTrue(mic.releaseEntered.await(5, TimeUnit.SECONDS))
+        capture.stop()
+        val event = checkNotNull(capture.terminalEvent)
+        capture.durableThrough(800)
+        assertEquals(CaptureFailure.READ_ERROR, event.failure)
+        assertEquals(800L, event.admission.frames)
+        assertEquals(0L, event.admission.durableFrames)
+        assertEquals(800L, capture.admissionDiagnostics().durableFrames)
+        assertTrue(capture.admissionDiagnostics().generation > event.admission.generation)
+        assertEquals(1, event.admission.outstandingBlocks)
+        assertTrue(event.atNanos > 0)
+        capture.drain {}
+        capture.retire()
+        assertEquals(event, capture.terminalEvent)
+        assertFalse(capture.hasLiveThread)
+    }
+
+    @Test
     fun cancelledNewStartDoesNotInheritAnOldReadersFailure() {
         val old = Microphone()
         val next = Microphone()

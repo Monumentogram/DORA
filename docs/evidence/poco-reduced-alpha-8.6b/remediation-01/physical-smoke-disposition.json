@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "installedProductApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "update": "NOT_PERFORMED",
+  "newApkPhysicalSmoke": "NOT_RUN",
+  "blocker": "SAFE_PHYSICAL_SMOKE_WITH_RETAINED_LONG01_NOT_ESTABLISHED",
+  "reviewedCallGraph": [
+    "RecordingScreen authorized preflight footer",
+    "RecordingRecoveryCard.LaunchedEffect(authorized)",
+    "requestRecordingRecovery",
+    "requestOpen of original vault",
+    "EncryptedAudioVault.recordingRecoveryPage",
+    "RecordingRecoveryReader.read",
+    "bridge.reconcileHeld"
+  ],
+  "reason": "Ordinary UI may reconcile existing LONG01 before a new Start or after Stop. No exact-source exclusion/read-only fence exists on this path. A new-recording-only intention is not evidence of nonmutation.",
+  "requiredDisposition": "Separately reviewed exact-source isolation or owner-approved retained-source disposition before normal UI physical smoke. Current task does not authorize modifying LONG01.",
+  "independentReview": "Confirmed unsafe-to-admit normal UI smoke under current no-mutation restriction; no external permission for an instrumented long retry was given.",
+  "long01DeletedFinalizedResumedRepaired": false,
+  "original46PreservedAtForensicBoundary": true,
+  "newOwnerAudioCreated": false,
+  "newHourRun": "NOT_RUN",
+  "newCycles": "NOT_RUN"
+}

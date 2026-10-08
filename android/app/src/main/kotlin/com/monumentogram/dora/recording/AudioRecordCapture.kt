@@ -37,6 +37,12 @@ internal class CaptureException(val failure: CaptureFailure) : IllegalStateExcep
 
 internal data class MicrophoneSignal(val level: Float = 0f, val atNanos: Long = 0)
 
+internal data class CaptureTerminalEvent(
+    val failure: CaptureFailure,
+    val atNanos: Long,
+    val admission: CaptureAdmission.Diagnostics,
+)
+
 /** Audio thread does only bounded reading/amplitude/queueing. No disk, Compose or logging. */
 internal class AudioRecordCapture(
     private val create: () -> NativeMicrophone,
@@ -84,6 +90,12 @@ internal class AudioRecordCapture(
         private set
 
     @Volatile
+    var terminalEvent: CaptureTerminalEvent? = null
+        private set
+
+    fun admissionDiagnostics() = admission.diagnostics()
+
+    @Volatile
     var route = "Маршрут определяется"
         private set
 
@@ -105,6 +117,7 @@ internal class AudioRecordCapture(
     ) {
         check(recorder == null && thread?.isAlive != true)
         failure = null
+        terminalEvent = null
         stopTiming = {}
         val generation = admission.begin(captureEpochId)
         if (!permitted()) throw CaptureException(CaptureFailure.PERMISSION_DENIED)
@@ -198,11 +211,11 @@ internal class AudioRecordCapture(
                 bytes.fill(0)
             }
         } catch (error: CaptureException) {
-            failure = error.failure
+            publishFailure(error.failure)
         } catch (_: SecurityException) {
-            failure = CaptureFailure.PERMISSION_DENIED
+            publishFailure(CaptureFailure.PERMISSION_DENIED)
         } catch (_: Exception) {
-            failure = CaptureFailure.READ_ERROR
+            publishFailure(CaptureFailure.READ_ERROR)
         } finally {
             running.set(false)
             bytes.fill(0)
@@ -217,6 +230,20 @@ internal class AudioRecordCapture(
             signal = MicrophoneSignal()
             stopped("reader_released")
         }
+    }
+
+    private fun publishFailure(reason: CaptureFailure) {
+        // Publish the immutable boundary before the volatile failure consumed by controls.
+        // No disk, executor, UI or logging on the reader.
+        val rejected =
+            if (reason == CaptureFailure.PERSISTENCE_BACKPRESSURE) admission.rejection() else null
+        terminalEvent =
+            CaptureTerminalEvent(
+                reason,
+                rejected?.atNanos ?: System.nanoTime(),
+                rejected?.admission ?: admission.diagnostics(),
+            )
+        failure = reason
     }
 
     /** Called off main; the reader owns final release. Never start another until it has exited. */

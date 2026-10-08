@@ -41,6 +41,12 @@ enum class RecordingDurability {
     FAILED,
 }
 
+enum class RecordingWriterOperation {
+    CREATE,
+    APPEND,
+    FINALIZE,
+}
+
 /** Content-free state. Signal is supplied separately by the Android capture adapter. */
 data class RecordingState(
     val phase: RecordingPhase = RecordingPhase.PREFLIGHT,
@@ -78,6 +84,10 @@ class RecordingSession(
     private val persistenceFailed: () -> Unit = {},
 ) {
     private val failed = AtomicReference<AudioFailure?>(null)
+    @Volatile
+    var failureOperation: RecordingWriterOperation? = null
+        private set
+
     val canCapture: Boolean
         get() = failed.get() == null && state.phase in ACTIVE_PHASES
 
@@ -105,6 +115,13 @@ class RecordingSession(
     var maximumAppendNanos: Long = 0
         private set
 
+    /** Sealed append tasks whose completion has not returned to the control owner. */
+    var pendingWriterUnits: Int = 0
+        private set
+
+    var lastCompletedAppendDurationNanos: Long = 0
+        private set
+
     /** Called only with the runtime's reauthenticated, pending-free continuation point. */
     fun restore(frames: Long, nextOrdinal: Int) {
         check(state.phase == RecordingPhase.PREFLIGHT)
@@ -120,7 +137,9 @@ class RecordingSession(
     fun start(): Boolean {
         if (state.phase != RecordingPhase.PREFLIGHT) return false
         state = state.copy(phase = RecordingPhase.PREPARING)
-        if (!checkResult(writer.createLogicalRecording(identity))) return false
+        val result = writer.createLogicalRecording(identity)
+        if (result is AudioResult.Failed) failureOperation = RecordingWriterOperation.CREATE
+        if (!checkResult(result)) return false
         state = state.copy(phase = RecordingPhase.RECORDING)
         return true
     }
@@ -215,7 +234,7 @@ class RecordingSession(
         }
         // Exactly one finalize call. UNCERTAIN remains interrupted until authenticated recovery.
         persistence.execute {
-            val result = write { writer.finalize(identity) }
+            val result = write(RecordingWriterOperation.FINALIZE) { writer.finalize(identity) }
             completion.execute {
                 if (
                     checkResult(result) &&
@@ -342,12 +361,13 @@ class RecordingSession(
                     else if (physicalStart == 0L) "START" else "RESUME",
                 )
             } else null
+        pendingWriterUnits++
         persistence.execute {
             opening?.let(::persistMetadata)
             var elapsed = 0L
             val result =
                 try {
-                    write {
+                    write(RecordingWriterOperation.APPEND) {
                         val started = System.nanoTime()
                         timing("append_start")
                         val report = appendTiming
@@ -365,18 +385,27 @@ class RecordingSession(
                     bytes.fill(0)
                 }
             completion.execute {
-                maximumAppendNanos = maxOf(maximumAppendNanos, elapsed)
-                if (checkResult(result)) state = state.copy(durableFrames = durableEnd)
-                changed()
+                completeAppend(result, durableEnd, elapsed)
             }
         }
         flushMetadata()
     }
 
+    private fun completeAppend(result: AudioResult<Unit>, durableEnd: Long, elapsed: Long) {
+        pendingWriterUnits--
+        lastCompletedAppendDurationNanos = elapsed
+        maximumAppendNanos = maxOf(maximumAppendNanos, elapsed)
+        if (checkResult(result)) state = state.copy(durableFrames = durableEnd)
+        changed()
+    }
+
     private fun newTechnicalTimeline(firstFrame: Long) =
         TechnicalTimeline(SegmentationProfile.FROZEN, firstFrame, captureEpochId) { freshId() }
 
-    private fun write(action: () -> AudioResult<Unit>): AudioResult<Unit> {
+    private fun write(
+        operation: RecordingWriterOperation,
+        action: () -> AudioResult<Unit>,
+    ): AudioResult<Unit> {
         failed.get()?.let {
             return AudioResult.Failed(it)
         }
@@ -386,8 +415,10 @@ class RecordingSession(
             } catch (_: Exception) {
                 AudioResult.Failed(AudioFailure.UNAVAILABLE)
             }
-        if (result is AudioResult.Failed && failed.compareAndSet(null, result.reason))
+        if (result is AudioResult.Failed && failed.compareAndSet(null, result.reason)) {
+            failureOperation = operation
             persistenceFailed()
+        }
         return result
     }
 

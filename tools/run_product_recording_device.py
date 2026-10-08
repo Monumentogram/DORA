@@ -28,6 +28,12 @@ TESTS = {
         'resumedPendingTailKeepsPauseEnabled',
         'durabilityCatchUpDoesNotMoveResumeUnderUsersFinger',
         'largeFontDurabilityCatchUpKeepsResumeStationary',
+        'compactPreflightKeepsActionsVisibleWithoutStartingMicrophone',
+        'largeFontCompactPreflightKeepsActionsVisibleWhileInformationScrolls',
+        'largeFontPreflightWithImeSizedHeightKeepsCancelReachable',
+        'landscapeLargeFontPreflightKeepsConsentExplicit',
+        'insufficientStorageRemainsBlockedAfterExplicitConsentInCompactPreflight',
+        'grantingMicrophonePermissionDoesNotGrantConsentOrStartDuringRecreation',
     )
 }
 

@@ -47,11 +47,46 @@ PERF-REC-001 deferred/non-blocking. PR99 stays DRAFT / OPEN / UNMERGED.
 ---
 
 '''
+REMEDIATION_PREFIX = '''## 2026-10-08 — LONG01 forensic / UI / build remediation
+
+**PARTIAL / LONG_CAPTURE_ROOT_CAUSE_UNPROVEN**. The source-preserving inspector
+authenticated 31,040,000 contiguous committed frames (388 units); all 46 originals
+and all 8,550 original vault files were unchanged. Historical interruption remains
+NOT_READY; the missing terminal enum cannot be reconstructed from counter proximity.
+Successor code adds bounded terminal diagnostics and accessible preflight actions.
+Clean nonincremental builds are reproducible; the historical incremental sequence
+reproduces the physical DEX payload. Old physical proof does not transfer to new code.
+Normal UI smoke is NOT_RUN because automatic Recovery may reconcile retained LONG01;
+reviewed isolation or separate owner disposition is required. No long retry admitted.
+
+See [remediation receipts](evidence/poco-reduced-alpha-8.6b/remediation-01/README.md).
+Exact publication-SHA CI remains a separate required check, reported with its run ID.
+Stage 8.6 not accepted; Sheet unchanged; battery deferral and security blocker unchanged.
+No Stage 9 / Group D / Cloud / ASR admission. PR99 remains DRAFT / OPEN / UNMERGED.
+The earlier dated status and evidence below are retained verbatim.
+
+---
+
+'''
+PREFIX = REMEDIATION_PREFIX + PREFIX
+
 OVERRIDES = {
+    # Owner-scoped LONG01/UI/build remediation; exact before/after bytes remain sealed.
+    'android/app/src/androidTest/kotlin/com/monumentogram/dora/DoraBootstrapAppTest.kt',
+    'android/app/src/main/kotlin/com/monumentogram/dora/recording/AudioRecordCapture.kt',
+    'android/app/src/main/kotlin/com/monumentogram/dora/recording/CaptureAdmission.kt',
+    'android/app/src/test/kotlin/com/monumentogram/dora/recording/CaptureAdmissionTest.kt',
+    'android/app/src/test/kotlin/com/monumentogram/dora/recording/NativeCaptureLifetimeTest.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSession.kt',
+    'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSegmentation.kt',
+    'tools/run_product_recording_device.py',
     'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt',
     'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt',
 }
 EXACT_ADDITIONS = {
+    'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingTerminalDiagnostics.kt',
+    'android/app/src/test/kotlin/com/monumentogram/dora/recording/RecordingTerminalDiagnosticsTest.kt',
+    'android/app/src/test/kotlin/com/monumentogram/dora/recording/CapturePersistenceBackpressureTest.kt',
     'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingStorageBudget.kt',
     'android/app/src/test/kotlin/com/monumentogram/dora/recording/RecordingStorageBudgetTest.kt',
     'tools/poco_alpha_acceptance.py', 'tools/poco_reduced_admission.py',

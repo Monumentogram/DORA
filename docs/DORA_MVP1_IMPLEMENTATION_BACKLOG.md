@@ -1,3 +1,23 @@
+## 2026-10-08 — LONG01 forensic / UI / build remediation
+
+**PARTIAL / LONG_CAPTURE_ROOT_CAUSE_UNPROVEN**. The source-preserving inspector
+authenticated 31,040,000 contiguous committed frames (388 units); all 46 originals
+and all 8,550 original vault files were unchanged. Historical interruption remains
+NOT_READY; the missing terminal enum cannot be reconstructed from counter proximity.
+Successor code adds bounded terminal diagnostics and accessible preflight actions.
+Clean nonincremental builds are reproducible; the historical incremental sequence
+reproduces the physical DEX payload. Old physical proof does not transfer to new code.
+Normal UI smoke is NOT_RUN because automatic Recovery may reconcile retained LONG01;
+reviewed isolation or separate owner disposition is required. No long retry admitted.
+
+See [remediation receipts](evidence/poco-reduced-alpha-8.6b/remediation-01/README.md).
+Exact publication-SHA CI remains a separate required check, reported with its run ID.
+Stage 8.6 not accepted; Sheet unchanged; battery deferral and security blocker unchanged.
+No Stage 9 / Group D / Cloud / ASR admission. PR99 remains DRAFT / OPEN / UNMERGED.
+The earlier dated status and evidence below are retained verbatim.
+
+---
+
 ## 2026-10-08 — Owner-scoped autonomous POCO Alpha acceptance
 
 Stage 8.6B-LITE: **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.
