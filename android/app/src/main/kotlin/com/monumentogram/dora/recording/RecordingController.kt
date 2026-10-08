@@ -59,6 +59,9 @@ class RecordingController(
     private val vadFactory: VadEngineFactory = VadEngineFactory {
         throw VadException(VadFailure.RUNTIME_UNAVAILABLE)
     },
+    private val freeStorageBytes: () -> Long = {
+        StatFs(context.noBackupFilesDir.path).availableBytes
+    },
 ) {
     private val mutable = MutableStateFlow(RecordingViewState())
     val state = mutable.asStateFlow()
@@ -161,7 +164,16 @@ class RecordingController(
         )
     }
 
-    fun availableBytes(): Long = StatFs(context.noBackupFilesDir.path).availableBytes
+    fun availableBytes(): Long = freeStorageBytes()
+
+    fun storageBudget(): RecordingStorageBudget.Snapshot =
+        RecordingStorageBudget.assess(
+            try {
+                availableBytes()
+            } catch (_: Exception) {
+                null
+            }
+        )
 
     /** Aggregate health only, exposed through Android's privileged service dump. No IDs or PCM. */
     fun diagnosticSummary(): String =
@@ -198,7 +210,7 @@ class RecordingController(
             mutable.value =
                 RecordingViewState(recording = RecordingState(phase = RecordingPhase.PREPARING))
         }
-        if (availableBytes() < MINIMUM_FREE_BYTES) {
+        if (!storageBudget().canStart) {
             worker.execute { failBeforeStart(CaptureFailure.STORAGE_FULL) }
             return
         }
@@ -328,6 +340,8 @@ class RecordingController(
                                         pauseRequested.get()
                                 )
                                     throw ResumeCancelled()
+                                if (!storageBudget().canStart)
+                                    throw CaptureException(CaptureFailure.STORAGE_FULL)
                                 nativeStart()
                             }
                         )

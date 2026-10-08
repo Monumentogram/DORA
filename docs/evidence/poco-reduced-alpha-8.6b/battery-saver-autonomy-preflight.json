@@ -1,0 +1,24 @@
+{
+  "purpose": "FUNCTIONAL_AUTONOMY_PREFLIGHT_NOT_ENERGY",
+  "before": {
+    "powerSaveModeEnabled": false,
+    "batterySaverSummary": "OFF",
+    "powered": true,
+    "setting": "0"
+  },
+  "securitySettingsChanged": false,
+  "audioCaptured": false,
+  "enableExitCode": 0,
+  "afterEnable": {
+    "powerSaveModeEnabled": false,
+    "batterySaverSummary": "OFF",
+    "powered": true,
+    "setting": "0"
+  },
+  "restored": {
+    "powerSaveModeEnabled": false,
+    "batterySaverSummary": "OFF",
+    "powered": true,
+    "setting": "0"
+  }
+}

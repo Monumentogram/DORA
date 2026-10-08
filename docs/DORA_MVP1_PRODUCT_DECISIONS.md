@@ -1,3 +1,32 @@
+## 2026-10-08 — Owner-scoped autonomous POCO Alpha acceptance
+
+Stage 8.6B-LITE: **IN_PROGRESS / REDUCED_PHYSICAL_ACCEPTANCE_NOT_CLOSED**.
+Owner scope is exactly 60 real five-second cycles and one USB-powered 3,600-second
+screen-off run. All 60 must pass; this is not the historical 200-cycle reliability
+claim or the former three-hour acceptance. No whole Stage 8.6 closure is asserted.
+
+[ADR-RECORDING-005](adr/ADR-RECORDING-005-hour-storage-admission.md) admits a minimal
+storage budget: 125,000,000 bytes/hour plus 16,777,216-byte finalization headroom.
+Fresh Start and the native capture admission boundary check exact free bytes;
+unknown capacity fails closed. UI shows free/required space and a refresh action.
+This is headroom admission, not preallocation or a new retention/deletion policy.
+
+[ADR-RECORDING-006](adr/ADR-RECORDING-006-reduced-autonomous-alpha-acceptance.md) defines
+reduced coverage; [OD-86B-LITE-BATTERY-SAVER-DEFERRAL](adr/ADR-RECORDING-007-usb-battery-saver-deferral.md)
+supersedes its Saver requirement: **DEFERRED / USB_POWER_CONSTRAINT**. Autonomous
+Doze may be deferred if unavailable. Canonical integrity, storage, thermal, real
+VAD, Recovery, owner-data preservation and safe shutdown are not weakened.
+
+Battery efficiency remains DEFERRED / NON_BLOCKING_FOR_ALPHA (ADR-PERF-002).
+Hardware microWh and comparative ratio remain NOT_EVALUATED. No battery experiments.
+Current evidence is under [poco-reduced-alpha-8.6b](evidence/poco-reduced-alpha-8.6b/).
+Historical failures, earlier requirements and dated statuses below remain intact.
+Final exact-SHA CI, review and acceptance are still required. Sheet C78 unchanged.
+Group D / Stage 9 / Cloud / ASR NOT_STARTED. Security restoration remains OPEN;
+PERF-REC-001 deferred/non-blocking. PR99 stays DRAFT / OPEN / UNMERGED.
+
+---
+
 ## 2026-10-05 — Owner defers battery efficiency beyond Alpha
 
 Current Stage 8.6 Alpha status: **NOT_READY / NON_BATTERY_ACCEPTANCE_GAPS_OPEN**.

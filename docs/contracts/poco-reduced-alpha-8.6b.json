@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "status": "IN_PROGRESS_NO_ACCEPTANCE_CLAIM",
+  "files": {
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingStorageBudget.kt": "6a3884e44285b608961845846af3dad742911962a3a12a008e6d4a19e3df256f",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/RecordingStorageBudgetTest.kt": "ca6e6a571e376e3c1669b96b60a01bfb07a69233d4c294627e7eec664d510476",
+    "docs/adr/ADR-RECORDING-005-hour-storage-admission.md": "789c8df68e83a37e7140eda3689ab2ccd2d9168050b3a2ade2bef9763aa944f0",
+    "docs/adr/ADR-RECORDING-006-reduced-autonomous-alpha-acceptance.md": "6af7f935bb4fc7c56252c530303b2176786dd6bbd457b029c80722ea2849c423",
+    "docs/adr/ADR-RECORDING-007-usb-battery-saver-deferral.md": "0fe5af165a540ad190f98f0c966cbe741bbfcb9bd61c05ded2f7d0c4e70fcd4e",
+    "docs/evidence/poco-reduced-alpha-8.6b/attempt-ledger.json": "9350c64b98341411c87e2afeb77077cdb0f513bba8f1164718aa225313d7c957",
+    "docs/evidence/poco-reduced-alpha-8.6b/battery-saver-autonomy-preflight.json": "82dd474bf9ee097e6f4364b48c7a188b32005a3bf8da8214d372ab161c9c6b38",
+    "docs/evidence/poco-reduced-alpha-8.6b/continuation-protocol-seal.json": "95e66574d2c931f30d5a3999f9101375863a069ae19fb54071e443f0df0c470f",
+    "docs/evidence/poco-reduced-alpha-8.6b/continuation-protocol.json": "e1048de6c53f1e66a874c75bd76a7fbe3d1ae6a6aa17f6072ebe08ebad879ab6",
+    "docs/evidence/poco-reduced-alpha-8.6b/diagnostic-screen-off.json": "fbf1d6d5117dae01f78266cc17cb193cad1b89a3062462b5cbaf3cb8a116c392",
+    "docs/evidence/poco-reduced-alpha-8.6b/final-preservation.json": "eaad21dc8743919c7cd7c378465fd1883cd13ee129fb282611ed7a0fcb3cb965",
+    "docs/evidence/poco-reduced-alpha-8.6b/main-protocol-seal.json": "7df798b473937ea006c4abcd730fb63fd64a45407adbdab477285287cb5b72c8",
+    "docs/evidence/poco-reduced-alpha-8.6b/main-protocol.json": "7aca27ecee90b616da94467ca8b1d935ef2cbf4d0cb6a29489db47eaef7930f9",
+    "docs/evidence/poco-reduced-alpha-8.6b/pr-status.json": "00a0cfbcea4497f64f76a7ca0f8a2a404a15352438b7ed14da9eefa0d8850211",
+    "docs/evidence/poco-reduced-alpha-8.6b/predecessor-ci.json": "6c937628654f322376e171fd0172def4b9409b80644ea47ea3fda636353b2e57",
+    "docs/evidence/poco-reduced-alpha-8.6b/result.json": "77762dc52fbcd66bc215a58c7a9660c06c54b43b0ff7ad9f22e3d114bcd5a4b0",
+    "docs/evidence/poco-reduced-alpha-8.6b/source-readiness.json": "830b82ec48970ff47c2683f1c22170f6e9496a3e9779e4989f0ee4e8afbeeea9",
+    "docs/superpowers/plans/2026-10-08-poco-non-battery-acceptance.md": "13c95717aa78ac5f8930125472751cc3482699f2a3650823ca1b0ba11001d11d",
+    "docs/superpowers/plans/2026-10-08-poco-reduced-autonomous-alpha.md": "d6bc414990f9c83def38266534ed8d462c6e2e2769cdbcea2dd7d83bb9e335fd",
+    "tools/poco_alpha_acceptance.py": "a19e59274872c2d6e8eb4987eb39ad6f7258f5910fcf5fd1a07a97c37ffc8650",
+    "tools/poco_non_battery/alpha_protocol.py": "032d845ef555ce8fef67a3469f39ecfe0ebda122d893818a4cfc5bd35766f5db",
+    "tools/poco_non_battery/build_driver.py": "183cea2e0624efa4ffe15dd5fedbd3e571bcdfb480a527cb1dd93aecdcf2265d",
+    "tools/poco_non_battery/driver/AndroidManifest.xml": "b1f4258496bcedf7f1c2912ef96b2e9b83443726945587c3b4db97d9c925dd9a",
+    "tools/poco_non_battery/driver/CampaignInstrumentation.java": "00138f3816fe9059b247e7db7be5cd3cc132d64e6ecd31a7fc0e9f2d032b1259",
+    "tools/poco_non_battery/driver/RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+    "tools/poco_non_battery/driver/SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+    "tools/poco_non_battery/driver/Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41",
+    "tools/poco_non_battery/protocol-draft.json": "29b3298727b760bfed16b68ee942041804e053f2733598ac4163161fd70cc82c",
+    "tools/poco_non_battery/receipts.py": "4f58c6ee9be292cb02e1e1708f4435d1db220a15be660912348a96183ff7000c",
+    "tools/poco_non_battery/test_alpha_orchestrator.py": "504c006b24a3079f3195c2b8134949e8ba61ed530ada9c969cbb778679ca2a6c",
+    "tools/poco_non_battery/test_alpha_protocol.py": "cfb815ade42a0a3e6659892e6c839852d1367b5646369d162b4c0dbd7bb35041",
+    "tools/poco_non_battery/test_receipts.py": "b2c8501fe84a3b15dd12b4bdd84969f75c7c365467904f956509c2440e69fdf5",
+    "tools/poco_non_battery/test_source_admission.py": "f535d0ce88604e298d42944c0a2a72dbceb0e92a89282f65d8436153e29d08bf",
+    "tools/poco_reduced_admission.py": "b5a58aaf96bc933be2e1006fe123a823a58c84afa7922c5974b09e6719c16baa",
+    "tools/test_logical_recovery_poco_reduced.py": "1fe91a602869ae60eec08188855ff5b175c2c9650e88077b31eb8cc3c65d8ceb"
+  },
+  "overrides": {
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt": {
+      "before": "8ebd60c7fc62b84477d550e9927362df90f03cc20af2fc11ab864ca46bb548e2",
+      "after": "72bc4423191e30df625322facb82be033a40f2f7ba331c58185936cd675f312b"
+    },
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt": {
+      "before": "3853c22d01a0eb30dd08de29a1ac2e89a26a0542085080350d2cb1e008e52d38",
+      "after": "436197e250b595c32df270120aafced8856c8834b1f0c46e11aaf64a702fab5a"
+    }
+  }
+}

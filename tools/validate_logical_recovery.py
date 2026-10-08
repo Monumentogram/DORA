@@ -25,6 +25,9 @@ PERF-REC-001 remains deferred/non-blocking; DEV-SECURITY-RESTORE-BEFORE-ALPHA-CL
 
 
 def validate_status_projection(current, historical):
+    import poco_reduced_admission as reduced
+    if current.startswith(reduced.PREFIX):
+        current = reduced.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()
     import poco_alpha_battery_defer as alpha
     if current.startswith(alpha.PREFIX):
         current = alpha.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()

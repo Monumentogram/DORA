@@ -20,6 +20,10 @@ STATUS_ROUTE = '''    import poco_alpha_battery_defer as alpha
     if current.startswith(alpha.PREFIX):
         current = alpha.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()
 '''
+REDUCED_STATUS_ROUTE = """    import poco_reduced_admission as reduced
+    if current.startswith(reduced.PREFIX):
+        current = reduced.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()
+"""
 # Exact content seals; additions/edits require a new reviewed evidence revision.
 SEALED = {'docs/evidence/poco-recording-8.6/attempts.json': '41993ad345629651577ad94adfd80197d0fdd790cf391759beb3df2825c9764e', 'docs/evidence/poco-recording-8.6/batterystats-source-summary.txt': 'da3a563e0d942f48c2809ced7fe98a370018ffab5e05e7e11153915755e5ad07', 'docs/evidence/poco-recording-8.6/cleanup-diagnostic-files.txt': 'dd8375c9e37ee04796a5237f78923faca46245a35668894177cb2b8a85f5ad3e', 'docs/evidence/poco-recording-8.6/device-preflight.json': '2411808feedbcabef0754b5a59302bb2255efd534080d4411f9fb71a3982ea66', 'docs/evidence/poco-recording-8.6/EnergyProbe.java': '8e45cc34d14d9bd53b7f2a26edc4a1b7c822c1d05b104b29075abbeeb4ec856e', 'docs/evidence/poco-recording-8.6/fixture-manifest.json': 'c8f567882b06e4e03b0a00f03b5aa59921ac0f5f69cde167b40df3d5340a8408', 'docs/evidence/poco-recording-8.6/framework-energy-probe-screen-off.txt': 'bee070cd9160fa644e1fd366c9dbe28ea5ac9fab430e4c344111dec81a9bbd33', 'docs/evidence/poco-recording-8.6/framework-energy-probe.txt': '86488169581ac12fefb6ebf655608841c5be326633b724863254bf123b1dd9d4', 'docs/evidence/poco-recording-8.6/oracle-result.txt': '7934c2f52f3d66c9193320dd44ce801ef62716c4a3323a5b471d25e6586b2a56', 'docs/evidence/poco-recording-8.6/perfetto-consumer-summary.json': '43445acea8eccb372d834ee31dc3f614f2e1e5c4718c0dcc5fc5581b44d579c6', 'docs/evidence/poco-recording-8.6/perfetto-summary.json': 'ee9319553dc3f5846ccca191d3be01cf217a2557353885a811d6952a7bfa349d', 'docs/evidence/poco-recording-8.6/power-preflight-consumers.pbtxt': '58c22bb79ffebba89dc7f690df7fb7dd9dba8f6d8484901aa176b8863f85d613', 'docs/evidence/poco-recording-8.6/power-preflight-rails.pbtxt': 'ecce9d7b3fd2233ed862f04bb0aeb8947eedd6e87a9efa4a7ebe1139946da8e3', 'docs/evidence/poco-recording-8.6/protocol.json': '873df5993a2d14d0c054e0b9aa3afe68a1dc8c53e69d686d476cbb080c4e2364', 'docs/evidence/poco-recording-8.6/README.md': 'b3b8a9780d0e694982465d03c990e087a18598ebd431f3da9466d88fe53d763e', 'docs/evidence/poco-recording-8.6/result.json': '4cba9826f1f3afe8b6a40bff36f5cb59ad73687531477368a49a679b63a1591e', 'docs/evidence/poco-recording-8.6/screen-before.txt': '47af5ef8b5c76675798d0d3fd9e41b050f21c4c4472fd057d0bf02809223a8be', 'docs/evidence/poco-recording-8.6/screen-off-end.txt': 'b11c0847e108cea10d11e68469ab13c37eca4e6b43babd86b190dd36708c9c4a', 'docs/evidence/poco-recording-8.6/screen-off.txt': '8c2e9f24c621a6ff13aa55f27fde0aca2c8a737015b6a6093f28dd2778459c17', 'tools/test_logical_recovery_poco.py': '95b404a752b24850f6ffcfff15e18b40f15d200664279bc16f4eb47b034134b6'}
 
@@ -77,6 +81,8 @@ def validate_seal(raw, expected):
 def validate_parent_route(current, original):
     current = current.replace(b'\r\n', b'\n')
     expected = int(b'def validate_status_projection(' in original)
+    require(current.count(REDUCED_STATUS_ROUTE.encode()) == expected, 'Reduced status route changed')
+    current = current.replace(REDUCED_STATUS_ROUTE.encode(), b'', expected)
     require(current.count(STATUS_ROUTE.encode()) == expected, 'Parent status route changed')
     current = current.replace(STATUS_ROUTE.encode(), b'', expected)
     require(current.count(ROUTE.encode()) == 1 and
@@ -111,7 +117,10 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     validate_ci(os.environ, head, dirty, working)
     import poco_alpha_battery_defer as alpha
     import poco_final_deletion as deletion
+    import poco_reduced_admission as reduced
+    reduced_contract = reduced.load(root)
     approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | set(FINAL_DELETION_SEALED) | {SELF, PARENT, GOVERNANCE}
+    approved |= set(reduced_contract['files']) | reduced.OVERRIDES | {reduced.MANIFEST}
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -120,11 +129,16 @@ def validate_checkout(root=ROOT, *, allow_working=None):
         require(len(parts) == 2, 'No merge or rewritten baseline')
         validate_paths(git('diff', '--name-only', parts[1], parts[0]).decode().splitlines(), approved, False)
     for path, digest in {**SEALED, **COMPARATIVE_SEALED, **REMEDIATION_SEALED, **ALPHA_DEFER_SEALED, **FINAL_DELETION_SEALED}.items():
-        validate_seal((root / path).read_bytes(), digest)
+        raw = (root / path).read_bytes()
+        if path in reduced.DOCUMENTS:
+            raw = reduced.normalize_document(path, raw)
+        validate_seal(raw, digest)
     for path in deletion.OVERRIDES:
         deletion.normalize(path, (root / path).read_bytes(), git('show', BASE + ':' + path))
+    for path in reduced.OVERRIDES:
+        reduced.normalize_override((root / path).read_bytes(), git('show', BASE + ':' + path), reduced_contract['overrides'][path])
     for path in alpha.DOCUMENTS:
-        require(alpha.normalize_document(path, (root / path).read_bytes()) ==
+        require(alpha.normalize_document(path, reduced.normalize_document(path, (root / path).read_bytes())) ==
                 git('show', BASE + ':' + path).replace(b'\r\n', b'\n'),
                 'Alpha owner decision must preserve historical document body')
     alpha.validate_file(root)
@@ -139,6 +153,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     contract = parent.read_contract(root)
     for path, digest in contract['files'].items():
         raw = governance.replace(addition, b'') if path == GOVERNANCE else (root / path).read_bytes()
+        if path in reduced.DOCUMENTS:
+            raw = reduced.normalize_document(path, raw)
         if path in alpha.DOCUMENTS:
             raw = alpha.normalize_document(path, raw)
         if path in REMEDIATION_OVERRIDES:
@@ -147,6 +163,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
             raw = original
         if path in deletion.OVERRIDES:
             raw = deletion.normalize(path, raw, git('show', BASE + ':' + path))
+        if path in reduced.OVERRIDES:
+            raw = reduced.normalize_override(raw, git('show', BASE + ':' + path), reduced_contract['overrides'][path])
         validate_seal(raw, digest)
     security.validate_development_sources(root)
     require(json.loads((root / security.BLOCKER_PATH).read_text()) == security.RESTORATION_BLOCKER,

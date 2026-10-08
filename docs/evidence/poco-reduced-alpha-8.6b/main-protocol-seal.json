@@ -1,0 +1,7 @@
+{
+  "sha256": "741e25634aa53bbb117245cb9168c621535f29661b98451513d02cc2c4b78b56",
+  "frozenBeforeAnyMainRun": true,
+  "sourceCommit": "2cb4b470da88a52f2ce89ce0ae6c640c3222cfe1",
+  "sourceWorkingTree": "EXPLICIT_RUNTIME_MANIFEST_BOUND",
+  "oldSaverBlockerSupersededBy": "OD-86B-LITE-BATTERY-SAVER-DEFERRAL"
+}

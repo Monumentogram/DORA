@@ -381,6 +381,7 @@ private fun RecordingPreflight(
     onCancel: () -> Unit,
 ) {
     var acknowledged by rememberSaveable { mutableStateOf(false) }
+    var storageBudget by remember { mutableStateOf(controller.storageBudget()) }
     var microphone by remember {
         mutableStateOf(
             activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
@@ -410,7 +411,19 @@ private fun RecordingPreflight(
         }
     Text("Микрофон: ${if (microphone) "доступ разрешён" else "нужно разрешение"}")
     Text("Активный маршрут микрофона будет определён при запуске")
-    Text("Свободно на устройстве: ${controller.availableBytes() / BYTES_PER_MIB} МБ")
+    val available = storageBudget.availableBytes
+    Text(
+        if (available == null) "Не удалось проверить свободное место"
+        else "Доступно на устройстве: ${available / BYTES_PER_MB} МБ"
+    )
+    Text("Для часа записи нужно 125 МБ и резерв на завершение 16 MiB: всего не менее 142 МБ.")
+    Text("Резерв учитывается при запуске; место заранее не выделяется.")
+    if (!storageBudget.canStart) {
+        Text("Освободите место и обновите проверку. Сохранённые записи останутся доступны.")
+    }
+    TextButton(onClick = { storageBudget = controller.storageBudget() }) {
+        Text("Обновить проверку места")
+    }
     Text("Аудио записывается только на этом устройстве и сохраняется в зашифрованном виде.")
     Text(
         "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» " +
@@ -452,7 +465,7 @@ private fun RecordingPreflight(
         Text("Я предупредил(а) участников о записи")
     }
     Button(
-        enabled = acknowledged,
+        enabled = acknowledged && storageBudget.canStart,
         onClick = {
             if (
                 activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
@@ -565,7 +578,7 @@ private const val AUTH_REFRESH_MILLIS = 100L
 private const val WAVE_BARS = 72
 private const val WAVE_SIZE_DP = 248
 private const val WAVE_STROKE_DP = 3
-private const val BYTES_PER_MIB = 1_048_576L
+private const val BYTES_PER_MB = 1_000_000L
 private const val SAMPLE_RATE = 16_000
 private const val SECONDS_PER_MINUTE = 60
 private const val SECONDS_PER_HOUR = 3600
