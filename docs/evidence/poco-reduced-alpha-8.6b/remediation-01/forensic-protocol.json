@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "protocolId": "LONG01_FORENSIC_NO_SOURCE_MUTATION_V1",
+  "baselineSha": "5f3d605a5e68367b5fe784cb22608b462042e1a5",
+  "targetRun": "dora-long-01",
+  "targetIdentityFingerprint": "f64a84108b022e03fa203c5730d2d73ac1a5ce88b7540d2bc22721cd30fef4fe",
+  "failedReceiptSha256": "8f78dfdd005deb5aea82aa0670af12f82757e3d1559be13083fae6c7fcddc5d9",
+  "testedProductApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "original46MapSha256": "f25a28aa9e80e19f10a01eacbc30d9b10ec591407c770adb92869d9710fb1fd2",
+  "preconditions": [
+    "Exact APK and authorized same POCO; microphone OFF and recording FGS absent",
+    "No new capture, product update, normal Stop, Resume, Finalize or Recovery during initial forensics",
+    "Freeze complete encrypted-vault file metadata and content digests locally before any application/database open; never export audio or secrets",
+    "No concurrent source writer; require stable before/after source digests; fail closed on changed state",
+    "Historical owner inventory is historical evidence until a current authenticated inventory verifies it"
+  ],
+  "operationClasses": {
+    "filesystemReadOnly": {
+      "allowed": true,
+      "operations": ["Read existing content-free receipts", "lstat, regular-file inventory and SHA256 of encrypted vault files in app UID"],
+      "limitations": "No following symlinks; no file content export; no claim of authenticated PCM from hashes"
+    },
+    "catalogInspection": {
+      "allowedOnlyAfterTransitiveReview": true,
+      "operations": ["Authenticated SELECT-only catalog snapshot for exact LONG01 plus content-free original46 inventory"],
+      "prohibitedShortcut": "Normal Room open is not assumed read-only: writable database, migrations, binding insertion and WAL/SHM behavior must be excluded from the original source",
+      "snapshotOption": "If needed, create an isolated encrypted catalog/WAL snapshot inside the same private app sandbox while the source is quiescent. Open only the snapshot. No original catalog writes, key generation or repair. Snapshot is forensic data, never an alternative recording store."
+    },
+    "authenticatedPcmPrefixInspection": {
+      "allowedOnlyAfterTransitiveReviewAndSyntheticProof": true,
+      "operations": ["Authenticate exact committed LONG01 microfiles using existing admitted cryptography and existing keys", "Consume bounded plaintext only in memory; discard and zero; emit only ordinal/range/status counts"],
+      "requirements": ["No mutation-capable journal callbacks", "No quarantine executor", "No catalog CAS or retained-reference publication", "Stop at first corrupt, missing, overlapping or discontinuous unit; never stitch across a middle gap", "Report catalog-claimed and authenticated-readable frames separately"]
+    },
+    "pendingIntentMutation": {
+      "allowed": false,
+      "examples": ["OriginalAudioLifecycle.acquire if it retains a reference", "Any extract/sourceState path that reconciles pending intents", "Pending append/finalize reconciliation"]
+    },
+    "recoveryOrReconciliation": {
+      "allowed": false,
+      "examples": ["RecordingRecoveryReader.read", "RecoveryAudioBridge.reconcile", "Quarantine execution", "Normal Resume", "Normal Stop/finalize"]
+    },
+    "destructive": {
+      "allowed": false,
+      "examples": ["Source deletion", "Key alteration/deletion", "App-data clear", "Product uninstall", "Destructive repair"]
+    }
+  },
+  "executionAdmission": "No authenticated source inspection until a separate content-free call-graph receipt and synthetic no-mutation validation establish the exact inspected path. Filesystem preservation inventory may run immediately under this protocol.",
+  "failurePolicy": "If safe authenticated inspection cannot be established, BLOCKED / SAFE_LONG_SOURCE_INSPECTION_UNAVAILABLE; do not invoke unsafe recovery.",
+  "counterPolicy": "31203200 admitted,30960000 last durable and31040000 historical catalog are distinct observations. Timing explanations remain UNKNOWN unless independently proved.",
+  "historicalCausePolicy": "Synthetic reproduction proves only its constructed path. Historical failure enum remains UNKNOWN absent historical causal evidence. No PASS or retry admission without required external review of uncertainty.",
+  "publication": "Only content-free receipts; no PCM, private keys, AAR/model, owner identifiers, broad raw logs or device serial. Preserve original failed evidence.",
+  "excluded": ["Hour-long capture", "60-cycle or200-cycle rerun", "Battery experiments", "Sheet writes", "Stage9", "GroupD", "Cloud", "ASR"]
+}
