@@ -1,0 +1,578 @@
+[
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371574.29",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371605.02",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371636.11",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371667.17",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371698.27",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371729.34",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371760.41",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371791.49",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371822.58",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371853.69",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371884.81",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371915.99",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371947.18",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "371978.37",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "372009.62",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "372040.84",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "372071.01",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "372102.29",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 280,
+    "deviceUptimeSeconds": "372133.54",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372164.91",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372196.18",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372227.49",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372257.74",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372289.09",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372319.23",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372349.39",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372379.55",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372409.76",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372440.00",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372470.23",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372500.41",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372530.67",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372561.11",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372591.47",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372621.87",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372652.38",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372682.82",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372713.26",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372743.76",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372774.46",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372805.12",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372835.74",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372866.41",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372897.08",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372927.90",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372958.74",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "372989.57",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373020.39",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373051.23",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373082.26",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373113.30",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373144.31",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373175.47",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373206.53",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373237.66",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373268.71",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373299.89",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373331.21",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373362.51",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373393.87",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373424.00",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373455.07",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373486.47",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 270,
+    "deviceUptimeSeconds": "373517.85",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  }
+]

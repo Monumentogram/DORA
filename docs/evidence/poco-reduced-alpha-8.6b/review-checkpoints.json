@@ -1,0 +1,42 @@
+{
+  "scope": "INDEPENDENT_TOOLING_AND_BLOCKED_PUBLICATION_REVIEW_NOT_PHYSICAL_ACCEPTANCE",
+  "reviews": [
+    {
+      "reviewer": "instrumentation_review",
+      "area": "Host terminal publication race and safety",
+      "result": "0 unresolved P0/P1/P2",
+      "verification": "12/12 host regression tests; retains genuine missing-terminal failure and original race evidence"
+    },
+    {
+      "reviewer": "acceptance_review",
+      "area": "Sixty-cycle evidence and preservation",
+      "result": "0 unresolved P0/P1/P2",
+      "verification": "60 unique attempts1..60, raw receipt SHA checks, counter/readback/deletion/owner46 checks, no energy/full-stage overclaim"
+    },
+    {
+      "reviewer": "acceptance_review",
+      "area": "Functional permission/notification/recovery pre-execution source",
+      "result": "0 unresolved P0/P1/P2",
+      "verification": "Real product control, owned-empty denied-start shell classification, real durable-prefix wait and same-identity Resume"
+    },
+    {
+      "reviewer": "instrumentation_review",
+      "area": "Storage UI pre-execution source",
+      "result": "0 unresolved P0/P1/P2",
+      "resolvedFinding": "P2 UI package/window scope: root, exact visible node and clickable ancestors now must belong to DORA and same window; duplicate exact matches fail closed"
+    },
+    {
+      "reviewer": "instrumentation_review",
+      "area": "Optional forced Doze",
+      "result": "DEFERRED_NOT_EXECUTED",
+      "resolvedFinding": "No independent global idle-restoration guarantee on process death; removed optional force-idle code under explicit owner deferral allowance"
+    },
+    {
+      "reviewer": "acceptance_review",
+      "area": "Final blocked publication and historical document preservation",
+      "result": "0 unresolved P0/P1/P2 in publication scope",
+      "verification": "Historical document bodies byte-identical to checkpoint; diff check clean; truthful60/60 and failed long run; retained source and NOT_RUN functional smokes;111 host tests pass"
+    }
+  ],
+  "finalPhysicalAndExactShaCiReview": "Physical LONG_CAPTURE_INTERRUPTED root cause OPEN; final exact-SHA CI evidence reported externally"
+}

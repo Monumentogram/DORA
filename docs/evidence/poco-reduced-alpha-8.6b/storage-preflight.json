@@ -1,0 +1,20 @@
+{
+  "run": "storage-01",
+  "mode": "storage",
+  "apkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "pid": 4070,
+  "phase": "COMPLETE",
+  "updatedElapsedMs": 363746697,
+  "ownerCount": 46,
+  "ownerMapSha256": "f25a28aa9e80e19f10a01eacbc30d9b10ec591407c770adb92869d9710fb1fd2",
+  "injectedFreeBytes": 100000000,
+  "requiredBytes": 141777216,
+  "unsafeStartRejected": true,
+  "noPartialAsset": true,
+  "ownerInventoryUnchanged": true,
+  "microphoneReleased": true,
+  "fgsStopped": true,
+  "rawReceiptSha256": "e6ddf958efb7b4373551efaa8dffe7b3fddf1635cf6399329371dcebbb3dafb3",
+  "disposition": "REUSED_SAME_EXACT_PRODUCT_APK_PRE_MAIN_CONTROLLED_INJECTION",
+  "physicalDeviceFilled": false
+}

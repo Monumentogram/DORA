@@ -1,0 +1,25 @@
+{
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true,
+    "pendingStartExcluded": true
+  },
+  "globalSettingsObserved": {
+    "low_power": "0",
+    "wifi_on": "1",
+    "bluetooth_on": "1",
+    "mobile_data": "0"
+  },
+  "forceIdle": false,
+  "powerContext": {
+    "AC powered": false,
+    "USB powered": true,
+    "Wireless powered": false,
+    "status": 2,
+    "temperature": 260,
+    "deviceUptimeSeconds": "374253.85",
+    "purpose": "USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT"
+  },
+  "noBatterySimulationOrSettingsModification": true,
+  "noOwnerActionRequired": true
+}

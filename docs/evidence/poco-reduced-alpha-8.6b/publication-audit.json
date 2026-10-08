@@ -1,0 +1,10 @@
+{
+  "status": "PASS_BOUNDED_PUBLICATION_AUDIT",
+  "scope": "All changed/untracked task files before publication; content-free receipts only, raw device log retained privately and excluded",
+  "positiveCanaries": 5,
+  "findings": [],
+  "privateAudioOrModelsExaminedOrUploaded": false,
+  "deviceIdentifierCanary": "KNOWN_PRIVATE_SERIAL_DETECTED_BY_EXACT_MATCH",
+  "ciLogsArtifacts": "PENDING_EXACT_SHA_EXTERNAL_AUDIT",
+  "scannedFilesIncludingAuditReceipt": 67
+}

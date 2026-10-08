@@ -1,0 +1,23 @@
+{
+  "mainFailedRun": "dora-long-01",
+  "noFurtherCaptureStarted": true,
+  "inspectionHelperInstallAttempts": [
+    {
+      "attempt": 1,
+      "exit": 1,
+      "errorDetail": "NOT_CAPTURED",
+      "installedHelperAfterward": "ORIGINAL_HELPER19",
+      "recordingOrDataMutation": false
+    },
+    {
+      "attempt": 2,
+      "exit": 0,
+      "preparation": "Standard authorized nonsecure screen wake/dismiss",
+      "ownerActionRequired": false,
+      "installedHelper": "INSPECTION_HELPER26"
+    }
+  ],
+  "readOnlyInspection": "COMPLETE_OWNER46_PRESERVED_FAILED_SOURCE_RETAINED",
+  "preparedFunctionalHelpers20Through25": "NOT_INSTALLED_NOT_EXECUTED",
+  "noTestAudioDeletedAfterLongFailure": true
+}

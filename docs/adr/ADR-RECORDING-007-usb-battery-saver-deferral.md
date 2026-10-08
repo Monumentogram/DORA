@@ -30,3 +30,12 @@ The short-cycle watchdog remains 240 s per attempt. The hour has a predeclared
 5,400 s total driver budget: at least 3,600 s uninterrupted screen-off capture,
 then bounded finalization, authenticated readback and verified deletion. This is
 a physical-driver budget, not a change to any CI or instrumentation-suite timeout.
+
+## Optional Doze safety disposition
+
+The owner's latest text also limits Doze to cases that can be **safely** automated.
+The admitted helper has no independently acknowledged global idle-restoration
+transaction surviving instrumentation/process death. The unexecuted Doze path
+was removed before functional admission; no force-idle command was issued.
+Doze is therefore `DEFERRED / AUTONOMOUS_DEVICE_CONSTRAINT`, not PASS and not a
+claim that Android lacks Doze. The mandatory capture and Recovery gates remain.

@@ -1,0 +1,27 @@
+{
+  "scope": "60 short physical cycles, not the historical 200-cycle reliability gate",
+  "oracle": {
+    "attempts": 60,
+    "started": 60,
+    "finalized": 60,
+    "wholeRecordingLoss": 0,
+    "pass": true,
+    "scope": "REDUCED_OWNER_ONLY_ALPHA_SAMPLE_NOT_99_5_PERCENT_RELIABILITY_PROOF"
+  },
+  "minimumRecordingMs": 5113,
+  "canonicalFrames": {
+    "min": 80800,
+    "max": 81600,
+    "sum": 4886400
+  },
+  "readErrors": 0,
+  "shortReads": 0,
+  "vadInferenceTotal": 9378,
+  "vadDeadlineMissesTotal": 0,
+  "canonicalQueueHighWaterMax": 2,
+  "vadQueueHighWaterMax": 4,
+  "maximumAndroidThermalStatus": 0,
+  "deletedOwnedRecordings": 60,
+  "originalRecordingsPreserved": 46,
+  "hostInterruptions": "Preserved separately in main-host-attempts.json; no repeated/replaced recording attempts."
+}

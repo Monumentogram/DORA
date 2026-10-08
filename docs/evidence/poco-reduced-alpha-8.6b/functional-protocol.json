@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "state": "FROZEN_BEFORE_FUNCTIONAL_RUNS",
+  "scope": "POST_MAIN_BOUNDED_FUNCTIONAL_SMOKES_NO_ENERGY",
+  "productApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "helperApkSha256": "989d54a1bad704f7255781fd51718fb5a21dce92271c78fda497a61f58fb0e1a",
+  "ownerMapSha256": "f25a28aa9e80e19f10a01eacbc30d9b10ec591407c770adb92869d9710fb1fd2",
+  "helperSources": {
+    "AndroidManifest.xml": "a6d26cd8c0d1d884b671ef1212142346cde9d5d448f300bc222f07a49aa103cd",
+    "CampaignInstrumentation.java": "702378ee0aba99de0b158449c28cf24a0e3875e08e42bcc7916ddf4c0ed6e0e5",
+    "FunctionalInstrumentation.java": "070b14244c94bcc8ccd78d4e91ef6254241e71c36fba26e7d29b6fee375c84bf",
+    "RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+    "SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+    "Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41"
+  },
+  "originalRecordings": 46,
+  "order": [
+    "lite-functional-notification-01",
+    "lite-functional-permission-01",
+    "lite-functional-recovery-seed-01",
+    "lite-functional-recovery-resume-01"
+  ],
+  "runs": {
+    "lite-functional-notification-01": {
+      "mode": "notification",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    },
+    "lite-functional-permission-01": {
+      "mode": "permission",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    },
+    "lite-functional-recovery-seed-01": {
+      "mode": "recovery-seed",
+      "attempts": 1,
+      "hardDeadlineSeconds": 480
+    }
+  },
+  "capture": "real product control, native microphone, pinned VAD and encrypted persistence",
+  "notification": "background screen-off; actual notification Pause and Stop PendingIntents; explicit product Resume",
+  "permission": "inject false at actual capture permission check before native creation; authenticate and prove exact failed-session empty shell has no storage claims before deletion; restore injection; real Start/Stop/readback retry",
+  "recovery": "Wait for real positive durable prefix (up to 30 s after initial 5 s); exact bound PID kill; OS mic/FGS absence; reference receipt SHA bound into separate immutable resume protocol before execution; explicit product Resume same RecordingId; full canonical readback before deletion",
+  "resumeBindingPolicy": "Only referenceRun/referenceReceiptSha256 derived from exact seed receipt; new protocol seal before Resume; original plan unchanged",
+  "cleanup": "exact experiment-owned identities only after authenticated full readback, or proven empty denied-start shell with no PCM/claims; original46 immutable",
+  "batterySaver": "DEFERRED / USB_POWER_CONSTRAINT",
+  "doze": "DEFERRED / AUTONOMOUS_DEVICE_CONSTRAINT",
+  "dozeReason": "No independently acknowledged global idle restoration authority across process death in the admitted driver; force-idle code and mode excluded. Optional smoke deferral permitted by owner override. No idle state changed.",
+  "batteryEfficiency": "DEFERRED / NON_BLOCKING_FOR_ALPHA",
+  "hardwareMicroWh": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "noManualOwnerActions": true
+}

@@ -14,6 +14,33 @@ spec.loader.exec_module(operator)
 
 
 class HostSafetyTest(unittest.TestCase):
+    def test_terminal_publication_between_receipt_and_process_exit_is_retained(self):
+        from types import SimpleNamespace
+        state = {'phase': 'ATTEMPT_COMPLETE'}
+        def poll():
+            state['phase'] = 'COMPLETE'
+            return 0
+        device = SimpleNamespace(receipt=lambda run: dict(state))
+        process = SimpleNamespace(poll=poll)
+        self.assertEqual(operator.instrumentation_progress(device, process, 'test-run')['phase'], 'COMPLETE')
+
+    def test_exited_process_without_terminal_still_fails_closed(self):
+        from types import SimpleNamespace
+        device = SimpleNamespace(receipt=lambda run: {'phase': 'RECORDING'})
+        with self.assertRaisesRegex(RuntimeError, 'INSTRUMENTATION_EXITED_WITHOUT_TERMINAL'):
+            operator.instrumentation_progress(device, SimpleNamespace(poll=lambda: 1), 'test-run')
+
+    def test_planned_recovery_kill_never_targets_an_unmatched_process(self):
+        device = operator.Device({}); commands = []
+        device.text = lambda *args, **kwargs: '222'
+        device.call = lambda *args, **kwargs: commands.append(args)
+        row = dict(mode='recovery-seed', run='lite-functional-recovery-seed-01',
+                   phase='RECOVERY_KILL_READY', pid=111, durableFramesBeforeKill=64000,
+                   activeCampaignIdentity='a' * 64, invocationTokenFingerprint='b' * 64)
+        with self.assertRaises(ValueError):
+            device.kill_owned_for_recovery(row)
+        self.assertEqual(commands, [])
+
     @unittest.skipUnless(os.name == 'nt', 'Windows sharing semantics')
     def test_atomic_receipt_replacement_survives_short_windows_reader_lock(self):
         with tempfile.TemporaryDirectory() as folder:

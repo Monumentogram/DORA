@@ -41,6 +41,16 @@ def write_json(path, value):
             time.sleep(.02)
 
 
+def instrumentation_progress(device, process, run):
+    # Observe process exit before reading its final atomically published receipt.
+    # The reverse order can mistake a stale progress snapshot for a missing terminal.
+    exited = process.poll() is not None
+    row = device.receipt(run)
+    if exited and (not row or row.get('phase') not in ('COMPLETE', 'FAILED')):
+        raise RuntimeError('INSTRUMENTATION_EXITED_WITHOUT_TERMINAL')
+    return row
+
+
 class Device:
     def __init__(self, config):
         self.config = config
@@ -109,6 +119,18 @@ class Device:
         return {'fgsAbsent': SERVICE not in service,
                 'micNotRunning': '(running)' not in appop and 'running=true' not in appop}
 
+    def power_context(self):
+        raw = self.text('shell', 'dumpsys', 'battery')
+        values = {}
+        for field in ('AC powered', 'USB powered', 'Wireless powered', 'status', 'temperature'):
+            matches = re.findall(r'^\s*' + re.escape(field) + r':\s*(true|false|[0-9]+)\s*$', raw, re.M)
+            if len(matches) != 1:
+                raise RuntimeError('POWER_CONTEXT_UNAVAILABLE')
+            values[field] = matches[0] == 'true' if matches[0] in ('true', 'false') else int(matches[0])
+        values['deviceUptimeSeconds'] = self.text('shell', 'cat', '/proc/uptime').split()[0]
+        values['purpose'] = 'USB_POWER_CONTEXT_ONLY_NO_ENERGY_MEASUREMENT'
+        return values
+
     def confirmed_shutdown(self, run):
         safe = self.safe_state()
         receipt = self.receipt(run)
@@ -118,6 +140,27 @@ class Device:
         never_started = (receipt is not None and receipt.get('phase') == 'FAILED'
                          and 'activeAttempt' not in receipt and 'invocationTokenFingerprint' not in receipt)
         return {**safe, 'pendingStartExcluded': settled or never_started}
+
+    def kill_owned_for_recovery(self, row):
+        if (row.get('mode') != 'recovery-seed' or row.get('run') != 'lite-functional-recovery-seed-01'
+                or row.get('phase') != 'RECOVERY_KILL_READY'
+                or type(row.get('pid')) is not int or row['pid'] <= 0
+                or type(row.get('durableFramesBeforeKill')) is not int or row['durableFramesBeforeKill'] <= 0
+                or any(not re.fullmatch('[a-f0-9]{64}', row.get(k, ''))
+                       for k in ('activeCampaignIdentity', 'invocationTokenFingerprint'))):
+            raise ValueError('RECOVERY_KILL_AUTHORITY_MISSING')
+        pid = str(row['pid'])
+        if self.text('shell', 'pidof', PACKAGE, check=False) != pid:
+            raise ValueError('RECOVERY_KILL_PID_MISMATCH')
+        self.call('shell', 'run-as', PACKAGE, 'kill', '-9', pid, check=False)
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if not self.text('shell', 'pidof', PACKAGE, check=False):
+                safe = self.safe_state()
+                if all(safe.values()):
+                    return {**safe, 'pendingStartExcluded': True, 'processAbsenceConfirmed': True}
+            time.sleep(.2)
+        raise RuntimeError('RECOVERY_KILL_ABSENCE_UNPROVEN')
 
 
 def watch(config, output, run):
@@ -169,7 +212,7 @@ def watch(config, output, run):
             ctypes.windll.kernel32.SetThreadExecutionState(0x80000000)
 
 
-def preflight(config, output):
+def preflight(config, output, run):
     device = Device(config)
     if device.text('get-state') != 'device':
         raise RuntimeError('DEVICE_UNAVAILABLE')
@@ -185,7 +228,7 @@ def preflight(config, output):
     if not all(safe.values()):
         raise RuntimeError('PREEXISTING_RECORDING_OR_MICROPHONE')
     screen = device.ready_screen()
-    write_json(output / 'autonomous-host-preflight.json',
+    write_json(output / f'{run}-host-preflight.json',
                {'adb': 'AUTHORIZED', 'device': expected, 'apkVerified': True, 'safeState': safe,
                 'screen': screen, 'batteryExperiments': False, 'fullCampaignAdmitted': False})
     return device
@@ -200,7 +243,7 @@ def admit_run(config, run, mode):
         if protocol.get(key) != config.get(key):
             raise ValueError('CAMPAIGN_IDENTITY_MISMATCH')
     entry = protocol.get('runs', {}).get(run)
-    if not entry or entry.get('mode') != mode or mode not in ('lite-cycles', 'lite-long'):
+    if not entry or entry.get('mode') != mode or mode not in ('lite-cycles', 'lite-long', 'notification', 'permission', 'storage-ui', 'failure-inspect', 'recovery-seed', 'recovery-resume'):
         raise ValueError('CAMPAIGN_RUN_NOT_PREDECLARED')
     if entry.get('attempts') != (60 if mode == 'lite-cycles' else 1):
         raise ValueError('CAMPAIGN_DENOMINATOR_CHANGED')
@@ -209,7 +252,7 @@ def admit_run(config, run, mode):
 
 def execute(config, output, run, mode, config_path):
     admitted = admit_run(config, run, mode)
-    device = preflight(config, output)
+    device = preflight(config, output, run)
     if device.receipt(run) is not None or (output / f'{run}-supervisor.json').exists():
         raise RuntimeError('RUN_EXISTS_NO_OVERWRITE')
     state_path = output / f'{run}-supervisor.json'
@@ -221,6 +264,7 @@ def execute(config, output, run, mode, config_path):
                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     terminal = None; last = None; launches = set(); sequence = 0; safe = None
     collected = admitted.get('firstAttempt', 1) - 1
+    last_power = 0; power_samples = []
     try:
         ready_deadline = time.monotonic() + 5
         while time.monotonic() < ready_deadline:
@@ -239,19 +283,31 @@ def execute(config, output, run, mode, config_path):
             if admitted.get('firstAttempt', 1) > 1:
                 for key in ('firstAttempt', 'continuationOf', 'continuationReceiptSha256'):
                     continuation.extend(['-e', key, str(admitted[key])])
+            if mode in ('recovery-resume', 'failure-inspect'):
+                for key in ('referenceRun', 'referenceReceiptSha256'):
+                    continuation.extend(['-e', key, str(admitted[key])])
+            instrumentation = ('.FailureInspectionInstrumentation' if mode == 'failure-inspect' else
+                               '.CampaignInstrumentation' if mode.startswith('lite-') else '.FunctionalInstrumentation')
             process = subprocess.Popen([config['adb'], '-s', config['serial'], 'shell', 'am', 'instrument', '-w',
                 '-e', 'run', run, '-e', 'mode', mode, '-e', 'expectedApkSha256', config['productApkSha256'],
-                '-e', 'ownerMapSha256', config['ownerMapSha256'], *continuation, HELPER + '/.CampaignInstrumentation'],
+                '-e', 'ownerMapSha256', config['ownerMapSha256'], *continuation, HELPER + '/' + instrumentation],
                 stdout=log, stderr=log)
         while time.monotonic() < state['deadline']:
             if guardian.poll() is not None:
                 raise RuntimeError('HOST_WATCHDOG_EXITED')
             state['heartbeat'] = time.monotonic(); write_json(state_path, state)
-            row = device.receipt(run)
+            row = instrumentation_progress(device, process, run)
             if row:
                 sequence += 1
                 device.signal(run, 'heartbeat', str(sequence))
                 write_json(output / f'{run}-progress.json', row)
+                if mode == 'lite-long' and time.monotonic() - last_power >= 30:
+                    context = device.power_context()
+                    power_samples.append(context)
+                    write_json(output / f'{run}-power-context.json', power_samples)
+                    last_power = time.monotonic()
+                    if context['USB powered'] is not True:
+                        raise RuntimeError('USB_POWER_CONFIGURATION_CHANGED')
                 completed = row.get('completedAttempts', 0)
                 while collected < completed:
                     number = collected + 1
@@ -268,6 +324,11 @@ def execute(config, output, run, mode, config_path):
                     device.ready_screen()
                     device.call('shell', 'am', 'start', '-n', PACKAGE + '/com.monumentogram.dora.MainActivity')
                     launches.add(phase)
+                if phase == 'RECOVERY_KILL_READY' and mode == 'recovery-seed':
+                    safe = device.kill_owned_for_recovery(row)
+                    terminal = {**row, 'phase': 'EXPECTED_PROCESS_DEATH_CONFIRMED', 'hostKill': safe}
+                    write_json(output / f'{run}.json', terminal)
+                    break
                 if phase in ('COMPLETE', 'FAILED'):
                     terminal = row
                     write_json(output / f'{run}.json', row)
@@ -278,14 +339,13 @@ def execute(config, output, run, mode, config_path):
                         if attempt:
                             write_json(output / f'{run}-{number:03}.json', attempt)
                     break
-            if process.poll() is not None and terminal is None:
-                raise RuntimeError('INSTRUMENTATION_EXITED_WITHOUT_TERMINAL')
             time.sleep(1)
         if terminal is None:
             raise RuntimeError('INSTRUMENTATION_HARD_DEADLINE')
-        if terminal['phase'] != 'COMPLETE':
+        if terminal['phase'] != 'COMPLETE' and not (mode == 'recovery-seed' and terminal['phase'] == 'EXPECTED_PROCESS_DEATH_CONFIRMED'):
             raise RuntimeError('DIAGNOSTIC_FAILED_' + terminal.get('errorCode', 'UNKNOWN'))
-        safe = device.confirmed_shutdown(run)
+        if mode != 'recovery-seed':
+            safe = device.confirmed_shutdown(run)
         if not all(safe.values()):
             raise RuntimeError('DEVICE_SAFE_STATE_UNCONFIRMED')
         print(json.dumps({'run': run, 'diagnostic': 'COMPLETE', 'safeState': safe,
@@ -332,7 +392,7 @@ def main():
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--run', required=True)
-    parser.add_argument('--mode', default='lite-screen-smoke', choices=('lite-screen-smoke', 'lite-cycles', 'lite-long'))
+    parser.add_argument('--mode', default='lite-screen-smoke', choices=('lite-screen-smoke', 'lite-cycles', 'lite-long', 'notification', 'permission', 'storage-ui', 'failure-inspect', 'recovery-seed', 'recovery-resume'))
     parser.add_argument('--watchdog', action='store_true')
     args = parser.parse_args()
     config = json.loads(args.config.read_text(encoding='utf-8'))

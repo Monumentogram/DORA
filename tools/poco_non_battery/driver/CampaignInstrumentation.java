@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.json.*;
 
 /** Isolated opt-in driver. No fake PCM, auth grant, alternate recorder or battery oracle. */
-public final class CampaignInstrumentation extends Instrumentation {
+public class CampaignInstrumentation extends Instrumentation {
   Bundle args;
   RuntimeAccess r;
   File directory,receipt;

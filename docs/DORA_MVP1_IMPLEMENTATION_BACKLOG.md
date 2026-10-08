@@ -1,9 +1,17 @@
 ## 2026-10-08 — Owner-scoped autonomous POCO Alpha acceptance
 
-Stage 8.6B-LITE: **IN_PROGRESS / REDUCED_PHYSICAL_ACCEPTANCE_NOT_CLOSED**.
+Stage 8.6B-LITE: **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.
 Owner scope is exactly 60 real five-second cycles and one USB-powered 3,600-second
 screen-off run. All 60 must pass; this is not the historical 200-cycle reliability
 claim or the former three-hour acceptance. No whole Stage 8.6 closure is asserted.
+
+The fixed short series passed 60/60 with full authenticated readback and exact
+owned-source deletion. DORA-LONG-01 interrupted after about 32.5 minutes with
+LONG_CAPTURE_INTERRUPTED; it was not repeated. The failed source is retained,
+its full authenticated readback is NOT_RUN, and catalog-only inspection proves
+46/46 original recordings preserved. Remaining functional smokes are NOT_RUN
+following this main-campaign failure. The next scoped work is interruption
+root-cause isolation; no later product stage is admitted by these results.
 
 [ADR-RECORDING-005](adr/ADR-RECORDING-005-hour-storage-admission.md) admits a minimal
 storage budget: 125,000,000 bytes/hour plus 16,777,216-byte finalization headroom.
@@ -21,7 +29,8 @@ Battery efficiency remains DEFERRED / NON_BLOCKING_FOR_ALPHA (ADR-PERF-002).
 Hardware microWh and comparative ratio remain NOT_EVALUATED. No battery experiments.
 Current evidence is under [poco-reduced-alpha-8.6b](evidence/poco-reduced-alpha-8.6b/).
 Historical failures, earlier requirements and dated statuses below remain intact.
-Final exact-SHA CI, review and acceptance are still required. Sheet C78 unchanged.
+Exact-SHA CI is reported for the publication commit and cannot override the failed
+physical gate. Independent review checks evidence truth, not a physical PASS. Sheet C78 unchanged.
 Group D / Stage 9 / Cloud / ASR NOT_STARTED. Security restoration remains OPEN;
 PERF-REC-001 deferred/non-blocking. PR99 stays DRAFT / OPEN / UNMERGED.
 
