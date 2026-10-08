@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "protocolId": "LONG01_FORENSIC_NO_SOURCE_MUTATION_V1",
+  "helper": {
+    "apkSha256": "d675a285033d7893b776863c203744341324cc02b9a593a6a9821216d1d24ec5",
+    "sources": {
+      "AndroidManifest.xml": "a2ebc32c3527d35d1b8085a3f1853c6f7008650f1a718648f172f83f2895bdc3",
+      "CampaignInstrumentation.java": "702378ee0aba99de0b158449c28cf24a0e3875e08e42bcc7916ddf4c0ed6e0e5",
+      "FailureInspectionInstrumentation.java": "9ff6bdda8f1c82127a3ae2e56da71ea9870775a91318d85305cdc62ea7a80fc4",
+      "ForensicCatalogInstrumentation.java": "a0535ce4c82b597a3c4846ac8a47cf1eefadb16dd251a9eff4ab4c6fde0e1a7d",
+      "ForensicPrefix.java": "33fb9f050bc9093b7bff18ebe7e142c1318044f7e8dc3742c549f92bdfd3ae83",
+      "ForensicSnapshot.java": "6a4831038b9317752a2b35c80ee16871cf5579ad166023bc75c51ded7a30d98e",
+      "FunctionalInstrumentation.java": "32b49b8fef15e88f5d94ff807459534d7f1c88afde51e17d61a768c6b74fe413",
+      "RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+      "SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+      "Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41"
+    }
+  },
+  "physicalProductApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "syntheticProductApkSha256": "d8a41a4f2bd58911e86d8af17b76d9c8d458fe9a5df7583be7a9661f6755118e",
+  "syntheticEvidenceSha256": "97a64a40883692044c3a8a660b99c861b81ae2f9a5ff2f6fa0cbc2d7b2a3e45f",
+  "review": "Independent focused safety review: P1 original open/autoload blocked; P2 failure preservation finally verified; no remaining P0/P1/P2 in inspected forensic path. Not review of historical root cause.",
+  "callGraph": [
+    "Instrumentation Application initialization creates coordinators only; require quiescent capture and no current original vault handle. Replace original coordinator.openVault with fail-closed callback before Activity/authentication; leave installed through process exit.",
+    "Descriptor-safe encrypted source hash inventory binds to pre-application host inventory. Copy selector, envelope, encrypted DB and WAL only into a unique same-UID snapshot; reject links and overwrites. No audio files copied/exported.",
+    "requestRecordingUiUnlock uses current AppLock authority. Standalone EncryptedAudioVault.openExisting receives snapshot Context with both noBackupFilesDir and applicationContext overridden. Bundle fsync, Room writable/WAL/schema/binding operations can reach snapshot only. Existing keys opened, never generated or removed.",
+    "RoomAudioJournal.Catalog.load under snapshot lease performs accepted source ownership, exact ordinals/ranges/publication/intent validations; original46 inventory is metadata only. segmentationPage validates snapshot metadata only.",
+    "Original artifact storage OS proxy allows only read-only open/lstat/list/fstat/read/close. Mutation methods and writable flags throw before reaching OS. No quarantine controller; no reconcile/recover entry call.",
+    "Per committed claim <=80000frames: accepted key-confirmation Validated, exact one-unit/one-publication, encrypted artifact lengths and digests, authenticated manifest all10 entry fields, catalog-manifest digest binding, then existing private authenticateUnitRaw. Return array length verified, discarded and zeroed in finally including late revocation. No PCM copy, aggregate, hash, file or telemetry.",
+    "Close snapshot only. In finally compare all source hashes and quiescence on success/failure. Original failure retained separately; changed/unavailable preservation prevents COMPLETE. Instrumentation exit retires diagnostic-only process."
+  ],
+  "limitations": [
+    "Hardware/VM/Tink/JCA internal memory zeroing is not claimed.",
+    "Historical terminal failure remains UNKNOWN. Authenticated prefix alone cannot prove its cause.",
+    "Synthetic emulator proof is not physical evidence. Physical receipt must bind separately to original c2ad APK."
+  ],
+  "executionAdmitted": "BOUNDED_SOURCE_PRESERVING_FORENSIC_INSPECTION_ONLY"
+}

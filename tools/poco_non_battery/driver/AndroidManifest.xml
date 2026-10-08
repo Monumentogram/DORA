@@ -4,4 +4,5 @@
   <instrumentation android:name=".CampaignInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
   <instrumentation android:name=".FunctionalInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
   <instrumentation android:name=".FailureInspectionInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
+  <instrumentation android:name=".ForensicCatalogInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
 </manifest>
