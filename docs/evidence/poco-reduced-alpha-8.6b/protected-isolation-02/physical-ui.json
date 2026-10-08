@@ -1,0 +1,13 @@
+{
+  "status": "PASS_PHYSICAL_PREFLIGHT_UI",
+  "startVisible": true,
+  "startDisabledBeforeAcknowledgement": true,
+  "acknowledgementDefaultFalse": true,
+  "cancelVisible": true,
+  "cancelTappableAndReturnedHome": true,
+  "budgetVisibleBytes": 141777216,
+  "microphoneRemainedOff": true,
+  "fgsAbsent": true,
+  "afterUiVaultFileMapUnchanged": true,
+  "processStoppedAfterQuiescence": true
+}

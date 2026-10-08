@@ -1,0 +1,17 @@
+{
+  "sourceSha": "c0f1587ed969f089b6eae03cb9851ae6ba388960",
+  "oldApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "newApkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "helperApkSha256": "b9407af77641542e5c8cc1f6cc14a51911602a249c86c8145d2287e6d2e87810",
+  "signerSha256": "a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72",
+  "policySha256": "fa29032a62c21f94e5b907134efc6153a7e4db584a43f28b4a43d8cdcd747402",
+  "policyInstalledOutsideVault": true,
+  "normalLaunchPerformed": false,
+  "productInstallSuccess": true,
+  "helperInstallSuccess": true,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "historicalFilesUnchanged": 8550
+}

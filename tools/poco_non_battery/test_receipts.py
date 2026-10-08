@@ -54,6 +54,17 @@ def long_run():
 
 
 class ReceiptTest(unittest.TestCase):
+    def test_protected47_long_requires_explicit_governed_count(self):
+        row = long_run()
+        row['deletion']['ownerRecordingsPreserved'] = 47
+        self.assertFalse(validate_long(row)['pass'])
+        self.assertTrue(validate_long(row, protected_count=47)['pass'])
+        row['deletion']['ownerRecordingsPreserved'] = 46
+        self.assertFalse(validate_long(row, protected_count=47)['pass'])
+        for count in (0, 45, 48, True, '47'):
+            with self.assertRaises(ValueError):
+                validate_long(row, protected_count=count)
+
     def test_exact_denominator(self):
         self.assertTrue(validate_cycles([cycle(n) for n in range(1, 201)])['pass'])
         with self.assertRaises(ValueError):

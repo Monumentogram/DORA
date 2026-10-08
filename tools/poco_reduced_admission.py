@@ -6,6 +6,7 @@ from pathlib import PurePosixPath
 MANIFEST = 'docs/contracts/poco-reduced-alpha-8.6b.json'
 PROTECTED_BASE = '20057696c556a354d08e007dfcba736ff217fe6d'
 PROTECTED_OVERRIDES = {
+    'tools/test_logical_recovery_final_deletion.py',
     'android/core/audio/build.gradle.kts',
     'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/AndroidAudioDeletionStorage.kt',
     'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/EncryptedAudioVault.kt',

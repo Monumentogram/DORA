@@ -19,12 +19,13 @@ def boolean(row, key):
     return value
 
 
-def cleanup_verified(row):
+def cleanup_verified(row, protected_count=46):
+    require(type(protected_count) is int and protected_count in (46, 47), 'Unknown governed protected count')
     deletion = row.get('deletion')
     require(isinstance(deletion, dict), 'Missing product deletion receipt')
     return (boolean(deletion, 'productDeletionCompleted')
             and integer(deletion, 'verifiedAbsentTargets') > 0
-            and integer(deletion, 'ownerRecordingsPreserved') == 46)
+            and integer(deletion, 'ownerRecordingsPreserved') == protected_count)
 
 
 def audio_configuration_valid(configurations, native_session):
@@ -73,7 +74,7 @@ def validate_cycles(rows):
     return cycle_evidence(rows, 200)
 
 
-def cycle_evidence(rows, expected):
+def cycle_evidence(rows, expected, protected_count=46):
     require(expected in (60, 200), 'Unknown governed campaign size')
     require(len(rows) == expected, 'Exact governed attempts required')
     require([integer(r, 'attempt', 1) for r in rows] == list(range(1, expected + 1)),
@@ -107,14 +108,14 @@ def cycle_evidence(rows, expected):
             integrity &= frames == integer(row, 'durableFrames') == integer(row, 'admittedFrames')
             integrity &= all(integer(row, key) == 0 for key in (
                 'unexplainedGaps', 'unexplainedDuplicates', 'corruptSegments', 'readErrors'))
-            integrity &= boolean(row, 'nativeSessionAbsent') and cleanup_verified(row)
+            integrity &= boolean(row, 'nativeSessionAbsent') and cleanup_verified(row, protected_count)
     success = (started >= 199 and 200 * finalized >= 199 * started) if expected == 200 else started == finalized == 60
     return dict(attempts=expected, started=started, finalized=finalized, wholeRecordingLoss=lost,
                 **{'pass': success
                    and lost == 0 and integrity})
 
 
-def validate_long(row):
+def validate_long(row, protected_count=46):
     require(row.get('run') in ('DORA-LONG-01', 'DORA-LONG-02', 'DORA-LONG-03'), 'Unknown run')
     start, end = integer(row, 'screenOffStartMs'), integer(row, 'screenOffEndMs')
     require(end > start, 'Invalid duration')
@@ -175,7 +176,7 @@ def validate_long(row):
     storage = integer(row, 'attributedBytes') * 57_600_000 <= 125_000_000 * frames
     vad = vad_verified(row)
     released = (boolean(row, 'microphoneReleased') and boolean(row, 'fgsStopped')
-                and boolean(row, 'nativeSessionAbsent') and cleanup_verified(row))
+                and boolean(row, 'nativeSessionAbsent') and cleanup_verified(row, protected_count))
     return dict(coverage=coverage, screen=screen, thermal=thermal, live=live, controls=controls,
                 integrity=integrity, storage=storage, vad=vad, released=released,
                 **{'pass': end - start >= 3_600_000 and all(

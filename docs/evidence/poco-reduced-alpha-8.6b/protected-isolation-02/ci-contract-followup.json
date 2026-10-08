@@ -1,0 +1,19 @@
+{
+  "failedSourceSha": "c0f1587ed969f089b6eae03cb9851ae6ba388960",
+  "failedRun": 37832892459,
+  "failure": "Old final-deletion mutation fixture used current protected-overlay source without restoring accepted exact input",
+  "localBefore": {
+    "tests": 7,
+    "errors": 1
+  },
+  "localAfterLogicalRecoveryHost": {
+    "tests": 153,
+    "failures": 0,
+    "errors": 0
+  },
+  "pocoHostTests": 88,
+  "fix": "Preserve original normalizer/mutation assertions on exact predecessor; test current exact overlay and tamper rejection separately",
+  "androidRuntimeChanged": false,
+  "historicalGatesWeakened": false,
+  "newCi": "REQUIRED"
+}

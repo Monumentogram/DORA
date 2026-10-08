@@ -23,8 +23,8 @@ def keyguard_action(secure, showing):
     return 'DISMISS_NONSECURE' if showing else 'NONE'
 
 
-def validate_reduced_cycles(rows):
-    result = cycle_evidence(rows, 60)
+def validate_reduced_cycles(rows, protected_count=46):
+    result = cycle_evidence(rows, 60, protected_count)
     for row in rows:
         if row['started']:
             frames = integer(row, 'readbackFrames')

@@ -69,11 +69,21 @@
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-01/snapshot-protocol.md": "4b82db9d1f3d7b74426be509650cac137574b9e0adfa12c54c58cae77737fa12",
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-01/validation.json": "169d9e8776376835f8c1a330c32e8871658fbc6791cd98f3efb93f1d329b4270",
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-01/work-plan.md": "eb77ff955611ef814586edb68ee5770402a41a6941e962f26b594ed07ce20df6",
-    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/README.md": "63a8e5a36818c841cb8c726ba88d65b72c77de4e00941aab6a3eccb0480c02df",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/README.md": "d8547ff703386202adc4cc14e225da04d612fce74ad9fe2a1144a8161f2c75d7",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/ci-contract-followup.json": "4076f63b3929abcd883dd573da813f32e3d567aad4c86d3fbd9b09787a2aed44",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/clean-builds.json": "faa2ecf8184a485dfc12eadc733d4141ad4069f29697452c0a95246c3667c789",
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/implementation-plan.md": "73dc59dcdcc2af62633d1c2354206d742fbd15abec8aec872a37efb9778be8ba",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/installation-preservation.json": "b654358df6cdb037f91eb9a86f3eda7be162cd4754c2952eebc23151cfcfeb9c",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/installation.json": "b1b0de7aa859b8256ab71e366d991f3e4afadcb0fb4234a325c0addba8a45e73",
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/local-verification.json": "f5ccb69e9199efa13544493b8cd1ab57fba3bf98831fad7aea55b6d739c37b45",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/main-successor-protocol-seal.json": "2dc807854f93354d8196bd3f5ca916dafa45e45a3ffe15669d7081acf69c10f7",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/main-successor-protocol.json": "e2a2a4a3773267b346573e18877e9420fa9dfd212b76607fad8505c4c6d44feb",
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/physical-protocol.json": "472581e5f23c963c48e1bb6f02d643e051349a76c5bdea15864bc14640fa0c24",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/physical-smoke-counters.json": "1109daad8e1768c316c14234aad8363896f696c15b330d043e360555101caa41",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/physical-smoke-preservation.json": "7da3e931d21d2e13c882b8e9ebe290f7d9b59db50760e63d2564c343d6561eb9",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/physical-ui.json": "9c5367df323972ce3a9e2f40e33e1404e8b447e4e7937670096d89d0486a7bc8",
     "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/publication-audit.json": "23924e6c4dc68079d076fe2e7d94760ea6743b7425e94504de8d05df57e512ac",
+    "docs/evidence/poco-reduced-alpha-8.6b/protected-isolation-02/shared-sidecar-oracle-correction.json": "f1d2d26e1db5db0bfc175a0ea0dc2b994eef8ec17aa8f2ef6c518ff042823996",
     "docs/evidence/poco-reduced-alpha-8.6b/publication-audit.json": "2c9a49676d762c9fffe664f6d62db6363800b05ba477d1f8e194675778ec5906",
     "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/README.md": "a7d15d733774c7c72dd22c1d0bd7a93b5ae77af2169127fe99f55dff242e6f4e",
     "docs/evidence/poco-reduced-alpha-8.6b/remediation-01/build-reproducibility.json": "5ae168981f9893fba3d971acd668cd89907947529eca2264da3e7696b429173b",
@@ -96,7 +106,7 @@
     "docs/superpowers/plans/2026-10-08-poco-non-battery-acceptance.md": "13c95717aa78ac5f8930125472751cc3482699f2a3650823ca1b0ba11001d11d",
     "docs/superpowers/plans/2026-10-08-poco-reduced-autonomous-alpha.md": "d6bc414990f9c83def38266534ed8d462c6e2e2769cdbcea2dd7d83bb9e335fd",
     "tools/poco_alpha_acceptance.py": "51741e83354e507a8327ea794bfbc347fdaebb0b62b1cedcb2795a64e4a3bd10",
-    "tools/poco_non_battery/alpha_protocol.py": "032d845ef555ce8fef67a3469f39ecfe0ebda122d893818a4cfc5bd35766f5db",
+    "tools/poco_non_battery/alpha_protocol.py": "0e73b664f4748716e30cb0602f94d4adf7bee68410ddd6bfb825197e3cb2465f",
     "tools/poco_non_battery/build_driver.py": "183cea2e0624efa4ffe15dd5fedbd3e571bcdfb480a527cb1dd93aecdcf2265d",
     "tools/poco_non_battery/diagnostic_isolation.py": "e93190f6db94eaed7c47f3daf891829f913bbf78a19b2724703f993d75b8d7e5",
     "tools/poco_non_battery/driver/AndroidManifest.xml": "95491c4376b84555bdb6e91fe59a4c4c032ce1c7c5f5be29185dbd89942c0eeb",
@@ -114,17 +124,17 @@
     "tools/poco_non_battery/driver/TerminalReceiptCheck.java": "a567f4104a50529ede5c0f6f34839c47c134ce5ae3ffb49746f6e0086f46438b",
     "tools/poco_non_battery/protected_policy.py": "68d0bd1a2adb865bf0dd07eda84c1df5976687b97bfa1bb4af983d4d10913b06",
     "tools/poco_non_battery/protocol-draft.json": "29b3298727b760bfed16b68ee942041804e053f2733598ac4163161fd70cc82c",
-    "tools/poco_non_battery/receipts.py": "4f58c6ee9be292cb02e1e1708f4435d1db220a15be660912348a96183ff7000c",
+    "tools/poco_non_battery/receipts.py": "13952a479aedbc0122bccaab0d2b60eecf0f967e0b45fb16bfd63c4b72e141c9",
     "tools/poco_non_battery/test_alpha_orchestrator.py": "2fba314eb8f166d264a398f71a55481a6823655909f2d1b43248597a825ec380",
-    "tools/poco_non_battery/test_alpha_protocol.py": "cfb815ade42a0a3e6659892e6c839852d1367b5646369d162b4c0dbd7bb35041",
+    "tools/poco_non_battery/test_alpha_protocol.py": "e44a0bd33b9fb3d72df74a162e8f80da1d2f0eca51a004d9d0e1fe249588e9e9",
     "tools/poco_non_battery/test_diagnostic_isolation.py": "873e53484588167994f319e4821bb14dbc0df94d2568d6c330b1974aac80c93d",
     "tools/poco_non_battery/test_protected_policy.py": "76f19f9758f764dc69bd3edd9eca1da20f53be581bd02ebf052db6aa957c4ad0",
     "tools/poco_non_battery/test_protected_snapshot.py": "b4983eb89168b298a824fbacff327d1e8bca192c7bf59aab48d04dabb1e38ab9",
-    "tools/poco_non_battery/test_receipts.py": "b2c8501fe84a3b15dd12b4bdd84969f75c7c365467904f956509c2440e69fdf5",
+    "tools/poco_non_battery/test_receipts.py": "c773617ceb31515f9d5c3ebba4c70b933cfab9474ef0b926f9510f29a8403d05",
     "tools/poco_non_battery/test_source_admission.py": "f535d0ce88604e298d42944c0a2a72dbceb0e92a89282f65d8436153e29d08bf",
     "tools/poco_non_battery/test_terminal_receipt.py": "db94cc864ef3a2bf2a25b5680f575157805491c36eb4a3a2c78a87da6ef9bf75",
     "tools/poco_protected_snapshot.py": "4e6236f015cd5e5f21f70afba5d771180501279340256502684ff3c6a9f3715e",
-    "tools/poco_reduced_admission.py": "ad734935146e809437fc6d47fe284ab95bdf4ea669b112a40ec9b42ee0fd73b3",
+    "tools/poco_reduced_admission.py": "9345ab3c71605ee1fc6ee11ba662802b5b048d692a483782f87577ff5c74af81",
     "tools/test_logical_recovery_poco_reduced.py": "1fe91a602869ae60eec08188855ff5b175c2c9650e88077b31eb8cc3c65d8ceb"
   },
   "overrides": {
@@ -198,6 +208,10 @@
     "tools/run_product_recording_device.py": {
       "before": "fdb46ab0756b22b66448a13fdb5c507acf25cb15a02c1154334ba399fae85743",
       "after": "f975f6873f3c02a2fec6682d02e7d314d73f6b89f83855c1aee62bf169e7dd90"
+    },
+    "tools/test_logical_recovery_final_deletion.py": {
+      "before": "0f6c58a65f28b818cba031474ce92362415fa1934fe230831a3dea791c1d2070",
+      "after": "0c63cca8fd65e3e4b2e4b05c2e44fe4426d438249ddd7be4f114c67208d56bf5"
     }
   }
 }

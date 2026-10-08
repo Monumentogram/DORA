@@ -51,3 +51,30 @@ cycles and the owner-authorized one-hour run. Stop on a protected-source risk.
 Battery efficiency remains deferred/non-blocking for Alpha. Sheet unchanged;
 Stage9/GroupD/Cloud/ASR not started; security restoration OPEN. LONG01 historical
 cause remains UNPROVEN regardless of any successor result.
+
+## Successor physical checkpoint on c0f1587
+
+The exact protected candidate was installed in place over wireless ADB with signing
+continuity. Two independent clean builds are APK-byte-identical (170 entries,
+19 DEX files); private pin and admitted VAD binaries were not published.
+
+The one bounded isolation smoke passed: 30,183 ms screen-off and 483,200 canonical
+frames admitted, durable and fully authenticated on readback. Real sherpa/Silero
+ran; no gaps, duplicates, corruption, read errors or short reads occurred. The
+controlled no-audio storage rejection produced the fresh bounded asynchronous
+terminal receipt. Exact-owned product deletion verified49 absent targets.
+Physical preflight exposes Start/Cancel and the storage budget; Start remains
+disabled until acknowledgement, Cancel returns home, microphone stays off.
+
+All47 historical source projections,11,395 prior rows and1,710 key challenges are
+unchanged. All8,547 immutable files remain byte-identical. The permitted shared
+main database changed; its exact WAL/SHM sidecars are absent after close. Final
+vault count is8,548, with no new remaining vault files. The initial overly broad
+all8,550-presence assertion was retained as a verifier failure and corrected to
+the already approved shared-file exception. This is not8550 unchanged and does
+not prove the exact syscall timing of sidecar removal.
+
+Isolation physical evidence is a subgate; final exact-SHA CI is still running.
+Fresh60 cycles and the successor hour are NOT_RUN at this checkpoint. Historical
+LONG01 failure/cause, battery deferral and overall Stage8.6 nonacceptance remain.
+The seven dated receipts here add evidence without replacing previous attempts.

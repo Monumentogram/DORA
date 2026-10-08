@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "device": {
+    "marketName": "POCO M5",
+    "model": "22071219CG",
+    "api": 34,
+    "abi": "arm64-v8a",
+    "firmware": "V816.0.6.0.ULURUXM",
+    "pageSizeBytes": 4096
+  },
+  "cycles": {
+    "attempts": 60,
+    "captureAfterRecordingConfirmedMs": 5000,
+    "minimumPauseAfterCleanupMs": 2000,
+    "startDeadlineMs": 120000,
+    "finalizeDeadlineMs": 120000,
+    "releaseDeadlineMs": 30000,
+    "startOracle": "successfulStarts == 60",
+    "finalizeOracle": "successfulFinalizations == 60",
+    "lossOracle": "wholeRecordingLoss == 0",
+    "preconditions": [
+      "exact APK",
+      "protected inventory matches",
+      "no active/preparing/paused recording",
+      "mic permission granted",
+      "storage budget admissible",
+      "real authenticated runtime available"
+    ],
+    "invalidPrecondition": "Recorded before Start; never retrospectively changes a started attempt denominator",
+    "failedStart": "Retain attempt; classify no-asset only after authenticated unchanged inventory; unknown identity/loss prevents PASS",
+    "preservationOrUnclassifiedFailure": "Halt safely and retain all receipts; no denominator reset or replacement campaign",
+    "minimumCanonicalFrames": 80000,
+    "additionalFrameWaitDeadlineMs": 5000
+  },
+  "longRuns": {
+    "order": [
+      "DORA-LONG-02"
+    ],
+    "minimumContinuousScreenOffMs": 3600000,
+    "resourceSampleCadenceMs": 30000,
+    "maximumCoverageGapMs": 35000,
+    "monotonicAuthority": "SystemClock.elapsedRealtime",
+    "callbacks": "Dedicated HandlerThread SCREEN_ON/OFF broadcasts and PowerManager thermal listener registered before capture, removed after Stop, final acknowledged queue barrier retained",
+    "screenWake": "Any wake in screen-off window or through conservative final callback barrier invalidates; intentional wake occurs after Stop/barrier",
+    "process": "Same process PID, actual native AudioRecord state/session, unsilenced built-in mic config and recording FGS; host independently checks OS service state",
+    "invalidations": [
+      "screen wake",
+      "route switch",
+      "call/media/other foreground interference",
+      "process restart",
+      "unexplained telemetry gap",
+      "OS or app update"
+    ],
+    "allAttemptsRetained": true
+  },
+  "controls": {
+    "power": "USB_POWERED_SCREEN_OFF_ALPHA_RUN",
+    "batterySaver": "OFF_FOR_PRIMARY_RUNS",
+    "bluetooth": "EXISTING_STATE_RECORDED_NO_CONNECTED_ROUTE_ALLOWED",
+    "microphone": "BUILT_IN",
+    "fixture": "QUIET_ROOM_NO_EXTERNAL_PLAYBACK",
+    "radios": "Record actual Wi-Fi/mobile state before each run; no deliberate route/network changes during capture",
+    "controlTransport": "WIRELESS_ADB_WITH_USB_POWER"
+  },
+  "canonical": {
+    "sampleRate": 16000,
+    "channels": 1,
+    "encoding": "PCM_S16LE",
+    "capFrames": 9600000,
+    "overlapFrames": 32000,
+    "fullAuthenticatedExtraction": true,
+    "unexplainedGaps": 0,
+    "unexplainedDuplicates": 0,
+    "corruptProductionSegments": 0,
+    "sampleDeltaThreshold": "NONE_PROPOSED_ONLY"
+  },
+  "storage": {
+    "scope": "VAULT_POSITIVE_FILE_GROWTH_MAX_LOGICAL_ALLOCATED",
+    "root": "APP_NO_BACKUP/dora-vault-v1",
+    "includes": [
+      "encrypted payload",
+      "storage units",
+      "SQLCipher and journal",
+      "WAL/SHM",
+      "logical/VAD/segmentation metadata",
+      "directory allocation"
+    ],
+    "excluded": [
+      "APK",
+      "pre-existing model/AAR",
+      "unchanged owner recordings",
+      "test telemetry outside vault root",
+      "unrelated caches outside vault root"
+    ],
+    "snapshots": "Before Start and after full finalized authenticated readback, before test deletion; no other vault operation during bracket",
+    "growth": "For every regular file and directory: positive size and st_blocks*512 growth; sum each dimension separately, use their maximum. File shrink never cancels another file growth. Include all common DB/WAL growth conservatively.",
+    "duration": "Full canonical capture duration = readbackFrames / 16000 seconds; includes setup/stop PCM outside minimum 3600s screen-off interval. No exact-slice attribution claim.",
+    "oracle": "attributedBytes * 57600000 <= 125000000 * readbackFrames",
+    "independentMonotonicDiagnostics": [
+      "Start requested",
+      "Recording confirmed",
+      "Stop requested",
+      "Stop completed",
+      "expected frame range from boundaries",
+      "actual frame delta without invented threshold"
+    ],
+    "minimumStartBytes": 141777216,
+    "finalizationReserveBytes": 16777216,
+    "allocationClaim": "NONE_ADMISSION_HEADROOM_ONLY"
+  },
+  "state": "FROZEN_BEFORE_SUCCESSOR_MAIN_RUNS",
+  "campaign": "PROTECTED_47_OWNER_APPROVED_ALPHA",
+  "authority": "OD-86B-LITE-PROTECTED-HISTORICAL-RECOVERY",
+  "physicalSourceSha": "c0f1587ed969f089b6eae03cb9851ae6ba388960",
+  "productApkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "helperApkSha256": "b9407af77641542e5c8cc1f6cc14a51911602a249c86c8145d2287e6d2e87810",
+  "ownerMapSha256": "8afa858a1ab230a4200d0b473ebd5dab9c48a4f44dc0c1df4c0892cec6165c49",
+  "protectedPolicySha256": "fa29032a62c21f94e5b907134efc6153a7e4db584a43f28b4a43d8cdcd747402",
+  "preservation": {
+    "protectedSources": 47,
+    "immutableHistoricalFiles": 8547,
+    "sharedFileExceptions": 3,
+    "authenticatedSnapshotSha256": "e505e623c5e455662d53f08691aa3d3c663997d46057689169a92ab6015b43f5",
+    "sameKeyChallenges": 1710,
+    "historicalLongCause": "UNPROVEN",
+    "postRunReadOnlySnapshotRequired": true
+  },
+  "order": [
+    "lite-cycles-02",
+    "dora-long-02"
+  ],
+  "runs": {
+    "lite-cycles-02": {
+      "mode": "lite-cycles",
+      "attempts": 60,
+      "hardDeadlineSeconds": 2700
+    },
+    "dora-long-02": {
+      "mode": "lite-long",
+      "attempts": 1,
+      "hardDeadlineSeconds": 5400
+    }
+  },
+  "probes": {
+    "cadenceMs": 30000,
+    "contentFreeTerminalReceipt": true,
+    "writerDurabilityFenceFrames": 256000,
+    "stopOnInterruption": true,
+    "failureDisposition": "Retain ambiguous failed source and all receipts; no replacement run without diagnosis",
+    "historicalCauseNonclaim": true
+  },
+  "batteryEfficiency": "DEFERRED_NON_BLOCKING_FOR_ALPHA",
+  "batterySaver": "DEFERRED_USB_POWER_CONSTRAINT",
+  "doze": "DEFERRED_AUTONOMOUS_DEVICE_CONSTRAINT",
+  "finalAcceptanceRequiresExactShaCi": true,
+  "helperSources": {
+    "AndroidManifest.xml": "a2ebc32c3527d35d1b8085a3f1853c6f7008650f1a718648f172f83f2895bdc3",
+    "CampaignInstrumentation.java": "c3c1253d734d8fb3d312d9b573fec4a24abc10d56c8ece8ebe30d4d0e6a4f2d4",
+    "FailureInspectionInstrumentation.java": "9ff6bdda8f1c82127a3ae2e56da71ea9870775a91318d85305cdc62ea7a80fc4",
+    "ForensicCatalogInstrumentation.java": "9b14ebd4124e33e7552afe450a8265e09868de2881ceea100ed39240517e29da",
+    "ForensicPrefix.java": "33fb9f050bc9093b7bff18ebe7e142c1318044f7e8dc3742c549f92bdfd3ae83",
+    "ForensicSnapshot.java": "6a4831038b9317752a2b35c80ee16871cf5579ad166023bc75c51ded7a30d98e",
+    "FunctionalInstrumentation.java": "69ab7a93f12b028a2aff65a9c5e8d905afde767750d0ec24179d82e298bb3f11",
+    "ProtectedCatalogSnapshot.java": "88529b90ed629cea51f9cd03004d5990675ab22cb26ad0458668fa602283286a",
+    "ProtectedKeyProofs.java": "806e0813706403e4fcaccc26de207b3c7d277b9f7e213a3c03e72c0cd1e45c9a",
+    "RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+    "SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+    "Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41",
+    "TerminalReceiptCheck.java": "a567f4104a50529ede5c0f6f34839c47c134ce5ae3ffb49746f6e0086f46438b"
+  },
+  "hostOrchestratorSha256": "51741e83354e507a8327ea794bfbc347fdaebb0b62b1cedcb2795a64e4a3bd10",
+  "thermal": {
+    "hardGate": "No Android status >=3 during capture",
+    "temperature": "DIAGNOSTIC_ONLY",
+    "missingCoverage": "NOT_PASS"
+  },
+  "resources": {
+    "metrics": [
+      "PSS",
+      "RSS",
+      "Java heap",
+      "native heap",
+      "CPU time",
+      "FDs",
+      "threads",
+      "canonical queue high-water",
+      "VAD queue high-water",
+      "VAD inference count",
+      "VAD p50/p95/max",
+      "VAD deadline misses",
+      "positive/negative windows",
+      "degraded observations",
+      "read errors",
+      "short reads"
+    ],
+    "thresholds": "NO_NEW_CPU_MEMORY_THRESHOLDS",
+    "unsupported": "Explicit null/unavailable, never zero",
+    "vadLatencyWindow": "Existing bounded rolling 4096-observation estimator",
+    "captureCounters": "Per-run deltas; lifetime high-water explicitly labelled"
+  },
+  "hardwareMicroWh": "NOT_EVALUATED_HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "sheet": "UNCHANGED",
+  "futureStages": "NOT_STARTED"
+}

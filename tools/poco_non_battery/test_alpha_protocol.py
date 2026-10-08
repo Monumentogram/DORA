@@ -26,6 +26,15 @@ class AlphaPolicyTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_reduced_cycles([cycle(n) for n in range(1, size + 1)])
 
+    def test_protected47_requires_explicit_governed_count_and_every_receipt(self):
+        rows = self.rows()
+        for row in rows:
+            row['deletion']['ownerRecordingsPreserved'] = 47
+        self.assertFalse(validate_reduced_cycles(rows)['pass'])
+        self.assertTrue(validate_reduced_cycles(rows, protected_count=47)['pass'])
+        rows[17]['deletion']['ownerRecordingsPreserved'] = 46
+        self.assertFalse(validate_reduced_cycles(rows, protected_count=47)['pass'])
+
     def test_single_failure_remains_in_denominator(self):
         rows = self.rows()
         rows[0]['finalized'] = False
