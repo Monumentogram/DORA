@@ -1,0 +1,47 @@
+{
+  "scope": "20-second sample of continuous synthetic real-writer population on API36 x86_64 emulator",
+  "exact_append_ordinal_range": "NOT_RECORDED",
+  "cpu_event": "cpu-clock",
+  "frequency_hz": 400,
+  "duration_seconds": 19.9566,
+  "samples": 10568,
+  "lost_samples": 0,
+  "sampled_process_cpu_seconds": 26.42,
+  "raw_trace_sha256": "dee7b1f3df8db15d84060c75f6edd23ec7bd09a4a6041a7eaa5760fc2f5f5000",
+  "tested_apk_sha256": "c8f785098658c6e0ad1ab0b14d704cdb7528a87c0baaeb446660b5d748b632bf",
+  "selected_symbols": [
+    {
+      "symbol": "com.monumentogram.dora.audio.RecoveryAudioBridge.append",
+      "inclusive_percent": 63.25,
+      "self_percent": 0.0
+    },
+    {
+      "symbol": "com.monumentogram.dora.audio.persistence.journal.RoomAudioJournal$Catalog.load",
+      "inclusive_percent": 53.06,
+      "self_percent": 0.17
+    },
+    {
+      "symbol": "com.monumentogram.dora.poc.recovery.contract.Sha256Value$Companion.fromLowercaseHex",
+      "inclusive_percent": 24.84,
+      "self_percent": 0.64
+    },
+    {
+      "symbol": "com.monumentogram.dora.audio.persistence.journal.JournalRowsKt.sha",
+      "inclusive_percent": 24.7,
+      "self_percent": 0.08
+    },
+    {
+      "symbol": "com.monumentogram.dora.audio.RecoveryAudioBridge.validateOrder",
+      "inclusive_percent": 3.71,
+      "self_percent": 0.26
+    }
+  ],
+  "caveats": [
+    "Inclusive percentages overlap and must not be summed",
+    "CPU sampling does not measure blocked or descheduled wall time",
+    "Kernel symbols restricted; no sysctl/security setting was changed",
+    "Profile adds overhead during seed population, not a POCO profile",
+    "Symbols below report threshold may be absent; absence does not imply zero work",
+    "GC/JIT and host concurrent work affect measurements; this is one profile"
+  ]
+}

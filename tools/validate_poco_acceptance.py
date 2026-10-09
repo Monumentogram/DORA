@@ -127,6 +127,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | set(FINAL_DELETION_SEALED) | {SELF, PARENT, GOVERNANCE}
     approved |= set(reduced_contract['files']) | reduced.OVERRIDES | {reduced.MANIFEST}
     approved |= reduced.PROTECTED_OVERRIDES
+    import poco_persistence_diagnostic_admission as diagnostic
+    approved |= diagnostic.validate_checkout(root)
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
