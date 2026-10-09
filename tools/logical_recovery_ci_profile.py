@@ -34,6 +34,8 @@ def upgrade(workflow):
 
 
 def normalize(workflow):
+    import persistence_optimization_ci_profile as c3
+    workflow = c3.normalize(workflow)
     import poco_remediation_ci_profile as remediation
     workflow = remediation.normalize(workflow)
     if 'Stage 8.5' not in workflow and INVENTORY not in workflow:

@@ -118,8 +118,11 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     import poco_alpha_battery_defer as alpha
     import poco_final_deletion as deletion
     import poco_reduced_admission as reduced
-    reduced_contract = reduced.load(root)
+    import poco_persistence_optimization_admission as c3
+    c3_contract = c3.validate_checkout(root)
+    reduced_contract = c3.load_reduced(root, c3_contract)
     def before_protected(path, raw):
+        raw = c3.normalize(root, path, raw, c3_contract)
         if path not in reduced.PROTECTED_OVERRIDES:
             return raw
         return reduced.normalize_override(raw, git('show', reduced.PROTECTED_BASE + ':' + path),
@@ -127,8 +130,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     approved = set(SEALED) | set(COMPARATIVE_SEALED) | set(REMEDIATION_SEALED) | set(ALPHA_DEFER_SEALED) | set(FINAL_DELETION_SEALED) | {SELF, PARENT, GOVERNANCE}
     approved |= set(reduced_contract['files']) | reduced.OVERRIDES | {reduced.MANIFEST}
     approved |= reduced.PROTECTED_OVERRIDES
-    import poco_persistence_diagnostic_admission as diagnostic
-    approved |= diagnostic.validate_checkout(root)
+    approved |= c3.approved_paths()
     actual = set(git('diff', '--name-only', '--no-renames', BASE).decode().splitlines())
     actual |= set(git('ls-files', '--others', '--exclude-standard').decode().splitlines())
     validate_paths(actual, approved)
@@ -184,8 +186,7 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     test_root = root / 'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence'
     tests = persistence.discover_device_tests({p.relative_to(test_root).as_posix(): p.read_text(encoding='utf-8')
                                               for p in test_root.rglob('*.kt')})
-    persistence.validate_device_inventory((root / ci.INVENTORY).read_bytes().replace(b'\r\n',b'\n'),
-                                         tests, contract['files'][ci.INVENTORY])
+    c3.validate_inventories(root, tests, c3_contract)
     receipt = json.loads((root / EVIDENCE / 'result.json').read_text(encoding='utf-8'))
     require(receipt['verdict'] == 'BLOCKED / POCO_ENERGY_MEASUREMENT_UNAVAILABLE' and
             receipt['campaignSourceSha'] is None and receipt['campaignApkSha256'] is None,

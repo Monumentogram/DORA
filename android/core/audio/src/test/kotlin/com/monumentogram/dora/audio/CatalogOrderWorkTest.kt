@@ -20,17 +20,16 @@ class CatalogOrderWorkTest {
     private val digest = Sha256Value.calculate(byteArrayOf())
 
     @Test
-    fun `real validator reads every prior prefix at all requested catalog sizes`() {
+    fun `real validator reads each source once at all requested catalog sizes`() {
         val fixture = AudioMemoryFixture()
         val sizes = listOf(10, 100, 400, 1000, 2000)
         val observed = mutableListOf<Long>()
         sizes.forEach { n ->
             val counted = CountingList(segments(n, physicalGroupSize = 120))
             assertEquals(FRAMES_PER_UNIT * n, validate(fixture, counted))
-            // The outer iterator reads n elements; take(index) reads index elements,
-            // including its special take(0) and take(1) paths. Filtering its copied
-            // prefix adds work, but no further reads from this original list.
-            val expectedReads = n.toLong() * (n + 1) / 2
+            // C3 replaces the C2 prefix scan with one per-call physical-origin map.
+            // Historical C2 counts remain sealed in its evidence package.
+            val expectedReads = n.toLong()
             assertEquals("source reads at n=$n", expectedReads, counted.reads)
             observed += counted.reads
             println(
@@ -40,18 +39,18 @@ class CatalogOrderWorkTest {
         }
         // Compare actual work across the entire range without wall-clock noise.
         assertTrue(observed.zipWithNext().all { (before, after) -> after > before })
-        assertTrue(observed.last() / observed.first() > sizes.last() / sizes.first())
-        assertEquals(2_001_000L, observed.last())
+        assertEquals((sizes.last() / sizes.first()).toLong(), observed.last() / observed.first())
+        assertEquals(2_000L, observed.last())
         assertUntouched(fixture)
     }
 
     @Test
-    fun `prefix reads do not depend on physical group match density`() {
+    fun `linear source reads do not depend on physical group match density`() {
         val fixture = AudioMemoryFixture()
         listOf(1, 120, 400).forEach { groupSize ->
             val counted = CountingList(segments(400, groupSize))
             assertEquals(FRAMES_PER_UNIT * 400, validate(fixture, counted))
-            assertEquals(80_200L, counted.reads)
+            assertEquals(400L, counted.reads)
         }
         assertUntouched(fixture)
     }

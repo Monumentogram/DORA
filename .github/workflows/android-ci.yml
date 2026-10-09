@@ -224,6 +224,12 @@ jobs:
           python3 tools/validate_product_recording.py
           python3 -m unittest discover -s tools -p 'test_product_recording.py'
 
+      - name: Verify Stage 8.6C.3 exact admission and host negative controls
+        run: |
+          python3 tools/poco_persistence_optimization_admission.py
+          python3 -m unittest discover -s tools -p 'test*persistence_optimization_c3.py'
+          python3 -m unittest discover -s tools/poco_non_battery -p 'test*policy.py'
+
       - name: Verify Stage 8.5 logical recording recovery contract
         run: |
           python3 tools/validate_logical_recovery.py
@@ -442,7 +448,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/logical-recovery-8.5-device-tests.json
+          --inventory docs/contracts/persistence-8.6c3-device-tests.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
       - name: Preserve content-free persistence instrumentation diagnostics
@@ -452,6 +458,23 @@ jobs:
           name: persistence-instrumentation-diagnostics-api${{ matrix.api }}
           path: ${{ runner.temp }}/persistence-runtime-receipt-diagnostics/*.json*
           if-no-files-found: warn
+          retention-days: 7
+
+      - name: Verify Stage 8.6C.3 protected diagnostic inventory
+        run: >-
+          python3 tools/run_protected_diagnostic_c3.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --inventory docs/contracts/protected-diagnostic-8.6c3-tests.json
+          --receipt "${RUNNER_TEMP}/protected-diagnostic-c3-receipt.json"
+
+      - name: Upload content-free Stage 8.6C.3 diagnostic receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: protected-diagnostic-c3-api${{ matrix.api }}
+          path: ${{ runner.temp }}/protected-diagnostic-c3-receipt.json
+          if-no-files-found: error
           retention-days: 7
 
       - name: Verify abrupt process death at durable persistence phases

@@ -9,7 +9,6 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.io.File
-import java.io.FileInputStream
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -52,29 +51,36 @@ internal object DiagnosticPolicyLoader {
                 if (error.errno != OsConstants.ENOENT) throw error
                 return null
             }
-        return FileInputStream(fd).use { input ->
+        return try {
             val stat = Os.fstat(fd)
             check(OsConstants.S_ISREG(stat.st_mode) && stat.st_nlink == 1L)
             check(selected.canonicalFile == selected.absoluteFile && stat.st_size in 1..MAX_BYTES)
             val result = ByteArray(stat.st_size.toInt())
             var offset = 0
             while (offset < result.size) {
-                val count = input.read(result, offset, result.size - offset)
+                val count = Os.read(fd, result, offset, result.size - offset)
                 check(count > 0)
                 offset += count
             }
-            check(input.read() == -1)
+            check(Os.read(fd, ByteArray(1), 0, 1) == 0)
             result
+        } finally {
+            Os.close(fd)
         }
     }
 
     internal fun decode(context: Context, bytes: ByteArray): DiagnosticSourcePolicy {
         val data = JSONObject(bytes.toString(Charsets.UTF_8))
-        check(data.getString("format") == "DORA_PROTECTED_HISTORICAL_V1")
+        check(
+            data.getString("format") in
+                setOf("DORA_PROTECTED_HISTORICAL_V1", "DORA_PROTECTED_SUCCESSOR_V2")
+        )
         check(data.getString("snapshotSha256").matches(Regex("[a-f0-9]{64}")))
         check(data.getString("package") == context.packageName)
         check(data.getString("model") == Build.MODEL && data.getInt("api") == Build.VERSION.SDK_INT)
         check(data.getString("firmware") == Build.VERSION.INCREMENTAL)
+        if (data.getString("format") == "DORA_PROTECTED_SUCCESSOR_V2")
+            return DiagnosticSuccessorPolicy.decode(data)
         val list = data.getJSONArray("protectedSources")
         check(list.length() == DiagnosticSourcePolicy.PROTECTED_SOURCE_COUNT)
         val sources =

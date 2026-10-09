@@ -17,6 +17,7 @@ import com.monumentogram.dora.audio.persistence.journal.AudioJournalDatabase
 import com.monumentogram.dora.audio.persistence.journal.RoomAudioJournal
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
+import java.io.File
 import java.security.MessageDigest
 import java.util.UUID
 import org.junit.Assert.assertEquals
@@ -31,6 +32,43 @@ class ProtectedHistoricalVaultTest {
     private fun id() = UUID.randomUUID().toString()
 
     private fun identity() = AudioIdentity(RecordingId(id()), AudioAssetId(id()), id())
+
+    @Test
+    fun missingDatabaseCannotReachDelegateCreation() {
+        val fixture = EncryptedAudioVaultFaultFixture()
+        val missing = File(fixture.context.noBackupFilesDir, "missing.db")
+        var reached = false
+        val factory =
+            DiagnosticJournalFactory(
+                SupportSQLiteOpenHelper.Factory {
+                    reached = true
+                    error("Delegate must not create a database")
+                },
+                DiagnosticSourcePolicy.protected((1..47).map { identity() }.toSet(), emptySet()),
+                id(),
+                id(),
+            )
+        val callback =
+            object : SupportSQLiteOpenHelper.Callback(3) {
+                override fun onCreate(db: SupportSQLiteDatabase): Unit = error("Unexpected create")
+
+                override fun onUpgrade(
+                    db: SupportSQLiteDatabase,
+                    oldVersion: Int,
+                    newVersion: Int,
+                ): Unit = error("Unexpected migration")
+            }
+        assertThrows(Exception::class.java) {
+            factory.create(
+                SupportSQLiteOpenHelper.Configuration.builder(fixture.context)
+                    .name(missing.canonicalPath)
+                    .callback(callback)
+                    .build()
+            )
+        }
+        assertFalse(reached)
+        assertFalse(missing.exists())
+    }
 
     @Test
     fun missingRoomMetadataCannotReachRepairCallback() {
@@ -102,7 +140,7 @@ class ProtectedHistoricalVaultTest {
             assertThrows(IllegalStateException::class.java) {
                 factory.create(
                     SupportSQLiteOpenHelper.Configuration.builder(fixture.context)
-                        .name("synthetic")
+                        .name(db.path)
                         .callback(callback)
                         .build()
                 )
@@ -114,13 +152,18 @@ class ProtectedHistoricalVaultTest {
     }
 
     @Test
+    fun protectedSourcesRejectMutationWhileNewSourceRetainsRecoveryAndDeletion() = protectedSet(47)
+
+    @Test
+    fun successor48RejectsMutationWhileNewSourceRetainsRecoveryAndDeletion() = protectedSet(48)
+
     @Suppress(
         "LongMethod",
         "CyclomaticComplexMethod",
     ) // One before/after preservation proof spans all guarded routes.
-    fun protectedSourcesRejectMutationWhileNewSourceRetainsRecoveryAndDeletion() {
+    private fun protectedSet(count: Int) {
         val fixture = EncryptedAudioVaultFaultFixture()
-        val historical = (listOf(fixture.audio) + (1..46).map { identity() }).toSet()
+        val historical = (listOf(fixture.audio) + (1 until count).map { identity() }).toSet()
         fixture.open().use { vault ->
             historical.forEach { success(vault.writer.createLogicalRecording(it)) }
             success(fixture.append(vault))

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "status": "PASS_FOR_LOCAL_SOURCE_SCOPE",
+  "scope": "46 explicitly admitted C3 source, test, tooling, workflow, contract and evidence files in the local working tree",
+  "audited_files": 46,
+  "known_protected_identity_matches": 0,
+  "secret_pattern_findings": 0,
+  "private_host_path_findings": 0,
+  "unapproved_artifact_type_findings": 0,
+  "matched_private_values_emitted": false,
+  "limitations": "Exact known protected UUIDs plus explicit secret, path and artifact-type checks; not a general secret oracle or a full-history audit.",
+  "ci_log_and_artifact_audit": "PENDING_EXACT_SHA_CI",
+  "acceptance": "PERFORMANCE_USEFUL_PENDING_EXACT_SHA_CI",
+  "rootCause": "NOT_PROVEN",
+  "physicalProtection": "NOT_INSTALLED",
+  "stage86": "NOT_READY"
+}

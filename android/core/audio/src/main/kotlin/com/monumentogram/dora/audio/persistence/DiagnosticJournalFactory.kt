@@ -1,9 +1,12 @@
 package com.monumentogram.dora.audio.persistence
 
+import android.system.Os
+import android.system.OsConstants
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import com.monumentogram.dora.audio.persistence.journal.JournalSchemaVerifier
 import com.monumentogram.dora.audio.persistence.journal.SEGMENTATION_SCHEMA_VERSION
+import java.io.File
 
 /** Restrict callbacks before Room is allowed to create, migrate or initialize a binding. */
 internal class DiagnosticJournalFactory(
@@ -15,6 +18,7 @@ internal class DiagnosticJournalFactory(
     override fun create(
         configuration: SupportSQLiteOpenHelper.Configuration
     ): SupportSQLiteOpenHelper {
+        requireExistingDatabase(configuration)
         val callback = configuration.callback
         val fenced =
             object : SupportSQLiteOpenHelper.Callback(callback.version) {
@@ -55,7 +59,29 @@ internal class DiagnosticJournalFactory(
         )
     }
 
+    private fun requireExistingDatabase(configuration: SupportSQLiteOpenHelper.Configuration) {
+        policy.requireBinding(owner, vault)
+        val requested = File(checkNotNull(configuration.name))
+        check(requested.isAbsolute) { "Diagnostic database path rejected" }
+        val root = configuration.context.noBackupFilesDir.canonicalFile
+        val parent = checkNotNull(requested.parentFile).canonicalFile
+        check(parent.toPath().startsWith(root.toPath())) { "Diagnostic database path rejected" }
+        // Android's app-data parent may have a platform alias. Resolve that parent only;
+        // the database leaf itself must already be an owned, regular existing file.
+        val database = File(parent, requested.name)
+        val stat = Os.lstat(database.path)
+        check(
+            database.canonicalFile == database &&
+                OsConstants.S_ISREG(stat.st_mode) &&
+                stat.st_nlink == 1L &&
+                stat.st_size > 0
+        ) {
+            "Diagnostic database admission rejected"
+        }
+    }
+
     private fun verify(db: SupportSQLiteDatabase) {
+        policy.requireBinding(owner, vault)
         check(db.version == SEGMENTATION_SCHEMA_VERSION) { "Diagnostic schema version rejected" }
         JournalSchemaVerifier.verify(db, SEGMENTATION_SCHEMA_VERSION)
         // Room otherwise repairs a missing master table during onOpen. Diagnostic opens
@@ -78,6 +104,7 @@ internal class DiagnosticJournalFactory(
             )
         }
         verifySources(db)
+        DiagnosticProtectedOwnership.verify(db, policy)
     }
 
     private fun verifySources(db: SupportSQLiteDatabase) {

@@ -4,6 +4,7 @@ import subprocess
 import unittest
 import poco_final_deletion as change
 import poco_reduced_admission as successor
+import poco_persistence_optimization_admission as c3
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = '60a38e13739c04f18cffc21783329b633cf68a8f'
@@ -53,18 +54,22 @@ class FinalDeletionAdmissionTest(unittest.TestCase):
             change.normalize(change.TEST, raw, self.original(change.TEST))
 
     def test_current_successor_passes_both_exact_seal_layers(self):
-        contract = successor.load(ROOT)
+        current_contract = c3.load(ROOT)
+        contract = c3.load_reduced(ROOT, current_contract)
         raw = (ROOT / change.PRODUCTION).read_bytes()
+        raw = c3.normalize(ROOT, change.PRODUCTION, raw, current_contract)
         restored = successor.normalize_override(raw, self.accepted(change.PRODUCTION),
                                                 contract['protectedOverrides'][change.PRODUCTION])
         self.assertEqual(change.normalize(change.PRODUCTION, restored, self.original(change.PRODUCTION)),
                          self.original(change.PRODUCTION).replace(b'\r\n', b'\n'))
 
     def test_current_successor_worker_guard_mutation_fails_before_normalization(self):
-        contract = successor.load(ROOT)
+        current_contract = c3.load(ROOT)
+        contract = c3.load_reduced(ROOT, current_contract)
         raw = (ROOT / change.PRODUCTION).read_bytes()
         mutated = raw.replace(b'check(Looper.myLooper() != Looper.getMainLooper())', b'check(true)')
         self.assertNotEqual(raw, mutated)
         with self.assertRaises(ValueError):
+            mutated = c3.normalize(ROOT, change.PRODUCTION, mutated, current_contract)
             successor.normalize_override(mutated, self.accepted(change.PRODUCTION),
                                          contract['protectedOverrides'][change.PRODUCTION])

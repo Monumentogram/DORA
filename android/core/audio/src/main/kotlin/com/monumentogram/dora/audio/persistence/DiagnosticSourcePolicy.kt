@@ -9,8 +9,16 @@ private constructor(
     sources: Set<AudioIdentity>,
     identifiers: Set<String>,
     private val binding: Pair<String, String>? = null,
+    claims: List<DiagnosticProtectedClaim> = emptyList(),
 ) {
     private val historical = sources.toSet()
+    private val claims = claims.toList()
+
+    fun successorClaims(): List<DiagnosticProtectedClaim> = claims.toList()
+
+    fun withSuccessorClaims(value: List<DiagnosticProtectedClaim>) =
+        DiagnosticSourcePolicy(active, historical, forbidden, binding, value)
+
     private val forbidden = (identifiers + historical.flatMap(::components)).toSet()
 
     fun isProtected(identity: AudioIdentity): Boolean = active && identity in historical
@@ -20,7 +28,7 @@ private constructor(
     fun requireAsset(asset: String) = requireComponent(asset)
 
     fun boundTo(owner: String, vault: String) =
-        DiagnosticSourcePolicy(active, historical, forbidden, owner to vault)
+        DiagnosticSourcePolicy(active, historical, forbidden, owner to vault, claims)
 
     fun requireBinding(owner: String, vault: String) {
         if (active && binding != null) check(binding == owner to vault) { REJECTED }
@@ -46,6 +54,7 @@ private constructor(
 
     companion object {
         const val PROTECTED_SOURCE_COUNT = 47
+        const val SUCCESSOR_SOURCE_COUNT = 48
         private const val REJECTED = "Protected diagnostic operation rejected"
 
         fun ordinary() = DiagnosticSourcePolicy(false, emptySet(), emptySet())
@@ -54,7 +63,9 @@ private constructor(
             sources: Set<AudioIdentity>,
             identifiers: Set<String>,
         ): DiagnosticSourcePolicy {
-            check(sources.size == PROTECTED_SOURCE_COUNT) { REJECTED }
+            check(sources.size in setOf(PROTECTED_SOURCE_COUNT, SUCCESSOR_SOURCE_COUNT)) {
+                REJECTED
+            }
             return DiagnosticSourcePolicy(true, sources, identifiers)
         }
 

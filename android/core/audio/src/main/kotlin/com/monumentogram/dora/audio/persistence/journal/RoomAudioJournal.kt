@@ -69,13 +69,20 @@ private constructor(
     private val dao = database.journal()
     private var closed = false
     private var uncertain = false
+    // One immutable observation for the next append reservation, owned by the current lease.
+    // Never used by load, CAS, finalization, or a post-commit readback.
+    private var reservationSnapshot: StoredAudioAsset? = null
     private val commits =
         JournalCommitBoundary(
-            database::beginTransaction,
+            {
+                reservationSnapshot = null
+                database.beginTransaction()
+            },
             database::setTransactionSuccessful,
             database::endTransaction,
             database::inTransaction,
         ) {
+            reservationSnapshot = null
             uncertain = true
         }
     val catalog: EncryptedAudioCatalog = Catalog()
@@ -389,7 +396,13 @@ private constructor(
         override fun tryAcquire(identity: AudioIdentity): AutoCloseable? {
             checkOpen()
             canonical(identity.sessionId)
-            return lease.tryAcquire(identity.assetId.value)
+            val operation = lease.tryAcquire(identity.assetId.value) ?: return null
+            reservationSnapshot = null
+            return AutoCloseable {
+                lease.requireOwner()
+                reservationSnapshot = null
+                operation.close()
+            }
         }
 
         override fun create(identity: AudioIdentity): Boolean = createAsset(identity, false)
@@ -431,6 +444,10 @@ private constructor(
         // returned.
         @Suppress("LongMethod", "CyclomaticComplexMethod")
         override fun load(identity: AudioIdentity): StoredAudioAsset? {
+            // Do not let a failed read leave a prior observation reusable. Only the owner
+            // may touch lease-local state, including when authorization has been revoked.
+            lease.requireOwner()
+            reservationSnapshot = null
             requireOperation(identity)
             val asset = exactAsset(identity) ?: return null
             if (dao.tombstone(asset.assetId) != null) return null
@@ -507,18 +524,40 @@ private constructor(
             } else if (pending !is AudioIntent.Finalize)
                 check(dao.finalSources(asset.assetId).isEmpty())
             return StoredAudioAsset(
-                identity,
-                sources,
-                pending,
-                if (asset.finalized) sources.toList() else null,
-            )
+                    identity,
+                    sources,
+                    pending,
+                    if (asset.finalized) sources.toList() else null,
+                )
+                .also { snapshot ->
+                    val hasNoPendingOrFinalization =
+                        snapshot.pending == null && snapshot.finalization == null
+                    if (hasNoPendingOrFinalization && !uncertain && !database.inTransaction()) {
+                        // Elements/identities/digests are immutable; only the exposed list needs
+                        // copying. Ineligible pending/finalization lists are never retained.
+                        reservationSnapshot = snapshot.copy(segments = snapshot.segments.toList())
+                    }
+                }
+        }
+
+        private fun reservationMatches(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
+            val observed = reservationSnapshot
+            reservationSnapshot = null
+            if (intent is AudioIntent.Append && observed != null && observed == expected)
+                return true
+            return try {
+                load(expected.identity) == expected
+            } finally {
+                // The fallback precondition is consumed too, even if the intent is rejected.
+                reservationSnapshot = null
+            }
         }
 
         override fun reserve(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
             requireOperation(expected.identity)
             requireMutable()
             if (
-                load(expected.identity) != expected ||
+                !reservationMatches(expected, intent) ||
                     expected.pending != null ||
                     expected.finalization != null
             )
@@ -763,6 +802,7 @@ private constructor(
             requireMutable()
             lease.requireHeld()
             check(!database.inTransaction())
+            reservationSnapshot = null
             database.beginTransaction()
         }
 
@@ -789,6 +829,7 @@ private constructor(
                 database.endTransaction()
                 if (successful) check(readbacks.all { it() }) { "Journal readback rejected" }
             } catch (error: Exception) {
+                reservationSnapshot = null
                 uncertain = true
                 throw error
             } finally {
@@ -1206,6 +1247,7 @@ private constructor(
     override fun close() {
         checkOpen()
         lease.withExclusiveCleanup {
+            reservationSnapshot = null
             database.close()
             closed = true
             openPaths.remove(registryKey)

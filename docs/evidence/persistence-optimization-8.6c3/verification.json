@@ -1,0 +1,355 @@
+{
+  "schema_version": 1,
+  "status": "LOCAL_VERIFIED_PENDING_EXACT_SHA_CI",
+  "acceptance": "PERFORMANCE_USEFUL_FULL_ACCEPTANCE_PENDING_CI",
+  "rootCause": "NOT_PROVEN",
+  "physicalProtection": "NOT_INSTALLED",
+  "privateSuccessorApk": {
+    "status": "PREPARED",
+    "physicalDeviceInstalled": false,
+    "historicalVaultReadbackEstablished": false
+  },
+  "stage86": "NOT_READY",
+  "evidenceScope": "SYNTHETIC_ENCRYPTED_ENGINEERING_CHECKS",
+  "build10": {
+    "status": "PASS",
+    "coreDebug": {
+      "tests": 254,
+      "passed": 253,
+      "skipped": 1,
+      "skipReason": "INHERITED_WINDOWS_SKIP"
+    },
+    "coreRelease": {
+      "tests": 246,
+      "passed": 246
+    },
+    "appDebug": {
+      "tests": 76,
+      "passed": 76
+    },
+    "coreAndAppLintErrors": 0,
+    "detekt10": {
+      "status": "PASS",
+      "diagnosticLogBytes": 0,
+      "exitCode": 0,
+      "exitEvidence": "COORDINATOR_OBSERVED_EXEC_COMPLETION",
+      "independentLogAudit": "EMPTY_LOG_DOES_NOT_ESTABLISH_EXIT_STATUS"
+    },
+    "hostLogicalRecovery": {
+      "tests": 190,
+      "passed": 190
+    }
+  },
+  "finalTargetedApi36": {
+    "status": "PASS",
+    "attempt": "02",
+    "tests": 44,
+    "passed": 44,
+    "physicalDevice": false,
+    "fullDeviceInventoryEstablished": false,
+    "includesFull394Composition": true,
+    "includesBothDescriptorRegressions": true,
+    "apkSha256": "98ec141f83d265b19c2aeb89dd256edb14c0a192fdf0986a6600723f62db4081",
+    "instrumentationLogSha256": "81f90c06bd519cf595e81fb9c75498f00e337890d6a3f2fb789d403468c4f5f0"
+  },
+  "finalTargetedApi28": {
+    "status": "PASS",
+    "attempt": "03",
+    "tests": 44,
+    "passed": 44,
+    "elapsedSeconds": 393.034,
+    "physicalDevice": false,
+    "fullDeviceInventoryEstablished": false,
+    "includesFull394Composition": true,
+    "includesBothDescriptorRegressions": true,
+    "apkSha256": "98ec141f83d265b19c2aeb89dd256edb14c0a192fdf0986a6600723f62db4081",
+    "instrumentationLogSha256": "7a08dce7d6a0fe2116e2e50729a4abd3d555136f19d67546b7d9325aeceb16aa"
+  },
+  "benchmarks": {
+    "status": "USEFUL",
+    "campaign": "AC_PERFORMANCE_REVERSED_PAIR_2026_10_10",
+    "runs": [
+      {
+        "api": 28,
+        "variant": "optimized",
+        "status": "COMPLETE",
+        "elapsedSeconds": 2141.9529999999795,
+        "samples": 40,
+        "inputSha256": "4a92b8f35ccf72fc9762f3f806f42a5da8e4b86630b476e856e676237df5557f",
+        "apkSha256": "98ec141f83d265b19c2aeb89dd256edb14c0a192fdf0986a6600723f62db4081",
+        "completion": {
+          "event": "COMPLETE",
+          "blocks": 2007,
+          "authenticatedPcmFrames": 160560000,
+          "reopenedAuthenticatedPcmFrames": 160560000,
+          "reopenedCatalogVerified": true
+        }
+      },
+      {
+        "api": 28,
+        "variant": "baseline",
+        "status": "COMPLETE",
+        "elapsedSeconds": 2418.6720000000205,
+        "samples": 40,
+        "inputSha256": "5da996769939d78bbbc9f7307e31743bb760d3dbbcf9a3f4361ade26bdab02ab",
+        "apkSha256": "724b4e2872596118be57f31dfdfec6f6b69bb1d142a0a03463eb1d582c6cc67d",
+        "completion": {
+          "event": "COMPLETE",
+          "blocks": 2007,
+          "authenticatedPcmFrames": 160560000,
+          "reopenedAuthenticatedPcmFrames": 160560000,
+          "reopenedCatalogVerified": true
+        }
+      },
+      {
+        "api": 36,
+        "variant": "optimized",
+        "status": "COMPLETE",
+        "elapsedSeconds": 2117.1880000000237,
+        "samples": 40,
+        "inputSha256": "a5cd377f832c94cbe66c6d78f91fd281029b5bb0ab35e8243fe070bbb9b5263d",
+        "apkSha256": "98ec141f83d265b19c2aeb89dd256edb14c0a192fdf0986a6600723f62db4081",
+        "completion": {
+          "event": "COMPLETE",
+          "blocks": 2007,
+          "authenticatedPcmFrames": 160560000,
+          "reopenedAuthenticatedPcmFrames": 160560000,
+          "reopenedCatalogVerified": true
+        }
+      },
+      {
+        "api": 36,
+        "variant": "baseline",
+        "status": "COMPLETE",
+        "elapsedSeconds": 2637.9689999999828,
+        "samples": 40,
+        "inputSha256": "fd5891c43f7784970392d1db7c7e08ff6c63c7a593e0593a0ef808ebe34359a5",
+        "apkSha256": "724b4e2872596118be57f31dfdfec6f6b69bb1d142a0a03463eb1d582c6cc67d",
+        "completion": {
+          "event": "COMPLETE",
+          "blocks": 2007,
+          "authenticatedPcmFrames": 160560000,
+          "reopenedAuthenticatedPcmFrames": 160560000,
+          "reopenedCatalogVerified": true
+        }
+      }
+    ],
+    "allWallCpuAndSyncGatesPassed": true,
+    "fullLoadsPerMeasuredAppend": {
+      "baseline": 5,
+      "optimized": 4
+    },
+    "orderedApplicationCommitBoundaries": [
+      "reservation",
+      "bootstrap",
+      "publication",
+      "catalogCommit"
+    ],
+    "candidateFsyncAndParentFsyncPerAppend": [
+      4,
+      4
+    ]
+  },
+  "retainedEngineeringAttempts": {
+    "candidate01Api36Protection": {
+      "failed": 7,
+      "cause": "TRUSTED_ANDROID_PARENT_PATH_ALIAS_REJECTED"
+    },
+    "candidate02Build": "FAILED_PRIVATE_DETEKT_EXPORTER_CONFIGURATION_CACHE_INCOMPATIBILITY",
+    "candidate02DetektFindings": 18,
+    "candidate02TargetedApi36": {
+      "tests": 39,
+      "passed": 38,
+      "failure": "HARDLINK_FIXTURE_CREATION_EACCES"
+    },
+    "candidate02TargetedApi28": {
+      "tests": 39,
+      "passed": 38,
+      "failure": "HARDLINK_FIXTURE_CREATION_EACCES"
+    },
+    "candidate02Full394Api36": "FAILED_READ_ONLY_REJECTION",
+    "candidate02Full394Api28": "FAILED_READ_ONLY_REJECTION",
+    "candidate03Build": "FAILED_NATIVE_MEMORY_ALLOCATION",
+    "candidate04Retained394Api36": "ISOLATED_PASS_NOT_ACCEPTANCE",
+    "candidate06Full42Api36": "READ_ONLY_FAILURE_THEN_17_DATABASE_OPEN_FAILURES",
+    "fdRed08": {
+      "rejectionPathDescriptorGrowth": 320,
+      "successfulPathDescriptorGrowth": 576
+    },
+    "fdGreen09Api36": {
+      "tests": 2,
+      "passed": 2
+    },
+    "api28WritableBoot": "FAILED_HOST_DISK_CAPACITY",
+    "finalTargetedApi28Attempt01": {
+      "tests": 44,
+      "passed": 43,
+      "failure": "FULL394_APPEND_WHILE_HOST_DISK_SPACE_ZERO"
+    },
+    "finalTargetedApi28Attempt02": {
+      "status": "NOT_STARTED",
+      "reason": "FRESH_PACKAGE_NO_BACKUP_DIRECTORY_MISSING"
+    },
+    "originalApi28AfterReboot": "FRAMEWORK_LOCK_SETTINGS_EXCEPTION_LOOP_STOPPED_AND_PRESERVED"
+  },
+  "hostDiskRecovery": {
+    "status": "COMPRESSION_COMPLETE",
+    "bytesSaved": 6915366912,
+    "systemImagesWithMatchingBeforeAfterSha256": 2,
+    "bytesSavedMeaning": "EARLIER_REPORTED_COMPRESSION_DIFFERENCE_NOT_NET_VOLUME_SPACE_MEASUREMENT",
+    "resumeConfirmedAllocatedBytesFreed": 6442647552,
+    "resumeAllocationEvidence": "THREE_INACTIVE_AVD_ZERO_FILLED_RAM_IMAGES_WIN32_ALLOCATION_BEFORE_AFTER_WITH_EQUAL_SHA256"
+  },
+  "api28ReplacementEmulator": {
+    "api": 28,
+    "image": "default_x86_64",
+    "dataGb": 6,
+    "ramMb": 1536,
+    "pairedBenchmarkSettingsIdentical": true,
+    "priorApi28BenchmarkAttempts": 0
+  },
+  "independentReview": {
+    "previousReviews": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    },
+    "finalSourceState": {
+      "status": "PASS",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "scope": "ALL_46_FILES_FROZEN_SOURCE_RAW_BENCHMARKS_PROTECTION_AND_BOUNDED_PRIVACY",
+      "fullAcceptanceConditionalOnExactShaCi": true
+    }
+  },
+  "remainingGates": [
+    "EXACT_SHA_CI_AND_PUBLICATION_AUDIT"
+  ],
+  "requiredPerformanceRepeat": {
+    "status": "COMPLETE_USEFUL",
+    "api28Order": [
+      "optimized",
+      "baseline"
+    ],
+    "scope": "FULL_CAMPAIGN_ALL_FOUR_CHECKPOINTS_FRESH_FIXTURES",
+    "retainAndReportEveryAttempt": true,
+    "changeThresholds": false,
+    "frequencyRescaleTimings": false,
+    "ifHostPowerProfileChanges": "REPEAT_BOTH_API_PAIRS_UNDER_IDENTICAL_CONTROLS"
+  },
+  "publication": {
+    "c3Committed": false,
+    "c3Pushed": false,
+    "exactShaCi": "NOT_RUN",
+    "evidenceCheckpoint": "PREPUBLICATION_SOURCE_CHECKPOINT_FINAL_CI_RECORDED_IN_PR_AND_OWNER_REPORT"
+  },
+  "priorBenchmarks": {
+    "baselineApi36": {
+      "status": "COMPLETE",
+      "sizes": [
+        10,
+        400,
+        1000,
+        2000
+      ],
+      "authenticatedBlocksBeforeAndAfterReopen": 2007
+    },
+    "baselineApi28": {
+      "status": "COMPLETE",
+      "attempt": "01",
+      "exclusiveHeavyWork": true,
+      "elapsedSeconds": 2436.421,
+      "sizes": [
+        10,
+        400,
+        1000,
+        2000
+      ],
+      "measuredAppends": 28,
+      "measuredCatalogLoads": 12,
+      "authenticatedBlocksBeforeAndAfterReopen": 2007,
+      "authenticatedPcmFramesBeforeClose": 160560000,
+      "authenticatedPcmFramesAfterReopen": 160560000,
+      "reopenedCatalogVerified": true,
+      "fullCatalogLoadsPerMeasuredAppend": 5,
+      "requiredDurableTransactionOrderVerified": true,
+      "instrumentationLogSha256": "7c2053c85e62ceef9b6407d18378a96b582e0b3f0aed2304d84a18dd2956fc6d",
+      "mediansMs": [
+        {
+          "blocks": 10,
+          "appendWall": 567.246,
+          "appendThreadCpu": 421.215,
+          "catalogWall": 30.567,
+          "catalogThreadCpu": 29.715
+        },
+        {
+          "blocks": 400,
+          "appendWall": 695.198,
+          "appendThreadCpu": 566.397,
+          "catalogWall": 63.03,
+          "catalogThreadCpu": 60.374
+        },
+        {
+          "blocks": 1000,
+          "appendWall": 1005.8,
+          "appendThreadCpu": 847.262,
+          "catalogWall": 114.885,
+          "catalogThreadCpu": 111.926
+        },
+        {
+          "blocks": 2000,
+          "appendWall": 1574.328,
+          "appendThreadCpu": 1414.017,
+          "catalogWall": 214.893,
+          "catalogThreadCpu": 209.278
+        }
+      ]
+    },
+    "optimizedApi36": {
+      "status": "NOT_STARTED"
+    },
+    "optimizedApi28": {
+      "status": "FAILED",
+      "attempt": "01",
+      "elapsedSeconds": 906.5,
+      "completion": "INCOMPLETE_NO_FINAL_AUTHENTICATED_REOPEN",
+      "termination": "MANUAL_EARLY_STOP",
+      "reason": "FIRST_10_BLOCK_WALL_GATE_FAILED_AND_BROAD_HOST_SLOWDOWN_OBSERVED",
+      "automaticProtocolAbortThreshold": false,
+      "retained": true,
+      "firstCheckpointBlocks": 10
+    },
+    "pairedPerformanceCriteria": "NOT_ACCEPTED_INCOMPLETE_WITH_OBSERVED_API28_WALL_GATE_FAILURE"
+  },
+  "priorHostPowerObservation": {
+    "evidence": "COORDINATOR_OBSERVED",
+    "PowerOnline": false,
+    "Discharging": true,
+    "profile": "Silent",
+    "processorFrequencyMhz": 1326,
+    "percentProcessorPerformance": 43,
+    "slowdownCausality": "NOT_PROVEN",
+    "ownerCanConnectAcNow": false
+  },
+  "hostPowerObservation": {
+    "PowerOnline": true,
+    "Discharging": false,
+    "profile": "Performance",
+    "changedByAgent": false,
+    "originalSlowdownCausality": "NOT_PROVEN"
+  },
+  "api28ResumeBoot": {
+    "oldAvd": "PRESERVED_STOPPED",
+    "failure": "ANDROID9_SYNTHETIC_PASSWORD_NULL_ARRAY_AFTER_FDE_UNLOCK",
+    "benchmarkRepeatedOnFreshSameImageAvd": true,
+    "oldFixtureReopenAfterBootFailure": "NOT_ESTABLISHED"
+  },
+  "finalHostRegressions": {
+    "status": "PASS",
+    "logicalRecovery": 190,
+    "benchmarkComparatorAndRunner": 13,
+    "protectedPolicy": 19,
+    "admission": "PASS"
+  }
+}
