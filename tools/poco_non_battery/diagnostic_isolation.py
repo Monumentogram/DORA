@@ -43,7 +43,7 @@ def run(command):
         require('assets/dora-protected-policy.sha256' not in archive.namelist(),
                 'Synthetic isolation APK must not contain private policy pin')
     require(command('install', '-r', str(apk)).endswith('Success'), 'Isolation APK install failed')
-    rows = verify_output(command('shell', 'am', 'instrument', '-w', '-r', '-e', 'package', PACKAGE,
+    rows = verify_output(command('shell', 'am', 'instrument', '-w', '-r', '-e', 'class', ','.join(sorted(EXPECTED)),
                                 'com.monumentogram.dora.audio.test/androidx.test.runner.AndroidJUnitRunner',
                                 timeout=300))
     return {'status': 'PASS_SYNTHETIC_PROTECTED_SOURCE_ISOLATION', 'tests': rows,

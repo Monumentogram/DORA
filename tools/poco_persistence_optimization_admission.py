@@ -59,6 +59,7 @@ OVERRIDES={
     PARENT,'.github/workflows/android-ci.yml','tools/logical_recovery_ci_profile.py',
     'tools/test_logical_recovery_final_deletion.py',
     'tools/poco_non_battery/protected_policy.py',
+    'tools/poco_non_battery/diagnostic_isolation.py',
     'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostic/ProtectedHistoricalVaultTest.kt',
     'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/RecoveryAudioBridge.kt',
     'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticJournalFactory.kt',

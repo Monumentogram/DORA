@@ -221,6 +221,14 @@
       "P2": 0,
       "scope": "ALL_46_FILES_FROZEN_SOURCE_RAW_BENCHMARKS_PROTECTION_AND_BOUNDED_PRIVACY",
       "fullAcceptanceConditionalOnExactShaCi": true
+    },
+    "ciRunnerCorrection": {
+      "status": "PASS",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "independentlyReproducedRedGreen": true,
+      "frozenProductionAndHarnessFilesMatched": 11
     }
   },
   "remainingGates": [
@@ -239,10 +247,11 @@
     "ifHostPowerProfileChanges": "REPEAT_BOTH_API_PAIRS_UNDER_IDENTICAL_CONTROLS"
   },
   "publication": {
-    "c3Committed": false,
-    "c3Pushed": false,
-    "exactShaCi": "NOT_RUN",
-    "evidenceCheckpoint": "PREPUBLICATION_SOURCE_CHECKPOINT_FINAL_CI_RECORDED_IN_PR_AND_OWNER_REPORT"
+    "initialC3Commit": "9e67bf6cc52770f18c3ab08d03e27aecde2ca316",
+    "initialC3Pushed": true,
+    "correctionCommitted": false,
+    "exactShaCi": "CORRECTION_REQUIRES_NEW_FULL_CI",
+    "evidenceCheckpoint": "PREPUBLICATION_CORRECTION_FINAL_CI_RECORDED_IN_PR_AND_OWNER_REPORT"
   },
   "priorBenchmarks": {
     "baselineApi36": {
@@ -347,9 +356,29 @@
   },
   "finalHostRegressions": {
     "status": "PASS",
-    "logicalRecovery": 190,
+    "logicalRecovery": 191,
     "benchmarkComparatorAndRunner": 13,
     "protectedPolicy": 19,
     "admission": "PASS"
+  },
+  "retainedCiAttempts": [
+    {
+      "commit": "9e67bf6cc52770f18c3ab08d03e27aecde2ca316",
+      "runId": 38006756610,
+      "api36": "FAILED_LEGACY_DIAGNOSTIC_ISOLATION_PACKAGE_INVENTORY_EXPANDED",
+      "api36Persistence163": "PASS",
+      "api36Diagnostic19": "PASS",
+      "api36CrashRunners": "PASS",
+      "api28": "RUNNING_AT_SOURCE_CHECKPOINT",
+      "failureRetained": true
+    }
+  ],
+  "legacyIsolationRunnerCorrection": {
+    "selector": "EXACT_PREEXISTING_15_METHODS",
+    "strictOutputValidation": "UNCHANGED",
+    "mandatoryC3Diagnostic19Gate": "UNCHANGED",
+    "red": "REPRODUCED_IDENTICAL_INVENTORY_MISMATCH",
+    "green": "PASS_WITH_MISSING_EXTRA_DUPLICATE_SKIP_FAILURE_NEGATIVE_CONTROLS",
+    "productionAndBenchmarkHarnessChanged": false
   }
 }

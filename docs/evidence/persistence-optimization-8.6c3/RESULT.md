@@ -65,6 +65,17 @@ inventories and abrupt process-death regressions are mandatory in exact-SHA CI o
 fresh emulators; runners that clear packages are not run over retained local benchmark
 fixtures and keys. CI is still pending at this source checkpoint.
 
+The first published CI attempt on9e67bf6 (run38006756610) passed the API36
+163-method persistence inventory,19 diagnostic tests and all crash runners, but
+failed the legacy UI isolation inventory: selecting the whole diagnostic package
+now returned new C3 methods beyond its frozen15. The successor correction selects
+exactly the original15 methods; strict output checks and the separate mandatory19
+C3 gate remain. A host regression reproduced the identical failure before the fix
+and passes afterward, including missing/extra/duplicate/skipped/failed controls.
+Production and benchmark harness bytes are unchanged. The failed attempt is retained;
+a new full exact-SHA CI is mandatory. Independent delta review found zero unresolved
+P0/P1/P2 and independently reproduced RED/GREEN; all11 frozen hashes still match.
+
 The Android borrowed-FD leak found during acquisition development was reproduced
 with +320/+576 descriptors, fixed with explicit finally-close, then passed its two
 regressions and both44-test suites. This does not establish the historical LONG02 cause.
@@ -77,7 +88,7 @@ PCM, or a portable backup. Original physical protection remains unchanged.
 
 Independent final review found zero unresolved P0/P1/P2 across all46 files, frozen
 source, raw benchmark receipts, successor preparation and bounded privacy evidence.
-Final host regressions passed190 logical,13 comparator/runner and19 policy tests.
+Final host regressions after the selector fix passed191 logical,13 comparator/runner and19 policy tests.
 The local bounded privacy audit found zero protected-identity or secret-pattern matches.
 Public evidence
 contains synthetic measurements and hashes; private identities, policy, audio, keys,

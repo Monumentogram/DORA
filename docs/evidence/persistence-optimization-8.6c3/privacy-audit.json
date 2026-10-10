@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "PASS_FOR_LOCAL_SOURCE_SCOPE",
-  "scope": "46 explicitly admitted C3 source, test, tooling, workflow, contract and evidence files in the local working tree",
-  "audited_files": 46,
+  "scope": "47 explicitly admitted C3 source, test, tooling, workflow, contract and evidence files in the local working tree",
+  "audited_files": 47,
   "known_protected_identity_matches": 0,
   "secret_pattern_findings": 0,
   "private_host_path_findings": 0,

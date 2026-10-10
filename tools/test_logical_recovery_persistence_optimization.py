@@ -151,6 +151,37 @@ class OptimizationAdmissionTest(unittest.TestCase):
                 with self.assertRaises(KeyboardInterrupt): runner.credential_phase(command,action,'123456')
             self.assertEqual(('shell','locksettings','clear','--old','123456'),calls[-1])
 
+    def test_legacy_isolation_selects_exact_methods_when_diagnostic_package_expands(self):
+        from poco_non_battery import diagnostic_isolation as isolation
+        extra = isolation.PACKAGE + '.DiagnosticSuccessorLoaderTest#newSuccessorControl'
+        def output(names, code=0):
+            rows = []
+            for name in names:
+                cls, method = name.split('#')
+                rows.extend(('INSTRUMENTATION_STATUS: class=' + cls,
+                             'INSTRUMENTATION_STATUS: test=' + method,
+                             'INSTRUMENTATION_STATUS_CODE: ' + str(code)))
+            return '\n'.join(rows + [f'OK ({len(names)} tests)', 'INSTRUMENTATION_CODE: -1'])
+        calls = []
+        def command(*args, **kwargs):
+            calls.append(args)
+            if args[:2] == ('shell', 'getprop'): return '1'
+            if args[0] == 'install': return 'Success'
+            selected = args[args.index('-e') + 2]
+            names = sorted(isolation.EXPECTED | {extra}) if 'package' in args else selected.split(',')
+            return output(names)
+        with patch.object(isolation.zipfile, 'ZipFile') as archive, patch.object(Path, 'read_bytes', return_value=b'synthetic'):
+            archive.return_value.__enter__.return_value.namelist.return_value = []
+            receipt = isolation.run(command)
+        self.assertEqual(isolation.EXPECTED, {row['name'] for row in receipt['tests']})
+        instrument = calls[-1]
+        self.assertEqual(('class', ','.join(sorted(isolation.EXPECTED))),
+                         instrument[instrument.index('-e') + 1:instrument.index('-e') + 3])
+        expected = sorted(isolation.EXPECTED)
+        for names, code in ((expected + [extra], 0), (expected[:-1], 0),
+                            (expected + expected[:1], 0), (expected, -4), (expected, -2)):
+            with self.assertRaises(ValueError): isolation.verify_output(output(names, code))
+
     def test_real_git_history_rejects_reverted_unapproved_edit(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)

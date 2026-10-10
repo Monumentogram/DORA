@@ -24,20 +24,20 @@
     "docs/contracts/persistence-8.6c3-device-tests.json": "64bebfe0feacff51ac5ecbc68bdf61082be8731ab4e20a8c6989587661b36ba1",
     "docs/contracts/protected-diagnostic-8.6c3-tests.json": "bdc756152fa7c0968a24ad286af8b7b35f62b47a64859a25f8986dfb700eeff6",
     "docs/evidence/persistence-optimization-8.6c3/README.md": "4446c6970b9feb96c4966c042005f8f6a35e59b04763b01f3b9503f100233f11",
-    "docs/evidence/persistence-optimization-8.6c3/RESULT.md": "21eb990c2abf3e90abb5ca017f3839f1b8f4a1ab0367e60abc0c7380d782976e",
+    "docs/evidence/persistence-optimization-8.6c3/RESULT.md": "702823eb46c893743e4b32723ee24a4710943c15d69b18ca30bd80710a9cbbd9",
     "docs/evidence/persistence-optimization-8.6c3/benchmark-comparison.json": "3164ba3552d61817ad28439a2ab6c8c099870a7843f129ba63e003ae0d66d666",
     "docs/evidence/persistence-optimization-8.6c3/benchmark-protocol.md": "414f6ac45060026b04fcfaeab6a92f9eb39b844647518b2e5377f26fb455df0f",
     "docs/evidence/persistence-optimization-8.6c3/catalog-reuse-proof.md": "e99afb35c2897a93601a1e1473c541ca45705d845d0f1c7ba0a55599de58ddc7",
-    "docs/evidence/persistence-optimization-8.6c3/privacy-audit.json": "0cddd20cdf9e12de73db828c9012affe1292f8ba55ef07259c956e2238c20656",
-    "docs/evidence/persistence-optimization-8.6c3/verification.json": "786a0339637bbc31816b4b64e9176ed36d6edd9b13ea859021aa113b4a1c624d",
+    "docs/evidence/persistence-optimization-8.6c3/privacy-audit.json": "32b10463919d621f7d71b8a902ba510e6a544da772fcb9d0b9d312a9cd922f0f",
+    "docs/evidence/persistence-optimization-8.6c3/verification.json": "cb7278b926efa74a47973ef8632ee67098934021398b4dce62cc1db49e4d4a20",
     "docs/superpowers/plans/2026-10-09-alpha-persistence-optimization.md": "0dbb2465c76e89c82ada245378c794661a86170e48399208f4be300e9fae1a8e",
     "tools/persistence_optimization_c3_results.py": "6e8382b4b14b7fa3efe751a48a4e87264510d93254e7c2855f27ad3356ac61d8",
     "tools/persistence_optimization_ci_profile.py": "b6366b8975d08e5b15fa7a368b1ddc095463a32cf6eaf5c1bcd2e2c9a34f5b2f",
     "tools/poco_non_battery/test_successor_policy.py": "6ea96c3e76df96740e33c396381aa5c448303ec7720df3a4ac182a5d285a013b",
-    "tools/poco_persistence_optimization_admission.py": "b60c21b7ff4c78430f2daceb7794a58ec10c7806b40f759d0146435df17fbef8",
+    "tools/poco_persistence_optimization_admission.py": "8077d217025fb5168f0cd712a02cf0e20927f98967bff0792b28c5b03e64ff85",
     "tools/run_persistence_optimization_c3.py": "0643911ab25432d59f4c103c69a531b7c7c479f245975b277799fb5472e99243",
     "tools/run_protected_diagnostic_c3.py": "16905f64e74a36180a2ac454fb06dcbf7ac4d6ae9e2525fc087fc964959adf77",
-    "tools/test_logical_recovery_persistence_optimization.py": "1dc19b1f151442a413b0c46d8058a9aa8e342682f34601c92e1e8a9a0268a4af",
+    "tools/test_logical_recovery_persistence_optimization.py": "58cefc08c0639f134dc7331780de5d16436945be5c09a45640f57bbb034c528b",
     "tools/test_persistence_optimization_c3.py": "6d43dd99f53eb1e0d87444a3d884062a61b2ebe05747c430700661e2d10bb61e",
     "tools/test_run_persistence_optimization_c3.py": "eab9f84235bbd91ee19143a232411ea9218f546d1ab73b2276aa1c18f2c808b7"
   },
@@ -77,6 +77,10 @@
     "tools/logical_recovery_ci_profile.py": {
       "before": "fd0ce7803067710efd00b45b88ac26657076129f3c0cbd6f28d13bbfe69de39c",
       "after": "86475e9b12326c01e2f85b83dfcfa81c393e7df3ddc06ff469d5a686b8ac3392"
+    },
+    "tools/poco_non_battery/diagnostic_isolation.py": {
+      "before": "e93190f6db94eaed7c47f3daf891829f913bbf78a19b2724703f993d75b8d7e5",
+      "after": "cdce0c0e413146471f393095b7465b489db8922de926f688bb2ec485720777fc"
     },
     "tools/poco_non_battery/protected_policy.py": {
       "before": "68d0bd1a2adb865bf0dd07eda84c1df5976687b97bfa1bb4af983d4d10913b06",
