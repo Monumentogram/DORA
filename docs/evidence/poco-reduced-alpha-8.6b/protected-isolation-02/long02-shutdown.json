@@ -1,0 +1,9 @@
+{
+  "state": "SAFE_CONFIRMED",
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true,
+    "pendingStartExcluded": true
+  },
+  "unverifiedAudioDeleted": false
+}

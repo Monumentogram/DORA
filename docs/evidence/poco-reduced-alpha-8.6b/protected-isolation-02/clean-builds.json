@@ -1,0 +1,15 @@
+{
+  "sourceSha": "c0f1587ed969f089b6eae03cb9851ae6ba388960",
+  "apkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "builds": 2,
+  "freshDirectories": true,
+  "incrementalCompilation": false,
+  "buildCache": false,
+  "apkByteIdentical": true,
+  "zipEntryCount": 170,
+  "allZipEntriesIdentical": true,
+  "dexFiles": 19,
+  "preDexAppClasses": 102,
+  "allPreDexAppClassesIdentical": true,
+  "privateRuntimePublicUpload": false
+}

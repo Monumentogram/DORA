@@ -1,0 +1,68 @@
+{
+  "probeId": "A-04",
+  "kind": "IDLE",
+  "disposition": "INSTRUMENTATION_OBSERVATION_COMPLETED_WITH_SAMPLING_GAPS",
+  "sampler": {
+    "probeId": "A-04",
+    "windowIdentityConsistent": true,
+    "terminalConsistent": true,
+    "sampleCount": 36,
+    "actualSampleSpanMs": 654313,
+    "tenMinuteSampleSpan": true,
+    "maxObservedGapMs": 488230,
+    "allSamplesUnplugged": true,
+    "allSamplesScreenOff": true,
+    "chargeCounterMonotonic": true,
+    "observedChargeDeltaMicroAh": 0,
+    "candidateChargeDeltaMicroAh": null,
+    "continuousPowerProof": false,
+    "acceptance": "NOT_EVALUATED",
+    "limitation": "Periodic samples alone cannot exclude between-sample charging or screen wake; inspect system history. No energy conversion or current integration."
+  },
+  "batterystats": {
+    "schema": "checkin9/report36",
+    "uid": 10300,
+    "estimatedUidChargeMah": "0",
+    "cpuMs": null,
+    "semantics": "MODEL_ESTIMATED_UID_CHARGE_NOT_MEASURED_ENERGY",
+    "systemBatteryTimeMs": {
+      "batteryRealtime": 765402,
+      "batteryUptime": 44875,
+      "totalRealtime": 786419,
+      "startEpochMs": 1791137558905,
+      "batteryScreenOffRealtime": 760577
+    },
+    "systemEstimatedConsumedMah": "0"
+  },
+  "thermalObserved": {
+    "start": 0,
+    "maximum": 0,
+    "end": 0,
+    "notContinuousDueToSuspend": true
+  },
+  "currentNowMicroA": {
+    "first": -10600,
+    "last": -35800,
+    "min": -225000,
+    "max": -8200,
+    "integrated": false
+  },
+  "currentAverageMicroA": {
+    "first": -29700,
+    "last": -6100
+  },
+  "accubattery": {
+    "method": "VISIBLE_UI_HIERARCHY",
+    "session": "21:12-21:25",
+    "totalDischargeMahDisplayed": 1,
+    "screenOffDischargeMahDisplayed": 1,
+    "screenOffDurationDisplayed": "12m",
+    "deepSleepDurationDisplayed": "12m",
+    "deepSleepOfScreenOffPercentDisplayed": 95,
+    "wholeUnplugSessionNotExactSamplerWindow": true,
+    "semantics": "CONTROLLER_DERIVED_ESTIMATE"
+  },
+  "sourceAdmission": "NOT_YET_DETERMINED",
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "audioCreated": false
+}

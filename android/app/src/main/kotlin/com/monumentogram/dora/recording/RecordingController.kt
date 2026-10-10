@@ -8,13 +8,16 @@
 
 package com.monumentogram.dora.recording
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
 import android.os.Trace
+import android.util.AtomicFile
 import androidx.core.content.ContextCompat
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioIdentity
@@ -30,8 +33,11 @@ import com.monumentogram.dora.model.alpha.RecordingId
 import com.monumentogram.dora.vad.VadEngineFactory
 import com.monumentogram.dora.vad.VadException
 import com.monumentogram.dora.vad.VadFailure
+import java.io.File
 import java.util.UUID
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +64,9 @@ class RecordingController(
     private val runtime: AndroidProductAudioRuntime,
     private val vadFactory: VadEngineFactory = VadEngineFactory {
         throw VadException(VadFailure.RUNTIME_UNAVAILABLE)
+    },
+    private val freeStorageBytes: () -> Long = {
+        StatFs(context.noBackupFilesDir.path).availableBytes
     },
 ) {
     private val mutable = MutableStateFlow(RecordingViewState())
@@ -120,6 +129,20 @@ class RecordingController(
         Thread(task, "Dora recording persistence")
     }
     private val capture = AudioRecordCapture(context)
+    private val terminalDiagnostics = RecordingTerminalDiagnostics()
+    private val diagnosticWriter =
+        ThreadPoolExecutor(
+            1,
+            1,
+            0L,
+            TimeUnit.MILLISECONDS,
+            ArrayBlockingQueue(DIAGNOSTIC_QUEUE_CAPACITY),
+            { task -> Thread(task, "Dora terminal diagnostics").apply { isDaemon = true } },
+            ThreadPoolExecutor.AbortPolicy(),
+        )
+    @Volatile private var terminalReceiptStorage = "NOT_WRITTEN"
+    private val authorityRevoked = AtomicBoolean(false)
+    private var captureAttempted = false
     private val starting = AtomicBoolean(false)
     private val stopRequested = AtomicBoolean(false)
     private val pauseRequested = AtomicBoolean(false)
@@ -161,7 +184,16 @@ class RecordingController(
         )
     }
 
-    fun availableBytes(): Long = StatFs(context.noBackupFilesDir.path).availableBytes
+    fun availableBytes(): Long = freeStorageBytes()
+
+    fun storageBudget(): RecordingStorageBudget.Snapshot =
+        RecordingStorageBudget.assess(
+            try {
+                availableBytes()
+            } catch (_: Exception) {
+                null
+            }
+        )
 
     /** Aggregate health only, exposed through Android's privileged service dump. No IDs or PCM. */
     fun diagnosticSummary(): String =
@@ -175,7 +207,8 @@ class RecordingController(
             lastAppendStages.entries.joinToString(" ") { "${it.key}=${it.value}" } +
             "\n" +
             (segmentation?.diagnostics() ?: "vad=NOT_STARTED") +
-            " segmentationMetadataFailure=${state.value.recording.segmentationFailure ?: "NONE"}"
+            " segmentationMetadataFailure=${state.value.recording.segmentationFailure ?: "NONE"}" +
+            "\n${terminalDiagnostics.dump()} receiptStorage=$terminalReceiptStorage"
 
     fun start(activity: Activity, recoveredIdentity: AudioIdentity? = null) {
         if (!starting.compareAndSet(false, true)) return
@@ -192,13 +225,16 @@ class RecordingController(
         latency.recordingStarted(token)
         actionToken = token
         worker.execute {
+            terminalDiagnostics.begin()
+            authorityRevoked.set(false)
+            captureAttempted = false
             session = null
             segmentation = null
             retiring = false
             mutable.value =
                 RecordingViewState(recording = RecordingState(phase = RecordingPhase.PREPARING))
         }
-        if (availableBytes() < MINIMUM_FREE_BYTES) {
+        if (!storageBudget().canStart) {
             worker.execute { failBeforeStart(CaptureFailure.STORAGE_FULL) }
             return
         }
@@ -212,6 +248,7 @@ class RecordingController(
                 }
                 when (result) {
                     is AudioResult.Failed -> {
+                        recordTerminal(null, result.reason, TerminalOperation.PREPARATION)
                         stopPresentation()
                         mutable.update {
                             it.copy(
@@ -276,6 +313,7 @@ class RecordingController(
             }
             try {
                 selected.onRevocation {
+                    authorityRevoked.set(true)
                     capture.requestStop()
                     worker.execute {
                         if (access === selected && serviceActive)
@@ -328,6 +366,8 @@ class RecordingController(
                                         pauseRequested.get()
                                 )
                                     throw ResumeCancelled()
+                                if (!storageBudget().canStart)
+                                    throw CaptureException(CaptureFailure.STORAGE_FULL)
                                 nativeStart()
                             }
                         )
@@ -335,6 +375,7 @@ class RecordingController(
                     }
                 }
                 try {
+                    captureAttempted = true
                     capture.start(initialStart, captureEpochId = created.captureEpochId)
                 } catch (_: ResumeCancelled) {
                     if (stopRequested.get() || !serviceOwner.isCurrent(owner)) return@execute
@@ -614,12 +655,19 @@ class RecordingController(
     }
 
     private fun fail(failure: CaptureFailure) {
+        recordTerminal(failure, null, TerminalOperation.CAPTURE)
         mutable.update { it.copy(failure = failure) }
         session?.interrupt()
         terminate()
     }
 
     private fun failPersistence(reason: AudioFailure) {
+        recordTerminal(
+            null,
+            reason,
+            if (authorityRevoked.get()) TerminalOperation.REVOCATION
+            else TerminalOperation.PERSISTENCE,
+        )
         session?.interrupt(reason)
         mutable.update {
             it.copy(
@@ -634,9 +682,16 @@ class RecordingController(
     }
 
     private fun terminate() {
+        if (session?.state?.phase == RecordingPhase.INTERRUPTED)
+            recordTerminal(
+                capture.failure,
+                session?.state?.persistenceFailure,
+                TerminalOperation.PERSISTENCE,
+            )
         try {
             capture.stop()
         } catch (_: CaptureException) {
+            recordTerminal(CaptureFailure.THREAD_TIMEOUT, null, TerminalOperation.SHUTDOWN)
             shutdownUnconfirmed = true
             mutable.update {
                 it.copy(
@@ -710,11 +765,66 @@ class RecordingController(
     }
 
     private fun failBeforeStart(reason: CaptureFailure) {
+        recordTerminal(reason, null, TerminalOperation.PREPARATION)
         stopPresentation()
         actionToken = null
         mutable.value =
             RecordingViewState(RecordingState(phase = RecordingPhase.INTERRUPTED), failure = reason)
         starting.set(false)
+    }
+
+    /** Snapshot before cleanup; optional file IO runs on a separate bounded diagnostics worker. */
+    private fun recordTerminal(
+        failure: CaptureFailure?,
+        reason: AudioFailure?,
+        operation: TerminalOperation,
+    ) {
+        val current = session
+        val native = capture.terminalEvent.takeIf { captureAttempted }
+        val admission = if (captureAttempted) capture.admissionDiagnostics() else null
+        val observed = System.nanoTime()
+        val receipt =
+            RecordingTerminalReceipt(
+                failure,
+                reason,
+                operation,
+                current?.state?.phase ?: state.value.recording.phase,
+                native?.atNanos,
+                observed,
+                admission?.generation ?: 0L,
+                admission?.let { timeline.frames(it.frames) } ?: 0L,
+                current?.state?.durableFrames ?: 0L,
+                current?.pendingWriterUnits ?: 0,
+                current?.lastCompletedAppendDurationNanos ?: 0L,
+                if (captureAttempted) capture.maximumQueuedBlocks else 0,
+                segmentation?.queueHighWater,
+                servicePresent,
+                capture.hasLiveThread,
+                context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
+                    PackageManager.PERMISSION_GRANTED,
+                authorityRevoked.get(),
+                native?.admission,
+                captureAttempted,
+                current?.failureOperation,
+            )
+        if (!terminalDiagnostics.record(receipt)) return
+        try {
+            diagnosticWriter.execute {
+                val file = AtomicFile(File(context.noBackupFilesDir, "recording-terminal-v1.txt"))
+                var stream: java.io.FileOutputStream? = null
+                try {
+                    stream = file.startWrite()
+                    stream.write(receipt.encode().toByteArray(Charsets.UTF_8))
+                    file.finishWrite(stream)
+                    terminalReceiptStorage = "WRITTEN"
+                } catch (_: Exception) {
+                    file.failWrite(stream)
+                    terminalReceiptStorage = "WRITE_FAILED"
+                }
+            }
+        } catch (_: java.util.concurrent.RejectedExecutionException) {
+            terminalReceiptStorage = "QUEUE_FULL"
+        }
     }
 
     private fun publish() {
@@ -776,6 +886,7 @@ class RecordingController(
     private class ResumeCancelled : IllegalStateException()
 
     companion object {
+        private const val DIAGNOSTIC_QUEUE_CAPACITY = 4
         private const val UI_PERIOD_MILLIS = 50L
         private const val DRAIN_BLOCKS_PER_TICK = 20
         private const val SIGNAL_STALE_NANOS = 250_000_000L

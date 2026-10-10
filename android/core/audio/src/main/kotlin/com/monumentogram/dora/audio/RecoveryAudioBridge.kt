@@ -388,6 +388,7 @@ internal class RecoveryAudioBridge(
     private fun validateOrder(asset: StoredAudioAsset): Long {
         var next = 0L
         val ids = mutableSetOf<String>()
+        val physicalOrigins = mutableMapOf<String, Long>()
         asset.segments.forEachIndexed { index, segment ->
             check(segment.identity.audio == asset.identity && segment.identity.ordinal == index)
             check(segment.identity.firstFrame == next && ids.add(segment.identity.unitId))
@@ -399,10 +400,9 @@ internal class RecoveryAudioBridge(
                 ) == next
             )
             check(
-                asset.segments
-                    .take(index)
-                    .filter { it.identity.physicalSegmentId == segment.identity.physicalSegmentId }
-                    .all { it.identity.physicalFirstFrame == segment.identity.physicalFirstFrame }
+                physicalOrigins.getOrPut(segment.identity.physicalSegmentId) {
+                    segment.identity.physicalFirstFrame
+                } == segment.identity.physicalFirstFrame
             )
             check(segment.frames in 1..MAX_SEGMENT_BYTES / 2)
             next = AudioTimeline.nextFrame(next, segment.frames)

@@ -1,0 +1,21 @@
+{
+  "scope": "Successor publication and historical preservation, not physical acceptance",
+  "logicalRecoveryHostTests": 153,
+  "passed": 153,
+  "failed": 0,
+  "logSha256": "c075fcc6d35de65b1e0b5f920c62ef39983c367b23dbf5f932bd8782e882cb74",
+  "priorAttempt": "FAILED_HISTORICAL_LINE_ENDINGS_RESTORED_WITHOUT_ASSERTION_CHANGE",
+  "sealedWorkingContract": "PASS",
+  "independentReview": {
+    "implementationAndEvidenceUnresolved": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    },
+    "historicalRawBytesRestored": true,
+    "releaseTestAttributionCorrected": true,
+    "physicalBackpressureBlocker": "OPEN"
+  },
+  "runtimeChangedAfterPhysicalRun": false,
+  "finalExactShaCi": "PENDING_SEPARATE_TERMINAL_REPORT"
+}

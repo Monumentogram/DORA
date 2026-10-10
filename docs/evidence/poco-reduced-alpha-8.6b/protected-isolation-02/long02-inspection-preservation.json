@@ -1,0 +1,11 @@
+{
+  "thisInspectionDidNotChangeFiles": true,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "productApkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "snapshotComplete": true,
+  "operatorSha256": "eda0d1f561bcdbe48831b99afe82fc33ebd981383b974cd57a52e969db6aeff6",
+  "admissionSha256": "0c82bdfe551c74f356c32a06ddc648cfe1f6207fc17cedc2531fa25d55d5ab30"
+}

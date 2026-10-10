@@ -20,9 +20,11 @@ internal class AndroidAudioDeletionStorage(
     private val keys: NoLogRecoveryRunAeadBackend,
     private val hasCommittedBootstrap: (AudioIdentity, RunId) -> Boolean,
     private val sync: (FileDescriptor) -> Unit = Os::fsync,
+    private val mutationGate: (RunId) -> Unit = {},
 ) {
     fun remove(identity: AudioIdentity, target: AudioDeletionTarget) {
         val run = RunId.fromCanonicalString(target.runId)
+        mutationGate(run)
         if (target.kind == AudioDeletionTargetKind.KEY_REFERENCE) {
             check(
                 target.relativeName.isEmpty() &&
@@ -42,6 +44,7 @@ internal class AndroidAudioDeletionStorage(
 
     /** Recheck absence and synchronize its enclosing directory even after an interrupted unlink. */
     fun verifiedAbsent(target: AudioDeletionTarget): Boolean {
+        mutationGate(RunId.fromCanonicalString(target.runId))
         if (target.kind == AudioDeletionTargetKind.KEY_REFERENCE) {
             val run = RunId.fromCanonicalString(target.runId)
             check(target.digest == CanonicalRecoveryAlias.sha256(run).toLowercaseHex())

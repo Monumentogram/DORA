@@ -1,3 +1,138 @@
+## 2026-10-09 — Protected POCO successor campaign result
+
+Stage 8.6B-LITE remains **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.
+The debug-only exact47 isolation and bounded physical smoke passed. Fresh60/60
+Start/Stop/Finalize/authenticated-readback cycles passed on the same protected APK;
+4,882,400 canonical frames were verified and all60 test sources were deleted.
+
+DORA-LONG-02 failed between the last healthy sample at1980.082s and the failure
+receipt at1982.475s. The new terminal records PERSISTENCE_BACKPRESSURE at the
+unchanged256,000-frame outstanding durability fence. The underlying persistence
+latency cause remains UNKNOWN. This does not prove the historical LONG01 cause.
+No further hour, functional campaign or normal Recovery was run after the failure.
+LONG02 remains unfinalized and retained; its full PCM readback is NOT_RUN.
+
+Authenticated post-failure inspection proves all47 historical sources,11,395
+prior catalog rows and1,710 retained key challenges unchanged; all8,547 immutable
+files remain byte-identical. Only the admitted shared DB/WAL/SHM lifecycle differs.
+The new failed source has394 committed catalog claims/31,520,000 claimed frames,
+not authenticated PCM proof. Microphone OFF, recording FGS/process absent.
+
+Current runtime/evidence-parent cefeb0f has exact CI4/4 SUCCESS. Publication-head
+CI must independently pass and is reported with its exact SHA in the task result.
+See [successor result](evidence/poco-reduced-alpha-8.6b/protected-isolation-02/RESULT.md).
+Next work is bounded async-persistence latency diagnosis and safe disposition of
+retained LONG02, not another automatic retry. Do not normally launch DORA while
+its new failed source remains outside the exact47 historical protection policy.
+
+Sheet unchanged; Stage8.6 not closed; battery efficiency deferred/non-blocking;
+GroupD/Stage9/Cloud/ASR NOT_STARTED; security restoration OPEN; PERF-REC-001 deferred.
+PR99 stays DRAFT / OPEN / UNMERGED. Earlier dated evidence remains verbatim.
+
+---
+
+## 2026-10-08 — Protected historical Recovery owner admission
+
+[OD-86B-LITE-PROTECTED-HISTORICAL-RECOVERY](adr/ADR-RECORDING-009-protected-historical-recovery.md)
+authorizes temporary debug-only read-only protection of all 47 historical sources.
+Implementation/synthetic validation: IN_PROGRESS. Physical isolation and successor
+acceptance: NOT_RUN. No Stage 8.6 PASS. Original LONG01 failure remains unchanged.
+
+The exact private snapshot restricts historical catalog, metadata, keys and files
+before mutation. New test sources retain full ordinary Recovery and deletion.
+Only after isolation tests, independent review, exact-APK bounded physical smoke
+and complete preservation PASS may the fresh60 cycles and one powered hour run.
+No battery work; deferrals, Sheet, GroupD/Stage9/Cloud/ASR and security blocker unchanged.
+See [successor evidence](evidence/poco-reduced-alpha-8.6b/protected-isolation-02/README.md).
+Earlier dated statements below are retained as historical evidence.
+
+---
+
+## 2026-10-08 — LONG01 forensic / UI / build remediation
+
+**PARTIAL / LONG_CAPTURE_ROOT_CAUSE_UNPROVEN**. The source-preserving inspector
+authenticated 31,040,000 contiguous committed frames (388 units); all 46 originals
+and all 8,550 original vault files were unchanged. Historical interruption remains
+NOT_READY; the missing terminal enum cannot be reconstructed from counter proximity.
+Successor code adds bounded terminal diagnostics and accessible preflight actions.
+Clean nonincremental builds are reproducible; the historical incremental sequence
+reproduces the physical DEX payload. Old physical proof does not transfer to new code.
+Normal UI smoke is NOT_RUN because automatic Recovery may reconcile retained LONG01;
+reviewed isolation or separate owner disposition is required. No long retry admitted.
+
+See [remediation receipts](evidence/poco-reduced-alpha-8.6b/remediation-01/README.md).
+Exact publication-SHA CI remains a separate required check, reported with its run ID.
+Stage 8.6 not accepted; Sheet unchanged; battery deferral and security blocker unchanged.
+No Stage 9 / Group D / Cloud / ASR admission. PR99 remains DRAFT / OPEN / UNMERGED.
+The earlier dated status and evidence below are retained verbatim.
+
+---
+
+## 2026-10-08 — Owner-scoped autonomous POCO Alpha acceptance
+
+Stage 8.6B-LITE: **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.
+Owner scope is exactly 60 real five-second cycles and one USB-powered 3,600-second
+screen-off run. All 60 must pass; this is not the historical 200-cycle reliability
+claim or the former three-hour acceptance. No whole Stage 8.6 closure is asserted.
+
+The fixed short series passed 60/60 with full authenticated readback and exact
+owned-source deletion. DORA-LONG-01 interrupted after about 32.5 minutes with
+LONG_CAPTURE_INTERRUPTED; it was not repeated. The failed source is retained,
+its full authenticated readback is NOT_RUN, and catalog-only inspection proves
+46/46 original recordings preserved. Remaining functional smokes are NOT_RUN
+following this main-campaign failure. The next scoped work is interruption
+root-cause isolation; no later product stage is admitted by these results.
+
+[ADR-RECORDING-005](adr/ADR-RECORDING-005-hour-storage-admission.md) admits a minimal
+storage budget: 125,000,000 bytes/hour plus 16,777,216-byte finalization headroom.
+Fresh Start and the native capture admission boundary check exact free bytes;
+unknown capacity fails closed. UI shows free/required space and a refresh action.
+This is headroom admission, not preallocation or a new retention/deletion policy.
+
+[ADR-RECORDING-006](adr/ADR-RECORDING-006-reduced-autonomous-alpha-acceptance.md) defines
+reduced coverage; [OD-86B-LITE-BATTERY-SAVER-DEFERRAL](adr/ADR-RECORDING-007-usb-battery-saver-deferral.md)
+supersedes its Saver requirement: **DEFERRED / USB_POWER_CONSTRAINT**. Autonomous
+Doze may be deferred if unavailable. Canonical integrity, storage, thermal, real
+VAD, Recovery, owner-data preservation and safe shutdown are not weakened.
+
+Battery efficiency remains DEFERRED / NON_BLOCKING_FOR_ALPHA (ADR-PERF-002).
+Hardware microWh and comparative ratio remain NOT_EVALUATED. No battery experiments.
+Current evidence is under [poco-reduced-alpha-8.6b](evidence/poco-reduced-alpha-8.6b/).
+Historical failures, earlier requirements and dated statuses below remain intact.
+Exact-SHA CI is reported for the publication commit and cannot override the failed
+physical gate. Independent review checks evidence truth, not a physical PASS. Sheet C78 unchanged.
+Group D / Stage 9 / Cloud / ASR NOT_STARTED. Security restoration remains OPEN;
+PERF-REC-001 deferred/non-blocking. PR99 stays DRAFT / OPEN / UNMERGED.
+
+---
+
+## 2026-10-05 — Owner defers battery efficiency beyond Alpha
+
+Current Stage 8.6 Alpha status: **NOT_READY / NON_BATTERY_ACCEPTANCE_GAPS_OPEN**.
+Battery efficiency: **DEFERRED / NON_BLOCKING_FOR_ALPHA** by explicit Owner decision.
+Freshness: PASS / OPERATIONALLY_VALIDATED; repeatability: DEFERRED / NOT_RUN;
+comparative source admission: DEFERRED; DORA/baseline ratio: NOT_EVALUATED.
+Hardware microWh: NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE.
+
+[ADR-PERF-002](adr/ADR-PERF-002-alpha-battery-efficiency-deferral.md) and
+[current gate audit](governance/poco-battery-alpha-deferral.json) supersede only
+the battery-efficiency requirement as an Alpha blocker. No energy PASS is asserted.
+PERF-REC-002 tracks deferred Beta/separate performance validation, with new Owner scope required.
+Further battery repeats, cable experiments and Wi-Fi remediation for measurement are stopped.
+
+Stage 8 remains IN_PROGRESS. Non-battery 8.6 gates remain open: 200 physical
+Start/Finalize cycles; clean hour-long screen-off capture, integrity, storage,
+thermal/resources; storage-budget/low-storage UX; bounded Doze/Battery Saver,
+notification and Recovery checks. No replacement physical campaign is launched here.
+8.3/8.4/8.4C/8.5 retain their accepted predecessor status; earlier dated entries
+below are immutable historical snapshots. Group D / Cloud / ASR implementation
+is NOT_STARTED by this decision. Next product stage after recording closure:
+Stage 9 ASR/versioning under the admitted Alpha roadmap, separately scoped.
+DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE remains OPEN; PERF-REC-001 stays deferred/non-blocking.
+No Sheet write, merge, runtime/model/profile change or device-matrix acceptance.
+
+---
+
 ## 2026-10-03 — Owner Alpha acceptance of recording-control responsiveness
 
 [ADR-PERF-001](adr/ADR-PERF-001-alpha-recording-control-latency-acceptance.md)

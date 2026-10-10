@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.monumentogram.dora.stage86b.driver" android:versionCode="1" android:versionName="0.1">
+  <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="36" />
+  <application android:label="DORA physical acceptance driver" android:allowBackup="false" android:debuggable="true" />
+  <instrumentation android:name=".CampaignInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
+  <instrumentation android:name=".FunctionalInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
+  <instrumentation android:name=".FailureInspectionInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
+  <instrumentation android:name=".ForensicCatalogInstrumentation" android:targetPackage="com.monumentogram.dora.debug" android:functionalTest="true" />
+</manifest>

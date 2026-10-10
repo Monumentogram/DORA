@@ -1,0 +1,23 @@
+{
+  "separateCaptureOpenFenced": true,
+  "run": "forensic-protected-long02-failure",
+  "apkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "recordingStarted": false,
+  "phase": "COMPLETE",
+  "updatedElapsedMs": 417349929,
+  "privateSnapshotSha256": "8e78d4e1a3016d1ce4a237d17b831e7ae336f12f21f258a8e7bdeec99a6ecdf1",
+  "snapshotSchemaVersion": 3,
+  "snapshotTableCount": 15,
+  "snapshotRowCount": 14489,
+  "snapshotKeyCount": 2104,
+  "verifiedHistoricalKeyProofs": 1710,
+  "snapshotOnlyDatabaseOpen": true,
+  "databaseOpenMode": "DIRECT_SQLCIPHER_READONLY_NO_ROOM",
+  "normalRecoveryInvoked": false,
+  "pcmInspection": "NOT_RUN",
+  "originalVaultOpenGuardInstalled": true,
+  "originalVaultOpenAttemptsDenied": 0,
+  "preservation": "VERIFIED",
+  "sourceFilesUnchanged": true,
+  "micOffAndFgsAbsent": true
+}

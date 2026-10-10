@@ -115,6 +115,8 @@ class EncryptedAudioVaultDeletionFailureTest {
                         )
                 )
                 .use { vault ->
+                    val invalidation = RoomInvalidationProbe(vault)
+                    invalidation.assertRefreshOwnedByCaller(transactionRetained = false)
                     EncryptedAudioVaultFaultFixture.success(vault.writer.create(fixture.audio))
                     EncryptedAudioVaultFaultFixture.success(fixture.append(vault))
                     assertEquals(
@@ -126,6 +128,7 @@ class EncryptedAudioVaultDeletionFailureTest {
                         AudioResult.Failed(AudioFailure.UNCERTAIN),
                         vault.sourceState(fixture.audio),
                     )
+                    invalidation.assertRefreshOwnedByCaller(transactionRetained = !after)
                     fixture.scan()
                 }
             fixture.open(false).use { vault ->

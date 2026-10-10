@@ -1,0 +1,104 @@
+{
+  "campaignDenominator": 60,
+  "originalAttempts": [
+    1,
+    2,
+    3
+  ],
+  "continuationAttempts": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ],
+  "freshRecordingAttempts": 60,
+  "recordingAttemptsRepeated": 0,
+  "hostFailures": [
+    {
+      "run": "lite-cycles-01",
+      "completedBeforeFailure": 3,
+      "nextAttemptStarted": false,
+      "failure": {
+        "reason": "PermissionError",
+        "safeState": {
+          "fgsAbsent": true,
+          "micNotRunning": true,
+          "pendingStartExcluded": true
+        },
+        "unverifiedAudioDeleted": false
+      },
+      "interpretation": "Windows PermissionError; exact original failing operation not captured; independent atomic-replace reader-sharing failure reproduced and bounded retry tested. No attribution to recording defect."
+    },
+    {
+      "run": "lite-cycles-cont-01",
+      "completedBeforeFailure": 60,
+      "failure": {
+        "reason": "INSTRUMENTATION_EXITED_WITHOUT_TERMINAL",
+        "winerror": null,
+        "errno": null,
+        "safeState": {
+          "fgsAbsent": true,
+          "micNotRunning": true,
+          "pendingStartExcluded": true
+        },
+        "unverifiedAudioDeleted": false
+      },
+      "interpretation": "Host read ATTEMPT_COMPLETE then observed process exit before re-reading atomically published COMPLETE. Reproduced old ordering and fixed process-observation-before-receipt ordering; completed device terminal independently recovered without rerun."
+    }
+  ],
+  "historicalFailuresRetained": true,
+  "longRunNotReplaced": true
+}

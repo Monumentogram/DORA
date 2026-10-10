@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "tests": [
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticKeyFenceTest#protectedOrUnownedRunCannotCreateOrRemoveKey",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#deviceAndPackageMismatchesAreRejected",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#emptyOversizedAndDirectoryInputsAreRejected",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#exactManifestBindsAll47SourcesAndVault",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#malformedManifestAndIdentifiersAreRejected",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#ordinaryBuildDoesNotActivateUnpinnedPrivatePolicy",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#privateFileIsReadFreshAtEveryOpen",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#sourceCardinalityAndDuplicatesAreRejected",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticPolicyLoaderTest#symlinksIncludingDanglingLinksAreRejected",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticSuccessorLoaderTest#removedHistoricalIdentityWrongKeyBindingAndOwnershipAreRejected",
+    "com.monumentogram.dora.audio.diagnostic.DiagnosticSuccessorLoaderTest#successorIncludesExactPredecessorAndRetainsProtectionOnEveryDecode",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#changedRoomIdentityCannotReachRepairCallback",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#missingBindingCannotReachBootstrapCallback",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#missingDatabaseCannotReachDelegateCreation",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#missingRoomIdentityCannotReachRepairCallback",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#missingRoomMetadataCannotReachRepairCallback",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#olderSchemaCannotReachMigrationCallback",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#protectedSourcesRejectMutationWhileNewSourceRetainsRecoveryAndDeletion",
+    "com.monumentogram.dora.audio.diagnostic.ProtectedHistoricalVaultTest#successor48RejectsMutationWhileNewSourceRetainsRecoveryAndDeletion"
+  ]
+}

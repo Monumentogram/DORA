@@ -7,6 +7,26 @@ import org.junit.Test
 
 class CaptureAdmissionTest {
     @Test
+    fun rejectedBudgetSnapshotSurvivesCompletionBeforeReaderReportsFailure() {
+        var clock = 100L
+        val queue = BoundedPcmQueue(1)
+        val admission = CaptureAdmission(queue) { clock }
+        val generation = admission.begin()
+        admission.open(generation)
+        admission.offer(generation, byteArrayOf(1, 2))
+        queue.drain(1) {}
+        clock = 200L
+        assertEquals(CaptureAdmission.Result.FULL, admission.offer(generation, byteArrayOf(3, 4)))
+        admission.durableThrough(1)
+        admission.fence()
+        val rejected = checkNotNull(admission.rejection())
+        assertEquals(200L, rejected.atNanos)
+        assertEquals(0L, rejected.admission.durableFrames)
+        assertEquals(1, rejected.admission.outstandingBlocks)
+        assertEquals(generation, rejected.admission.generation)
+    }
+
+    @Test
     fun exactFenceTimeIsSeparateFromLastAcceptedPcmAndStableInSnapshot() {
         var clock = 100L
         val admission = CaptureAdmission(BoundedPcmQueue(4)) { clock }

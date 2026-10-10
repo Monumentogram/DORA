@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "source_baseline": "944b41532e3007ca14d1851d83c2232de1132874",
+  "scope": "Offline evidence and explicitly selected synthetic emulators only; no physical device access",
+  "root_cause": "NOT_PROVEN",
+  "stage_8_6": "NOT_READY",
+  "production_runtime_fix": false,
+  "performance_apk_sha256": "c8f785098658c6e0ad1ab0b14d704cdb7528a87c0baaeb446660b5d748b632bf",
+  "final_diagnostics_apk_sha256": "99a25feebac12ae14e31239d84cf545b89a4acf3e70a8d47d4c566644f4e35a2",
+  "performance_identity_limit": "Full performance run began before final formatting, strict hardware guard, diagnostic package relocation and added async tests. Measurement logic unchanged; exact final-source performance APK equivalence is not claimed.",
+  "benchmark": {
+    "status": "COMPLETE",
+    "api": 36,
+    "blocks": 2003,
+    "authenticated_pcm_frames": 160240000,
+    "raw_sha256": "b5c5483ca33606e8a49064405b6ec31455e456bd027ef00aaa95005607ce7b17",
+    "public_receipt_sha256": "3fa32290a6bc41780105e662c19ca6ac05a43609ca5a53be801c9a9776bd2f45"
+  },
+  "final_apk_instrumentation": [
+    {
+      "api": 28,
+      "tests": 2,
+      "status": "PASS",
+      "raw_sha256": "9cd85cf931d338ab155653bf9ff455092ea94848f2bdfad60611b7df1815a7fc"
+    },
+    {
+      "api": 28,
+      "tests": 1,
+      "status": "PASS",
+      "raw_sha256": "45db36b4e2bcb3bbc2c580c050b3e2d597a7e83734516f87ce9618361d03a7ce",
+      "blocks": 13,
+      "authenticated_pcm_frames": 1040000,
+      "reopened_catalog_verified": true,
+      "full_scaling_campaign": false
+    },
+    {
+      "api": 36,
+      "tests": 2,
+      "status": "PASS",
+      "raw_sha256": "8df819a5ed41bab5f62093669de27cd9722cbca957abb4a5c2328fdb558eb8fc"
+    },
+    {
+      "api": 36,
+      "tests": 1,
+      "status": "PASS",
+      "raw_sha256": "04521ede26af81fedc50c1370495c58b8a5be61d5303d30332126547ba694ebd",
+      "blocks": 13,
+      "authenticated_pcm_frames": 1040000,
+      "reopened_catalog_verified": true,
+      "full_scaling_campaign": false
+    }
+  ],
+  "unit_tests": [
+    {
+      "module": "core/audio",
+      "variant": "testDebugUnitTest",
+      "tests": 245,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "skipped_tests": [
+        "com.monumentogram.dora.audio.persistence.auth.DevelopmentDeviceSecurityTest#symbolicMarkerCannotGrantTheException"
+      ]
+    },
+    {
+      "module": "core/audio",
+      "variant": "testReleaseUnitTest",
+      "tests": 237,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipped_tests": []
+    },
+    {
+      "module": "app",
+      "variant": "testDebugUnitTest",
+      "tests": 76,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "skipped_tests": []
+    }
+  ],
+  "python_diagnostic_tests": {
+    "tests": 35,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "raw_sha256": "6c04561781ee15a7492cc8372c39f6a17bf362d37ec39dfa60119cd3780b70cb"
+  },
+  "python_admission_tests": {
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "raw_sha256": "44abb5c18ac693b33cd6351d1d80ab3858883bce51b1ba11a70b2f42f2fb81d6"
+  },
+  "logical_recovery_integration_tests": {
+    "tests": 167,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "includes_admission_14": true,
+    "raw_sha256": "3448d5c25f2f8c295f9f77125b993edf89375182c4edfa97464a2d4e458c5f8e"
+  },
+  "inherited_compiled_contract": {
+    "status": "PASS with explicit local --working opt-in",
+    "raw_sha256": "5aaac32a7fe3d6ddb0a5c8caa8605d32bf3c05357404d1fbebcf44b502c19764"
+  },
+  "format_and_static": {
+    "spotlessCheck": "PASS",
+    "detekt": "PASS via exact Gradle task argument file; Windows command-line length workaround",
+    "build_log_sha256": "c6c71fca40c907de58b99d12a4ad0f36501b7561a29e9929b5a733ed39a0e429",
+    "detekt_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_sha256_normalization": "UTF-8 bytes with CRLF normalized to LF",
+  "diagnostic_source_sha256": {
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostics/PersistenceAsyncDurabilityTest.kt": "fe6f7c49ee6e0b0c702bcc20e61113e600d69c7e25806e040eb7ae6d7b2e9c39",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostics/PersistenceScalingBenchmarkTest.kt": "a2724b38841061cf166d881e8d491a4edf626f926a5aa00fd3a25b4fbbc1fb6b",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostics/PersistenceScalingProbe.kt": "1edf2bc3bac76fed9cb1333139038eed3f86471c91cf65dc0a7c456a4b1a4276",
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/CatalogOrderWorkTest.kt": "e8faefee38ed9bf971f1ff0808773b6fabcdd138e7b0475aa08a60127272d743",
+    "tools/persistence_latency_analysis.py": "8810b8534cd9180ed40218a1d09ab9787f911157e3e56c4b1682e08acc02e97b",
+    "tools/persistence_scaling_results.py": "b80bb45bdc6f41e72e6f22b379db5f0e4f689c23b4173eccee9b62c5a56b1058",
+    "tools/run_persistence_scaling.py": "c12748041cf0c1069d5ac4a007bc377fe1a17c931be2d96081a407dbb27b85b1",
+    "tools/test_persistence_latency_analysis.py": "7878b4efac675758da352d355342c3cf3c291b655bd32f86a91953e0dbe76a5c",
+    "tools/test_persistence_scaling_results.py": "24f1485560d66f30d3e2e217c248733f86daa342e8c2d0f4250584a770fd483b",
+    "tools/test_run_persistence_scaling.py": "42dfb8358141b10f5d886792153a726c21a9b91b0767076a2417732d868d5ce1"
+  },
+  "long02": {
+    "offline_evidence_files_hash_verified": 19,
+    "blocks_claimed": 394,
+    "files_mapped": 1970,
+    "saved_matching_aliases": 394,
+    "saved_long02_key_challenges": 0,
+    "audio_backup_created": false,
+    "physical_protection_extended": false,
+    "authenticated_pcm_readback": "NOT_RUN"
+  },
+  "failed_or_incomplete_attempts": [
+    "New API36 AVD could not start: disk space below userdata-image requirement; invalid initial partition override then insufficient space. No benchmark measurements produced.",
+    "Read-only clone of already-running API36 AVD refused; existing verified emulator used instead.",
+    "Initial direct Windows Detekt invocation exceeded command-line length; exact Java argument-file invocation used. Two new test complexity findings suppressed with test-lifetime rationale and final check passed.",
+    "Broad Python discovery interrupted without a suite result to reduce concurrent host load; only named targeted outcomes claimed.",
+    "Incorrect module-scoped Spotless task invocation failed; root task rerun succeeded.",
+    "Publication validator first rejected dirty working tree; integration tests then rejected missing final evidence before sealing. Final inherited integration and clean exact-SHA checks reported separately."
+  ],
+  "ci": "Exact publication SHA and CI outcomes recorded after commit outside this self-referential source receipt",
+  "cleanup": {
+    "api28_created_readonly_emulator": "Synthetic credential cleared and emulator stopped",
+    "api36_preexisting_emulator": "Synthetic credential cleared after tests; emulator retained",
+    "synthetic_fixtures": "Retained; no implicit file/key cleanup"
+  }
+}

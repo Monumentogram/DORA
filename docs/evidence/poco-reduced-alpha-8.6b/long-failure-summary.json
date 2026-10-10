@@ -1,0 +1,110 @@
+{
+  "verdict": "NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED",
+  "campaignStatus": "BLOCKED",
+  "run": "DORA-LONG-01",
+  "power": "USB_POWERED_SCREEN_OFF_ALPHA_RUN",
+  "sourceApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "requiredScreenOffMs": 3600000,
+  "observedScreenOffThroughLastSampleMs": 1950153,
+  "failureReceiptElapsedFromScreenOffStartMs": 1951698,
+  "errorCode": "LONG_CAPTURE_INTERRUPTED",
+  "attemptReplaced": false,
+  "allObservedSamplesScreenOff": true,
+  "sampleCount": 66,
+  "maximumSampleGapMs": 30083,
+  "thermalObserved": {
+    "start": 0,
+    "max": 0,
+    "last": 0
+  },
+  "lastObservedAdmittedFrames": 31203200,
+  "lastObservedDurableFrames": 30960000,
+  "lastObservedUncommittedFrameDifference": 243200,
+  "lastObservedReadErrors": 0,
+  "lastObservedShortReads": 0,
+  "lastObservedVadInference": 60943,
+  "lastObservedVadDeadlineMisses": 27,
+  "canonicalQueueHighWater": 2,
+  "vadQueueHighWater": 9,
+  "lastCompletedMaximumAppendNanos": 3405273846,
+  "resourceSamples": {
+    "pssKiB": {
+      "start": 116025,
+      "p50": 160962.5,
+      "p95NearestRank": 172992,
+      "peak": 179728,
+      "lastObserved": 117662
+    },
+    "rssKiB": {
+      "start": 255968,
+      "p50": 294938.0,
+      "p95NearestRank": 305624,
+      "peak": 307936,
+      "lastObserved": 177548
+    },
+    "nativeHeapBytes": {
+      "start": 33640832,
+      "p50": 55301952.0,
+      "p95NearestRank": 60979488,
+      "peak": 65587168,
+      "lastObserved": 50314880
+    },
+    "javaHeapBytes": {
+      "start": 8777680,
+      "p50": 15318992.0,
+      "p95NearestRank": 21450704,
+      "peak": 21868496,
+      "lastObserved": 17141712
+    },
+    "threads": {
+      "start": 46,
+      "p50": 47.0,
+      "p95NearestRank": 47,
+      "peak": 47,
+      "lastObserved": 47
+    },
+    "fds": {
+      "start": 169,
+      "p50": 145.0,
+      "p95NearestRank": 145,
+      "peak": 169,
+      "lastObserved": 145
+    }
+  },
+  "cpu": {
+    "processCpuDeltaMs": 1072789,
+    "observationDeltaMs": 1950153,
+    "semantics": "Process CPU-time delta, no CPU acceptance threshold"
+  },
+  "readback": "NOT_RUN_SOURCE_RETAINED",
+  "finalize": "NOT_SUCCESSFUL",
+  "wholeRecordingLoss": "NOT_DETERMINED_NO_FALSE_ZERO",
+  "canonicalGapsDuplicatesCorruption": "NOT_EVALUATED_BY_AUTHENTICATED_READBACK",
+  "storageHourlyGate": "NOT_EVALUATED_INCOMPLETE_RUN",
+  "capRotationGate": "NOT_EVALUATED_BY_FINAL_READBACK",
+  "failureCause": "NOT_PROVEN_TERMINAL_PRODUCT_ERROR_ENUM_NOT_CAPTURED",
+  "candidateExplanation": "Persistence backpressure: last observed admitted-minus-durable243200 frames near frozen256000-frame admission cap. This is a hypothesis, not a proven product root cause.",
+  "safeShutdown": {
+    "state": "SAFE_CONFIRMED",
+    "safeState": {
+      "fgsAbsent": true,
+      "micNotRunning": true,
+      "pendingStartExcluded": true
+    },
+    "unverifiedAudioDeleted": false
+  },
+  "hostWatchdog": {
+    "state": "CLOSED_SAFE",
+    "reason": null,
+    "awakeLeaseHeld": true
+  },
+  "boundedProcessLogIndicators": {
+    "scope": "600-line PID-filtered logcat after failure",
+    "outOfMemoryErrorMatches": 0,
+    "fatalExceptionMatches": 0,
+    "anrMatches": 0,
+    "limitation": "Bounded log absence does not prove all device history or classify the interruption cause"
+  },
+  "nextPhysicalRuns": "NOT_RUN_AFTER_MAIN_FAILURE",
+  "batteryMeasurements": "NOT_RUN"
+}

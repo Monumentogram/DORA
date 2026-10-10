@@ -1,0 +1,11 @@
+{
+  "number": 99,
+  "state": "open",
+  "draft": true,
+  "merged": false,
+  "html_url": "https://github.com/Monumentogram/DORA/pull/99",
+  "head": "2cb4b470da88a52f2ce89ce0ae6c640c3222cfe1",
+  "branch": "stage/8.6-poco-recording-acceptance",
+  "base": "stage/8.5-logical-recording-recovery",
+  "baseSha": "b8cac85f30f446d98c1a6b1d21490d8c10bc5b41"
+}

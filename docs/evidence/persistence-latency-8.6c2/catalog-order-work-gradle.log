@@ -1,0 +1,53 @@
+Reusing configuration cache.
+> Task :core:audio:preBuild UP-TO-DATE
+> Task :ml:vad-api:preBuild UP-TO-DATE
+> Task :core:model:preBuild UP-TO-DATE
+> Task :core:audio:preDebugBuild UP-TO-DATE
+> Task :ml:vad-api:preDebugBuild UP-TO-DATE
+> Task :core:audio:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:audio:processDebugNavigationResources UP-TO-DATE
+> Task :core:audio:generateDebugResources UP-TO-DATE
+> Task :core:audio:javaPreCompileDebug UP-TO-DATE
+> Task :ml:vad-api:generateDebugResources UP-TO-DATE
+> Task :ml:vad-api:javaPreCompileDebug UP-TO-DATE
+> Task :core:audio:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :core:model:preDebugBuild UP-TO-DATE
+> Task :ml:vad-api:processDebugNavigationResources UP-TO-DATE
+> Task :core:model:generateDebugResources UP-TO-DATE
+> Task :core:model:processDebugNavigationResources UP-TO-DATE
+> Task :core:model:javaPreCompileDebug UP-TO-DATE
+> Task :core:audio:packageDebugResources UP-TO-DATE
+> Task :ml:vad-api:packageDebugResources UP-TO-DATE
+> Task :core:model:packageDebugResources UP-TO-DATE
+> Task :ml:vad-api:parseDebugLocalResources UP-TO-DATE
+> Task :core:audio:parseDebugLocalResources UP-TO-DATE
+> Task :core:model:parseDebugLocalResources UP-TO-DATE
+> Task :core:audio:generateDebugRFile UP-TO-DATE
+> Task :ml:vad-api:generateDebugRFile UP-TO-DATE
+> Task :core:model:generateDebugRFile UP-TO-DATE
+> Task :core:audio:generateDebugUnitTestStubRFile UP-TO-DATE
+> Task :core:model:compileDebugKotlin UP-TO-DATE
+> Task :ml:vad-api:compileDebugKotlin UP-TO-DATE
+> Task :core:model:compileDebugJavaWithJavac NO-SOURCE
+> Task :ml:vad-api:compileDebugJavaWithJavac NO-SOURCE
+> Task :ml:vad-api:processDebugJavaRes UP-TO-DATE
+> Task :core:model:processDebugJavaRes UP-TO-DATE
+> Task :core:model:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :ml:vad-api:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core:model:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :ml:vad-api:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core:audio:kspDebugKotlin UP-TO-DATE
+> Task :core:audio:compileDebugKotlin UP-TO-DATE
+> Task :core:audio:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:audio:processDebugJavaRes UP-TO-DATE
+> Task :core:audio:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core:audio:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core:audio:kspDebugUnitTestKotlin
+> Task :core:audio:compileDebugUnitTestKotlin
+> Task :core:audio:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:audio:processDebugUnitTestJavaRes UP-TO-DATE
+> Task :core:audio:testDebugUnitTest
+
+BUILD SUCCESSFUL in 3s
+37 actionable tasks: 3 executed, 34 up-to-date
+Configuration cache entry reused.

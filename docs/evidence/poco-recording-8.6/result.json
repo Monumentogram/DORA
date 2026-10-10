@@ -1,0 +1,67 @@
+{
+  "verdict": "BLOCKED / POCO_ENERGY_MEASUREMENT_UNAVAILABLE",
+  "baselineSha": "b8cac85f30f446d98c1a6b1d21490d8c10bc5b41",
+  "branch": "stage/8.6-poco-recording-acceptance",
+  "baseBranch": "stage/8.5-logical-recording-recovery",
+  "campaignSourceSha": null,
+  "campaignApkSha256": null,
+  "baselineComparatorApkSha256": null,
+  "installedAcceptedStage85ApkSha256": "17c71b24ffd320d76a8ce4b886f67edb9fb6cf9a56053cc7ab17bb407ec36ed3",
+  "installedApkIsNotStage86CampaignEvidence": true,
+  "requiredPrivateAarSha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+  "requiredSileroSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "privateRuntimePackaging": "NOT_RUN; no new product APK packaged",
+  "energySourceId": null,
+  "energyUnitProof": "Property 5 is documented nWh; local runtime exposes id=5 but returns unsupported sentinel. No conversion or microWh measurement accepted.",
+  "energyPairs": [
+    {
+      "pairId": "PAIR-01",
+      "baselineMicroWh": null,
+      "captureMicroWh": null,
+      "ratio": null,
+      "verdict": "NOT_RUN"
+    },
+    {
+      "pairId": "PAIR-02",
+      "baselineMicroWh": null,
+      "captureMicroWh": null,
+      "ratio": null,
+      "verdict": "NOT_RUN"
+    },
+    {
+      "pairId": "PAIR-03",
+      "baselineMicroWh": null,
+      "captureMicroWh": null,
+      "ratio": null,
+      "verdict": "NOT_RUN"
+    }
+  ],
+  "startAttemptsExecuted": 0,
+  "finalizeAttemptsExecuted": 0,
+  "wholeRecordingLossCount": null,
+  "oneHourDoraRuns": 0,
+  "oneHourBaselineRuns": 0,
+  "recordingsCreatedByStage86": 0,
+  "thermalEvidence": "Preflight NONE, override=false; no hour-long thermal PASS",
+  "screenOffEvidence": "Bounded framework-source diagnostic only, not production capture evidence",
+  "storageBudgetDisposition": "Existing 16 MiB start/ongoing floor and free-MiB UI found; required hour budget/free-versus-required UX not proven; acceptance work remains deferred behind energy prerequisite.",
+  "regression": "Stage 0 battery host oracle recompiled and passed. Product runtime tree unchanged. No fresh physical/reliability/regression-suite PASS inferred.",
+  "groupD": "NOT_STARTED_BY_THIS_TASK",
+  "cloudAsr": "NOT_STARTED_BY_THIS_TASK",
+  "runtimeModelProfileChanged": false,
+  "securityRestorationBlocker": "OPEN",
+  "PERF-REC-001": "DEFERRED_NON_BLOCKING",
+  "sheet": "NOT_WRITTEN; no full PASS; no new Sheet readback claim",
+  "cleanup": "No test audio created; diagnostic device files removed after local content-free reduction (verify in cleanup receipt).",
+  "nonclaims": [
+    "Stage 8.6 PASS",
+    "full Stage 8 closure",
+    "D1-D7 device-matrix closure",
+    "all Android device support",
+    "beta crash-free >=99.5%",
+    "physical 16-KiB runtime",
+    "full multi-device POC-BATTERY-001 closure",
+    "eight-hour endurance"
+  ],
+  "historicalSamsungCapture": "UNCHANGED_INCONCLUSIVE"
+}

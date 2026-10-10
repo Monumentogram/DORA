@@ -1,0 +1,5 @@
+CATALOG_ORDER_WORK n=10 sourceElementReads=55 validatedFrames=800000 physicalGroupSize=120
+CATALOG_ORDER_WORK n=100 sourceElementReads=5050 validatedFrames=8000000 physicalGroupSize=120
+CATALOG_ORDER_WORK n=400 sourceElementReads=80200 validatedFrames=32000000 physicalGroupSize=120
+CATALOG_ORDER_WORK n=1000 sourceElementReads=500500 validatedFrames=80000000 physicalGroupSize=120
+CATALOG_ORDER_WORK n=2000 sourceElementReads=2001000 validatedFrames=160000000 physicalGroupSize=120

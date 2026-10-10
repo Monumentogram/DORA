@@ -1,0 +1,24 @@
+{
+  "baseline": {
+    "usedApkSha256": "d601efc0d16c54d485c91a213cdc1f83fccc3660f5304a65f727c38ed345f34d",
+    "verificationBuildApkSha256": "1759441bcf837f5f0f35f49d7b4cdb7d43c293242a9cf366e48b27ea56c61a93",
+    "apkByteIdentical": false,
+    "runtimePayloadsEqual": true,
+    "runtimePayloads": {
+      "classes.dex": "2f83acba3d1302b5d323b0553bf5ecf53324da0caae52595424f7554190a7951",
+      "AndroidManifest.xml": "e0e3725c605f78c67752ab6cf65b479a188d0feaee4877ee10f89d552e14289b"
+    },
+    "publishedSourceNormalizedEqual": true
+  },
+  "observer": {
+    "usedApkSha256": "2d26c9ef24c349dee08561d2bd9f8bd5051b945326c1c086fb7479c27c9f612f",
+    "verificationBuildApkSha256": "026f1d384d8451f6d5a99f46a276d46dc04f1e2877a71bbed213babbd983c662",
+    "apkByteIdentical": false,
+    "runtimePayloadsEqual": true,
+    "runtimePayloads": {
+      "classes.dex": "a8a00a41fb70de784a7d9f20ecf5c17b8be414c73dc9a714232d581f74b3f940",
+      "AndroidManifest.xml": "092341b59e8cd45c1273cfe3c09674736e8c23a7802d8c1ed31fcfea542ad73b"
+    },
+    "publishedSourceNormalizedEqual": true
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "baselineSha": "2cb4b470da88a52f2ce89ce0ae6c640c3222cfe1",
+  "productApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "rebuildByteIdenticalToPhysicalApk": true,
+  "appUnitTests": {
+    "tests": 65,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "pythonLogicalRecoveryAndReducedTests": 108,
+  "spotless": "PASS",
+  "appLint": "PASS",
+  "detektLocal": "NOT_RUN_SUCCESSFULLY / WINDOWS_CREATEPROCESS_206_ARGUMENT_LENGTH",
+  "physicalCampaign": "IN_PROGRESS",
+  "exactFinalShaCi": "PENDING",
+  "historicalRecovery414": "ACCEPTED_HISTORICAL_NOT_RERUN",
+  "publicationAudit": {
+    "files": 42,
+    "findings": 0,
+    "positiveCanaries": 3
+  }
+}

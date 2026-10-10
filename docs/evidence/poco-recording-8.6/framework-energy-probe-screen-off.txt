@@ -1,0 +1,4 @@
+runtimeEnergyPropertyId=5
+elapsedRealtimeMs=18359065 energyRaw=-9223372036854775808 unsupported=true chargeCounterMicroAh=2796000
+elapsedRealtimeMs=18361301 energyRaw=-9223372036854775808 unsupported=true chargeCounterMicroAh=2796000
+elapsedRealtimeMs=18363495 energyRaw=-9223372036854775808 unsupported=true chargeCounterMicroAh=2796000

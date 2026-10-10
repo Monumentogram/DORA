@@ -1,0 +1,4 @@
+ls: /data/local/tmp/dora-stage86-energy-probe.jar: No such file or directory
+ls: /data/local/tmp/dora-stage86-power.pbtxt: No such file or directory
+ls: /data/misc/perfetto-traces/dora-stage86-power.pftrace: No such file or directory
+ls: /data/misc/perfetto-traces/dora-stage86-consumers.pftrace: No such file or directory

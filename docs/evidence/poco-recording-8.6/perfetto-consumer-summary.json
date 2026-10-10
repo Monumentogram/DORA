@@ -1,0 +1,30 @@
+{
+  "sha256": "b0cf9b1e7eea7417fa1a8d53b9f272e8ac069381fee74e696cb47e71a9b14bbc",
+  "bytes": 1500,
+  "packetFields": {
+    "trusted_uid": 31,
+    "clock_snapshot": 2,
+    "trusted_packet_sequence_id": 31,
+    "synchronization_marker": 1,
+    "trace_uuid": 1,
+    "trace_config": 1,
+    "system_info": 1,
+    "timestamp": 22,
+    "service_event": 5,
+    "sequence_flags": 2,
+    "previous_packet_dropped": 1,
+    "trusted_pid": 19,
+    "first_packet_on_sequence": 1,
+    "battery": 16,
+    "power_rails": 1,
+    "android_energy_estimation_breakdown": 1,
+    "trace_stats": 1
+  },
+  "energyConsumerPackets": 1,
+  "energyRailSamples": 0,
+  "railDescriptors": 0,
+  "energyConsumerDescriptors": 0,
+  "energyConsumerValues": 0,
+  "consumerPacketContent": "empty energy_consumer_descriptor only",
+  "containsEnergyMeasurement": false
+}

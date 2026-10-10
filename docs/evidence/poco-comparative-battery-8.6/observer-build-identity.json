@@ -1,0 +1,14 @@
+{
+  "package": "com.monumentogram.dora.stage86.observer",
+  "versionCode": 1,
+  "versionName": "0.1-diagnostic",
+  "apkSha256": "2d26c9ef24c349dee08561d2bd9f8bd5051b945326c1c086fb7479c27c9f612f",
+  "sourceSha256": {
+    "AndroidManifest.xml": "cf7532e967dae6d30ccaf7541238e5b592199c801964d744c50f86e343e9c48e",
+    "ProbeInstrumentation.java": "1f7e38b0677a08db58bb29e8bc79dcc68e64b04ced33c656ce9dc4b87c932dfd"
+  },
+  "signingCertificate": "a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72",
+  "productionDoraIncluded": false,
+  "privateRuntimeIncluded": false,
+  "networkPermission": false
+}

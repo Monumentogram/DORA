@@ -1,0 +1,9 @@
+{
+  "original8550ByteIdentical": true,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "productApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "snapshotComplete": true
+}

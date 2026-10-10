@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "scope": "READ_ONLY_POST_FAILURE_CATALOG_INSPECTION_NO_RETRY_NO_AUDIO_DELETION",
+  "productApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "helperApkSha256": "5ce6287b9e00b237253066b9c2c1a1675c176f0dd5474570b1a31d240a697515",
+  "ownerMapSha256": "f25a28aa9e80e19f10a01eacbc30d9b10ec591407c770adb92869d9710fb1fd2",
+  "helperSources": {
+    "AndroidManifest.xml": "5e0f4eef2b42aa18817d077399feeae4e363eaade93770c7fd99b416ded6b243",
+    "CampaignInstrumentation.java": "702378ee0aba99de0b158449c28cf24a0e3875e08e42bcc7916ddf4c0ed6e0e5",
+    "FailureInspectionInstrumentation.java": "9ff6bdda8f1c82127a3ae2e56da71ea9870775a91318d85305cdc62ea7a80fc4",
+    "FunctionalInstrumentation.java": "32b49b8fef15e88f5d94ff807459534d7f1c88afde51e17d61a768c6b74fe413",
+    "RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+    "SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+    "Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41"
+  },
+  "expectedCatalogCount": 47,
+  "protectedOriginals": 46,
+  "runs": {
+    "lite-failure-inspect-01": {
+      "mode": "failure-inspect",
+      "attempts": 1,
+      "hardDeadlineSeconds": 360,
+      "referenceRun": "dora-long-01",
+      "referenceReceiptSha256": "8f78dfdd005deb5aea82aa0670af12f82757e3d1559be13083fae6c7fcddc5d9"
+    }
+  },
+  "noStartResumeRecoveryOrDelete": true,
+  "sourceReadback": "NOT_RUN_PENDING_FAILURE_INVESTIGATION",
+  "reason": "Main hour failed; verify protected46 and exact failed-source catalog prefix without changing recording outcome."
+}

@@ -42,6 +42,11 @@ internal class VaultJournalLease(private val operationGate: () -> Unit) {
         check(token.thread === Thread.currentThread())
         check(asset == null || token.asset == asset)
     }
+
+    fun ownedAsset(): String {
+        requireHeld()
+        return checkNotNull(held.get()).asset
+    }
 }
 
 /** Completion and readback are separate durability gates. Exceptions never become false success. */

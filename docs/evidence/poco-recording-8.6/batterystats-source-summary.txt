@@ -1,0 +1,3 @@
+Estimated power use (mAh):
+    Capacity: 4434, Computed drain: 0, actual drain: 0
+On-battery energy consumer stats (microcoulombs)

@@ -25,6 +25,12 @@ PERF-REC-001 remains deferred/non-blocking; DEV-SECURITY-RESTORE-BEFORE-ALPHA-CL
 
 
 def validate_status_projection(current, historical):
+    import poco_reduced_admission as reduced
+    if current.startswith(reduced.PREFIX):
+        current = reduced.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()
+    import poco_alpha_battery_defer as alpha
+    if current.startswith(alpha.PREFIX):
+        current = alpha.normalize_document('docs/DORA_MVP1_STAGE_STATUS.md', current.encode()).decode()
     require(current == STATUS_HEADER + historical, 'Logical recording status or historical bytes changed')
     return historical
 
@@ -61,6 +67,9 @@ def read_contract(root=ROOT):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_poco_acceptance as successor
+    if successor.candidate(root):
+        return successor.validate_checkout(root, allow_working=allow_working)
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_vad_runtime as parent

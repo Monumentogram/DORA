@@ -1,0 +1,34 @@
+{
+  "run": "lite-failure-inspect-01",
+  "mode": "failure-inspect",
+  "apkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "referenceRun": "dora-long-01",
+  "referenceReceiptSha256": "8f78dfdd005deb5aea82aa0670af12f82757e3d1559be13083fae6c7fcddc5d9",
+  "phase": "COMPLETE",
+  "updatedElapsedMs": 374073715,
+  "originalRecordingsPreserved": 46,
+  "ownerMapSha256": "f25a28aa9e80e19f10a01eacbc30d9b10ec591407c770adb92869d9710fb1fd2",
+  "ownedFailedSourceFingerprint": "f64a84108b022e03fa203c5730d2d73ac1a5ce88b7540d2bc22721cd30fef4fe",
+  "catalogCommittedFrames": 31040000,
+  "committedClaims": 388,
+  "pendingClaims": 0,
+  "catalogFinalized": false,
+  "catalogPrefixContiguous": true,
+  "authenticatedAudioReadback": "NOT_RUN_PENDING_FAILURE_INVESTIGATION",
+  "sourceRetained": true,
+  "deletionAttempted": false,
+  "recordingStarted": false,
+  "ownerInventoryUnchanged": true,
+  "microphoneReleased": true,
+  "fgsStopped": true,
+  "hostShutdown": {
+    "state": "SAFE_CONFIRMED",
+    "safeState": {
+      "fgsAbsent": true,
+      "micNotRunning": true,
+      "pendingStartExcluded": true
+    },
+    "unverifiedAudioDeleted": false
+  },
+  "rawReceiptSha256": "42d970d59b5d7258e95c92ddf7e195e9cc8929ea200a708348de48fbed4dd1be"
+}

@@ -1,0 +1,55 @@
+[
+  {
+    "attempt": "smoke-01",
+    "result": "FAILED_DIAGNOSTIC_PRIVATE_VAD_MAP_GUARD",
+    "subsequentReadbackFrames": 48000,
+    "subsequentProductDeletion": "VERIFIED",
+    "historicalReceiptUnchanged": true
+  },
+  {
+    "attempt": "smoke-02",
+    "result": "COMPLETE_3_SECOND_DIAGNOSTIC",
+    "readbackFrames": 48800,
+    "productDeletion": "VERIFIED"
+  },
+  {
+    "attempt": "screen-smoke-01",
+    "result": "FAILED_POST_WINDOW_AUTH_OPEN_UNAVAILABLE",
+    "screenOffMs": 30136,
+    "subsequentReadbackFrames": 483200,
+    "subsequentProductDeletion": "VERIFIED_49_TARGETS",
+    "originalFailureNotReclassified": true
+  },
+  {
+    "attempt": "cleanup-screen-smoke-01",
+    "result": "FAILED_AUTH_OPEN_UNAVAILABLE",
+    "deletionAttempted": false
+  },
+  {
+    "attempt": "cleanup-screen-smoke-02",
+    "result": "COMPLETE_AFTER_STANDARD_NONSECURE_DISMISS",
+    "readbackFrames": 483200,
+    "productDeletion": "VERIFIED_49_TARGETS"
+  },
+  {
+    "attempt": "lite-screen-smoke-01",
+    "result": "FAILED_BEFORE_START_HOST_HEARTBEAT_TRANSPORT_TIMEOUT",
+    "originalWatchdogTerminal": "DEVICE_SAFE_STATE_UNCONFIRMED",
+    "laterIndependentSafeState": "FGS_ABSENT_MIC_NOT_RUNNING_NO_START_ATTEMPT",
+    "audioCreated": false,
+    "originalFailureNotReclassified": true
+  },
+  {
+    "attempt": "lite-screen-smoke-02",
+    "result": "COMPLETE_AUTONOMOUS_DIAGNOSTIC",
+    "screenOffMs": 30151,
+    "readbackFrames": 483200,
+    "productDeletion": "VERIFIED_49_TARGETS"
+  },
+  {
+    "attempt": "battery-saver-autonomy-preflight-01",
+    "result": "BLOCKED_POWER_SAVE_REMAINS_OFF_ON_USB",
+    "audioCreated": false,
+    "settingRestored": true
+  }
+]

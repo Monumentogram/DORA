@@ -1,0 +1,24 @@
+{
+  "run": "preflight-08",
+  "mode": "preflight",
+  "apkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "pid": 14185,
+  "inputDeviceTypes": [
+    15,
+    18,
+    15,
+    25,
+    16,
+    28
+  ],
+  "micPermissionGranted": true,
+  "thermalStart": 0,
+  "batterySaver": false,
+  "phase": "COMPLETE",
+  "updatedElapsedMs": 368174265,
+  "ownerCount": 46,
+  "ownerMapSha256": "f25a28aa9e80e19f10a01eacbc30d9b10ec591407c770adb92869d9710fb1fd2",
+  "ownerInventoryUnchanged": true,
+  "microphoneReleased": true,
+  "fgsStopped": true
+}

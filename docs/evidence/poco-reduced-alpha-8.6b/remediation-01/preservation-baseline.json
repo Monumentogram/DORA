@@ -1,0 +1,16 @@
+{
+  "protocolSha256": "bc96e1b897af351ea611112e1076e39e4767663ce3493a32c209094171697c9f",
+  "checkpointSha": "9b5591837fb220c0bbe0996f5bdfd95378dea135",
+  "testedApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "fileCount": 8550,
+  "fileMapSha256": "3a0ed2c55128adbd7f36e4df10e5591ddfbfd5c4746b63916adac071cd564556",
+  "historicalFailedReceiptUnchanged": true,
+  "sourceMutation": false,
+  "currentAuthenticatedInventory": "NOT_YET_INSPECTED",
+  "elapsedSeconds": 1.25,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "processAbsent": true
+}

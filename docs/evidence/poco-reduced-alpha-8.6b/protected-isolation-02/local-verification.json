@@ -1,0 +1,39 @@
+{
+  "status": "PASS_LOCAL_SYNTHETIC_CHECKS_PHYSICAL_NOT_RUN",
+  "baseSha": "20057696c556a354d08e007dfcba736ff217fe6d",
+  "hostPocoTests": 86,
+  "hostPersistenceTests": 52,
+  "api36AdditiveInventory": 15,
+  "api36AdditivePassed": 15,
+  "gradleSuites": {
+    "audioDebug": {
+      "tests": 240,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "audioRelease": {
+      "tests": 232,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "recoveryFresh": {
+      "tests": 414,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "spotless": "PASS",
+  "detekt": "PASS_EXACT_ARGS_WINDOWS_COMMAND_LINE_WORKAROUND",
+  "independentReviewUnresolved": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0
+  },
+  "historicalInventoryMethods": 138,
+  "historicalRecoveryPhases": 22,
+  "newExactShaCi": "PENDING",
+  "physicalSmoke": "NOT_RUN"
+}

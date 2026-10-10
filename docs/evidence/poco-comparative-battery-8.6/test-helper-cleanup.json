@@ -1,0 +1,10 @@
+{
+  "com.monumentogram.dora.stage86.cleanup": "Success",
+  "com.monumentogram.dora.stage86.cleanupAbsent": true,
+  "com.monumentogram.dora.stage86.observer": "Success",
+  "com.monumentogram.dora.stage86.observerAbsent": true,
+  "com.monumentogram.dora.stage86.baseline": "Success",
+  "com.monumentogram.dora.stage86.baselineAbsent": true,
+  "accubatteryRetained": true,
+  "bluetoothRestoredOn": true
+}

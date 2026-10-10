@@ -1,6 +1,7 @@
 package com.monumentogram.dora.audio.persistence.journal
 
 import android.content.Context
+import android.os.Looper
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
@@ -17,6 +18,8 @@ import com.monumentogram.dora.audio.SegmentationKind
 import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.StoredAudioAsset
 import com.monumentogram.dora.audio.StoredAudioSegment
+import com.monumentogram.dora.audio.persistence.DiagnosticJournalFactory
+import com.monumentogram.dora.audio.persistence.DiagnosticSourcePolicy
 import com.monumentogram.dora.poc.recovery.bootstrap.KeyConfirmationState
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryBootstrapRunRow
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryRunBootstrapJournal
@@ -61,17 +64,25 @@ private constructor(
     private val binding: VaultBindingEntity,
     private val lease: VaultJournalLease,
     private val registryKey: String,
+    private val diagnostic: DiagnosticSourcePolicy,
 ) : AutoCloseable {
     private val dao = database.journal()
     private var closed = false
     private var uncertain = false
+    // One immutable observation for the next append reservation, owned by the current lease.
+    // Never used by load, CAS, finalization, or a post-commit readback.
+    private var reservationSnapshot: StoredAudioAsset? = null
     private val commits =
         JournalCommitBoundary(
-            database::beginTransaction,
+            {
+                reservationSnapshot = null
+                database.beginTransaction()
+            },
             database::setTransactionSuccessful,
             database::endTransaction,
             database::inTransaction,
         ) {
+            reservationSnapshot = null
             uncertain = true
         }
     val catalog: EncryptedAudioCatalog = Catalog()
@@ -82,6 +93,8 @@ private constructor(
     fun retainSegmentation(identity: AudioIdentity, metadata: SegmentationMetadata) {
         requireOperation(identity)
         requireMutable()
+        diagnostic.requireComponent(metadata.segmentId)
+        metadata.captureEpochId?.let(diagnostic::requireComponent)
         require(metadata.kind != SegmentationKind.RECORDING_ORIGIN)
         check(sourceState(identity) == null)
         val source = checkNotNull(catalog.load(identity))
@@ -324,6 +337,23 @@ private constructor(
 
     private fun requireMutable() {
         check(!uncertain) { "Journal requires reopen and exact readback" }
+        if (diagnostic.active) diagnostic.requireAsset(lease.ownedAsset())
+    }
+
+    fun isProtected(identity: AudioIdentity): Boolean = diagnostic.isProtected(identity)
+
+    fun requireMutableSource(identity: AudioIdentity) {
+        diagnostic.requireNewSource(identity)
+    }
+
+    fun requireMutableRun(run: RunId) {
+        if (!diagnostic.active) return
+        checkOpen()
+        val claim = checkNotNull(dao.claim(run.toCanonicalString()))
+        lease.requireHeld(claim.assetId)
+        val owner = checkNotNull(dao.asset(claim.assetId))
+        check(owner.ownerId == binding.ownerId && owner.vaultId == binding.vaultId)
+        diagnostic.requireRun(claim.runId, owner.identity())
     }
 
     private fun exactAsset(identity: AudioIdentity): AssetEntity? =
@@ -341,6 +371,7 @@ private constructor(
         lease.requireHeld(claim.assetId)
         val asset = checkNotNull(dao.asset(claim.assetId))
         check(asset.ownerId == binding.ownerId && asset.vaultId == binding.vaultId)
+        diagnostic.requireRun(runId, asset.identity())
         check(dao.tombstone(claim.assetId) == null)
         return claim
     }
@@ -365,7 +396,13 @@ private constructor(
         override fun tryAcquire(identity: AudioIdentity): AutoCloseable? {
             checkOpen()
             canonical(identity.sessionId)
-            return lease.tryAcquire(identity.assetId.value)
+            val operation = lease.tryAcquire(identity.assetId.value) ?: return null
+            reservationSnapshot = null
+            return AutoCloseable {
+                lease.requireOwner()
+                reservationSnapshot = null
+                operation.close()
+            }
         }
 
         override fun create(identity: AudioIdentity): Boolean = createAsset(identity, false)
@@ -375,10 +412,11 @@ private constructor(
 
         private fun createAsset(identity: AudioIdentity, logical: Boolean): Boolean {
             checkOpen()
-            requireMutable()
+            diagnostic.requireNewSource(identity)
             canonical(identity.sessionId)
             val operation = lease.tryAcquire(identity.assetId.value) ?: return false
             operation.use {
+                requireMutable()
                 if (dao.asset(identity.assetId.value) != null) return false
                 val row =
                     AssetEntity(
@@ -406,6 +444,10 @@ private constructor(
         // returned.
         @Suppress("LongMethod", "CyclomaticComplexMethod")
         override fun load(identity: AudioIdentity): StoredAudioAsset? {
+            // Do not let a failed read leave a prior observation reusable. Only the owner
+            // may touch lease-local state, including when authorization has been revoked.
+            lease.requireOwner()
+            reservationSnapshot = null
             requireOperation(identity)
             val asset = exactAsset(identity) ?: return null
             if (dao.tombstone(asset.assetId) != null) return null
@@ -482,18 +524,40 @@ private constructor(
             } else if (pending !is AudioIntent.Finalize)
                 check(dao.finalSources(asset.assetId).isEmpty())
             return StoredAudioAsset(
-                identity,
-                sources,
-                pending,
-                if (asset.finalized) sources.toList() else null,
-            )
+                    identity,
+                    sources,
+                    pending,
+                    if (asset.finalized) sources.toList() else null,
+                )
+                .also { snapshot ->
+                    val hasNoPendingOrFinalization =
+                        snapshot.pending == null && snapshot.finalization == null
+                    if (hasNoPendingOrFinalization && !uncertain && !database.inTransaction()) {
+                        // Elements/identities/digests are immutable; only the exposed list needs
+                        // copying. Ineligible pending/finalization lists are never retained.
+                        reservationSnapshot = snapshot.copy(segments = snapshot.segments.toList())
+                    }
+                }
+        }
+
+        private fun reservationMatches(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
+            val observed = reservationSnapshot
+            reservationSnapshot = null
+            if (intent is AudioIntent.Append && observed != null && observed == expected)
+                return true
+            return try {
+                load(expected.identity) == expected
+            } finally {
+                // The fallback precondition is consumed too, even if the intent is rejected.
+                reservationSnapshot = null
+            }
         }
 
         override fun reserve(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
             requireOperation(expected.identity)
             requireMutable()
             if (
-                load(expected.identity) != expected ||
+                !reservationMatches(expected, intent) ||
                     expected.pending != null ||
                     expected.finalization != null
             )
@@ -501,6 +565,8 @@ private constructor(
             val assetId = expected.identity.assetId.value
             when (intent) {
                 is AudioIntent.Append -> {
+                    diagnostic.requireRun(intent.identity.unitId, expected.identity)
+                    diagnostic.requireComponent(intent.identity.physicalSegmentId)
                     if (!validAppend(expected, intent) || dao.claim(intent.identity.unitId) != null)
                         return false
                     val physical =
@@ -736,6 +802,7 @@ private constructor(
             requireMutable()
             lease.requireHeld()
             check(!database.inTransaction())
+            reservationSnapshot = null
             database.beginTransaction()
         }
 
@@ -762,6 +829,7 @@ private constructor(
                 database.endTransaction()
                 if (successful) check(readbacks.all { it() }) { "Journal readback rejected" }
             } catch (error: Exception) {
+                reservationSnapshot = null
                 uncertain = true
                 throw error
             } finally {
@@ -1179,6 +1247,7 @@ private constructor(
     override fun close() {
         checkOpen()
         lease.withExclusiveCleanup {
+            reservationSnapshot = null
             database.close()
             closed = true
             openPaths.remove(registryKey)
@@ -1192,7 +1261,7 @@ private constructor(
         private val openPaths = ConcurrentHashMap.newKeySet<String>()
 
         // Owner, vault, encrypted helper and live authorization must all be explicit at this seam.
-        @Suppress("LongParameterList", "TooGenericExceptionCaught")
+        @Suppress("LongParameterList")
         fun open(
             context: Context,
             databaseFile: File,
@@ -1200,6 +1269,26 @@ private constructor(
             ownerId: String,
             vaultId: String,
             operationGate: () -> Unit,
+        ): RoomAudioJournal =
+            open(
+                context,
+                databaseFile,
+                helperFactory,
+                ownerId,
+                vaultId,
+                operationGate,
+                DiagnosticSourcePolicy.ordinary(),
+            )
+
+        @Suppress("LongParameterList", "TooGenericExceptionCaught", "LongMethod")
+        fun open(
+            context: Context,
+            databaseFile: File,
+            helperFactory: SupportSQLiteOpenHelper.Factory,
+            ownerId: String,
+            vaultId: String,
+            operationGate: () -> Unit,
+            diagnostic: DiagnosticSourcePolicy,
         ): RoomAudioJournal {
             canonical(ownerId)
             canonical(vaultId)
@@ -1210,15 +1299,11 @@ private constructor(
             check(openPaths.add(file.path)) { "Vault already open" }
             val database =
                 try {
-                    Room.databaseBuilder(
-                            context.applicationContext,
-                            AudioJournalDatabase::class.java,
-                            file.path,
-                        )
-                        .openHelperFactory(helperFactory)
-                        .addMigrations(OriginalAudioMigration, SegmentationMigration)
-                        .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-                        .build()
+                    val factory =
+                        if (diagnostic.active)
+                            DiagnosticJournalFactory(helperFactory, diagnostic, ownerId, vaultId)
+                        else helperFactory
+                    openDatabase(context, file, factory)
                 } catch (error: Exception) {
                     openPaths.remove(file.path)
                     throw error
@@ -1226,9 +1311,22 @@ private constructor(
             return try {
                 val binding = VaultBindingEntity(ownerId = ownerId, vaultId = vaultId)
                 val journal =
-                    RoomAudioJournal(database, binding, VaultJournalLease(operationGate), file.path)
+                    RoomAudioJournal(
+                        database,
+                        binding,
+                        VaultJournalLease(operationGate),
+                        file.path,
+                        diagnostic,
+                    )
                 JournalSchemaVerifier.verify(database.openHelper.writableDatabase)
                 val rows = journal.dao.bindings()
+                if (diagnostic.active) {
+                    check(rows == listOf(binding)) { "Diagnostic vault binding rejected" }
+                    diagnostic.protectedSources().forEach { identity ->
+                        val row = checkNotNull(journal.exactAsset(identity))
+                        check(journal.dao.tombstone(row.assetId) == null)
+                    }
+                }
                 if (rows.isEmpty())
                     journal.commits.commit({ journal.dao.insert(binding) }) {
                         journal.dao.bindings() == listOf(binding)
@@ -1241,6 +1339,33 @@ private constructor(
                 throw error
             }
         }
+
+        private fun openDatabase(
+            context: Context,
+            file: File,
+            helperFactory: SupportSQLiteOpenHelper.Factory,
+        ): AudioJournalDatabase =
+            Room.databaseBuilder(
+                    context.applicationContext,
+                    AudioJournalDatabase::class.java,
+                    file.path,
+                )
+                .openHelperFactory(helperFactory)
+                // All journal DAOs are synchronous and operations own the sole encrypted
+                // connection. Finish Room invalidation on that same worker: an async
+                // refresh
+                // can otherwise hold Room's close barrier while waiting for a connection
+                // retained by a failed endTransaction on the thread trying to close it.
+                // Async DAO/observer admission requires revisiting this ownership contract.
+                .setQueryExecutor { command ->
+                    check(Looper.myLooper() != Looper.getMainLooper()) {
+                        "Journal work requires a worker thread"
+                    }
+                    command.run()
+                }
+                .addMigrations(OriginalAudioMigration, SegmentationMigration)
+                .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+                .build()
 
         private fun canonical(value: String) {
             require(

@@ -1,0 +1,72 @@
+{
+  "probeId": "B-01",
+  "disposition": "INSTRUMENTATION_OBSERVATION_COMPLETED",
+  "sampler": {
+    "probeId": "B-01",
+    "windowIdentityConsistent": true,
+    "terminalConsistent": true,
+    "sampleCount": 41,
+    "actualSampleSpanMs": 600002,
+    "tenMinuteSampleSpan": true,
+    "maxObservedGapMs": 15003,
+    "allSamplesUnplugged": true,
+    "allSamplesScreenOff": true,
+    "chargeCounterMonotonic": true,
+    "observedChargeDeltaMicroAh": 0,
+    "candidateChargeDeltaMicroAh": null,
+    "continuousPowerProof": false,
+    "acceptance": "NOT_EVALUATED",
+    "limitation": "Periodic samples alone cannot exclude between-sample charging or screen wake; inspect system history. No energy conversion or current integration."
+  },
+  "captureReceipt": {
+    "mode": "MINIMAL_AUDIO_RECORD_FGS_BASELINE",
+    "sampleRate": 16000,
+    "channels": 1,
+    "encoding": "PCM_S16LE",
+    "startElapsedMs": 61694831,
+    "endElapsedMs": 62523349,
+    "framesReadAndDiscarded": 13254400,
+    "shortReads": 0,
+    "readErrors": 0,
+    "routeType": 15,
+    "outcome": "STOPPED",
+    "audioSaved": false
+  },
+  "captureCoversSampler": true,
+  "batterystats": {
+    "schema": "checkin9/report36",
+    "uid": 10255,
+    "estimatedUidChargeMah": "2.15",
+    "cpuMs": {
+      "user": 51170,
+      "system": 52872
+    },
+    "semantics": "MODEL_ESTIMATED_UID_CHARGE_NOT_MEASURED_ENERGY",
+    "systemBatteryTimeMs": {
+      "batteryRealtime": 753156,
+      "batteryUptime": 753156,
+      "totalRealtime": 783042,
+      "startEpochMs": 1791138605895,
+      "batteryScreenOffRealtime": 751762
+    },
+    "systemEstimatedConsumedMah": "0"
+  },
+  "accubattery": {
+    "method": "VISIBLE_UI_HIERARCHY",
+    "session": "21:30-21:42",
+    "totalDischargeMahDisplayed": 9,
+    "screenOffDischargeMahDisplayed": 9,
+    "screenOffDurationDisplayed": "12m",
+    "deepSleepDurationDisplayed": "0m",
+    "wholeUnplugSessionNotExactSamplerWindow": true,
+    "semantics": "CONTROLLER_DERIVED_ESTIMATE"
+  },
+  "thermalObserved": {
+    "start": 0,
+    "maximum": 0,
+    "end": 0
+  },
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "sourceAdmission": "NOT_YET_DETERMINED",
+  "acceptanceRatiosComputed": false
+}

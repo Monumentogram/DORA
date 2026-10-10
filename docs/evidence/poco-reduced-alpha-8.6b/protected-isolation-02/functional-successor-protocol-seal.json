@@ -1,0 +1,6 @@
+{
+  "protocolSha256": "b20b3fbb2c1403a173bdfadc9a6f104371fa156a810efd505ad757e5ee3d8b1d",
+  "state": "FROZEN_BEFORE_EXECUTION",
+  "admission": "Only after main02 cycles and long gates and authenticated preservation PASS",
+  "independentReview": "0 unresolved P0/P1/P2; source-only review, no physical execution yet"
+}

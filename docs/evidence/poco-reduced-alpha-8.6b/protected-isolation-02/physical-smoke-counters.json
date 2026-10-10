@@ -1,0 +1,73 @@
+{
+  "admittedFrames": 483200,
+  "durableFrames": 483200,
+  "readbackFrames": 483200,
+  "unexplainedGaps": 0,
+  "unexplainedDuplicates": 0,
+  "corruptSegments": 0,
+  "readErrors": 0,
+  "shortReads": 0,
+  "vadInference": 940,
+  "deletion": {
+    "productDeletionCompleted": true,
+    "verifiedAbsentTargets": 49,
+    "absenceCategories": {
+      "ARTIFACT": 35,
+      "KEY_REFERENCE": 7,
+      "RUN_DIRECTORY": 7
+    },
+    "ownerRecordingsPreserved": 47
+  },
+  "microphoneReleased": true,
+  "fgsStopped": true,
+  "nativeSessionAbsent": true,
+  "chunks": [
+    {
+      "first": 0,
+      "end": 483200,
+      "processingFirst": 0,
+      "open": "START",
+      "close": "STOP",
+      "epochFingerprint": "45488eb2ca24efac3038884c93b91468f5f07668a5b71b758bb010cce736f28e",
+      "chunkFingerprint": "45488eb2ca24efac3038884c93b91468f5f07668a5b71b758bb010cce736f28e",
+      "profileSha256": "1c5ceb70f08593dfa96e522f43c51b7b28e36ab8b65a423fae417cc4e1cd2292"
+    }
+  ],
+  "beforeStopDiagnostics": "phase=RECORDING queue=2 durability=PENDING queueHighWater=2 maxAppendNanos=2624055923 frames=481600 durableFrames=400000 shortReads=0 readErrors=0 healthy=true\n\n\nappend_span start=177294917182103 end=177297541240180\nappend_span start=177299826478949 end=177302134435565\nappend_span start=177304806114334 end=177307031246950\nappend_span start=177309805831565 end=177312054837104\nappend_span start=177314813870104 end=177316983267950\n\nappend_stages sql_policy=607247909 sql_policy_count=2680 sql_commit=24897539 sql_commit_count=2 reserve=144918077 reserve_count=1 key_generation=98926154 key_generation_count=1 key_open=504512384 key_open_count=5 bootstrap=471557846 bootstrap_count=1 publication=728269538 publication_count=1 recovery=610453539 recovery_count=1 catalog_commit=151001000 catalog_commit_count=1\nvadProfile=dora-segmentation-1 vadFailure=NONE vadQueue=0 vadHighWater=5 vadInference=940 vadDeadlineMisses=0 vadMinNanos=862692 vadP50Nanos=1765461 vadP95Nanos=3755308 vadMaxNanos=26076000 vadTimingWindow=4096 vadClosed=false semanticOpened=0 semanticClosed=0 vadPositiveWindows=0 vadNegativeWindows=940 vadLastPositiveEnd=-1 vadMaxNegativeFrames=481280 silenceBoundaries=0 lastBoundaryFrame=-1 segmentationMetadataFailure=NONE\nterminal_version=1 failure=STORAGE_FULL persistenceFailure=NONE operation=PREPARATION phase=PREPARING nativeEventNanos=UNKNOWN observedNanos=177278563507948 generation=0 admittedFrames=0 durableFrames=0 outstandingFrames=0 pendingWriterUnits=0 lastCompletedAppendDurationNanos=0 canonicalQueueHighWater=0 vadQueueHighWater=UNKNOWN servicePresent=false microphoneThreadAlive=false microphonePermissionGranted=true authorityRevoked=false captureAttempted=false nativeGeneration=UNKNOWN nativeAdmittedFrames=UNKNOWN nativeDurableFrames=UNKNOWN nativeOutstandingBlocks=UNKNOWN writerFailureOperation=UNKNOWN receiptStorage=WRITTEN",
+  "afterStopDiagnostics": "phase=SAVED queue=0 durability=CAUGHT_UP queueHighWater=2 maxAppendNanos=2624055923 frames=483200 durableFrames=483200 shortReads=0 readErrors=0 healthy=false\n\n\nappend_span start=177294917182103 end=177297541240180\nappend_span start=177299826478949 end=177302134435565\nappend_span start=177304806114334 end=177307031246950\nappend_span start=177309805831565 end=177312054837104\nappend_span start=177314813870104 end=177316983267950\nappend_span start=177319788624873 end=177322025273412\nappend_span start=177322025747027 end=177324137430643\n\nappend_stages sql_policy=591790365 sql_policy_count=2680 sql_commit=24840615 sql_commit_count=2 reserve=141044615 reserve_count=1 key_generation=91636000 key_generation_count=1 key_open=520031308 key_open_count=5 bootstrap=454278154 bootstrap_count=1 publication=704041154 publication_count=1 recovery=604221461 recovery_count=1 catalog_commit=152720077 catalog_commit_count=1\nvadProfile=dora-segmentation-1 vadFailure=NONE vadQueue=0 vadHighWater=5 vadInference=943 vadDeadlineMisses=0 vadMinNanos=862692 vadP50Nanos=1765846 vadP95Nanos=3830769 vadMaxNanos=26076000 vadTimingWindow=4096 vadClosed=true semanticOpened=0 semanticClosed=0 vadPositiveWindows=0 vadNegativeWindows=943 vadLastPositiveEnd=-1 vadMaxNegativeFrames=482816 silenceBoundaries=0 lastBoundaryFrame=-1 segmentationMetadataFailure=NONE\nterminal_version=1 failure=STORAGE_FULL persistenceFailure=NONE operation=PREPARATION phase=PREPARING nativeEventNanos=UNKNOWN observedNanos=177278563507948 generation=0 admittedFrames=0 durableFrames=0 outstandingFrames=0 pendingWriterUnits=0 lastCompletedAppendDurationNanos=0 canonicalQueueHighWater=0 vadQueueHighWater=UNKNOWN servicePresent=false microphoneThreadAlive=false microphonePermissionGranted=true authorityRevoked=false captureAttempted=false nativeGeneration=UNKNOWN nativeAdmittedFrames=UNKNOWN nativeDurableFrames=UNKNOWN nativeOutstandingBlocks=UNKNOWN writerFailureOperation=UNKNOWN receiptStorage=WRITTEN",
+  "thermalClassifications": [
+    0,
+    0,
+    0
+  ],
+  "screenOffMs": 30183,
+  "resourceSamples": [
+    {
+      "pssKiB": 139259,
+      "rssKiB": 269348,
+      "nativeHeapBytes": 31490912,
+      "javaHeapBytes": 12694128,
+      "threads": 45,
+      "fds": 172,
+      "cpuTimeMs": 20488
+    },
+    {
+      "pssKiB": 164605,
+      "rssKiB": 296836,
+      "nativeHeapBytes": 51058240,
+      "javaHeapBytes": 18813520,
+      "threads": 47,
+      "fds": 147,
+      "cpuTimeMs": 37954
+    },
+    {
+      "pssKiB": 165688,
+      "rssKiB": 297492,
+      "nativeHeapBytes": 51201296,
+      "javaHeapBytes": 19464784,
+      "threads": 47,
+      "fds": 147,
+      "cpuTimeMs": 38169
+    }
+  ]
+}

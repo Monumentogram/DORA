@@ -1,0 +1,74 @@
+{
+  "protocolId": "POCO_COMPARATIVE_INSTRUMENTATION_PREFLIGHT_V1",
+  "baselineSha": "5926d48fad7fbcc7d30f2529990f512afe6b530e",
+  "purpose": "Instrumentation viability only; no acceptance ratio or long campaign",
+  "orderedProbes": [
+    {
+      "id": "A-01",
+      "kind": "IDLE",
+      "plannedSeconds": 600
+    },
+    {
+      "id": "B-01",
+      "kind": "MINIMAL_AUDIO_RECORD_FGS_BASELINE",
+      "plannedSeconds": 600
+    },
+    {
+      "id": "C-01",
+      "kind": "DORA_CAPTURE_ONLY",
+      "plannedSeconds": 600
+    }
+  ],
+  "durationClock": "Android SystemClock.elapsedRealtime",
+  "windowStart": "First observed physically battery-only AND screen noninteractive sample",
+  "plannedCadenceSeconds": 15,
+  "samplerWakeLock": false,
+  "actualSpanAndCadenceGapsMustBeReported": true,
+  "wholeSessionBoundary": "Battery-only discharge delimited by physical unplug/replug; sampler 600s subwindow reported separately; AccuBattery whole-session totals cannot be treated as exact subwindow totals",
+  "controls": {
+    "device": "POCO M5 / 22071219CG",
+    "firmware": "V816.0.6.0.ULURUXM",
+    "batterySaver": "OFF",
+    "wifi": "ON",
+    "mobileData": "OFF",
+    "bluetooth": "OFF; restore original ON after probes",
+    "startingBatteryDiagnosticRangePercent": [
+      95,
+      100
+    ],
+    "screen": "OFF during measurement window",
+    "power": "PHYSICALLY_UNPLUGGED",
+    "fixture": "Same stationary room, quiet, no external playback generated; owner asked to leave device unused",
+    "forbiddenDuringWindow": [
+      "calls",
+      "media",
+      "unrelated foreground work",
+      "user interaction",
+      "charging"
+    ]
+  },
+  "accubatteryVersion": "2.1.8 / 201008",
+  "permissions": {
+    "usageAccess": "REQUIRED_FOR_PER_APP; granted by supported AppOps",
+    "notifications": "OPTIONAL charge alarm; NOT_GRANTED",
+    "location": "NOT_GRANTED",
+    "accessibility": "NOT_GRANTED",
+    "deviceAdmin": "NOT_GRANTED"
+  },
+  "batteryOptimization": "No exemptions added to DORA or AccuBattery; record any monitoring loss",
+  "sourceSelectionRule": [
+    "Validated charge counter with meaningful repeatable delta",
+    "Validated AccuBattery controller-derived session discharge estimate",
+    "Batterystats estimated UID attribution with explicit limitations"
+  ],
+  "primarySource": null,
+  "percentageRole": "DIAGNOSTIC_ONLY; never converted to charge or energy",
+  "currentRole": "SNAPSHOT_DIAGNOSTIC_ONLY; no integration implemented",
+  "acceptanceFormula": null,
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "attemptRetention": "Preserve all attempts; invalid/unknown data never converted to zero or removed",
+  "baselineWindowBinding": "B is classified as active baseline only if its unique successful AudioRecord receipt covers first sample through last snapshot, with zero read errors, built-in microphone and matching PCM format. Automatic baseline stop before window end invalidates B coverage.",
+  "terminalBinding": "Every measured row must share probeId/windowStartMs; exactly one consistent END is required for candidate charge delta. Missing, contradictory or mixed receipts never become candidate consumption.",
+  "batterystatsResetCaveat": "POCO reset emitted a UID SecurityException despite observed new epoch/zero counters. Retain both; do not claim error-free reset or bypass security. Physical window independently logged.",
+  "privacy": "Full system dumps stay local. Publication allowlist retains only target UIDs and content-free counters; no audio or private identifiers."
+}

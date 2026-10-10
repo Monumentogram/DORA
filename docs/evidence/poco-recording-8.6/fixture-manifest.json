@@ -1,0 +1,6 @@
+{
+  "id": "POCO86-QUIET-01",
+  "environment": "Controlled quiet room, no external playback or intentional speech; built-in microphone; same placement and acoustic environment for every pair member.",
+  "audioPublication": "prohibited",
+  "status": "PREDECLARED_NOT_EXECUTED"
+}

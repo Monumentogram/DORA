@@ -1,0 +1,8 @@
+{
+  "status": "PASS_BOUNDED_PUBLICATION_AUDIT",
+  "scope": "Successor repository delta; CI artifacts pending new exact-SHA run",
+  "positiveCanaries": 5,
+  "privateNeedles": 10908,
+  "findings": [],
+  "privateBinaryPublished": false
+}

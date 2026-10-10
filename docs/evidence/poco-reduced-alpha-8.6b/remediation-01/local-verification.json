@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "scope": "Successor working-tree verification before runtime commit; exact publication CI reported separately",
+  "appUnit": {"tests": 76, "passed": 76, "failed": 0, "skipped": 0},
+  "audioUnit": {"tests": 217, "passed": 216, "failed": 0, "skipped": 1, "skip": "DevelopmentDeviceSecurityTest#symbolicMarkerCannotGrantTheException: Windows host cannot create symlink; Linux CI must execute negative control"},
+  "historicalRecovery": {"tests": 414, "passed": 414, "failed": 0, "skipped": 0, "execution": "FRESH_RERUN_WITH_RERUN_TASKS", "historicalReceiptsModified": false},
+  "vadApi": {"tests": 52, "failed": 0, "skipped": 0, "execution": "Retained local output; task checked UP_TO_DATE in this remediation, not counted as a fresh rerun"},
+  "vadSherpa": {"tests": 5, "failed": 0, "skipped": 0, "execution": "Retained local output; task checked UP_TO_DATE in this remediation, not counted as a fresh rerun"},
+  "hostRegressions": {"tests": 277, "failed": 0, "patternGroups": 14},
+  "api36Ui": {"tests": 21, "passed": 21, "originalVisibleCancelAssertion": "UNCHANGED_PASS", "physicalMicrophone": false, "realTalkBackRuntime": "NOT_RUN", "ime": "CONSTRAINED_USABLE_HEIGHT_FIXTURE_NOT_REAL_KEYBOARD"},
+  "api28Ui": "EXACT_PUBLICATION_CI_REQUIRED",
+  "appLint": "PASS",
+  "detekt": {"status": "PASS", "nativeGradleInvocation": "WINDOWS_COMMAND_LINE_LIMIT", "alternative": "Exact existing task classpath/main/arguments exported to Java @argfile; same source list and config; no exclusions added"},
+  "sourceAdmission": "PASS_EXACT_BEFORE_AFTER_SEALS",
+  "frozenPersistenceInventory": 138,
+  "frozenRecoveryProcessDeathPhases": 22,
+  "workflowTimeoutChanges": false,
+  "publicationAudit": {"changedFilesAtFirstAudit": 33, "findings": 0, "positiveCanaries": 4, "finalDeltaReauditRequiredBeforePush": true},
+  "reviews": {
+    "forensic": "P1 original-vault autoload and P2 failure-path preservation addressed and independently closed before inspection",
+    "terminalDiagnostics": "P2 rejection snapshot timing and prior-attempt data contamination addressed and independently closed",
+    "uiBuildGovernance": "P2 empty pre-DEX reduction replaced by nonempty96/96 retained-output comparison, independently closed",
+    "unresolvedP0P1P2InReviewedChanges": 0,
+    "historicalRootCauseAccepted": false,
+    "physicalSmokeAuthorizedByReview": false
+  }
+}

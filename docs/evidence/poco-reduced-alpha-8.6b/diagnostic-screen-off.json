@@ -1,0 +1,58 @@
+{
+  "admittedFrames": 483200,
+  "durableFrames": 483200,
+  "readbackFrames": 483200,
+  "readErrors": 0,
+  "shortReads": 0,
+  "vadInference": 940,
+  "vadProof": {
+    "factoryClass": "com.monumentogram.dora.vad.sherpa.SherpaEngineFactory",
+    "engineClass": "com.monumentogram.dora.vad.sherpa.SherpaVadEngine",
+    "bindingClass": "com.monumentogram.dora.vad.sherpa.ReflectiveSherpaBinding",
+    "nativeInstanceClass": "com.k2fsa.sherpa.onnx.Vad",
+    "nativeVersion": "1.13.8",
+    "profileModelSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+    "namedLibraryMapping": false,
+    "executableApkMapping": true
+  },
+  "screenOffStartMs": 367879520,
+  "screenOffEndMs": 367909671,
+  "deletion": {
+    "productDeletionCompleted": true,
+    "verifiedAbsentTargets": 49,
+    "absenceCategories": {
+      "ARTIFACT": 35,
+      "KEY_REFERENCE": 7,
+      "RUN_DIRECTORY": 7
+    },
+    "ownerRecordingsPreserved": 46
+  },
+  "unexplainedGaps": 0,
+  "unexplainedDuplicates": 0,
+  "corruptSegments": 0,
+  "capCount": 0,
+  "degradedObservations": 1,
+  "beforeStopDiagnostics": "phase=RECORDING queue=0 durability=PENDING queueHighWater=2 maxAppendNanos=2166453923 frames=481600 durableFrames=400000 shortReads=0 readErrors=0 healthy=true\n\n\nappend_span start=133653731137271 end=133655897600040\nappend_span start=133658561873887 end=133660452429041\nappend_span start=133663540784733 end=133665478873656\nappend_span start=133668563280733 end=133670444217657\nappend_span start=133673556388734 end=133675438905349\n\nappend_stages sql_policy=441863072 sql_policy_count=1784 sql_commit=26431692 sql_commit_count=2 reserve=160016385 reserve_count=1 key_generation=94555000 key_generation_count=1 key_open=520732923 key_open_count=5 bootstrap=361684615 bootstrap_count=1 publication=435614385 publication_count=1 recovery=627806692 recovery_count=1 catalog_commit=227685461 catalog_commit_count=1\nvadProfile=dora-segmentation-1 vadFailure=NONE vadQueue=0 vadHighWater=4 vadInference=940 vadDeadlineMisses=0 vadMinNanos=849615 vadP50Nanos=1798461 vadP95Nanos=3173539 vadMaxNanos=8222461 vadTimingWindow=4096 vadClosed=false semanticOpened=0 semanticClosed=0 vadPositiveWindows=0 vadNegativeWindows=940 vadLastPositiveEnd=-1 vadMaxNegativeFrames=481280 silenceBoundaries=0 lastBoundaryFrame=-1 segmentationMetadataFailure=NONE",
+  "attributedBytes": 1247744,
+  "run": "lite-screen-smoke-02",
+  "scope": "DIAGNOSTIC_ONLY_NOT_HOUR_ACCEPTANCE",
+  "screenOffDurationMs": 30151,
+  "productApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "helperApkSha256": "c8492d17c7784ba11e00526865c183bcd2137bfeb3760c5fb3a461c372b6e41a",
+  "ownerRecordingsPreserved": 46,
+  "ownerInventoryUnchanged": true,
+  "deviceWatchdog": {
+    "run": "lite-screen-smoke-02",
+    "state": "CLOSED_SAFE",
+    "elapsedMs": 367945475,
+    "reason": null,
+    "microphoneReleased": true,
+    "pendingStartCancelled": true
+  },
+  "hostWatchdog": {
+    "state": "CLOSED_SAFE",
+    "reason": null,
+    "awakeLeaseHeld": true
+  },
+  "originalReceiptSha256": "c50703724fb48b21b963c823ff5020ed87f3401f97e587f27fbaaf426c79a8f5"
+}

@@ -1,0 +1,9 @@
+{
+  "versionCode": "versionCode=201008 minSdk=24 targetSdk=35",
+  "versionName": "versionName=2.1.8",
+  "lastUpdateTime": "lastUpdateTime=2026-10-04 11:06:09",
+  "installerPackageName": "installerPackageName=com.android.vending",
+  "firstInstallTime": "firstInstallTime=2026-10-04 11:06:09",
+  "package": "com.digibites.accubattery",
+  "usageAccess": "GET_USAGE_STATS: allow; time=+2m14s32ms ago"
+}

@@ -1,0 +1,31 @@
+{
+  "rawSha256": "5029b0712e72d8f0d19ceb2d1a266bc7d6b3921024d77b10fd081ae27384fc68",
+  "format": "terminal_version=1 space-separated key=value content-free product receipt",
+  "fields": {
+    "terminal_version": "1",
+    "failure": "PERSISTENCE_BACKPRESSURE",
+    "persistenceFailure": "NONE",
+    "operation": "CAPTURE",
+    "phase": "RECORDING",
+    "nativeEventNanos": "182704586104964",
+    "observedNanos": "182704639339425",
+    "generation": "1",
+    "admittedFrames": "31696000",
+    "durableFrames": "31440000",
+    "outstandingFrames": "256000",
+    "pendingWriterUnits": "3",
+    "lastCompletedAppendDurationNanos": "9905677308",
+    "canonicalQueueHighWater": "4",
+    "vadQueueHighWater": "4",
+    "servicePresent": "true",
+    "microphoneThreadAlive": "true",
+    "microphonePermissionGranted": "true",
+    "authorityRevoked": "false",
+    "captureAttempted": "true",
+    "nativeGeneration": "1",
+    "nativeAdmittedFrames": "31696000",
+    "nativeDurableFrames": "31440000",
+    "nativeOutstandingBlocks": "320",
+    "writerFailureOperation": "UNKNOWN"
+  }
+}

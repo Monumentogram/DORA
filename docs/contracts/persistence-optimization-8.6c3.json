@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "stage": "8.6C.3",
+  "parent": "9c6b7563eca5b6c003ad2e192a887b5df2630e2d",
+  "admission": "SCOPED_OPTIMIZATION_AND_PROTECTED_READONLY",
+  "rootCause": "NOT_PROVEN",
+  "physicalAdmission": "NOT_GRANTED",
+  "stage86": "NOT_READY",
+  "files": {
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostic/DiagnosticSuccessorLoaderTest.kt": "f9c444376b20f97a16637cfd87df2bf4d0e4188072e28eb1ce5a0c9d62dbd731",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostics/PersistenceOptimizationBenchmarkTest.kt": "633d2073ebc079d9d7dd171358553da0b0e68100361ac65694051a10ae99eaea",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostics/PersistenceOptimizationProbe.kt": "165c413c7d69f7f6a9bae1f5d3b39bee2c4628ab05b716a91c4137067c9c08af",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/ProtectedReadOnlyAcquisitionTest.kt": "aa915dd1c69fb2db3525a30c8e76d4efe52abb15bca2b9a66b2b3527433f562d",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/ProtectedReadOnlyVaultTest.kt": "6d89cc871663f2227407753c99774235fa2f06f79ea658b5dc72d865f1c5e6f9",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomCatalogReservationReuseTest.kt": "96c701f9bc2aa0776896380a723755105eb8f761ec860db3b88b519b65c67a6d",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticProtectedOwnership.kt": "bc3e6d577c26ad6750d9f3377406133564794f171e7504bc97696bb5f5bd60c2",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticSuccessorPolicy.kt": "ecddaac13305c856463ac79b6997f3dc13351ff8c073a08f53e0becaf85fbc77",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/ProtectedReadOnlyAcquisition.kt": "355e3d111693a0322d286299d4b09f237cfa1e052e83eafe41fad13c659c7066",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/ProtectedReadOnlyVault.kt": "b4574b5b109c0a92d0fb604aa4b304569b14b42a353225b4ed82e03c8b6091d1",
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/CatalogOrderOptimizationTest.kt": "599b11399f5ba38d89614b6296cb266b12dbd5fdfb67494c473801737ae98087",
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticSuccessorPolicyTest.kt": "32ebf0f3fa7428520ca58ca1fc8b45346d8b621999ba0556700dc69527dd95b2",
+    "docs/adr/ADR-PERSISTENCE-004-linear-order-and-reservation-snapshot.md": "291ddb1bf022dce22b7b6ca6f287db15b81fd1f9f5a007c43f4faff863153ab3",
+    "docs/adr/ADR-RECORDING-010-successor-protection-readonly-acquisition.md": "408ff2f9aa47e33729b0b697242b5147de817409a54d2c4207713f5878f65018",
+    "docs/contracts/persistence-8.6c3-device-tests.json": "64bebfe0feacff51ac5ecbc68bdf61082be8731ab4e20a8c6989587661b36ba1",
+    "docs/contracts/protected-diagnostic-8.6c3-tests.json": "bdc756152fa7c0968a24ad286af8b7b35f62b47a64859a25f8986dfb700eeff6",
+    "docs/evidence/persistence-optimization-8.6c3/README.md": "4446c6970b9feb96c4966c042005f8f6a35e59b04763b01f3b9503f100233f11",
+    "docs/evidence/persistence-optimization-8.6c3/RESULT.md": "702823eb46c893743e4b32723ee24a4710943c15d69b18ca30bd80710a9cbbd9",
+    "docs/evidence/persistence-optimization-8.6c3/benchmark-comparison.json": "3164ba3552d61817ad28439a2ab6c8c099870a7843f129ba63e003ae0d66d666",
+    "docs/evidence/persistence-optimization-8.6c3/benchmark-protocol.md": "414f6ac45060026b04fcfaeab6a92f9eb39b844647518b2e5377f26fb455df0f",
+    "docs/evidence/persistence-optimization-8.6c3/catalog-reuse-proof.md": "e99afb35c2897a93601a1e1473c541ca45705d845d0f1c7ba0a55599de58ddc7",
+    "docs/evidence/persistence-optimization-8.6c3/privacy-audit.json": "32b10463919d621f7d71b8a902ba510e6a544da772fcb9d0b9d312a9cd922f0f",
+    "docs/evidence/persistence-optimization-8.6c3/verification.json": "cb7278b926efa74a47973ef8632ee67098934021398b4dce62cc1db49e4d4a20",
+    "docs/superpowers/plans/2026-10-09-alpha-persistence-optimization.md": "0dbb2465c76e89c82ada245378c794661a86170e48399208f4be300e9fae1a8e",
+    "tools/persistence_optimization_c3_results.py": "6e8382b4b14b7fa3efe751a48a4e87264510d93254e7c2855f27ad3356ac61d8",
+    "tools/persistence_optimization_ci_profile.py": "b6366b8975d08e5b15fa7a368b1ddc095463a32cf6eaf5c1bcd2e2c9a34f5b2f",
+    "tools/poco_non_battery/test_successor_policy.py": "6ea96c3e76df96740e33c396381aa5c448303ec7720df3a4ac182a5d285a013b",
+    "tools/poco_persistence_optimization_admission.py": "8077d217025fb5168f0cd712a02cf0e20927f98967bff0792b28c5b03e64ff85",
+    "tools/run_persistence_optimization_c3.py": "0643911ab25432d59f4c103c69a531b7c7c479f245975b277799fb5472e99243",
+    "tools/run_protected_diagnostic_c3.py": "16905f64e74a36180a2ac454fb06dcbf7ac4d6ae9e2525fc087fc964959adf77",
+    "tools/test_logical_recovery_persistence_optimization.py": "58cefc08c0639f134dc7331780de5d16436945be5c09a45640f57bbb034c528b",
+    "tools/test_persistence_optimization_c3.py": "6d43dd99f53eb1e0d87444a3d884062a61b2ebe05747c430700661e2d10bb61e",
+    "tools/test_run_persistence_optimization_c3.py": "eab9f84235bbd91ee19143a232411ea9218f546d1ab73b2276aa1c18f2c808b7"
+  },
+  "overrides": {
+    ".github/workflows/android-ci.yml": {
+      "before": "62a50fc609d7c6c15b50cf7f5b56d8a32611b174a443470af7cb9b9907169cd2",
+      "after": "dd2ce804825ea09b87008d8c53773db95856057208987183fbc8c285e8d91601"
+    },
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/diagnostic/ProtectedHistoricalVaultTest.kt": {
+      "before": "8a267668a1371de724d927d59d8e61b320820f57734895df14cc6308c9005463",
+      "after": "c08b55cccf781e9dd6943cb933726a7bf7cc04b51f193230ef57f158e9ee4c46"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/RecoveryAudioBridge.kt": {
+      "before": "22b28f9f91b7db93b55f188393a8ff8c23dc4715e1ef49eb8927ad2b8727f52f",
+      "after": "67473e6b4c846df1a5d438d01374936237d2342838bb42f83dbcd39b3da8c894"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticJournalFactory.kt": {
+      "before": "11297ef54cdbb6dcab1acad1f41fa7d39e70702cb382e848607f74a6dc3dff22",
+      "after": "366939ca73f76857c3cc346774e3854d0fe6f825557604136972621a94cbfac6"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticPolicyLoader.kt": {
+      "before": "fa9d50249102e889780455bb002a2b480d1ec819a9014b84baeed37b38bff037",
+      "after": "8cd39678fafccdcc8984bca6bbba0ddd2b27387ab7310967f8584f012d83dbd5"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/DiagnosticSourcePolicy.kt": {
+      "before": "0d7f6ebd0a4bafe58bc51a835bb1df49bb3e829ca419ceba0d2271bc93073681",
+      "after": "b9a81932ceedd3774f94d2d4f1f66281a3c5a130286a827354b7aa8c20d21412"
+    },
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomAudioJournal.kt": {
+      "before": "f95ba44464208ec2d4673087410525d2f3dea265fb605d1ce960c9552774eba3",
+      "after": "c70d102e71322580250f4dd32e12e34080fa6e51e4737769e1b4127240ffb3a5"
+    },
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/CatalogOrderWorkTest.kt": {
+      "before": "e8faefee38ed9bf971f1ff0808773b6fabcdd138e7b0475aa08a60127272d743",
+      "after": "543b58ca64038cf11eaf06c7a496028b774987546a454e172ffac3b41e27f037"
+    },
+    "tools/logical_recovery_ci_profile.py": {
+      "before": "fd0ce7803067710efd00b45b88ac26657076129f3c0cbd6f28d13bbfe69de39c",
+      "after": "86475e9b12326c01e2f85b83dfcfa81c393e7df3ddc06ff469d5a686b8ac3392"
+    },
+    "tools/poco_non_battery/diagnostic_isolation.py": {
+      "before": "e93190f6db94eaed7c47f3daf891829f913bbf78a19b2724703f993d75b8d7e5",
+      "after": "cdce0c0e413146471f393095b7465b489db8922de926f688bb2ec485720777fc"
+    },
+    "tools/poco_non_battery/protected_policy.py": {
+      "before": "68d0bd1a2adb865bf0dd07eda84c1df5976687b97bfa1bb4af983d4d10913b06",
+      "after": "0f0e2fbd131fb0ef72bf9f0f0e03a75f693d5a4164b2360c4f016ae8e46eba95"
+    },
+    "tools/test_logical_recovery_final_deletion.py": {
+      "before": "0c63cca8fd65e3e4b2e4b05c2e44fe4426d438249ddd7be4f114c67208d56bf5",
+      "after": "359da466418e8da8dee67acea28b75f8cc6105084d2d92f0efe810e8b521a982"
+    },
+    "tools/validate_poco_acceptance.py": {
+      "before": "4e642e3b72f1493e6e8af6c1a9d071d81e4f5f5f521c53bfb10c59229ec837ad",
+      "after": "92d0d6f9c9c4283dcef0dfdd6ad4b280e341119cd70b06fc07bf6c5fcff22acd"
+    }
+  }
+}

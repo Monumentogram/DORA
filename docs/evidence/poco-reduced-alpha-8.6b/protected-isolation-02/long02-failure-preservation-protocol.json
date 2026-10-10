@@ -1,0 +1,17 @@
+{
+  "scope": "Post-failure readonly preservation snapshot only; not normal Recovery or PCM readback",
+  "run": "forensic-protected-long02-failure",
+  "failedRun": "dora-long-02",
+  "productApkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "failedReceiptSha256": "8da93758f03cb1485aeeddcf16812dbb982fc10a423fea681af4ec113ab61bd6",
+  "productTerminalSha256": "5029b0712e72d8f0d19ceb2d1a266bc7d6b3921024d77b10fd081ae27384fc68",
+  "operatorSha256": "ad9f2521788aab696abd9e63cf0f409c56176ac6c60c81c07ab8e9918386c82a",
+  "baselineSnapshotSha256": "e505e623c5e455662d53f08691aa3d3c663997d46057689169a92ab6015b43f5",
+  "normalRecovery": "FORBIDDEN",
+  "newCapture": "FORBIDDEN",
+  "failedSourceDeletion": "FORBIDDEN",
+  "historicalKeys": "Reuse and verify all1710 original challenges; newly retained failed-source keys separately classify by exact authenticated unit run alias derivation",
+  "filePreservation": "Before==after inspection for ALL current vault files; compare8547 baseline immutable separately; allowed newsource files retained, never delete",
+  "scopeOfCause": "New LONG02 exact terminal enum may prove new failure path; LONG01 historical cause remainsUNPROVEN",
+  "subsequentFunctionalSmokes": "NOT_RUN_AFTER_MAIN_FAILURE"
+}

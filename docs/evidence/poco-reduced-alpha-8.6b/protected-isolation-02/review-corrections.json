@@ -1,0 +1,10 @@
+{
+  "changedAcceptanceThresholds": false,
+  "physicalAttemptsRetriedOrRemoved": false,
+  "corrections": [
+    "Pre-execution post-run verifier strengthened exact run/APK/policy/baseline bindings and completed tombstone/target checks; smoke positive and10 negative deletion controls verified independently.",
+    "Unexecuted failure inspector v1 retained; v2 saves before map, binds failure hashes and exits nonzero on unverified preservation before first execution.",
+    "Post-failure verifier now validates terminal/admission hashes before reporting enum; first reporting oracle is retained privately.",
+    "An audio_intent row with applied=1 is an applied receipt, not pending. Correct counts:1intent row,1applied receipt,0pending. No physical evidence changed."
+  ]
+}

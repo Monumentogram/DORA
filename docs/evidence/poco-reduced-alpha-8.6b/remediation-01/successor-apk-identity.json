@@ -1,0 +1,28 @@
+{
+  "sourceSha": "5c922e876919bfde837dfccdb33ac3641f3fa8e7",
+  "status": "PASS_INDEPENDENT_CLEAN_BUILD_REPRODUCIBILITY",
+  "apkSha256": "08902db2d9cf48d9a1c41625749528bd74b8cdd570f70d7026d0ffbed3c10e52",
+  "apkByteIdentical": true,
+  "zipEntries": 169,
+  "equalPreDexAppClasses": 102,
+  "signingCertificateSha256": "a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72",
+  "signingContinuity": "MATCHES_INSTALLED_PHYSICAL_APK",
+  "packageBadging": "package: name='com.monumentogram.dora.debug' versionCode='4' versionName='0.1.0-alpha.2-debug' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "sileroModelSha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "privateAarSha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+  "physicalInstall": "NOT_PERFORMED",
+  "physicalSmoke": "NOT_RUN_SOURCE_PRESERVATION_BLOCKER",
+  "buildFlags": [
+    "--no-build-cache",
+    "--no-configuration-cache",
+    "--rerun-tasks",
+    "-Pkotlin.incremental=false",
+    "-Pkotlin.compiler.execution.strategy=in-process"
+  ],
+  "inputs": {
+    "android/gradle/libs.versions.toml": "230e8b8f5042b5e4852aa3ad05009e5b1d1336eb467d9d89f3d37a7f5104fc4c",
+    "android/gradle/verification-metadata.xml": "cc6b2ccd1c5350d37216818ab5c9a28cf7e12da16364c527133605e424db127c",
+    "android/gradle/wrapper/gradle-wrapper.properties": "5d6b7e5139b01fed9bed54b04c55e5910115897d370eb451b5f597c9ad0b51cd",
+    "android/gradle.properties": "326161064800d2647a4518ba6f4af06875a6cb164745c205202da738dc4aa260"
+  }
+}

@@ -1,0 +1,17 @@
+Initial attempt: tool-output diagnostic excerpt, not a separately redirected raw log.
+Command (android working directory):
+.\gradlew.bat :core:audio:testDebugUnitTest --tests com.monumentogram.dora.audio.CatalogOrderWorkTest --console=plain
+Exit code: 1. No tests compiled or ran in this attempt.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':core:audio:testDebugUnitTest'.
+> SDK location not found. Define a valid SDK location with an ANDROID_HOME environment variable or by setting the sdk.dir path in your project's local properties file at 'C:\Users\vinzer\Documents\DORA-Android-Test\.worktrees\stage86\android\local.properties'.
+
+BUILD FAILED in 17s
+4 actionable tasks: 4 up-to-date
+Configuration cache entry stored.
+
+Resolution: set process ANDROID_HOME to the already installed SDK; no repository configuration change.
+The successful formatted-source rerun is retained in catalog-order-work-gradle.log.

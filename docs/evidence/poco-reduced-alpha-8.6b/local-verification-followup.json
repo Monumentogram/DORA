@@ -1,0 +1,69 @@
+{
+  "pythonLogicalRecoveryAndReduced": {
+    "tests": 111,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "androidTestResults": {
+    "app": {
+      "tests": 65,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xmlFiles": 13
+    },
+    "core/audio": {
+      "tests": 217,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "xmlFiles": 29
+    },
+    "ml/vad-api": {
+      "tests": 52,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xmlFiles": 5
+    },
+    "ml/vad-sherpa": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xmlFiles": 1
+    },
+    "poc/recovery": {
+      "tests": 414,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xmlFiles": 43
+    }
+  },
+  "gradleTaskDisposition": {
+    "core/audio": "EXECUTED",
+    "ml/vad-api": "FROM_CACHE",
+    "ml/vad-sherpa": "FROM_CACHE",
+    "poc/recovery": "UP_TO_DATE",
+    "app": "PREVIOUS_CURRENT_TASK_EXECUTION_SAME_RUNTIME"
+  },
+  "knownWindowsSkip": {
+    "test": "DevelopmentDeviceSecurityTest.symbolicMarkerCannotGrantTheException",
+    "reason": "Host cannot create symlinks; unchanged accepted assumption; Linux CI must run this negative test."
+  },
+  "historicalRecovery414": "PRESERVED; current local result files414/414, taskUP_TO_DATE; no fresh physical or rerun claim",
+  "spotless": "PASS",
+  "appLint": "PASS",
+  "detekt": {
+    "status": "PASS_LOCAL_EXACT_ARGUMENT_FILE",
+    "earlierCreateProcess206Retained": true,
+    "semantics": "Exact task classpath, main class, and args passed through Java @argfile to avoid Windows command-line limit. No rules, source selection or CI change."
+  },
+  "apkByteIdentityAtCheckpoint": {
+    "sourceSha": "71f94fd3b8b73b3659d07cdb5639547479759e4f",
+    "apkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+    "finalHeadRelationship": "PENDING_FINAL_VERIFICATION"
+  }
+}

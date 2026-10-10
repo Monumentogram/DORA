@@ -1,0 +1,127 @@
+{
+  "frozenEvaluation": {
+    "status": "OPERATIONAL_FRESHNESS_PRECONDITION_OBSERVED",
+    "rawUidCpuDeltaMs": 18614,
+    "processCpuBracketMs": [
+      18568,
+      18570
+    ],
+    "modeledPulseDeltaMah": "0.00883",
+    "lateModeledDeltaMah": "0.0000",
+    "lateWorkerCpuMs": 46,
+    "sourceAdmission": "NOT_ADMITTED_PENDING_REVIEW_AND_SESSION_VALIDATION",
+    "repeatability": "NOT_RUN",
+    "ratio": "NOT_EVALUATED",
+    "limitation": "Operational response only; model attribution is not hardware energy; collection width does not prove all backend input age."
+  },
+  "snapshots": [
+    {
+      "phase": "WARMED",
+      "acquisitionMs": 459,
+      "rawUidCpuMs": 8867,
+      "attributedCpuMs": 8832,
+      "workerCpuBeforeMs": 8832,
+      "workerCpuAfterMs": 8833,
+      "modeledUidMah": "0.00467",
+      "epoch": 1791187332969,
+      "thermal": 0,
+      "unpluggedBefore": true,
+      "unpluggedAfter": true,
+      "interactiveBefore": false,
+      "interactiveAfter": false
+    },
+    {
+      "phase": "PRE_WORK",
+      "acquisitionMs": 459,
+      "rawUidCpuMs": 8867,
+      "attributedCpuMs": 8832,
+      "workerCpuBeforeMs": 8833,
+      "workerCpuAfterMs": 8834,
+      "modeledUidMah": "0.00467",
+      "epoch": 1791187332969,
+      "thermal": 0,
+      "unpluggedBefore": true,
+      "unpluggedAfter": true,
+      "interactiveBefore": false,
+      "interactiveAfter": false
+    },
+    {
+      "phase": "END_WORK",
+      "acquisitionMs": 490,
+      "rawUidCpuMs": 27481,
+      "attributedCpuMs": 27402,
+      "workerCpuBeforeMs": 27402,
+      "workerCpuAfterMs": 27403,
+      "modeledUidMah": "0.0135",
+      "epoch": 1791187332969,
+      "thermal": 0,
+      "unpluggedBefore": true,
+      "unpluggedAfter": true,
+      "interactiveBefore": false,
+      "interactiveAfter": false
+    },
+    {
+      "phase": "QUIESCENT_3S",
+      "acquisitionMs": 365,
+      "rawUidCpuMs": 27484,
+      "attributedCpuMs": 27404,
+      "workerCpuBeforeMs": 27405,
+      "workerCpuAfterMs": 27406,
+      "modeledUidMah": "0.0135",
+      "epoch": 1791187332969,
+      "thermal": 0,
+      "unpluggedBefore": true,
+      "unpluggedAfter": true,
+      "interactiveBefore": false,
+      "interactiveAfter": false
+    },
+    {
+      "phase": "QUIESCENT_10S",
+      "acquisitionMs": 364,
+      "rawUidCpuMs": 27519,
+      "attributedCpuMs": 27422,
+      "workerCpuBeforeMs": 27441,
+      "workerCpuAfterMs": 27442,
+      "modeledUidMah": "0.0135",
+      "epoch": 1791187332969,
+      "thermal": 0,
+      "unpluggedBefore": true,
+      "unpluggedAfter": true,
+      "interactiveBefore": false,
+      "interactiveAfter": false
+    },
+    {
+      "phase": "QUIESCENT_20S",
+      "acquisitionMs": 443,
+      "rawUidCpuMs": 27524,
+      "attributedCpuMs": 27426,
+      "workerCpuBeforeMs": 27446,
+      "workerCpuAfterMs": 27448,
+      "modeledUidMah": "0.0135",
+      "epoch": 1791187332969,
+      "thermal": 0,
+      "unpluggedBefore": true,
+      "unpluggedAfter": true,
+      "interactiveBefore": false,
+      "interactiveAfter": false
+    }
+  ],
+  "secondaryComponents": {
+    "phase": "SECONDARY_COMPONENTS_SEPARATE_ACQUISITION",
+    "startElapsedMs": 110687668,
+    "endElapsedMs": 110688124,
+    "rows": [
+      "UID u0a282: 0.0135 fgs: 0.0113 cached: 0.0000347 ( cpu=0.0134 (27s 427ms) cpu:fgs=0.0113 (16s 11ms) cpu:cached=0.0000347 (49ms) system_services=0.0000969 )"
+    ],
+    "commandStatus": {
+      "exitCode": 0,
+      "stderrMerged": true,
+      "errorSignatureObserved": false
+    }
+  },
+  "auxiliaryHostMonitorGapPreserved": true,
+  "sourceAdmission": "NOT_ADMITTED",
+  "repeatability": "NOT_RUN",
+  "ratio": "NOT_EVALUATED",
+  "rawReceiptSha256": "d3462d5284d70ee33bdff4a6233c315c61c7ad447bdf71fdbb2d1fcb31c6d43b"
+}

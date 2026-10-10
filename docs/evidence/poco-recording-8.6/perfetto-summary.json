@@ -1,0 +1,30 @@
+{
+  "traceSha256": "c5fa85115402b41bf54a4272afea4155a8553a1ded3b73b080db21fc269a6c52",
+  "traceBytes": 1482,
+  "packetCount": 30,
+  "packetFieldCounts": {
+    "trusted_uid": 30,
+    "clock_snapshot": 2,
+    "trusted_packet_sequence_id": 30,
+    "synchronization_marker": 1,
+    "trace_uuid": 1,
+    "trace_config": 1,
+    "system_info": 1,
+    "timestamp": 22,
+    "service_event": 5,
+    "sequence_flags": 2,
+    "previous_packet_dropped": 1,
+    "trusted_pid": 18,
+    "first_packet_on_sequence": 1,
+    "battery": 16,
+    "power_rails": 1,
+    "trace_stats": 1
+  },
+  "railDescriptors": 0,
+  "railEnergySamples": 0,
+  "batteryFieldCounts": {
+    "charge_counter_uah": 16,
+    "current_ua": 16
+  },
+  "containsEnergyMeasurement": false
+}

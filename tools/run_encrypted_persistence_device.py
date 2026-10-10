@@ -5,7 +5,10 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import subprocess
+
+import persistence_instrumentation_diagnostics as diagnostics
 
 PACKAGE = 'com.monumentogram.dora.audio.persistence'
 NO_CREDENTIAL = PACKAGE + '.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup'
@@ -100,6 +103,8 @@ def main():
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--inventory', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
+    parser.add_argument('--diagnostic-class', help='Exact frozen inventory class; diagnostic receipt only')
+    parser.add_argument('--diagnostic-method', help='Exact method within --diagnostic-class; diagnostic only')
     args = parser.parse_args()
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected test emulator is admitted')
     sdk = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT')
@@ -107,8 +112,11 @@ def main():
     adb = str(Path(sdk) / 'platform-tools' / ('adb.exe' if os.name == 'nt' else 'adb'))
 
     def command(*arguments, timeout=120):
-        result = subprocess.run([adb, '-s', args.serial, *arguments], capture_output=True,
-                                text=True, timeout=timeout, check=True)
+        try:
+            result = subprocess.run([adb, '-s', args.serial, *arguments], capture_output=True,
+                                    text=True, timeout=timeout, check=True)
+        except Exception:
+            raise diagnostics.InstrumentationFailure('ADB_COMMAND_FAILED_OR_TIMED_OUT') from None
         return result.stdout.replace('\r\n', '\n').strip()
 
     require(command('get-state') == 'device' and command('shell', 'getprop', 'ro.kernel.qemu') == '1',
@@ -119,44 +127,63 @@ def main():
     page_size = page_measurement['page_size']
     require((api, page_size) == (args.expected_api, args.expected_page_size), 'Runtime API/page-size identity mismatch')
     expected, no_credential = validate_inventory(json.loads(args.inventory.read_text(encoding='utf-8')))
+    selected = expected
+    if args.diagnostic_class:
+        selected = {name for name in expected if name.split('#')[0] == args.diagnostic_class}
+        if args.diagnostic_method:
+            selected &= {args.diagnostic_class + '#' + args.diagnostic_method}
+        require(bool(selected), 'Diagnostic selector is absent from exact inventory')
+    else:
+        require(args.diagnostic_method is None, 'Diagnostic method requires explicit class')
+    prefix = args.receipt.parent / (args.receipt.stem + '-diagnostics')
+    prefix.mkdir(parents=True, exist_ok=False)
+
+    def instrument(selectors, names, phase, timeout):
+        try:
+            return diagnostics.stream([adb, '-s', args.serial, 'shell', 'am', 'instrument', '-w', '-r',
+                                       *selectors, RUNNER], names, prefix / (phase+'.json'),
+                                      hard_timeout=timeout,
+                                      probe=lambda: diagnostics.emulator_diagnostics(adb, args.serial),
+                                      capture=lambda: diagnostics.emulator_diagnostics(adb, args.serial, stack=True))
+        except diagnostics.InstrumentationFailure:
+            # Preserve pre-termination stall diagnostics; never leave an orphan test process.
+            command('shell', 'am', 'force-stop', RUNNER.split('/')[0])
+            raise
     require(command('install', '-r', str(args.apk.resolve())).endswith('Success'), 'Test APK was not installed')
     require(command('shell', 'pm', 'clear', RUNNER.split('/')[0]) == 'Success',
             'Synthetic instrumentation package state could not be reset')
 
-    def run_no_credential_controls():
-        output = command('shell', 'am', 'instrument', '-w', '-r', '-e', 'class', ','.join(sorted(no_credential)), RUNNER)
+    def run_no_credential_controls(phase):
+        output = instrument(['-e', 'class', ','.join(sorted(no_credential))], no_credential, phase, 120)
         rows = parse_results(output)
         require({row['name'] for row in rows} == no_credential, 'No-credential controls did not execute')
         return rows
 
     # Prove fresh-package denial before a successful run can create the canonical vault.
-    initial_no_credential_rows = run_no_credential_controls()
+    initial_no_credential_rows = run_no_credential_controls('initial-no-credential')
     # This fresh test-emulator-only setup cannot replace an existing credential without its old value.
-    pin = '246810'
-    setup = command('shell', 'locksettings', 'set-pin', pin)
-    require('Pin set to' in setup, 'Synthetic credential setup failed; existing device state retained')
+    pin = str(secrets.randbelow(900000) + 100000)
     credential_rows = []
-    try:
+    with diagnostics.synthetic_credential(command, pin):
         command('shell', 'input', 'keyevent', '82')
-        output = command('shell', 'am', 'instrument', '-w', '-r', '-e', 'package', PACKAGE,
-                         '-e', 'syntheticAuthPin', pin, RUNNER, timeout=1800)
-        credential_rows = parse_results(output, expected_skips=no_credential)
-        require({row['name'] for row in credential_rows} == expected, 'Executed persistence inventory differs')
-    finally:
-        cleared = command('shell', 'locksettings', 'clear', '--old', pin)
-        require('Lock credential cleared' in cleared, 'Synthetic credential cleanup was not confirmed')
-    no_credential_rows = run_no_credential_controls()
-    receipt = {'schema_version': 1, 'status': 'PASS_COMPONENT_RUNTIME_ONLY',
+        selector = ['-e', 'class', ','.join(sorted(selected))] if args.diagnostic_class else ['-e', 'package', PACKAGE]
+        output = instrument([*selector, '-e', 'syntheticAuthPin', pin], selected,
+                            'credential', 600 if args.diagnostic_class else 1800)
+        credential_rows = parse_results(output, expected_skips=no_credential & selected)
+        diagnostics.require_complete([row['name'] for row in credential_rows], selected)
+    no_credential_rows = run_no_credential_controls('final-no-credential')
+    receipt = {'schema_version': 1, 'status': 'DIAGNOSTIC_BATCH_COMPLETE' if args.diagnostic_class else 'PASS_COMPONENT_RUNTIME_ONLY',
                'api': api, 'abi': abi, **page_measurement,
                'apk_sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
                'inventory_sha256': hashlib.sha256(args.inventory.read_bytes()).hexdigest(),
                'credential_tests': credential_rows, 'initial_no_credential_tests': initial_no_credential_rows,
                'no_credential_tests': no_credential_rows,
                'synthetic_credential_cleanup': 'VERIFIED', 'physical_device': False,
+               'diagnostic_only': bool(args.diagnostic_class),
                'stage_acceptance': 'NOT_CLAIMED'}
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n', encoding='utf-8')
-    print(f'PASS {len(expected)} distinct persistence tests, API {api}, page size {page_size}; component evidence only')
+    print(f'{receipt["status"]}: {len(selected)} distinct persistence tests, API {api}, page size {page_size}')
 
 
 if __name__ == '__main__':

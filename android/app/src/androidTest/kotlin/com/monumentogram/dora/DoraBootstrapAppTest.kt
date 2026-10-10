@@ -1,7 +1,10 @@
 package com.monumentogram.dora
 
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -14,6 +17,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.audio.recording.RecordingState
@@ -28,6 +33,134 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DoraBootstrapAppTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
+
+    @Test
+    fun compactPreflightKeepsActionsVisibleWithoutStartingMicrophone() {
+        assertCompactPreflight(1f)
+    }
+
+    @Test
+    fun largeFontCompactPreflightKeepsActionsVisibleWhileInformationScrolls() {
+        assertCompactPreflight(2f)
+    }
+
+    @Test
+    fun largeFontPreflightWithImeSizedHeightKeepsCancelReachable() {
+        var cancelled = false
+        render(
+            RecordingViewState(),
+            fontScale = 2f,
+            viewport = DpSize(320.dp, 240.dp),
+            onBack = { cancelled = true },
+        )
+        composeRule.onNodeWithText("Отмена").assertIsDisplayed().performClick()
+        composeRule.runOnIdle { org.junit.Assert.assertTrue(cancelled) }
+        composeRule.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
+        composeRule.onNodeWithText("Обновить проверку места").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun landscapeLargeFontPreflightKeepsConsentExplicit() {
+        render(RecordingViewState(), fontScale = 2f, viewport = DpSize(480.dp, 320.dp))
+        composeRule.onNodeWithText("Отмена").assertIsDisplayed()
+        composeRule.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
+        composeRule
+            .onNodeWithContentDescription("Я предупредил(а) участников о записи")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithText("Начать запись").assertIsDisplayed().assertIsEnabled()
+        composeRule.runOnIdle {
+            org.junit.Assert.assertFalse(
+                (composeRule.activity.application as DoraApplication)
+                    .recording
+                    .state
+                    .value
+                    .captureThreadHealthy
+            )
+        }
+    }
+
+    @Test
+    fun insufficientStorageRemainsBlockedAfterExplicitConsentInCompactPreflight() {
+        val controller = (composeRule.activity.application as DoraApplication).recording
+        val field =
+            controller.javaClass.getDeclaredField("freeStorageBytes").apply { isAccessible = true }
+        val original = field.get(controller)
+        try {
+            composeRule.runOnIdle { field.set(controller, { 0L }) }
+            render(RecordingViewState(), fontScale = 2f, viewport = DpSize(320.dp, 320.dp))
+            composeRule
+                .onNodeWithContentDescription("Я предупредил(а) участников о записи")
+                .performScrollTo()
+                .performClick()
+            composeRule.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
+            composeRule
+                .onNodeWithText(
+                    "Освободите место и обновите проверку. Сохранённые записи останутся доступны."
+                )
+                .performScrollTo()
+                .assertIsDisplayed()
+            composeRule.onNodeWithText("Обновить проверку места").performScrollTo().performClick()
+            composeRule.onNodeWithText("Начать запись").assertIsNotEnabled()
+            composeRule.onNodeWithText("Отмена").assertIsDisplayed()
+            composeRule.runOnIdle {
+                org.junit.Assert.assertFalse(controller.state.value.captureThreadHealthy)
+            }
+        } finally {
+            composeRule.runOnIdle { field.set(controller, original) }
+        }
+    }
+
+    @Test
+    fun grantingMicrophonePermissionDoesNotGrantConsentOrStartDuringRecreation() {
+        val instrumentation =
+            androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        instrumentation.uiAutomation
+            .executeShellCommand(
+                "pm grant com.monumentogram.dora.debug android.permission.RECORD_AUDIO"
+            )
+            .use { descriptor ->
+                java.io.FileInputStream(descriptor.fileDescriptor).use { it.readBytes() }
+            }
+        composeRule.onNodeWithContentDescription("Открыть экран записи").performClick()
+        composeRule.activityRule.scenario.recreate()
+        composeRule.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
+        composeRule
+            .onNodeWithText("Микрофон: доступ разрешён")
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Отмена").assertIsDisplayed().performClick()
+        composeRule.onNodeWithContentDescription("Раздел Главная").assertIsDisplayed()
+        composeRule.runOnIdle {
+            org.junit.Assert.assertFalse(
+                (composeRule.activity.application as DoraApplication)
+                    .recording
+                    .state
+                    .value
+                    .captureThreadHealthy
+            )
+        }
+    }
+
+    private fun assertCompactPreflight(fontScale: Float) {
+        render(RecordingViewState(), fontScale = fontScale, viewport = DpSize(320.dp, 480.dp))
+        composeRule.onNodeWithText("Отмена").assertIsDisplayed().assertIsEnabled()
+        composeRule.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
+        composeRule
+            .onNodeWithContentDescription("Я предупредил(а) участников о записи")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Обновить проверку места").performScrollTo().performClick()
+        composeRule.onNodeWithText("Отмена").assertIsDisplayed().performClick()
+        composeRule.runOnIdle {
+            org.junit.Assert.assertFalse(
+                (composeRule.activity.application as DoraApplication)
+                    .recording
+                    .state
+                    .value
+                    .captureThreadHealthy
+            )
+        }
+    }
 
     @Test
     fun largeFontDurabilityCatchUpKeepsResumeStationary() {
@@ -84,6 +217,8 @@ class DoraBootstrapAppTest {
         snapshot: RecordingViewState,
         authorized: Boolean = true,
         fontScale: Float = 1f,
+        viewport: DpSize? = null,
+        onBack: () -> Unit = {},
     ) {
         composeRule.runOnUiThread {
             composeRule.activity.setContent {
@@ -91,7 +226,14 @@ class DoraBootstrapAppTest {
                     LocalDensity provides Density(LocalDensity.current.density, fontScale)
                 ) {
                     DoraBootstrapTheme {
-                        RecordingScreen(composeRule.activity, snapshot, authorized, {})
+                        Box(
+                            when {
+                                viewport != null -> Modifier.requiredSize(viewport)
+                                else -> Modifier
+                            }
+                        ) {
+                            RecordingScreen(composeRule.activity, snapshot, authorized, onBack)
+                        }
                     }
                 }
             }

@@ -1,0 +1,13 @@
+{
+  "operationCompleted": true,
+  "automaticRollback": false,
+  "policyRemoved": false,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "processAbsent": true,
+  "installedApkSha256": "f7803281d20655c773906c753e10d2299640e647c1b21b544b20f06361f690b0",
+  "historical8550Unchanged": true,
+  "status": "VERIFIED"
+}

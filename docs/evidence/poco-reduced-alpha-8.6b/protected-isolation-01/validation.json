@@ -1,0 +1,62 @@
+{
+  "baselineSha": "b2d9408eaf06c04ab8ba363c8cda45fef01a5bfb",
+  "hostTests": {
+    "total": 71,
+    "passed": 71,
+    "protectedSnapshotTests": 23
+  },
+  "coreAudio": {
+    "tests": 218,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 217,
+    "skip": "Inherited Windows symlink assumption; not a new skip"
+  },
+  "spotless": "PASS",
+  "detekt": {
+    "status": "PASS",
+    "method": "Exact existing Gradle task main/classpath/arguments via Java @argfile; native Windows command could not launch; no exclusions"
+  },
+  "diagnosticHelper": {
+    "apkSha256": "d2557e3168e459b9febb1460d45efa25bd54f5291b0f95b03e33d72ddd028770",
+    "sources": {
+      "AndroidManifest.xml": "a2ebc32c3527d35d1b8085a3f1853c6f7008650f1a718648f172f83f2895bdc3",
+      "CampaignInstrumentation.java": "702378ee0aba99de0b158449c28cf24a0e3875e08e42bcc7916ddf4c0ed6e0e5",
+      "FailureInspectionInstrumentation.java": "9ff6bdda8f1c82127a3ae2e56da71ea9870775a91318d85305cdc62ea7a80fc4",
+      "ForensicCatalogInstrumentation.java": "9b14ebd4124e33e7552afe450a8265e09868de2881ceea100ed39240517e29da",
+      "ForensicPrefix.java": "33fb9f050bc9093b7bff18ebe7e142c1318044f7e8dc3742c549f92bdfd3ae83",
+      "ForensicSnapshot.java": "6a4831038b9317752a2b35c80ee16871cf5579ad166023bc75c51ded7a30d98e",
+      "FunctionalInstrumentation.java": "32b49b8fef15e88f5d94ff807459534d7f1c88afde51e17d61a768c6b74fe413",
+      "ProtectedCatalogSnapshot.java": "88529b90ed629cea51f9cd03004d5990675ab22cb26ad0458668fa602283286a",
+      "ProtectedKeyProofs.java": "806e0813706403e4fcaccc26de207b3c7d277b9f7e213a3c03e72c0cd1e45c9a",
+      "RuntimeAccess.java": "b87ab406920fba4fa1586d97c6c890190d9456857597b551e3bb00da2b18ea2c",
+      "SafetyWatchdog.java": "9778fb521f160758711062e7f6887cb8354e96d9dc8262385490fc0907c411c6",
+      "Telemetry.java": "bb79901cf0b8a94a235a66de1341b50cd3003eafdfa3b844bb0cbdb90e613b41"
+    }
+  },
+  "historicalRecovery": {
+    "passed": 414,
+    "executedThisTask": false
+  },
+  "predecessorCi": {
+    "runId": 37788747312,
+    "mandatoryJobs": "4/4_SUCCESS",
+    "sourceSha": "b2d9408eaf06c04ab8ba363c8cda45fef01a5bfb",
+    "successorProof": false
+  },
+  "successorCi": "REQUIRED_AFTER_PUBLICATION_NOT_YET_RUN",
+  "failedLocalInvocations": [
+    {
+      "reason": "Incorrect project-qualified root task name; task selection failed",
+      "testsExecuted": false
+    },
+    {
+      "reason": "Native Gradle Detekt command could not launch on Windows; exact Java argument-file validation follows",
+      "passed": false
+    }
+  ],
+  "productRuntimeChanged": false,
+  "physicalRecording": "NOT_RUN",
+  "isolationPolicy": "NOT_IMPLEMENTED_NOT_ADMITTED"
+}

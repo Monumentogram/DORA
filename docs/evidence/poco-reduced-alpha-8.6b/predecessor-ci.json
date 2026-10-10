@@ -1,0 +1,28 @@
+{
+  "scope": "ACCEPTED_PREDECESSOR_NOT_DIRTY_LITE_CHANGES",
+  "id": 37685863157,
+  "head_sha": "2cb4b470da88a52f2ce89ce0ae6c640c3222cfe1",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "android-bootstrap",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "search-smoke",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "encrypted-persistence-api36",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "encrypted-persistence-api28",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

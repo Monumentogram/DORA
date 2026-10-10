@@ -1,0 +1,10 @@
+{
+  "status": "REJECTED_BY_OVERBROAD_ALL_8550_PRESENCE_ASSERTION",
+  "immutableHistoricalFilesPresentAndIdentical": 8547,
+  "sharedDbPresent": true,
+  "sharedWalAbsent": true,
+  "sharedShmAbsent": true,
+  "ownerExceptionAlreadyAllowsSharedCheckpointLifecycle": true,
+  "physicalAttemptInvalidated": false,
+  "historicalEvidenceRewritten": false
+}

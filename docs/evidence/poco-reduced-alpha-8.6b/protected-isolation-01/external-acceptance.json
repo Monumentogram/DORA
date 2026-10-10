@@ -1,0 +1,16 @@
+{
+  "verdict": "BLOCKED / PROTECTED_SOURCE_RECOVERY_POLICY_CONFLICT",
+  "basis": "An additional protected original can acquire Recovery metadata; LONG01-only exclusion cannot guarantee all protected states unchanged",
+  "historicalPcmAuthenticationForAdditionalOriginal": "NOT_RUN",
+  "physicalCampaignAdmission": false,
+  "ownerDecision": "OD-86B-LITE-SHARED-CATALOG-EXCEPTION",
+  "newDecisionProposal": "owner-decision-proposal.md",
+  "newDecisionStatus": "NOT_APPROVED",
+  "historicalSourceMutationObserved": false,
+  "productApkUpdate": "NOT_RUN",
+  "physicalSmoke": "NOT_RUN",
+  "new60Cycles": "NOT_RUN",
+  "newHourRun": "NOT_RUN",
+  "sheet": "UNCHANGED",
+  "stage86": "NOT_READY / LONG_SCREEN_OFF_ACCEPTANCE_PENDING"
+}

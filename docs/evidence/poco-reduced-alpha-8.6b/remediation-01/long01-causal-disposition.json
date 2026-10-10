@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "historicalVerdict": "NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED",
+  "historicalTerminalFailureEnum": "UNKNOWN_NOT_CAPTURED",
+  "historicalCause": "UNPROVEN",
+  "historicalApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "inspectionSourceSha": "468c85308071e3b76ad5840dd41f036dbab86792",
+  "inspectionReceipt": "forensic-long01-prefix-01.json",
+  "counterAuthorities": {
+    "lastObservedAdmittedFrames": 31203200,
+    "lastObservedDurableCompletionFrames": 30960000,
+    "catalogClaimedFrames": 31040000,
+    "authenticatedReadableFrames": 31040000,
+    "catalogBeyondLastObservedCompletionFrames": 80000,
+    "admittedBeyondAuthenticatedPrefixFrames": 163200,
+    "lastObservedOutstandingFrames": 243200,
+    "frozenOutstandingCapFrames": 256000
+  },
+  "prefix": {
+    "ordinals": [0, 387],
+    "units": 388,
+    "framesPerUnit": 80000,
+    "firstFrame": 0,
+    "exclusiveEndFrame": 31040000,
+    "gaps": 0,
+    "duplicateRanges": 0,
+    "unreadableCommittedUnits": 0,
+    "pendingIntent": "NONE",
+    "finalized": false,
+    "tailBeyondPrefix": "NOT_PROVEN_DURABLE",
+    "normalRecoveryInvoked": false,
+    "originalVaultFileCount": 8550,
+    "originalVaultFilesUnchanged": true,
+    "originalRecordingsPreserved": 46
+  },
+  "technicalMetadata": {
+    "closedCaps": [[0, 9600000], [9600000, 19200000], [19200000, 28800000]],
+    "lastOpenFirstFrame": 28800000,
+    "overlapFrames": 32000,
+    "lastOpenHasClose": false,
+    "stopFinalizationClaimed": false
+  },
+  "mechanisms": [
+    {
+      "name": "PERSISTENCE_BACKPRESSURE",
+      "classification": "SUPPORTED_BUT_UNPROVEN",
+      "evidence": "Last observed outstanding budget was 243200 of 256000; empty/drained canonical queue does not release durability budget. Synthetic sustained slow-writer scenarios reach the exact fence even with queue high-water 1.",
+      "limitation": "No historical terminal enum or event-time budget snapshot; proximity to the cap cannot prove causality."
+    },
+    {
+      "name": "CATALOG_COMMIT_BEFORE_COMPLETION_OBSERVATION",
+      "classification": "SUPPORTED_BUT_UNPROVEN",
+      "evidence": "Accepted writer append runs on persistence executor; durable state changes in a separate completion task. One authenticated 80000-frame unit exists beyond the last telemetry durable value. Synthetic delayed callback reproduces this ordering.",
+      "limitation": "Historical append/completion timestamps are absent; exact ordering at failure is unknown."
+    },
+    {
+      "name": "CORRUPTED_COMMITTED_PREFIX",
+      "classification": "REJECTED",
+      "evidence": "All 388 committed units authenticate with contiguous source ranges through frame 31040000.",
+      "limitation": "Does not prove safety or existence of an uncommitted tail."
+    },
+    {
+      "name": "STORAGE_FAILURE_AUTHORITY_REVOCATION_LIFECYCLE_OEM_HOST_OR_WRITER_FAILURE",
+      "classification": "NOT_EVALUATED",
+      "evidence": "Historical receipt lacks the exact terminal path. No positive attribution is supported.",
+      "limitation": "Bounded log absence of fatal/ANR messages is not proof that these causes did not occur."
+    }
+  ],
+  "readiness": "PARTIAL / LONG_CAPTURE_ROOT_CAUSE_UNPROVEN",
+  "externalAcceptanceOfInstrumentedRetry": "NOT_GRANTED",
+  "newLongRun": "NOT_RUN"
+}

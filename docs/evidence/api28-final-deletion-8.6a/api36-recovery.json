@@ -1,0 +1,174 @@
+{
+  "abi": "x86_64",
+  "api": 36,
+  "apk_sha256": "0a15e6a1d35b9f8adf2218acadb491d63fcd7168999ec6657d9e4a8a79283685",
+  "driver_sha256": "04edc6eec25675094963763371722e199cf40e770c9b530d526dc7302532d64a",
+  "kernel_page_size": 4096,
+  "kernel_page_size_evidence": "PROC_SMAPS_KERNEL_PAGE_SIZE",
+  "new_stage85_phases": 22,
+  "page_size": 4096,
+  "page_size_evidence": "GETCONF_PAGE_SIZE",
+  "page_size_mode": "RUNTIME_MATCHES_KERNEL_MAPPING",
+  "phases": [
+    {
+      "phase": "FIRST_OPEN_METADATA_FAILED",
+      "prepared_pid": 4625,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 4664
+    },
+    {
+      "phase": "OPEN_BEFORE_PCM",
+      "prepared_pid": 4700,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 4738
+    },
+    {
+      "phase": "COMMITTED_OPEN",
+      "prepared_pid": 4773,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 4813
+    },
+    {
+      "phase": "APPEND_RESERVED",
+      "prepared_pid": 4849,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 4889
+    },
+    {
+      "phase": "KEY_BOOTSTRAP",
+      "prepared_pid": 4924,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 4963
+    },
+    {
+      "phase": "PUBLICATION_COMMITTED",
+      "prepared_pid": 4997,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5036
+    },
+    {
+      "phase": "AUTHENTICATED_READBACK",
+      "prepared_pid": 5070,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5108
+    },
+    {
+      "phase": "CATALOG_COMMITTED",
+      "prepared_pid": 5145,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5185
+    },
+    {
+      "phase": "TECHNICAL_CLOSE",
+      "prepared_pid": 5221,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5261
+    },
+    {
+      "phase": "SEMANTIC_BEFORE",
+      "prepared_pid": 5296,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5334
+    },
+    {
+      "phase": "SEMANTIC_AFTER",
+      "prepared_pid": 5369,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5407
+    },
+    {
+      "phase": "BEFORE_CAP",
+      "prepared_pid": 5442,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5502
+    },
+    {
+      "phase": "CAP_CLOSED",
+      "prepared_pid": 5546,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5593
+    },
+    {
+      "phase": "CAP_OPEN_EMPTY",
+      "prepared_pid": 5645,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5693
+    },
+    {
+      "phase": "CAP_OVERLAP",
+      "prepared_pid": 5737,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5787
+    },
+    {
+      "phase": "PAUSE_PENDING",
+      "prepared_pid": 5832,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5874
+    },
+    {
+      "phase": "SECOND_INTERRUPTION",
+      "prepared_pid": 5908,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 5947
+    },
+    {
+      "phase": "VAD_DEGRADED",
+      "prepared_pid": 5982,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 6021
+    },
+    {
+      "phase": "FINAL_TAIL_SEALED",
+      "prepared_pid": 6055,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 6095
+    },
+    {
+      "phase": "FINALIZE_RESERVED",
+      "prepared_pid": 6132,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 6171
+    },
+    {
+      "phase": "FINALIZE_VERIFIED",
+      "prepared_pid": 6205,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 6245
+    },
+    {
+      "phase": "FINALIZE_COMMITTED",
+      "prepared_pid": 6280,
+      "result": "PASS",
+      "termination": "AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED",
+      "verifier_pid": 6318
+    }
+  ],
+  "physical_device": false,
+  "schema_version": 1,
+  "shared_driver_sha256": "9b4cb6324e69a015a49ab1bf3b684156f6c0588d4f3168f01fe235a98a8262c8",
+  "stage_acceptance": "NOT_CLAIMED",
+  "status": "PASS_COMPONENT_PROCESS_DEATH_ONLY",
+  "test": "com.monumentogram.dora.audio.persistence.LogicalRecoveryProcessDeathTest#verifyLogicalRecoveryProcessDeath"
+}

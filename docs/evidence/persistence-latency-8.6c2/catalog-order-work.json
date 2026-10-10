@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "HOST_METADATA_OPERATION_COUNT",
+  "baseline": "944b41532e3007ca14d1851d83c2232de1132874",
+  "subject": "RecoveryAudioBridge.validateOrder",
+  "source": "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/RecoveryAudioBridge.kt:388",
+  "test": "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/CatalogOrderWorkTest.kt",
+  "invocation": ".\\gradlew.bat :core:audio:testDebugUnitTest --tests com.monumentogram.dora.audio.CatalogOrderWorkTest --console=plain",
+  "environment": "Windows host; Java 17; SDK path set via process ANDROID_HOME; no device access",
+  "tests": {
+    "total": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "metric": "Original AbstractList.get calls while actual private validator executes; iterator plus copied prefixes",
+  "expectedFormula": "n + sum(index=0..n-1,index) = n*(n+1)/2",
+  "observations": [
+    {
+      "n": 10,
+      "sourceElementReads": 55,
+      "validatedFrames": 800000,
+      "physicalGroupSize": 120
+    },
+    {
+      "n": 100,
+      "sourceElementReads": 5050,
+      "validatedFrames": 8000000,
+      "physicalGroupSize": 120
+    },
+    {
+      "n": 400,
+      "sourceElementReads": 80200,
+      "validatedFrames": 32000000,
+      "physicalGroupSize": 120
+    },
+    {
+      "n": 1000,
+      "sourceElementReads": 500500,
+      "validatedFrames": 80000000,
+      "physicalGroupSize": 120
+    },
+    {
+      "n": 2000,
+      "sourceElementReads": 2001000,
+      "validatedFrames": 160000000,
+      "physicalGroupSize": 120
+    }
+  ],
+  "adversarialCases": [
+    "Same physical ID with inconsistent physicalFirstFrame and otherwise valid offset arithmetic",
+    "Duplicate unit ID with unchanged valid ordinal and frame range",
+    "Swapped rows",
+    "Frame gap with matching physical offset"
+  ],
+  "densityCheck": "At n=400, physical group sizes 1,120,400 all yield 80200 source reads",
+  "isolation": "Fresh AudioMemoryFixture; files, keys, units, publications and catalog remain empty after every case",
+  "confirmed": "Quadratic original-list element reads in the actual validator, independent of physical-group match density",
+  "exclusions": [
+    "Not wall-clock latency or CPU timing",
+    "Not a complete allocation or operation count",
+    "No encryption, database, filesystem or durable append executed",
+    "No capture queue or outstanding-frame measurement",
+    "No causal attribution to LONG-02",
+    "No optimization intervention performed"
+  ],
+  "rootCause": "NOT_PROVEN",
+  "junitStdoutSource": "android/core/audio/build/test-results/testDebugUnitTest/TEST-com.monumentogram.dora.audio.CatalogOrderWorkTest.xml",
+  "finalGradleLog": "catalog-order-work-gradle.log",
+  "initialAttempt": {
+    "status": "FAILED_BEFORE_COMPILATION",
+    "reason": "SDK location not found because ANDROID_HOME was unset and android/local.properties absent",
+    "diagnosticSource": "Tool-output excerpt retained in catalog-order-work-initial-failure.txt"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "probeId": "C-01",
+  "disposition": "SHORT_INSTRUMENTATION_PROBE_COMPLETED_NOT_ACCEPTANCE",
+  "sampler": {
+    "probeId": "C-01",
+    "windowIdentityConsistent": true,
+    "terminalConsistent": true,
+    "sampleCount": 41,
+    "actualSampleSpanMs": 600002,
+    "tenMinuteSampleSpan": true,
+    "maxObservedGapMs": 15003,
+    "allSamplesUnplugged": true,
+    "allSamplesScreenOff": true,
+    "chargeCounterMonotonic": true,
+    "observedChargeDeltaMicroAh": 0,
+    "candidateChargeDeltaMicroAh": null,
+    "continuousPowerProof": false,
+    "acceptance": "NOT_EVALUATED",
+    "limitation": "Periodic samples alone cannot exclude between-sample charging or screen wake; inspect system history. No energy conversion or current integration."
+  },
+  "recordingCountersAtFinalizing": {
+    "phase": "FINALIZING",
+    "queueHighWater": "3",
+    "frames": "15444800",
+    "durableFrames": "15444800",
+    "shortReads": "0",
+    "readErrors": "0",
+    "vadProfile": "dora-segmentation-1",
+    "vadFailure": "NONE",
+    "vadHighWater": "6",
+    "vadInference": "30165",
+    "vadDeadlineMisses": "3",
+    "segmentationMetadataFailure": "NONE"
+  },
+  "savedUiConfirmed": true,
+  "micReleasedAndFgsTerminated": true,
+  "process": {
+    "start": {
+      "pid": 25550,
+      "fdCount": 176,
+      "clockTicksPerSecond": "100",
+      "userCpuTicks": 3726,
+      "systemCpuTicks": 606,
+      "VmRSS": 255180,
+      "VmHWM": 260748,
+      "Threads": 48,
+      "TOTAL PSS kB": 149871,
+      "TOTAL RSS kB": 249664,
+      "Native Heap raw row": "Native Heap    39996    39912       40      134    41128    53476    51555     1920",
+      "Dalvik Heap raw row": "Dalvik Heap     7337     7300        8      166     7984    13207     6604     6603"
+    },
+    "end": {
+      "pid": 25550,
+      "fdCount": 140,
+      "userCpuTicks": 42595,
+      "systemCpuTicks": 5743,
+      "VmRSS": 204188,
+      "VmHWM": 269056,
+      "Threads": 47,
+      "TOTAL PSS kB": 138134,
+      "TOTAL RSS kB": 207140,
+      "Native Heap raw row": "Native Heap    19511    19448        4    23088    20660    57120    52902     4217",
+      "Dalvik Heap raw row": "Dalvik Heap    11105     9980      948      190    12172    11623     5812     5811"
+    }
+  },
+  "processPidUnchangedAcrossCapture": true,
+  "storage": {
+    "beforeBytes": 226076977,
+    "afterBytes": 260920175,
+    "growthBytes": 34843198,
+    "scope": "files + no_backup apparent bytes incl directory metadata; full recording + finalize, not exact 600-second slice",
+    "hourlyGateEvaluated": false
+  },
+  "batterystats": {
+    "schema": "checkin9/report36",
+    "uid": 10300,
+    "estimatedUidChargeMah": "2.35",
+    "cpuMs": {
+      "user": 378020,
+      "system": 151122
+    },
+    "semantics": "MODEL_ESTIMATED_UID_CHARGE_NOT_MEASURED_ENERGY",
+    "systemBatteryTimeMs": {
+      "batteryRealtime": 761680,
+      "batteryUptime": 761679,
+      "totalRealtime": 823039,
+      "startEpochMs": 1791139918992,
+      "batteryScreenOffRealtime": 759968
+    },
+    "systemEstimatedConsumedMah": "0"
+  },
+  "thermalObserved": {
+    "start": 0,
+    "maximum": 0,
+    "end": 0
+  },
+  "accubattery": {
+    "method": "VISIBLE_UI_HIERARCHY",
+    "session": "21:51-22:04",
+    "totalDischargeMahDisplayed": 17,
+    "screenOffDischargeMahDisplayed": 17,
+    "screenOffDurationDisplayed": "12m",
+    "deepSleepDurationDisplayed": "0m",
+    "wholeUnplugSessionNotExactSamplerWindow": true,
+    "perAppValuesAvailable": false,
+    "semantics": "CONTROLLER_DERIVED_ESTIMATE"
+  },
+  "sourceAdmission": "NOT_ADMITTED",
+  "hardwareMicroWhGate": "NOT_EVALUATED / HARDWARE_ENERGY_COUNTER_UNAVAILABLE",
+  "acceptanceRatiosComputed": false
+}

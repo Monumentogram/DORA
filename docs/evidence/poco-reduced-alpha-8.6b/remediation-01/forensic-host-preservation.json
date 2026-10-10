@@ -1,0 +1,9 @@
+{
+  "sourceFilesByteIdentical": true,
+  "safeState": {
+    "fgsAbsent": true,
+    "micNotRunning": true
+  },
+  "installedProductApkSha256": "c2adf61e7834b6202f62da80b56bd0b4447f71756f4b38f0786715e1280895c1",
+  "sourceMapSha256": "1bf5afb5dc61c1175605674b0809c9b61ec46b449756e44ac0668429efb94ab2"
+}

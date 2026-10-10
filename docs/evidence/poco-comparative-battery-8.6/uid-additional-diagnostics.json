@@ -1,0 +1,78 @@
+{
+  "schema": "checkin9/report36",
+  "units": {
+    "awl": "total partial wakelock ms, background partial wakelock ms",
+    "aud": "audio timer ms, count",
+    "fgs": "foreground service timer ms, count",
+    "st": "process state ms: TOP, FOREGROUND_SERVICE, FOREGROUND, BACKGROUND, TOP_SLEEPING, HEAVY_WEIGHT, CACHED"
+  },
+  "probes": {
+    "B-01": {
+      "uid": 10255,
+      "rawNumericCheckinFields": {
+        "awl": [
+          751762,
+          0
+        ],
+        "aud": [
+          753156,
+          0
+        ],
+        "fgs": [
+          753156,
+          0
+        ],
+        "st": [
+          0,
+          753156,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "unavailableTargetTags": [
+        "network",
+        "jobs",
+        "alarms",
+        "sensors"
+      ],
+      "scope": "whole discharge session, not observer subwindow"
+    },
+    "C-01": {
+      "uid": 10300,
+      "rawNumericCheckinFields": {
+        "awl": [
+          759968,
+          0
+        ],
+        "aud": [
+          761680,
+          0
+        ],
+        "fgs": [
+          761680,
+          0
+        ],
+        "st": [
+          0,
+          761680,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "unavailableTargetTags": [
+        "network",
+        "jobs",
+        "alarms",
+        "sensors"
+      ],
+      "scope": "whole discharge session, not observer subwindow"
+    }
+  },
+  "missingMetricsAreNotZero": true
+}

@@ -1,0 +1,57 @@
+{
+  "capacity": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "charge_counter": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "current_now": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "current_avg": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "voltage_now": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "charge_full": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "charge_full_design": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "energy_now": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "power_now": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "temp": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  },
+  "status": {
+    "readable": false,
+    "value": null,
+    "error": "PERMISSION_DENIED"
+  }
+}
