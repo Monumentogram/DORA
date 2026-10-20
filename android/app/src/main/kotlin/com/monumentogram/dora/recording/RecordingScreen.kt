@@ -193,7 +193,10 @@ internal fun RecordingScreen(
                     Text("Запись", style = MaterialTheme.typography.headlineMedium)
                     Text(
                         when (state.phase) {
-                            RecordingPhase.SAVED -> "Запись сохранена"
+                            RecordingPhase.SAVED ->
+                                if (state.alphaLimitReached)
+                                    "Достигнут лимит записи Alpha — 5 минут. Запись сохранена"
+                                else "Запись сохранена"
                             RecordingPhase.EMPTY -> "Запись завершена без аудио"
                             RecordingPhase.INTERRUPTED -> "Запись прервана"
                             else -> "Перед началом записи"
@@ -320,6 +323,7 @@ internal fun RecordingScreen(
                             },
                     )
                     Text(snapshot.route)
+                    Text("Осталось в Alpha: ${capturedTime(state.remainingFrames)}")
                     // Keep the control row stationary when asynchronous persistence catches up.
                     Text(
                         if (state.durability != RecordingDurability.PENDING) " "
@@ -468,7 +472,7 @@ private fun RecordingPreflight(
                 else "Доступно на устройстве: ${available / BYTES_PER_MB} МБ"
             )
             Text(
-                "Для часа записи нужно 125 МБ и резерв на завершение 16 MiB: всего не менее 142 МБ."
+                "Alpha: до 5 минут аудио. Для начала записи требуется не менее 142 МБ свободного места."
             )
             Text("Резерв учитывается при запуске; место заранее не выделяется.")
             if (!storageBudget.canStart) {

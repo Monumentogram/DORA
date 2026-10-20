@@ -74,6 +74,8 @@ internal constructor(
             ) =
                 operation(segment.audio) {
                     if (!created || finalized) AudioResult.Failed(AudioFailure.COLLISION)
+                    else if (!AlphaRecordingLimit.accepts(segment.firstFrame, pcm.size))
+                        AudioResult.Failed(AudioFailure.INVALID_INPUT)
                     else vault.writer.append(segment, format, pcm)
                 }
 

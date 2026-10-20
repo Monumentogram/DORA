@@ -1,0 +1,181 @@
+name: Stage8 limited Alpha
+
+on:
+  push:
+    branches: ["codex/stage8-alpha-fast-track"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage8-alpha-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  alpha-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate limited scope and unchanged historical requirements
+        run: python3 tools/validate_stage8_alpha.py
+      - name: Negative receipt, process-death and profile regressions
+        run: |
+          python3 -m unittest discover -s tools -p test_stage8_alpha.py
+          python3 -m unittest discover -s tools -p test_encrypted_persistence_device.py
+          python3 -m unittest discover -s tools -p test_encrypted_persistence_crash.py
+          python3 -m unittest discover -s tools -p test_logical_recovery_stream_diagnostics.py
+          python3 -m unittest discover -s tools -p test_build_internal_alpha.py
+          python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+
+  alpha-software:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - name: Formatting, analysis, JVM regressions and release security boundary
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict
+          -I ../tools/stage8_alpha_profile.init.gradle
+          spotlessCheck detekt
+          :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
+          :app:testDebugUnitTest :core:model:testDebugUnitTest
+          :core:common:testDebugUnitTest :core:testing:testDebugUnitTest
+          :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest
+          :poc:recovery:testDebugUnitTest
+          :core:audio:lintDebug :app:lintDebug
+          :core:audio:assembleDebugAndroidTest :app:assembleDebugAndroidTest
+          :app:assembleDebug :app:assembleRelease
+      - name: Native packaging and no private protection pin
+        run: |
+          python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
+          python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/release/app-release-unsigned.apk --allowlist android/product-native-libs-allowlist.txt
+          python3 tools/validate_stage8_alpha.py --apk android/app/build/outputs/apk/debug/app-debug.apk --apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+      - name: Publish synthetic test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: limited-alpha-software
+          path: |
+            android/**/build/test-results/test*UnitTest/*.xml
+            android/**/build/reports/lint-results-*.xml
+          retention-days: 7
+          if-no-files-found: error
+
+  alpha-encrypted:
+    name: alpha-encrypted-api${{ matrix.api }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [28, 36]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - name: Install SDK
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools" "emulator" "platforms;android-36" "build-tools;36.0.0"
+          "system-images;android-${{ matrix.api }};google_apis;x86_64"
+      - name: Build actual encrypted adapters and product UI tests
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict
+          :core:audio:assembleDebugAndroidTest :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Create disposable synthetic emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/limited-alpha-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name dora_limited_alpha --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_limited_alpha -port 5554 \
+            -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics \
+            -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            kill -0 "${emulator_pid}" 2>/dev/null || exit 1
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot}" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Exact encrypted runtime inventory with credential negative controls
+        run: >-
+          python3 tools/run_encrypted_persistence_device.py --exact-inventory
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --inventory docs/contracts/stage8-alpha-device-tests-v1.json
+          --receipt "${RUNNER_TEMP}/alpha-evidence/runtime.json"
+      - name: Real process death at 299 seconds and authenticated capped continuation
+        run: >-
+          python3 tools/run_logical_recovery_crash.py --alpha-limit-only
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${RUNNER_TEMP}/alpha-evidence/alpha-restart.json"
+      - name: Inherited persistence and original-audio process death
+        run: |
+          python3 tools/run_encrypted_persistence_crash.py \
+            --serial emulator-5554 --expected-api ${{ matrix.api }} \
+            --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk \
+            --receipt "${RUNNER_TEMP}/alpha-evidence/persistence-crash.json"
+          python3 tools/run_encrypted_persistence_crash.py --original-audio \
+            --serial emulator-5554 --expected-api ${{ matrix.api }} \
+            --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk \
+            --receipt "${RUNNER_TEMP}/alpha-evidence/original-crash.json"
+      - name: Inherited logical recovery faults within limited scope
+        run: >-
+          python3 tools/run_logical_recovery_crash.py --limited-alpha
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${RUNNER_TEMP}/alpha-evidence/logical-recovery-crash.json"
+      - name: Inherited short segmentation process-death phases
+        run: >-
+          python3 tools/run_vad_segmentation_crash.py --limited-alpha
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${RUNNER_TEMP}/alpha-evidence/segmentation-crash.json"
+      - name: Product controls, Alpha messages and protected-source isolation
+        run: >-
+          python3 tools/run_product_recording_device.py --limited-alpha
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/app/build/outputs/apk/debug/app-debug.apk
+          --test-apk android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          --receipt "${RUNNER_TEMP}/alpha-evidence/product-ui.json"
+      - name: Publish content-free synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: limited-alpha-api${{ matrix.api }}
+          path: ${{ runner.temp }}/alpha-evidence/**/*.json*
+          retention-days: 7
+          if-no-files-found: error

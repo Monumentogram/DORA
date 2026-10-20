@@ -45,7 +45,11 @@ tasks.register<JavaExec>("detekt") {
 
     args(
         "--input",
-        detektSources.files.joinToString(",") { it.absolutePath },
+        rootDir.absolutePath,
+        "--includes",
+        "**/src/**/*.kt",
+        "--excludes",
+        "**/build/**",
         "--config",
         detektConfig.absolutePath,
         "--build-upon-default-config",

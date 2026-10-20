@@ -1,3 +1,25 @@
+## 2026-10-20 — Owner-scoped five-minute Alpha profile
+
+[ADR-RECORDING-011](adr/ADR-RECORDING-011-limited-alpha-recording.md) introduces
+a separate limited recording profile. Canonical audio is capped at 4,800,000 frames
+(300 seconds); pause/resume and authenticated recovery retain cumulative time.
+Implementation and verification are recorded in the [Alpha evidence package](evidence/stage8-alpha-fast-track/RESULT.md).
+This source checkpoint does not certify its own future CI execution.
+
+Historical `STAGE_8_6 = NOT_READY` remains unchanged. Hour/three-hour recording,
+large-catalog performance, industrial persistence, full device matrix, battery,
+200 physical cycles and 99.5% reliability move to the explicit Beta/Reliability
+backlog for this owner-approved Alpha profile only. Existing evidence is retained.
+
+Stage9 implementation may proceed on the limited source/secure-read contracts
+after the mandatory software verification passes; ASR/transcript implementation
+is a separate task. No Cloud runtime/provider/identity/legal gate is closed.
+Physical Alpha smoke: NOT_RUN / SAFE_DEVICE_UNAVAILABLE.
+`DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE = OPEN`; signed user Alpha remains BLOCKED.
+No physical POCO access. LONG02 root cause NOT_PROVEN; physical protection NOT_INSTALLED.
+
+---
+
 ## 2026-10-09 — Protected POCO successor campaign result
 
 Stage 8.6B-LITE remains **NOT_READY / POCO_SCREEN_OFF_CAPTURE_FAILED**.

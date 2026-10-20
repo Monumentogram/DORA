@@ -24,6 +24,52 @@ import org.junit.Test
 /** Real admission, native ownership and session; only native hardware and disk are replaced. */
 class AsyncCaptureIntegrationTest {
     @Test
+    fun nativeReleaseFailureAtAlphaLimitCannotAuthorizeFinalization() {
+        val rig = Rig()
+        rig.first.failRelease = true
+        rig.capture.retire(4_799_999)
+        rig.session.restore(4_799_999, 60)
+        rig.session.resume()
+        rig.capture.start({ it() }, captureEpochId = rig.session.captureEpochId)
+        rig.first.reads.put(1600)
+        assertTrue(rig.first.released.await(5, TimeUnit.SECONDS))
+        try {
+            rig.capture.stop()
+            org.junit.Assert.fail("Unconfirmed native release must prevent finalization")
+        } catch (error: CaptureException) {
+            assertEquals(CaptureFailure.THREAD_TIMEOUT, error.failure)
+        }
+        assertFalse(rig.session.state.phase == RecordingPhase.SAVED)
+    }
+
+    @Test
+    fun alphaBoundaryReleasesNativeReaderAndKeepsOnlyRemainingFrame() {
+        val rig = Rig()
+        rig.capture.retire(4_799_999)
+        rig.session.restore(4_799_999, 60)
+        assertTrue(rig.session.resume())
+        rig.capture.start({ it() }, captureEpochId = rig.session.captureEpochId)
+        rig.first.reads.put(1600)
+        assertTrue(rig.first.released.await(5, TimeUnit.SECONDS))
+        rig.capture.stop()
+        assertEquals(null, rig.capture.failure)
+        assertEquals(1L, rig.capture.admittedFrames)
+        rig.capture.drainOwned {
+            assertEquals(2, it.pcm.size)
+            rig.session.accept(it.pcm, it.captureEpochId, 4_799_999 + it.firstFrame)
+        }
+        assertFalse(rig.session.canCapture)
+        rig.session.requestStop()
+        rig.session.confirmStop()
+        assertEquals(RecordingPhase.FINALIZING, rig.session.state.phase)
+        rig.writes.all()
+        rig.completions.all()
+        assertEquals(RecordingPhase.SAVED, rig.session.state.phase)
+        assertEquals(4_800_000L, rig.session.state.durableFrames)
+        assertEquals(1, rig.first.releases.get())
+    }
+
+    @Test
     fun failedOldAppendDuringNewNativeStartFencesAdmissionAndReleasesReader() {
         val rig = Rig()
         rig.pauseFirstSegment()
@@ -162,6 +208,7 @@ class AsyncCaptureIntegrationTest {
         val released = CountDownLatch(1)
         val releases = AtomicInteger()
         var onStart: () -> Unit = {}
+        var failRelease = false
         @Volatile override var recording = false
         override val routeType: Int? = null
 
@@ -186,6 +233,7 @@ class AsyncCaptureIntegrationTest {
         override fun release() {
             releases.incrementAndGet()
             released.countDown()
+            if (failRelease) error("Synthetic native release failure")
         }
     }
 

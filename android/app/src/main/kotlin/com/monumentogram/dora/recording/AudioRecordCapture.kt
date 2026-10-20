@@ -189,6 +189,7 @@ internal class AudioRecordCapture(
                 val copied = bytes.copyOf(count)
                 when (admission.offer(generation, copied)) {
                     CaptureAdmission.Result.ACCEPTED -> Unit
+                    CaptureAdmission.Result.LIMIT_REACHED -> break
                     CaptureAdmission.Result.FENCED -> {
                         copied.fill(0)
                         break
@@ -224,11 +225,16 @@ internal class AudioRecordCapture(
                 stopped("reader_stop_start")
                 runCatching { record.stop() }
                 stopped("reader_stop_end")
-                record.release()
-                recorder = null
+                try {
+                    record.release()
+                    recorder = null
+                    stopped("reader_released")
+                } catch (_: Exception) {
+                    // Retain the handle: thread exit alone does not prove native release.
+                    publishFailure(CaptureFailure.THREAD_TIMEOUT)
+                }
             }
             signal = MicrophoneSignal()
-            stopped("reader_released")
         }
     }
 
@@ -251,7 +257,8 @@ internal class AudioRecordCapture(
         requestStop()
         thread?.join(STOP_WAIT_MILLIS)
         stopTiming("join_end")
-        if (thread?.isAlive == true) throw CaptureException(CaptureFailure.THREAD_TIMEOUT)
+        if (thread?.isAlive == true || recorder != null)
+            throw CaptureException(CaptureFailure.THREAD_TIMEOUT)
         thread = null
         signal = MicrophoneSignal()
     }
@@ -297,9 +304,9 @@ internal class AudioRecordCapture(
 
     fun durableThrough(frames: Long) = admission.durableThrough(frames)
 
-    fun retire() {
+    fun retire(recoveredFrames: Long = 0) {
         check(!hasLiveThread)
-        admission.retire()
+        admission.retire(recoveredFrames)
     }
 
     private fun level(bytes: ByteArray, count: Int): Float {
