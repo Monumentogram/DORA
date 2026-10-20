@@ -158,6 +158,12 @@ jobs:
           --serial emulator-5554 --expected-api ${{ matrix.api }}
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
           --receipt "${RUNNER_TEMP}/alpha-evidence/logical-recovery-crash.json"
+      - name: Inherited short segmentation process-death phases
+        run: >-
+          python3 tools/run_vad_segmentation_crash.py --limited-alpha
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --receipt "${RUNNER_TEMP}/alpha-evidence/segmentation-crash.json"
       - name: Product controls, Alpha messages and protected-source isolation
         run: >-
           python3 tools/run_product_recording_device.py --limited-alpha

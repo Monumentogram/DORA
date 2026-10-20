@@ -18,9 +18,9 @@
     36
   ],
   "device_inventory": "docs/contracts/stage8-alpha-device-tests-v1.json",
-  "distinct_encrypted_methods_per_api": 165,
+  "distinct_encrypted_methods_per_api": 164,
   "credential_negative_controls": "REQUIRED_BEFORE_AND_AFTER",
-  "real_process_death_cases_per_api": 25,
+  "real_process_death_cases_per_api": 29,
   "ui_controls_per_api": 25,
   "preserved_legacy_isolation_controls_per_api": 15,
   "physical_alpha_smoke": "NOT_RUN / SAFE_DEVICE_UNAVAILABLE",

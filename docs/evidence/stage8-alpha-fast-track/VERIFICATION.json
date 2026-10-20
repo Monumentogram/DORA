@@ -98,7 +98,7 @@
   ],
   "local_jvm_passed": 1066,
   "host_regressions": {
-    "passed": 88,
+    "passed": 89,
     "failed": 0
   },
   "formatting": "PASS",
@@ -115,7 +115,7 @@
   "physical_alpha_smoke": "NOT_RUN / SAFE_DEVICE_UNAVAILABLE",
   "signed_alpha_release": "BLOCKED",
   "source_sha256_lf": {
-    ".github/workflows/stage8-alpha.yml": "b406e98fa7c0ccdf54400dce5a16eea07e2913515147c76d044a26fc61cff700",
+    ".github/workflows/stage8-alpha.yml": "24613fa6a536cb5c652a6538fb509da411e03ba420d159bf6f8d3c28a3157735",
     "android/app/src/androidTest/kotlin/com/monumentogram/dora/AlphaRecordingUiTest.kt": "7ca69d5b39b2edfeb2a48fca20da8b8ed9f7a3d1c69b5612629f64e7e2fc9174",
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/AudioRecordCapture.kt": "41e5cfabf6481428cf9612533df417d60c3450c80ecdb11277a188e638c15388",
     "android/app/src/main/kotlin/com/monumentogram/dora/recording/CaptureAdmission.kt": "22356a8f811dea2910eb33b15102bb5b213ced373ade8a5a72fb92b467c4d447",
@@ -137,12 +137,21 @@
     "tools/run_logical_recovery_crash.py": "cf39fd34f9ca31b643513ef841cfcbe7a2de13826ccdc7048aca9144e89ed545",
     "tools/run_product_recording_device.py": "89b6b46e53dcb1c4099d49455eb78eaec66f53ed897635f2eb992e85390f6f05",
     "tools/stage8_alpha_profile.init.gradle": "17a98ea3a0a34bf9c4a7cec1e5aea9e259e716764fc88c791b3fdf246b5d5f46",
-    "tools/test_stage8_alpha.py": "5b7d55aeec8dcf3fe74efa68668fcb47fc0bbaa9030c6f223bebc782ed94d478",
-    "tools/validate_stage8_alpha.py": "d0f8eb07b5747719ec28cdb84fec1e00183c029d67db5092dbe68f5cbf628254"
+    "tools/test_stage8_alpha.py": "d4e8714df49fddf1ff9e24895769541e5b4599138183339899c8b62f4ca0f98c",
+    "tools/validate_stage8_alpha.py": "d183608b9621577285d816a1c999057973e28b5d2f27b1dd13329e5be2989027",
+    "tools/run_vad_segmentation_crash.py": "087415194353f5c327d52cdf195e762580693a5e1a0431bcc5d752f107045d71"
   },
   "limitations": [
     "One inherited Windows symlink permission test skips locally; CI Linux must execute it.",
-    "Four unchanged >300s JVM scenarios and one >300s encrypted rotation scenario are deferred by the explicit limited profile.",
+    "Four unchanged >300s JVM scenarios and two mixed/long encrypted runtime methods are deferred by the explicit limited profile; four short segmentation process-death phases run separately.",
     "No physical device, battery, endurance, broad device-matrix or C3 performance campaign."
-  ]
+  ],
+  "prior_ci_attempt": {
+    "sha": "9136a5e904fcc3bd6bbf56cf9d950238e6d14fdb",
+    "run": "https://github.com/Monumentogram/DORA/actions/runs/39444133205",
+    "software_jvm_passed": 1067,
+    "software_jvm_skipped": 0,
+    "api36": "FAILED: inherited mixed segmentation fallback expected up to 9,680,000 frames; session correctly capped at 4,800,000. Short phases retained in separate host driver.",
+    "disposition": "Profile correction only; production and original instrumentation source unchanged."
+  }
 }

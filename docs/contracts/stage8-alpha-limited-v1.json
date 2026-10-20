@@ -48,6 +48,7 @@
     "tools/run_encrypted_persistence_device.py",
     "tools/run_logical_recovery_crash.py",
     "tools/run_product_recording_device.py",
+    "tools/run_vad_segmentation_crash.py",
     "tools/stage8_alpha_profile.init.gradle",
     "tools/test_stage8_alpha.py",
     "tools/validate_stage8_alpha.py"
@@ -69,7 +70,8 @@
     "persistence": 3,
     "original_audio": 3,
     "logical_recovery": 18,
-    "alpha_299_seconds": 1
+    "alpha_299_seconds": 1,
+    "segmentation": 4
   },
   "physical_acceptance": [
     "separate safe device",

@@ -40,3 +40,8 @@ Physical smoke and security restoration remain separate gates.
 2026-10-20: local and remote baseline match, tree clean, PR99 Draft/Open/Unmerged.
 Existing linked worktree reused on new `codex/stage8-alpha-fast-track` branch.
 Owner's autonomous instruction supersedes additional process approval checkpoints.
+
+2026-10-20 CI attempt 39444133205: software 1,067/1,067 passed on Linux,
+but the inherited mixed segmentation fallback exceeded the new cap. Corrected
+only the limited inventory: preserve all old source and move its four short
+phases to explicit host-kill verification; three long phases remain deferred.

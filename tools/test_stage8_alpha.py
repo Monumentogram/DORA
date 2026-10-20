@@ -3,9 +3,12 @@ import copy
 import json
 from pathlib import Path
 import unittest
+from unittest import mock
+import tempfile
 
 import run_encrypted_persistence_device as device
 import run_logical_recovery_crash as crash
+import run_vad_segmentation_crash as segmentation
 import validate_stage8_alpha as alpha
 
 
@@ -51,6 +54,35 @@ class AlphaProfileTests(unittest.TestCase):
         self.assertEqual({"BEFORE_CAP", "CAP_CLOSED", "CAP_OPEN_EMPTY", "CAP_OVERLAP"},
                          set(crash.PHASES) - set(crash.ALPHA_PHASES))
         self.assertEqual(18, len(crash.ALPHA_PHASES))
+
+    def test_short_segmentation_driver_retains_faults_and_rejects_long_markers(self):
+        expected = ("OPEN_SPEECH", "BEFORE_SEMANTIC", "AFTER_SEMANTIC", "DURABILITY_PENDING")
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / "receipt.json"
+
+            def run_without_device():
+                self.assertEqual(expected, segmentation.driver.PHASES)
+                self.assertEqual(segmentation.TEST, segmentation.driver.TEST)
+                self.assertNotIn("--limited-alpha", segmentation.sys.argv)
+                for phase in expected:
+                    marker = (f"INSTRUMENTATION_STATUS: stream=DORA_PERSISTENCE_READY:{phase}:42\n"
+                              "INSTRUMENTATION_STATUS_CODE: 2\n")
+                    self.assertEqual(42, segmentation.driver.ready_pid(marker, phase))
+                for phase in ("BEFORE_ROTATION", "AFTER_ROTATION", "OVERLAP_PENDING"):
+                    marker = (f"INSTRUMENTATION_STATUS: stream=DORA_PERSISTENCE_READY:{phase}:42\n"
+                              "INSTRUMENTATION_STATUS_CODE: 2\n")
+                    with self.assertRaises(ValueError):
+                        segmentation.driver.ready_pid(marker, phase)
+                receipt.write_text(json.dumps({"driver_sha256": "shared"}))
+
+            with mock.patch.object(segmentation.sys, "argv",
+                                   ["driver", "--limited-alpha", "--receipt", str(receipt)]), \
+                    mock.patch.multiple(segmentation.driver, TEST=segmentation.driver.TEST,
+                                        PHASES=segmentation.driver.PHASES, MARKER=segmentation.driver.MARKER,
+                                        verified_pid=segmentation.driver.verified_pid), \
+                    mock.patch.object(segmentation.driver, "main", run_without_device):
+                segmentation.main()
+            self.assertEqual("LIMITED_ALPHA", json.loads(receipt.read_text())["acceptance_profile"])
 
     def test_alpha_process_marker_must_match_phase_and_unique_pid(self):
         text = ("INSTRUMENTATION_STATUS: stream=DORA_PERSISTENCE_READY:ALPHA_299:42\n"

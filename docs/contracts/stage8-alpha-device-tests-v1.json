@@ -89,7 +89,6 @@
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#historicalRecordingHasNoInventedSegmentation",
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#interruptedOpenSourceDoesNotInventSemanticCloseAfterRecovery",
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#metadataIsImmutableIdempotentAndCannotReferToFutureFrames",
-    "com.monumentogram.dora.audio.persistence.SegmentationProcessDeathTest#verifySegmentationProcessDeath",
     "com.monumentogram.dora.audio.persistence.VadFrameContractTest#exactSilenceMatrix",
     "com.monumentogram.dora.audio.persistence.VadFrameContractTest#frozenHysteresisDoesNotAddTimeToSemanticBoundary",
     "com.monumentogram.dora.audio.persistence.VadFrameContractTest#silenceWithoutSpeechNeverCreatesSegments",
@@ -174,6 +173,7 @@
   "profile": "STAGE8_ALPHA_LIMITED_RECORDING_V1",
   "baseline": "6f5e87317b163e4567ffa76da3cd3191bcfac826",
   "deferred_tests": [
-    "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#encryptedRotationPreservesCanonicalHashAndExactOverlapAcrossReopen"
+    "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#encryptedRotationPreservesCanonicalHashAndExactOverlapAcrossReopen",
+    "com.monumentogram.dora.audio.persistence.SegmentationProcessDeathTest#verifySegmentationProcessDeath"
   ]
 }

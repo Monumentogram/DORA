@@ -9,10 +9,12 @@ BASE = "6f5e87317b163e4567ffa76da3cd3191bcfac826"
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE = "docs/contracts/stage8-alpha-limited-v1.json"
 INVENTORY = "docs/contracts/stage8-alpha-device-tests-v1.json"
-DEFERRED_DEVICE = (
+DEFERRED_DEVICE = {
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest"
-    "#encryptedRotationPreservesCanonicalHashAndExactOverlapAcrossReopen"
-)
+    "#encryptedRotationPreservesCanonicalHashAndExactOverlapAcrossReopen",
+    "com.monumentogram.dora.audio.persistence.SegmentationProcessDeathTest"
+    "#verifySegmentationProcessDeath",
+}
 NEW_DEVICE = {
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#"
     "pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
@@ -33,13 +35,13 @@ def git(*args):
 
 
 def validate_inventory(current, inherited):
-    expected = (set(inherited["tests"]) - {DEFERRED_DEVICE}) | NEW_DEVICE
-    require(len(current["tests"]) == len(set(current["tests"])) == 165,
+    expected = (set(inherited["tests"]) - DEFERRED_DEVICE) | NEW_DEVICE
+    require(len(current["tests"]) == len(set(current["tests"])) == 164,
             "Duplicate/missing limited test inventory")
     require(set(current["tests"]) == expected, "Unexpected runtime test omission/addition")
     require(current["no_credential_tests"] == inherited["no_credential_tests"],
             "Credential controls changed")
-    require(current["deferred_tests"] == [DEFERRED_DEVICE], "Unexpected long-test deferral")
+    require(current["deferred_tests"] == sorted(DEFERRED_DEVICE), "Unexpected long-test deferral")
 
 
 def validate_profile(profile):
@@ -91,6 +93,10 @@ def main():
         source = "android/core/audio/src/test/kotlin/" + test.rsplit(".", 1)[0].replace(".", "/") + ".kt"
         require((ROOT / source).read_text(encoding="utf-8") == git("show", BASE + ":" + source).decode().replace("\r\n", "\n"),
                 "Deferred historical test changed")
+    for test in DEFERRED_DEVICE:
+        source = "android/core/audio/src/androidTest/kotlin/" + test.split("#")[0].replace(".", "/") + ".kt"
+        require((ROOT / source).read_text(encoding="utf-8") == git("show", BASE + ":" + source).decode().replace("\r\n", "\n"),
+                "Deferred historical instrumentation changed")
     for path in args.apk:
         check_apk(path)
     print("PASS limited Alpha scope, inherited test inventory, historical preservation and release gates")

@@ -27,6 +27,12 @@ Exact incompatible scenarios retained unchanged:
 - Four JVM session tests named in `stage8-alpha-limited-v1.json`: two technical
   rotations, durable physical CAP/overlap, and VAD-on/off across two CAPs.
 - Android `SegmentationPersistenceTest#encryptedRotationPreservesCanonicalHashAndExactOverlapAcrossReopen`.
+- The mixed default `SegmentationProcessDeathTest#verifySegmentationProcessDeath`
+  includes 599.999/600/605-second cases. Its source is unchanged; OPEN_SPEECH,
+  BEFORE_SEMANTIC, AFTER_SEMANTIC and DURABILITY_PENDING still execute through
+  the real host-kill driver. Only BEFORE_ROTATION, AFTER_ROTATION and OVERLAP_PENDING
+  are deferred. The first CI attempt exposed this missed profile selection; it
+  remains recorded as failed, not relabeled PASS.
 - Four logical-recovery death phases: BEFORE_CAP, CAP_CLOSED, CAP_OPEN_EMPTY,
   CAP_OVERLAP.
 
