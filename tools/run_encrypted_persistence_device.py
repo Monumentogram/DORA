@@ -62,6 +62,11 @@ def validate_inventory(inventory):
     return set(expected), set(controls)
 
 
+def selectors(selected, *, diagnostic=False, exact_inventory=False):
+    return (['-e', 'class', ','.join(sorted(selected))]
+            if diagnostic or exact_inventory else ['-e', 'package', PACKAGE])
+
+
 def page_size_from_smaps(text):
     # This reports kernel mapping pages, not simulated x86_64 userspace page size.
     observed = {int(value) * 1024 for value in re.findall(r'^KernelPageSize:\s+(\d+) kB$', text, re.MULTILINE)}
@@ -105,6 +110,8 @@ def main():
     parser.add_argument('--receipt', type=Path, required=True)
     parser.add_argument('--diagnostic-class', help='Exact frozen inventory class; diagnostic receipt only')
     parser.add_argument('--diagnostic-method', help='Exact method within --diagnostic-class; diagnostic only')
+    parser.add_argument('--exact-inventory', action='store_true',
+                        help='Run the supplied versioned acceptance inventory, not the whole package')
     args = parser.parse_args()
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected test emulator is admitted')
     sdk = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT')
@@ -166,7 +173,8 @@ def main():
     credential_rows = []
     with diagnostics.synthetic_credential(command, pin):
         command('shell', 'input', 'keyevent', '82')
-        selector = ['-e', 'class', ','.join(sorted(selected))] if args.diagnostic_class else ['-e', 'package', PACKAGE]
+        selector = selectors(selected, diagnostic=bool(args.diagnostic_class),
+                             exact_inventory=args.exact_inventory)
         output = instrument([*selector, '-e', 'syntheticAuthPin', pin], selected,
                             'credential', 600 if args.diagnostic_class else 1800)
         credential_rows = parse_results(output, expected_skips=no_credential & selected)

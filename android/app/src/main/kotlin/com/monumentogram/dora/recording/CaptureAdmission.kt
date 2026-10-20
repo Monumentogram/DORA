@@ -1,5 +1,7 @@
 package com.monumentogram.dora.recording
 
+import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
+
 /**
  * The offer and Pause fence share one short monitor; native calls and persistence never hold it.
  */
@@ -11,6 +13,7 @@ internal class CaptureAdmission(
         ACCEPTED,
         FENCED,
         FULL,
+        LIMIT_REACHED,
     }
 
     data class Boundary(val frames: Long, val lastAcceptedNanos: Long, val fencedAtNanos: Long)
@@ -35,6 +38,7 @@ internal class CaptureAdmission(
     private var captureEpochId = ""
     private val outstanding = ArrayDeque<Long>()
     private var durableFrames = 0L
+    private var limit = AlphaRecordingLimit.MAX_ALPHA_FRAMES
 
     @Synchronized
     fun begin(captureEpochId: String = ""): Long {
@@ -46,26 +50,38 @@ internal class CaptureAdmission(
 
     @Synchronized
     fun open(expected: Long): Boolean {
-        if (expected != generation) return false
+        if (expected != generation || frames >= limit) return false
         accepting = true
         return true
     }
 
     @Synchronized
+    @Suppress("ReturnCount") // Reject at each ownership/budget fence before transferring PCM.
     fun offer(expected: Long, bytes: ByteArray): Result {
         if (!accepting || expected != generation) return Result.FENCED
-        return if (
-            outstanding.size >= queue.capacity ||
-                frames - durableFrames + bytes.size / 2 > MAXIMUM_FRAMES
-        )
-            rejected()
-        else if (!queue.offer(CapturedBlock(expected, captureEpochId, frames, bytes))) rejected()
-        else {
-            frames += bytes.size / 2
-            outstanding.addLast(frames)
-            lastAccepted = now()
-            Result.ACCEPTED
+        require(bytes.isNotEmpty() && bytes.size % 2 == 0)
+        val count = minOf(bytes.size / 2L, limit - frames).toInt()
+        if (count == 0) {
+            accepting = false
+            return Result.FENCED
         }
+        if (outstanding.size >= queue.capacity || frames - durableFrames + count > MAXIMUM_FRAMES)
+            return rejected()
+        val owned = if (count * 2 == bytes.size) bytes else bytes.copyOf(count * 2)
+        if (!queue.offer(CapturedBlock(expected, captureEpochId, frames, owned))) {
+            if (owned !== bytes) owned.fill(0)
+            return rejected()
+        }
+        if (owned !== bytes) bytes.fill(0)
+        frames += count
+        outstanding.addLast(frames)
+        lastAccepted = now()
+        if (frames == limit) {
+            accepting = false
+            fencedAt = lastAccepted
+            return Result.LIMIT_REACHED
+        }
+        return Result.ACCEPTED
     }
 
     @Synchronized
@@ -98,8 +114,9 @@ internal class CaptureAdmission(
 
     /** Called only after terminal writer settlement and native release, before a new recording. */
     @Synchronized
-    fun retire() {
+    fun retire(recoveredFrames: Long = 0) {
         check(!accepting && queue.size == 0)
+        limit = Math.addExact(frames, AlphaRecordingLimit.remaining(recoveredFrames))
         outstanding.clear()
         durableFrames = frames
     }

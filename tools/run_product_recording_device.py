@@ -37,6 +37,11 @@ TESTS = {
         'grantingMicrophonePermissionDoesNotGrantConsentOrStartDuringRecreation',
     )
 }
+ALPHA_CLASS = 'com.monumentogram.dora.AlphaRecordingUiTest'
+ALPHA_TESTS = {ALPHA_CLASS + '#' + name for name in (
+    'elapsedAndRemainingUseCapturedFrames', 'capSavingNeverClaimsSaved',
+    'onlyDurableSavedShowsCapCompletion', 'interruptedCapShowsActualFailure',
+)}
 
 
 def main():
@@ -46,6 +51,7 @@ def main():
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--test-apk', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
+    parser.add_argument('--limited-alpha', action='store_true')
     args = parser.parse_args()
     require(re.fullmatch(r'emulator-\d+', args.serial), 'An explicit emulator is required')
     sdk = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT')
@@ -65,9 +71,10 @@ def main():
     require(command('shell', 'pm', 'clear', PACKAGE) == 'Success', 'Synthetic product state reset failed')
     command('shell', 'input', 'keyevent', '224')
     command('shell', 'wm', 'dismiss-keyguard')
-    rows = parse_results(command('shell', 'am', 'instrument', '-w', '-r', '-e', 'class', TEST_CLASS,
+    expected = TESTS | ALPHA_TESTS if args.limited_alpha else TESTS
+    rows = parse_results(command('shell', 'am', 'instrument', '-w', '-r', '-e', 'class', ','.join(sorted(expected)),
                                  PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner', timeout=600))
-    require({row['name'] for row in rows} == TESTS, 'Product UI inventory mismatch')
+    require({row['name'] for row in rows} == expected, 'Product UI inventory mismatch')
     isolation = run_isolation(command)
     receipt = {'schema_version': 1, 'status': 'PASS_PRODUCT_UI_COMPONENT_ONLY',
                'api': args.expected_api, 'tests': rows,

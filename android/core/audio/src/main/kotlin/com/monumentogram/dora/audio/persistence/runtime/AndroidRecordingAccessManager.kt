@@ -16,6 +16,7 @@ import com.monumentogram.dora.audio.persistence.EncryptedAudioVault
 import com.monumentogram.dora.audio.persistence.auth.AndroidAppLock
 import com.monumentogram.dora.audio.persistence.auth.AppLockedException
 import com.monumentogram.dora.audio.persistence.auth.UnlockResult
+import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
 import com.monumentogram.dora.audio.recording.RecordingAccess
 import com.monumentogram.dora.audio.recording.RecordingAuthority
 import com.monumentogram.dora.audio.recording.RecordingRecovery
@@ -189,6 +190,8 @@ internal class AndroidRecordingAccessManager(
                 result.value.also {
                     if (!it.canResume || it.summary == null)
                         throw RecordingOpenException(it.failure ?: AudioFailure.INCOMPLETE)
+                    if (AlphaRecordingLimit.remaining(it.recoveredFrames) == 0L)
+                        throw RecordingOpenException(AudioFailure.INVALID_INPUT)
                 }
         }
     }

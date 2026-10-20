@@ -18,20 +18,25 @@ import sys
 from run_encrypted_persistence_device import RUNNER, measure_page_sizes, parse_results, require
 
 TEST = 'com.monumentogram.dora.audio.persistence.LogicalRecoveryProcessDeathTest#verifyLogicalRecoveryProcessDeath'
+ALPHA_TEST = ('com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest'
+              '#restartPreserves299SecondsAndCannotCapturePast300')
+ALPHA_LIMIT_PHASE = 'ALPHA_299'
 PHASES = ('FIRST_OPEN_METADATA_FAILED', 'OPEN_BEFORE_PCM', 'COMMITTED_OPEN', 'APPEND_RESERVED', 'KEY_BOOTSTRAP',
           'PUBLICATION_COMMITTED', 'AUTHENTICATED_READBACK', 'CATALOG_COMMITTED',
           'TECHNICAL_CLOSE', 'SEMANTIC_BEFORE', 'SEMANTIC_AFTER', 'BEFORE_CAP',
           'CAP_CLOSED', 'CAP_OPEN_EMPTY', 'CAP_OVERLAP', 'PAUSE_PENDING',
           'SECOND_INTERRUPTION', 'VAD_DEGRADED', 'FINAL_TAIL_SEALED',
           'FINALIZE_RESERVED', 'FINALIZE_VERIFIED', 'FINALIZE_COMMITTED')
+ALPHA_PHASES = tuple(phase for phase in PHASES
+                    if phase not in ('BEFORE_CAP', 'CAP_CLOSED', 'CAP_OPEN_EMPTY', 'CAP_OVERLAP'))
 PACKAGE = RUNNER.split('/')[0]
 MARKER = re.compile(r'^INSTRUMENTATION_STATUS: stream=DORA_PERSISTENCE_(READY|VERIFIED):('
-                    + '|'.join(PHASES) + r'):([1-9][0-9]*)\nINSTRUMENTATION_STATUS_CODE: 2$', re.MULTILINE)
+                    + '|'.join((*PHASES, ALPHA_LIMIT_PHASE)) + r'):([1-9][0-9]*)\nINSTRUMENTATION_STATUS_CODE: 2$', re.MULTILINE)
 
 
 def phase_marker(output, phase, kind):
     markers = list(MARKER.finditer(output))
-    require(phase in PHASES and len(markers) == 1 and output.count('DORA_PERSISTENCE_') == 1,
+    require(phase in (*PHASES, ALPHA_LIMIT_PHASE) and len(markers) == 1 and output.count('DORA_PERSISTENCE_') == 1,
             'Missing or ambiguous process phase marker')
     marker = markers[0]
     require(marker[1] == kind and marker[2] == phase, 'Unexpected process phase marker')
@@ -46,7 +51,8 @@ def ready_pid(output, phase):
 def verified_pid(output, phase, previous_pid, *, expected_test=TEST):
     pid, normal = phase_marker(output, phase, 'VERIFIED')
     require(pid != previous_pid, 'Verification did not execute in a fresh process')
-    require(expected_test == TEST, 'Unadmitted process test')
+    require(expected_test == (ALPHA_TEST if phase == ALPHA_LIMIT_PHASE else TEST),
+            'Unadmitted process test')
     require(parse_results(normal) == [{'name': expected_test, 'result': 'PASS'}],
             'Exact process-death verification test did not pass')
     return pid
@@ -104,8 +110,13 @@ def main():
     parser.add_argument('--expected-page-size', type=int, choices=(4096, 16384), default=4096)
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
+    profile = parser.add_mutually_exclusive_group()
+    profile.add_argument('--limited-alpha', action='store_true',
+                        help='ADR-RECORDING-011: defer only four >300s technical CAP scenarios')
+    profile.add_argument('--alpha-limit-only', action='store_true',
+                         help='Real process death at the five-minute profile 299-second boundary')
     args = parser.parse_args()
-    selected_test = TEST
+    selected_test = ALPHA_TEST if args.alpha_limit_only else TEST
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected emulator is admitted')
     require(not args.receipt.exists(), 'Receipt already exists; choose a new attempt path')
     driver_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -137,7 +148,9 @@ def main():
     require(command('install', '-r', str(args.apk.resolve())).endswith('Success'), 'Test APK installation failed')
     require(command('shell', 'pm', 'clear', PACKAGE) == 'Success', 'Synthetic test package reset failed')
     rows = []
-    for phase in PHASES:
+    selected_phases = ((ALPHA_LIMIT_PHASE,) if args.alpha_limit_only else
+                       ALPHA_PHASES if args.limited_alpha else PHASES)
+    for phase in selected_phases:
         process = subprocess.Popen(adb + instrument(phase, 'PREPARE'), stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, text=True, bufsize=1)
         try:
@@ -170,7 +183,9 @@ def main():
                'apk_sha256': apk_hash,
                'driver_sha256': driver_hash,
                'shared_driver_sha256': hashlib.sha256(Path(__file__).with_name('run_encrypted_persistence_crash.py').read_bytes()).hexdigest(),
-               'new_stage85_phases': len(PHASES),
+               'new_stage85_phases': len(selected_phases),
+               'acceptance_profile': ('ALPHA_CAP_RESTART' if args.alpha_limit_only else
+                                      'LIMITED_ALPHA' if args.limited_alpha else 'STAGE85_ORIGINAL'),
                'physical_device': False, 'stage_acceptance': 'NOT_CLAIMED'}
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n', encoding='utf-8')

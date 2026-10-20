@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
 import com.monumentogram.dora.audio.recording.RecordingCompletionState
 import com.monumentogram.dora.audio.recording.RecordingRecovery
 
@@ -88,7 +89,7 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
     }
     message?.let { Text(it) }
     if (authorized && entries.isNotEmpty()) {
-        if (entries.any { it.canResume }) {
+        if (entries.any { it.canResume && AlphaRecordingLimit.remaining(it.recoveredFrames) > 0 }) {
             Text("Продолжение снова включает микрофон. Аудио остаётся только на устройстве.")
             Checkbox(
                 checked = acknowledged,
@@ -127,7 +128,14 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
                     if (!entry.canResume)
                         Text("Восстановлена сохранённая часть. Продолжение недоступно.")
                 }
-                if (entry.canResume && entry.identity != null) {
+                if (AlphaRecordingLimit.remaining(entry.recoveredFrames) == 0L) {
+                    Text("Достигнут лимит Alpha — 5 минут. Продолжение недоступно.")
+                }
+                if (
+                    entry.canResume &&
+                        entry.identity != null &&
+                        AlphaRecordingLimit.remaining(entry.recoveredFrames) > 0
+                ) {
                     if (!acknowledged)
                         Text("Для продолжения подтвердите, что участники предупреждены о записи.")
                     Button(

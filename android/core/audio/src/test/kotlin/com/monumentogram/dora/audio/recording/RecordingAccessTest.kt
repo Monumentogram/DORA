@@ -19,6 +19,30 @@ import org.junit.Test
 
 class RecordingAccessTest {
     @Test
+    fun directWriterRejectsBeyondAlphaBoundaryBeforeTouchingStorage() {
+        val vault = WriterVault()
+        val identity = identity()
+        val access = access(identity, vault)
+        access.writer.create(identity)
+        val unit = AudioStorageUnitIdentity(identity, id(), 60, 4_799_999, id(), 4_799_999, 0)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.INVALID_INPUT),
+            access.writer.append(unit, AudioFormat.PCM, ByteArray(4)),
+        )
+        assertEquals(1, vault.writes)
+        assertEquals(
+            AudioResult.Value(Unit),
+            access.writer.append(unit, AudioFormat.PCM, ByteArray(2)),
+        )
+        assertEquals(2, vault.writes)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.INVALID_INPUT),
+            access.writer.append(unit.copy(firstFrame = 4_800_000), AudioFormat.PCM, ByteArray(2)),
+        )
+        assertEquals(2, vault.writes)
+    }
+
+    @Test
     fun logicalCreateForwardsOriginAndKeepsAuthorityAndSingleCreateChecks() {
         val vault = WriterVault()
         val identity = identity()

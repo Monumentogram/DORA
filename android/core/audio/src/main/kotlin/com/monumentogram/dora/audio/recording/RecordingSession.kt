@@ -66,6 +66,12 @@ data class RecordingState(
 
     val durationUs: Long
         get() = AudioTimeline.durationUs(frames)
+
+    val alphaLimitReached: Boolean
+        get() = frames >= AlphaRecordingLimit.MAX_ALPHA_FRAMES
+
+    val remainingFrames: Long
+        get() = AlphaRecordingLimit.remaining(frames)
 }
 
 /**
@@ -89,8 +95,9 @@ class RecordingSession(
         private set
 
     val canCapture: Boolean
-        get() = failed.get() == null && state.phase in ACTIVE_PHASES
+        get() = failed.get() == null && state.phase in ACTIVE_PHASES && !state.alphaLimitReached
 
+    @Volatile
     var state = RecordingState()
         private set
 
@@ -123,6 +130,7 @@ class RecordingSession(
         private set
 
     /** Called only with the runtime's reauthenticated, pending-free continuation point. */
+    @Synchronized
     fun restore(frames: Long, nextOrdinal: Int) {
         check(state.phase == RecordingPhase.PREFLIGHT)
         require(frames >= 0 && nextOrdinal >= 0)
@@ -134,6 +142,7 @@ class RecordingSession(
         state = RecordingState(RecordingPhase.PAUSED, frames, frames)
     }
 
+    @Synchronized
     fun start(): Boolean {
         if (state.phase != RecordingPhase.PREFLIGHT) return false
         state = state.copy(phase = RecordingPhase.PREPARING)
@@ -145,9 +154,10 @@ class RecordingSession(
     }
 
     /** Input is borrowed; the caller always clears its own array after return. */
+    @Synchronized
     fun accept(pcm: ByteArray) {
-        if (state.phase != RecordingPhase.RECORDING || failed.get() != null) return
-        val frames = AudioTimeline.frames(pcm.size)
+        if (state.phase != RecordingPhase.RECORDING || !canCapture) return
+        val frames = minOf(AudioTimeline.frames(pcm.size), state.remainingFrames)
         val end = AudioTimeline.nextFrame(state.frames, frames)
         val slices = technicalTimeline.accept(FrameRange(state.frames, end), captureEpochId)
         var offset = 0
@@ -179,8 +189,9 @@ class RecordingSession(
     }
 
     /** Exact admission provenance; delayed draining cannot relabel a block. */
+    @Synchronized
     fun accept(pcm: ByteArray, physicalSegmentId: String, firstFrame: Long) {
-        if (failed.get() != null) return
+        if (failed.get() != null || state.alphaLimitReached) return
         if (
             physicalSegmentId != captureEpochId ||
                 firstFrame != state.frames ||
@@ -193,6 +204,7 @@ class RecordingSession(
         accept(pcm)
     }
 
+    @Synchronized
     fun pause() {
         if (state.phase != RecordingPhase.RECORDING) return
         state = state.copy(phase = RecordingPhase.PAUSED)
@@ -200,8 +212,9 @@ class RecordingSession(
         closePhysical("PAUSE")
     }
 
+    @Synchronized
     fun resume(physicalSegmentId: String = freshId()): Boolean {
-        if (state.phase != RecordingPhase.PAUSED || failed.get() != null) return false
+        if (state.phase != RecordingPhase.PAUSED || !canCapture) return false
         physicalId = physicalSegmentId
         captureEpochId = physicalSegmentId
         technicalTimeline.resume(state.frames, captureEpochId)
@@ -213,15 +226,18 @@ class RecordingSession(
         return true
     }
 
+    @Synchronized
     fun requestStop() {
         if (state.phase == RecordingPhase.RECORDING || state.phase == RecordingPhase.PAUSED)
             state = state.copy(stopConfirmation = true)
     }
 
+    @Synchronized
     fun cancelStop() {
         state = state.copy(stopConfirmation = false)
     }
 
+    @Synchronized
     fun confirmStop() {
         if (!state.stopConfirmation || state.phase !in ACTIVE_PHASES) return
         state = state.copy(phase = RecordingPhase.FINALIZING, stopConfirmation = false)
@@ -235,16 +251,15 @@ class RecordingSession(
         // Exactly one finalize call. UNCERTAIN remains interrupted until authenticated recovery.
         persistence.execute {
             val result = write(RecordingWriterOperation.FINALIZE) { writer.finalize(identity) }
-            completion.execute {
-                if (
-                    checkResult(result) &&
-                        state.phase == RecordingPhase.FINALIZING &&
-                        failed.get() == null
-                )
-                    state = state.copy(phase = RecordingPhase.SAVED)
-                changed()
-            }
+            completion.execute { completeFinalize(result) }
         }
+    }
+
+    @Synchronized
+    private fun completeFinalize(result: AudioResult<Unit>) {
+        if (checkResult(result) && state.phase == RecordingPhase.FINALIZING && failed.get() == null)
+            state = state.copy(phase = RecordingPhase.SAVED)
+        changed()
     }
 
     /** Retire access only after every task has stopped borrowing its writer and plaintext. */
@@ -253,6 +268,7 @@ class RecordingSession(
     }
 
     /** Control-owner entry. Metadata waits only for source sealing, never the microphone. */
+    @Synchronized
     fun retainMetadata(metadata: SegmentationMetadata) {
         if (metadataFailed.get() != null || state.phase == RecordingPhase.INTERRUPTED) return
         if (pendingMetadata.size >= MAX_PENDING_METADATA) {
@@ -263,6 +279,7 @@ class RecordingSession(
         flushMetadata()
     }
 
+    @Synchronized
     private fun metadataFailure() {
         metadataFailed.set(VadFailure.METADATA_FAILED)
         pendingMetadata.clear()
@@ -318,6 +335,7 @@ class RecordingSession(
     }
 
     /** Keeps the committed prefix and never converts abnormal termination into successful Stop. */
+    @Synchronized
     fun interrupt(reason: AudioFailure? = null) {
         failed.compareAndSet(null, reason ?: AudioFailure.UNAVAILABLE)
         pending.fill(0)
@@ -391,6 +409,7 @@ class RecordingSession(
         flushMetadata()
     }
 
+    @Synchronized
     private fun completeAppend(result: AudioResult<Unit>, durableEnd: Long, elapsed: Long) {
         pendingWriterUnits--
         lastCompletedAppendDurationNanos = elapsed

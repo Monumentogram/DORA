@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "max_alpha_frames": 4800000,
+  "sample_rate": 16000,
+  "seconds": 300,
+  "local_status": "PASS",
+  "jvm_limit_cases": 7,
+  "admission_cases": 3,
+  "native_integration_added_cases": 2,
+  "direct_writer_boundary_added_cases": 1,
+  "red_green": [
+    "Initial 3 session + 1 admission boundary cases failed against baseline, then passed.",
+    "Native release failure reproduced RED; unconfirmed ownership now blocks finalization and passes GREEN."
+  ],
+  "device_status": "PENDING_EXACT_SHA_CI",
+  "api_matrix": [
+    28,
+    36
+  ],
+  "device_inventory": "docs/contracts/stage8-alpha-device-tests-v1.json",
+  "distinct_encrypted_methods_per_api": 165,
+  "credential_negative_controls": "REQUIRED_BEFORE_AND_AFTER",
+  "real_process_death_cases_per_api": 25,
+  "ui_controls_per_api": 25,
+  "preserved_legacy_isolation_controls_per_api": 15,
+  "physical_alpha_smoke": "NOT_RUN / SAFE_DEVICE_UNAVAILABLE",
+  "ci_artifacts": [
+    "limited-alpha-software",
+    "limited-alpha-api28",
+    "limited-alpha-api36"
+  ],
+  "interpretation": "Emulator synthetic PCM and encrypted adapters do not establish physical microphone or OEM screen-off behavior."
+}

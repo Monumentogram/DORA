@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "source_checkpoint": "LOCAL_VERIFIED_PENDING_EXACT_SHA_CI_AND_INDEPENDENT_REVIEW",
+  "baseline": "6f5e87317b163e4567ffa76da3cd3191bcfac826",
+  "local_jvm": [
+    {
+      "module": "core/audio",
+      "variant": "Debug",
+      "tests": 258,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "passed": 257,
+      "skipped_tests": [
+        "com.monumentogram.dora.audio.persistence.auth.DevelopmentDeviceSecurityTest#symbolicMarkerCannotGrantTheException"
+      ]
+    },
+    {
+      "module": "core/audio",
+      "variant": "Release",
+      "tests": 250,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 250,
+      "skipped_tests": []
+    },
+    {
+      "module": "app",
+      "variant": "Debug",
+      "tests": 81,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 81,
+      "skipped_tests": []
+    },
+    {
+      "module": "core/model",
+      "variant": "Debug",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 5,
+      "skipped_tests": []
+    },
+    {
+      "module": "core/common",
+      "variant": "Debug",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 1,
+      "skipped_tests": []
+    },
+    {
+      "module": "core/testing",
+      "variant": "Debug",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 1,
+      "skipped_tests": []
+    },
+    {
+      "module": "ml/vad-api",
+      "variant": "Debug",
+      "tests": 52,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 52,
+      "skipped_tests": []
+    },
+    {
+      "module": "ml/vad-sherpa",
+      "variant": "Debug",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 5,
+      "skipped_tests": []
+    },
+    {
+      "module": "poc/recovery",
+      "variant": "Debug",
+      "tests": 414,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 414,
+      "skipped_tests": []
+    }
+  ],
+  "local_jvm_passed": 1066,
+  "host_regressions": {
+    "passed": 88,
+    "failed": 0
+  },
+  "formatting": "PASS",
+  "detekt": "PASS",
+  "lint_app_and_core_audio": "PASS",
+  "debug_and_unsigned_release_build": "PASS",
+  "private_successor_pin_absent": "PASS",
+  "ci": {
+    "workflow": ".github/workflows/stage8-alpha.yml",
+    "required_jobs": 4,
+    "status": "PENDING_EXTERNAL_EXACT_SHA_RECEIPT"
+  },
+  "independent_review": "PENDING_EXTERNAL_RECEIPT",
+  "physical_alpha_smoke": "NOT_RUN / SAFE_DEVICE_UNAVAILABLE",
+  "signed_alpha_release": "BLOCKED",
+  "source_sha256_lf": {
+    ".github/workflows/stage8-alpha.yml": "b406e98fa7c0ccdf54400dce5a16eea07e2913515147c76d044a26fc61cff700",
+    "android/app/src/androidTest/kotlin/com/monumentogram/dora/AlphaRecordingUiTest.kt": "7ca69d5b39b2edfeb2a48fca20da8b8ed9f7a3d1c69b5612629f64e7e2fc9174",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/AudioRecordCapture.kt": "41e5cfabf6481428cf9612533df417d60c3450c80ecdb11277a188e638c15388",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/CaptureAdmission.kt": "22356a8f811dea2910eb33b15102bb5b213ced373ade8a5a72fb92b467c4d447",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt": "ec8ea1451e0a5667d919d7a33a17702176acc7f027317635e259c7dcfff9f547",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingRecoveryCard.kt": "70f100368e8a6ad04fcf14ebaac1becf15e5fbf0bf837c473877fa3aff6d6b1c",
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingScreen.kt": "fcc35dbbe5e518c2e1a7a14eb12450902acc400961eecb9e9c6ef03a5193cf46",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/AlphaCaptureAdmissionTest.kt": "7ccdaa438b848a16dc6607bbce0920e69d35f8a2497cc130f56cdbdc8b42cd9f",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/AsyncCaptureIntegrationTest.kt": "fd28a01c2123420df186503181c28a61927a8508d35f0e03ea783cb8b1aa3987",
+    "android/build.gradle.kts": "7abe881ede9a852873a2de8e5b041b4c0b9fe0a318523a43fb646e5afa4302d3",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/AlphaRecordingProcessDeathTest.kt": "230051b0d4bf6579b7ad2763ad1b6cf48b6554cc155710a0eff3a4b9888ba013",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/AlphaRecordingRuntimeTest.kt": "7aa0e3d2e4e9dbb32ec30b2c92e7eac06f6b676071e6c0a591906ede6da3e236",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/AndroidRecordingAccessManager.kt": "3fb826b504b335cdcab843b5793901d46e0c3bd98378dac5f0662f9a786fa5cf",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/AlphaRecordingLimit.kt": "b253933655a75b5dc4540896470435f036919cf62388e8faeb912fee96bfcd78",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingAccess.kt": "d28a18c2f494f83cad5dc5ffde29e0e95e848e666812559e2b42aa40b29d25b4",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSession.kt": "1e8bb072fc04d3628d8f9e247fcc9b6f4fbf16fb7edc3c0a1be084b076334ccc",
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/recording/AlphaRecordingLimitTest.kt": "72919d554f51a3b6148638b6442d41cf77e5ced7016180ee9dcac4ce55842856",
+    "android/core/audio/src/test/kotlin/com/monumentogram/dora/audio/recording/RecordingAccessTest.kt": "9664979d40bd86386e6b3c76736a65a2ab8fae70ecdd5781ba101810c4859d13",
+    "tools/run_encrypted_persistence_device.py": "a7c4b0f1fee8af57a08bb30a95d88a21d3b2c8e2f6da91486c274b2965712ab5",
+    "tools/run_logical_recovery_crash.py": "cf39fd34f9ca31b643513ef841cfcbe7a2de13826ccdc7048aca9144e89ed545",
+    "tools/run_product_recording_device.py": "89b6b46e53dcb1c4099d49455eb78eaec66f53ed897635f2eb992e85390f6f05",
+    "tools/stage8_alpha_profile.init.gradle": "17a98ea3a0a34bf9c4a7cec1e5aea9e259e716764fc88c791b3fdf246b5d5f46",
+    "tools/test_stage8_alpha.py": "5b7d55aeec8dcf3fe74efa68668fcb47fc0bbaa9030c6f223bebc782ed94d478",
+    "tools/validate_stage8_alpha.py": "d0f8eb07b5747719ec28cdb84fec1e00183c029d67db5092dbe68f5cbf628254"
+  },
+  "limitations": [
+    "One inherited Windows symlink permission test skips locally; CI Linux must execute it.",
+    "Four unchanged >300s JVM scenarios and one >300s encrypted rotation scenario are deferred by the explicit limited profile.",
+    "No physical device, battery, endurance, broad device-matrix or C3 performance campaign."
+  ]
+}

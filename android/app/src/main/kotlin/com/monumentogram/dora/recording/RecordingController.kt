@@ -325,7 +325,7 @@ class RecordingController(
                         capture.admittedFrames,
                         selected.continuation?.summary?.frames ?: 0L,
                     )
-                capture.retire()
+                capture.retire(selected.continuation?.recoveredFrames ?: 0L)
                 // Establish the logical owner before admitting PCM. An immediate Stop/Pause then
                 // drains into this same session, including frames captured during native startup.
                 val created =
@@ -444,6 +444,10 @@ class RecordingController(
             latency.mark(timingOperation, "drain_start")
             drainOwned(current)
             latency.mark(timingOperation, "drain_end")
+            if (current.state.alphaLimitReached) {
+                stopAtAlphaLimit()
+                return
+            }
             latency.mark(timingOperation, "tail_start")
             segmentation?.discontinuity(VadFailure.PAUSED)
             current.pause()
@@ -567,43 +571,54 @@ class RecordingController(
         resumes.cancel()
         mutable.update { it.copy(resumePending = false) }
         capture.stopReading()
-        worker.execute {
-            val current = session
-            if (current == null) {
-                if (access != null) {
-                    release()
-                    publishEmpty()
-                }
-                return@execute
+        worker.execute { finishStop() }
+    }
+
+    /** Control owner only. Native shutdown must be confirmed before finalization is admitted. */
+    private fun finishStop() {
+        val current = session
+        if (current == null) {
+            if (access != null) {
+                release()
+                publishEmpty()
             }
-            try {
-                capture.stop()
-                capture.failure?.let {
-                    fail(it)
-                    return@execute
-                }
-                drainOwned(current)
-                current.requestStop()
-                mutable.update {
-                    it.copy(
-                        level = 0f,
-                        recording =
-                            current.state.copy(
-                                phase = RecordingPhase.FINALIZING,
-                                stopConfirmation = false,
-                            ),
-                    )
-                }
-                segmentation?.stop()
-                current.confirmStop()
-                publish()
-                if (current.state.phase == RecordingPhase.EMPTY) retireAccess()
-            } catch (error: CaptureException) {
-                fail(error.failure)
-            } catch (_: Exception) {
-                failPersistence(AudioFailure.UNAVAILABLE)
-            }
+            return
         }
+        try {
+            capture.stop()
+            capture.failure?.let {
+                fail(it)
+                return
+            }
+            drainOwned(current)
+            current.requestStop()
+            mutable.update {
+                it.copy(
+                    level = 0f,
+                    recording =
+                        current.state.copy(
+                            phase = RecordingPhase.FINALIZING,
+                            stopConfirmation = false,
+                        ),
+                )
+            }
+            segmentation?.stop()
+            current.confirmStop()
+            publish()
+            if (current.state.phase == RecordingPhase.EMPTY) retireAccess()
+        } catch (error: CaptureException) {
+            fail(error.failure)
+        } catch (_: Exception) {
+            failPersistence(AudioFailure.UNAVAILABLE)
+        }
+    }
+
+    private fun stopAtAlphaLimit() {
+        if (!stopRequested.compareAndSet(false, true)) return
+        resumes.cancel()
+        mutable.update { it.copy(pausePending = false, resumePending = false) }
+        capture.stopReading()
+        finishStop()
     }
 
     fun serviceRejected() = worker.execute { fail(CaptureFailure.SERVICE_REJECTED) }
@@ -642,6 +657,10 @@ class RecordingController(
             }
             capture.failure?.let {
                 fail(it)
+                return
+            }
+            if (current.state.alphaLimitReached) {
+                stopAtAlphaLimit()
                 return
             }
             if (availableBytes() < MINIMUM_FREE_BYTES) {
