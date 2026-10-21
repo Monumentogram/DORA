@@ -1,0 +1,87 @@
+name: USER0 preservation synthetic protocol
+
+on:
+  push:
+    branches: ["codex/user0-preservation-protocol"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preservation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synthetic:
+    name: preservation-api${{ matrix.api }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [28, 36]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - name: Host admission and instrumentation parser negatives
+        run: |
+          python3 -m unittest discover -s tools -p test_user0_preservation_runner.py
+          python3 -m unittest discover -s tools -p test_encrypted_persistence_device.py
+      - name: Install synthetic SDK
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools" "emulator" "platforms;android-36" "build-tools;36.0.0"
+          "system-images;android-${{ matrix.api }};google_apis;x86_64"
+      - name: Build real encrypted adapters and run source checks
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict
+          -I ../tools/stage8_alpha_profile.init.gradle
+          spotlessCheck detekt :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
+          :core:audio:assembleDebugAndroidTest
+      - name: Disposable emulator only
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/preservation-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name preservation --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @preservation -port 5554 \
+            -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics \
+            -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            kill -0 "${emulator_pid}" 2>/dev/null || exit 1
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot}" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Actual SQLCipher WAL and synthetic authenticated-prefix evidence
+        run: >-
+          python3 tools/user0_preservation_runner.py --serial emulator-5554
+          --expected-api ${{ matrix.api }} --source-sha "${GITHUB_SHA}"
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --inventory docs/contracts/user0-preservation-synthetic-v1.json
+          --receipt "${RUNNER_TEMP}/preservation/runtime.json"
+      - name: Publish only synthetic aggregate reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: preservation-api${{ matrix.api }}
+          path: |
+            ${{ runner.temp }}/preservation/*.json
+            android/core/audio/build/test-results/test*UnitTest/*.xml
+          retention-days: 7
+          if-no-files-found: error
