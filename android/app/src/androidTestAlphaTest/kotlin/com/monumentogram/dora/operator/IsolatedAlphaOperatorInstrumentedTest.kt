@@ -309,8 +309,18 @@ class IsolatedAlphaOperatorInstrumentedTest {
             )
             .recycle()
         enterCredential()
-        assertTrue("Real authenticated open timed out", done.await(60, TimeUnit.SECONDS))
-        assertTrue("Real authenticated open failed", result is AudioAvailability.Available)
+        val completed = done.await(60, TimeUnit.SECONDS)
+        // Never stringify a session, identity, provider exception or storage path in diagnostics.
+        val state =
+            when (val outcome = result) {
+                null -> "NO_RESULT"
+                AudioAvailability.Locked -> "LOCKED"
+                AudioAvailability.Opening -> "OPENING"
+                is AudioAvailability.Available -> "AVAILABLE"
+                is AudioAvailability.Failed -> "FAILED_${outcome.reason.name}"
+            }
+        assertTrue("Real authenticated open timed out: $state", completed)
+        assertTrue("Real authenticated open failed: $state", result is AudioAvailability.Available)
         return (result as AudioAvailability.Available).session
     }
 
