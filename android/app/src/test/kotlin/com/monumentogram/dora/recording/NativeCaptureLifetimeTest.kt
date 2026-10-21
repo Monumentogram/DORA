@@ -13,6 +13,53 @@ import org.junit.Test
 
 class NativeCaptureLifetimeTest {
     @Test
+    fun missingMicrophonePermissionRejectsBeforeNativeCreationOrAuthority() {
+        var constructions = 0
+        var authorityCalls = 0
+        val capture =
+            AudioRecordCapture(
+                {
+                    constructions++
+                    Microphone()
+                },
+                { false },
+                {},
+            )
+        val failure =
+            assertThrows(CaptureException::class.java) {
+                capture.start({
+                    authorityCalls++
+                    it()
+                })
+            }
+        assertEquals(CaptureFailure.PERMISSION_DENIED, failure.failure)
+        assertEquals(0, constructions)
+        assertEquals(0, authorityCalls)
+        assertEquals(0L, capture.admittedFrames)
+        assertEquals(0, capture.queuedBlocks)
+        assertFalse(capture.healthy)
+        assertFalse(capture.hasLiveThread)
+    }
+
+    @Test
+    fun platformPermissionRevocationDuringCreationNeverStartsCapture() {
+        var authorityCalls = 0
+        val capture = AudioRecordCapture({ throw SecurityException() }, { true }, {})
+        val failure =
+            assertThrows(CaptureException::class.java) {
+                capture.start({
+                    authorityCalls++
+                    it()
+                })
+            }
+        assertEquals(CaptureFailure.PERMISSION_DENIED, failure.failure)
+        assertEquals(0, authorityCalls)
+        assertEquals(0L, capture.admittedFrames)
+        assertFalse(capture.healthy)
+        assertFalse(capture.hasLiveThread)
+    }
+
+    @Test
     fun readFailureRetainsItsAdmissionBoundaryBeforeShutdownAndRetirement() {
         val mic = Microphone()
         val capture = capture { mic }

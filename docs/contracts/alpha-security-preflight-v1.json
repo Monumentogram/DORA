@@ -11,6 +11,7 @@
     "android/alpha-release.properties",
     "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorInstrumentedTest.kt",
     "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/ReleaseOverrideAssertions.kt",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/NativeCaptureLifetimeTest.kt",
     "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/runtime/AndroidProductAudioRuntimeTest.kt",
     "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
     "docs/DORA_MVP1_STAGE_STATUS.md",

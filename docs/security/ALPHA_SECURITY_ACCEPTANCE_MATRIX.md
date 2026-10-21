@@ -26,10 +26,10 @@ PASS below must always identify its evidence domain. The final physical contract
 | App close / process death | New AppLockSession has no authority; process-death runners require authenticated reopen and no automatic microphone | JVM + emulator |
 | Background/foreground | Old session reader denies and callback count stays zero even after fresh grant | AndroidProductAudioRuntimeTest extended scenario |
 | Screen lock | AppLockSession security epoch and AndroidAppLock screen-off receiver revoke; old proof fails | JVM/source; user 0 physical NOT_RUN |
-| Stale session / epoch / proof revocation | AppLockSessionTest, RecordingAuthorityTest and RecordingResumeGrantTest | JVM; encrypted runtime tests |
+| Stale session / epoch / proof revocation | AppLockSessionTest, RecordingAuthorityTest and ResumeRequestsTest | JVM; encrypted runtime tests |
 | Recovery return / revoked Resume | LogicalRecoveryRuntimeTest lease fencing; AlphaRecordingRuntimeTest authenticated capped continuation | API28/API36 |
 | Deleted recording / stale deletion proof | Tombstone fences reference/reader after reopen; stale confirmation cannot authorize deletion | AndroidProductAudioRuntimeTest + journal/runtime tests |
-| Missing microphone permission | Product recording controller permission precondition rejects capture before service start | Product UI/controller tests |
+| Missing microphone permission | NativeCaptureLifetimeTest verifies denied permission before native creation/authority and platform revocation during creation: zero frames, no live capture thread | Real capture-adapter JVM tests with platform boundary fixtures; UI presentation checked separately |
 
 The final RESULT links exact-SHA executed runs and distinguishes any NOT_RUN cases. No row claims that a UI label alone proves audio denial.
 
