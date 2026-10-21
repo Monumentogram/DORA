@@ -17,6 +17,65 @@ from run_encrypted_persistence_device import parse_results
 CLASS = 'com.monumentogram.dora.operator.IsolatedAlphaOperatorInstrumentedTest'
 RUNNER = PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner'
 
+FAILURE_METHODS = {
+    'SyntheticSystemKeyguard': frozenset({
+        'unlockIfNeeded', 'windowMetadata', 'systemKeyguardPinSurface',
+    }),
+    'IsolatedAlphaOperatorInstrumentedTest': frozenset({
+        'realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen',
+        'actualPackageAndOwnerIdentityAreNeverImplicitlySelected', 'seedOwnerIsolationSentinel',
+        'secondaryCannotReadOwnerSentinel', 'verifyOwnerIsolationSentinelUnchanged',
+        'assertOwnerSentinel', 'unlock', 'callerDiagnostics', 'awaitCallerResumed',
+        'availabilityCode', 'enterCredential', 'exerciseOperatorUi', 'uiReadback', 'waitUi',
+        'button', 'field', 'views', 'delete', 'node', 'success', 'id', 'identity',
+    }),
+}
+FAILURE_STAGES = {
+    'awaitCallerResumed': 'CALLER_READINESS',
+    'enterCredential': 'APP_CREDENTIAL_ENTRY',
+    'unlock': 'AUTHENTICATED_OPEN',
+    'exerciseOperatorUi': 'OPERATOR_UI', 'uiReadback': 'OPERATOR_UI', 'waitUi': 'OPERATOR_UI',
+    'button': 'OPERATOR_UI', 'field': 'OPERATOR_UI', 'views': 'OPERATOR_UI',
+    'delete': 'CONFIRMED_DELETION',
+}
+
+
+def failure_summary(output, api):
+    require(api in (28, 36), 'EMULATOR_API_MISMATCH')
+    locations, seen = [], set()
+    for line in output.splitlines():
+        frame = re.fullmatch(
+            r'\s+at com\.monumentogram\.dora\.operator\.'
+            r'(IsolatedAlphaOperatorInstrumentedTest|SyntheticSystemKeyguard)\.'
+            r'([A-Za-z0-9_$]+)\(([A-Za-z0-9]+\.kt):([1-9][0-9]{0,3})\)\s*', line)
+        if not frame:
+            continue
+        owner, method, source, number = frame.groups()
+        if method not in FAILURE_METHODS[owner] or source != owner + '.kt' or int(number) > 2000:
+            continue
+        location = (owner, method, source, int(number))
+        if location not in seen:
+            locations.append({'class': owner, 'method': method, 'source': source, 'line': int(number)})
+            seen.add(location)
+        if len(locations) == 16:
+            break
+    stage = 'UNCLASSIFIED'
+    if locations:
+        first = locations[0]
+        stage = ('SYSTEM_KEYGUARD_SETUP' if first['class'] == 'SyntheticSystemKeyguard'
+                 else FAILURE_STAGES.get(first['method'], 'TEST_SCENARIO'))
+    return {'schema_version': 1, 'status': 'FAILED_NOT_ACCEPTANCE', 'api': api,
+            'stage': stage, 'locations': locations}
+
+
+def write_failure_diagnostics(receipt, output, api):
+    receipt.parent.mkdir(parents=True, exist_ok=True)
+    diagnostic = receipt.with_suffix('.failure.local.txt')
+    with diagnostic.open('a', encoding='utf-8') as stream:
+        stream.write(re.sub(r'\d{6}', '[REDACTED]', output) + '\n')
+    receipt.with_suffix('.failure.json').write_text(
+        json.dumps(failure_summary(output, api), indent=2) + '\n', encoding='utf-8')
+
 
 def emulator_fence(serial, api, command):
     require(bool(re.fullmatch(r'emulator-\d+', serial)), 'EXPLICIT_EMULATOR_REQUIRED')
@@ -91,12 +150,9 @@ def main():
         try:
             result = parse_results(output)
         except ValueError:
-            # Failure evidence is local, never uploaded as an acceptance receipt.
-            # Redact all six-digit sequences including the disposable credential.
-            args.receipt.parent.mkdir(parents=True, exist_ok=True)
-            diagnostic = args.receipt.with_suffix('.failure.local.txt')
-            with diagnostic.open('a', encoding='utf-8') as stream:
-                stream.write(re.sub(r'\d{6}', '[REDACTED]', output) + '\n')
+            # Raw failures stay local. Only allowlisted locations enter public failure JSON;
+            # it is explicitly not an acceptance receipt and the original failure is rethrown.
+            write_failure_diagnostics(args.receipt, output, args.expected_api)
             raise
         require({row['name'] for row in result} == selected, 'OPERATOR_TEST_INVENTORY_MISMATCH')
         rows.append({'user_role': 'owner_negative' if user == 0 else 'secondary', 'tests': result})
