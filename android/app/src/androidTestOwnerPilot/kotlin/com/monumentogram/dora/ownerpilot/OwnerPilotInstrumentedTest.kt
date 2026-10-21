@@ -407,6 +407,10 @@ class OwnerPilotInstrumentedTest {
         assertTrue(SavedRecordingVerification.verify(session, identity) is AudioResult.Failed)
     }
 
+    @Suppress(
+        "CyclomaticComplexMethod",
+        "LoopWithTooManyJumpStatements",
+    ) // Abort each input unless the system credential surface is still visible.
     private fun cancelAuthentication(host: Activity) {
         awaitCallerResumed(host)
         val done = CountDownLatch(1)
@@ -419,10 +423,47 @@ class OwnerPilotInstrumentedTest {
                 }
             }
         }
-        shell("input keyevent ${KeyEvent.KEYCODE_BACK}")
+        // The first BACK can dismiss only the system credential IME. Never send a second
+        // BACK unless that credential surface still exists and the caller has not resumed.
+        var backPresses = 0
+        while (backPresses < 2) {
+            if (done.count == 0L) break
+            var callerResumed = false
+            instrumentation.runOnMainSync {
+                callerResumed =
+                    ActivityLifecycleMonitorRegistry.getInstance()
+                        .getActivitiesInStage(Stage.RESUMED)
+                        .any { it === host }
+            }
+            val credential = node {
+                it.packageName?.toString() in
+                    setOf("com.android.settings", "com.android.systemui") &&
+                    it.isPassword &&
+                    it.isEditable &&
+                    it.isVisibleToUser
+            }
+            if (callerResumed || credential == null || done.count == 0L) break
+            val cancel = node {
+                it.packageName?.toString() == "com.android.settings" &&
+                    it.viewIdResourceName == "com.android.settings:id/cancel_button" &&
+                    it.windowId == credential.windowId &&
+                    it.isVisibleToUser &&
+                    it.isEnabled &&
+                    it.isClickable
+            }
+            if (cancel != null) {
+                assertTrue(cancel.performAction(AccessibilityNodeInfo.ACTION_CLICK))
+                break
+            }
+            shell("input keyevent ${KeyEvent.KEYCODE_BACK}")
+            backPresses++
+            if (done.await(2, TimeUnit.SECONDS)) break
+        }
         assertTrue(done.await(30, TimeUnit.SECONDS))
         assertTrue(result !is AudioAvailability.Available)
         assertFalse(runtime.isRecordingUiAuthorized())
+        awaitCallerResumed(host)
+        assertFalse(host.isFinishing || host.isDestroyed)
     }
 
     private fun exerciseProductUi(identity: AudioIdentity) {
