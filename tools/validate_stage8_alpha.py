@@ -104,6 +104,21 @@ def main():
         allowed |= isolated_scope(successor)
         subprocess.run(['git', 'merge-base', '--is-ancestor', successor['baseline'], 'HEAD'],
                        cwd=ROOT, check=True)
+    security = ROOT / 'docs/contracts/alpha-security-preflight-v1.json'
+    if security.exists():
+        contract = json.loads(security.read_text(encoding='utf-8'))
+        require(contract['baseline'] == 'd56a64f079d7bf9acf1d548545dfbb9c38858bde' and
+                contract['security_restoration'] == 'OPEN' and
+                contract['production_installation'] == 'NOT_RUN' and
+                contract['distribution'] == 'BLOCKED', 'Invalid security successor boundary')
+        paths = contract['implementation_paths']
+        require(len(paths) == len(set(paths)) and all(
+            isinstance(path, str) and path and not path.startswith('/') and
+            not any(value in path for value in ('..', '*', '?', '\\', ':')) for path in paths),
+            'Ambiguous security successor scope')
+        subprocess.run(['git', 'merge-base', '--is-ancestor', contract['baseline'], 'HEAD'],
+                       cwd=ROOT, check=True)
+        allowed |= set(paths)
     require(changed <= allowed, "Out-of-scope files: " + ", ".join(sorted(changed - allowed)))
     for path in profile["append_only_decisions"]:
         old = git("show", BASE + ":" + path).decode().replace("\r\n", "\n")

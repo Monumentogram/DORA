@@ -1,3 +1,14 @@
+## 2026-10-21 - Alpha security/release preflight successor
+
+Owner-scoped successor of PR105. Production candidate code 5 / alpha.3;
+software verification and signing preparation do not close physical gates.
+See [release preflight](security/ALPHA_RELEASE_PREFLIGHT.md),
+[acceptance matrix](security/ALPHA_SECURITY_ACCEPTANCE_MATRIX.md) and
+[owner restoration runbook](security/ALPHA_SECURITY_RESTORATION_RUNBOOK.md).
+Restoration OPEN; production installation NOT_RUN; distribution BLOCKED.
+Stage8.6 NOT_READY and historical outcomes remain unchanged.
+Exact-SHA CI/build/review results are recorded separately after execution.
+
 ## 2026-10-20 — Owner-scoped five-minute Alpha profile
 
 [ADR-RECORDING-011](adr/ADR-RECORDING-011-limited-alpha-recording.md) introduces

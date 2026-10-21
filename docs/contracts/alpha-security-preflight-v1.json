@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "baseline": "d56a64f079d7bf9acf1d548545dfbb9c38858bde",
+  "security_restoration": "OPEN",
+  "production_installation": "NOT_RUN",
+  "distribution": "BLOCKED",
+  "implementation_paths": [
+    ".gitattributes",
+    ".github/workflows/isolated-alpha.yml",
+    ".github/workflows/stage8-alpha.yml",
+    "android/alpha-release.properties",
+    "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorInstrumentedTest.kt",
+    "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/ReleaseOverrideAssertions.kt",
+    "android/app/src/test/kotlin/com/monumentogram/dora/recording/NativeCaptureLifetimeTest.kt",
+    "android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence/runtime/AndroidProductAudioRuntimeTest.kt",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/adr/ADR-RECORDING-013-alpha-security-preflight.md",
+    "docs/contracts/alpha-security-preflight-v1.json",
+    "docs/plans/2026-10-21-alpha-security-preflight.md",
+    "docs/security/ALPHA_RELEASE_PREFLIGHT.md",
+    "docs/security/ALPHA_SECURITY_ACCEPTANCE_MATRIX.md",
+    "docs/security/ALPHA_SECURITY_RESTORATION_RUNBOOK.md",
+    "tools/alpha_security_preflight.py",
+    "tools/build_alpha_security_candidate.py",
+    "tools/test_alpha_release_sbom.py",
+    "tools/test_alpha_security_preflight.py",
+    "tools/validate_stage8_alpha.py"
+  ]
+}

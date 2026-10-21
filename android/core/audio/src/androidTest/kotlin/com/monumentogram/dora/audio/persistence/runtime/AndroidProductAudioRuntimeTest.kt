@@ -96,9 +96,11 @@ class AndroidProductAudioRuntimeTest {
             instrumentation.runOnMainSync { runtime.lock() }
             assertEquals(AudioAvailability.Locked, runtime.availability)
             assertEquals(AudioResult.Failed(AudioFailure.LOCKED), first.writer.create(audio))
+            assertNoPlaintext(first, audio)
             val second = unlock(runtime, host, AudioOpenMode.OPEN_EXISTING, pin)
             assertEquals(first.protection, second.protection)
             assertEquals(AudioResult.Failed(AudioFailure.LOCKED), first.sourceState(audio))
+            assertNoPlaintext(first, audio)
             assertEquals(
                 AudioResult.Failed(AudioFailure.INVALID_INPUT),
                 second.retryRemainingDeletion(audio),
@@ -109,9 +111,11 @@ class AndroidProductAudioRuntimeTest {
             )
             delete(runtime, host, second, audio, "Delete audio")
             assertEquals(AudioResult.Value(AudioSourceState.UserDeleted), second.sourceState(audio))
+            assertNoPlaintext(second, audio)
             instrumentation.runOnMainSync { runtime.lock() }
             val third = unlock(runtime, host, AudioOpenMode.OPEN_EXISTING, pin)
             assertEquals(AudioResult.Value(AudioSourceState.UserDeleted), third.sourceState(audio))
+            assertNoPlaintext(third, audio)
             val paused = CountDownLatch(1)
             val lifecycle =
                 object : Application.ActivityLifecycleCallbacks {
@@ -145,6 +149,7 @@ class AndroidProductAudioRuntimeTest {
             )
             assertEquals(AudioAvailability.Locked, runtime.availability)
             assertEquals(AudioResult.Failed(AudioFailure.LOCKED), third.sourceState(audio))
+            assertNoPlaintext(third, audio)
         } finally {
             automation.serviceInfo = previousServiceInfo
             instrumentation.runOnMainSync {
@@ -183,6 +188,13 @@ class AndroidProductAudioRuntimeTest {
                 host.finish()
             }
         }
+    }
+
+    private fun assertNoPlaintext(session: ProductAudioSession, audio: AudioIdentity) {
+        var callbacks = 0
+        val result = session.reader.extract(audio) { _, _ -> callbacks++ }
+        assertTrue("Unauthorized or deleted audio must fail", result is AudioResult.Failed)
+        assertEquals("Denied reads must never deliver plaintext", 0, callbacks)
     }
 
     private fun unlock(

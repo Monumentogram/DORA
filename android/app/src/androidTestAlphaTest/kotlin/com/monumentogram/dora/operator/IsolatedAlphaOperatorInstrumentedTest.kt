@@ -69,6 +69,7 @@ class IsolatedAlphaOperatorInstrumentedTest {
             "Requires actual full-secondary emulator and explicit host receipt",
             operator.admit(expectedUser, "FULL_SECONDARY_USER:$expectedUser:$serial"),
         )
+        assertReleaseOverridesDenyAllInputs(context)
         val automation = instrumentation.uiAutomation
         val previous = automation.serviceInfo
         var openedHost: Activity? = null
