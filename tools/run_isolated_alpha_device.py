@@ -40,6 +40,40 @@ FAILURE_STAGES = {
 }
 
 
+def failure_caller_state(output):
+    messages = {
+        'Fixture caller never resumed': 'CALLER_NOT_RESUMED',
+        'Credential prompt timeout': 'PROMPT_TIMEOUT',
+        'Real authenticated open timed out': 'OPEN_TIMEOUT',
+        'Real authenticated open failed': 'OPEN_FAILED',
+    }
+    availability = {'NO_RESULT', 'LOCKED', 'OPENING', 'AVAILABLE'} | {
+        'FAILED_' + reason for reason in (
+            'LOCKED', 'CANCELLED', 'CREDENTIAL_SETUP_REQUIRED', 'UNAVAILABLE',
+            'INVALID_INPUT', 'COLLISION', 'KEY_UNAVAILABLE', 'KEY_INVALIDATED',
+            'AUTHENTICATION_FAILED', 'INCOMPLETE', 'CORRUPT', 'BUSY', 'UNCERTAIN')
+    }
+    observations = set()
+    for line in output.splitlines():
+        match = re.fullmatch(
+            r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: ('
+            + '|'.join(re.escape(message) for message in messages) +
+            r'): (?:([A-Z_]{1,40}) )?callerResumedAtRequest=(true|false) '
+            r'focusAtRequest=(true|false) secure=(true|false) locked=(true|false) '
+            r'callerFinishing=(true|false) callerDestroyed=(true|false)', line)
+        if match:
+            kind, state = messages[match[1]], match[2]
+            if (kind == 'CALLER_NOT_RESUMED' and state is not None) or (
+                    kind != 'CALLER_NOT_RESUMED' and state not in availability):
+                return None
+            observations.add((kind, state, *(value == 'true' for value in match.groups()[2:])))
+    if len(observations) != 1:
+        return None
+    keys = ('failure', 'availability', 'caller_resumed_at_request', 'focus_at_request',
+            'secure', 'locked', 'caller_finishing', 'caller_destroyed')
+    return dict(zip(keys, observations.pop()))
+
+
 def failure_summary(output, api):
     require(api in (28, 36), 'EMULATOR_API_MISMATCH')
     locations, seen = [], set()
@@ -65,7 +99,7 @@ def failure_summary(output, api):
         stage = ('SYSTEM_KEYGUARD_SETUP' if first['class'] == 'SyntheticSystemKeyguard'
                  else FAILURE_STAGES.get(first['method'], 'TEST_SCENARIO'))
     return {'schema_version': 1, 'status': 'FAILED_NOT_ACCEPTANCE', 'api': api,
-            'stage': stage, 'locations': locations}
+            'stage': stage, 'locations': locations, 'caller_state': failure_caller_state(output)}
 
 
 def write_failure_diagnostics(receipt, output, api):

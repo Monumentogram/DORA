@@ -194,6 +194,52 @@ class PilotRunnerTests(unittest.TestCase):
             with self.subTest(invalid=invalid):
                 self.assertIsNone(self.runner.failure_configuration(invalid))
 
+    def test_caller_diagnostics_accept_only_known_messages_enums_and_booleans(self):
+        fields = ('callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '
+                  'callerFinishing=false callerDestroyed=true')
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+        cases = [('Fixture caller never resumed', None, 'CALLER_NOT_RESUMED'),
+                 ('Credential prompt timeout', 'NO_RESULT', 'PROMPT_TIMEOUT'),
+                 ('Real authenticated open timed out', 'OPENING', 'OPEN_TIMEOUT'),
+                 ('Real authenticated open failed', 'FAILED_CANCELLED', 'OPEN_FAILED')]
+        for message, availability, kind in cases:
+            line = prefix + message + ': ' + (availability + ' ' if availability else '') + fields
+            expected = {'failure': kind, 'availability': availability,
+                        'caller_resumed_at_request': False, 'focus_at_request': False,
+                        'secure': True, 'locked': False, 'caller_finishing': False,
+                        'caller_destroyed': True}
+            with self.subTest(message=message):
+                self.assertEqual(expected, self.runner.failure_caller_state(line))
+                self.assertEqual(expected, self.runner.failure_caller_state(line + '\n' + line))
+        line = prefix + 'Credential prompt timeout: NO_RESULT ' + fields
+        invalid = [line + ' PIN=123456', line + ' /data/user/10/private',
+                   line.replace('NO_RESULT', 'FAILED_PRIVATE'), line.replace('NO_RESULT ', ''),
+                   line.replace('false', '123456', 1), line.replace('true', 'TRUE', 1),
+                   line.replace('callerDestroyed=true', 'unknown=true'),
+                   line.replace('Credential prompt timeout', 'Private provider failure'),
+                   line.replace('Credential prompt timeout', 'Fixture caller never resumed'),
+                   line + '\n' + line.replace('callerDestroyed=true', 'callerDestroyed=false')]
+        for value in invalid:
+            with self.subTest(value=value):
+                self.assertIsNone(self.runner.failure_caller_state(value))
+
+    def test_failure_receipt_retains_only_typed_caller_state_when_cleanup_fails(self):
+        raw = ('PIN=123456 /data/user/10/private\n'
+               'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Fixture caller never resumed: '
+               'callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '
+               'callerFinishing=false callerDestroyed=true\n')
+        def rejected(*args):
+            raise ValueError('private cleanup error')
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / 'pilot.json'
+            self.runner.record_instrumentation_failure(receipt, raw, 36, 'secondary', rejected, 12)
+            failure = json.loads(receipt.with_suffix('.failure.json').read_text())
+            self.assertEqual('CALLER_NOT_RESUMED', failure['caller_state']['failure'])
+            self.assertTrue(failure['caller_state']['caller_destroyed'])
+            self.assertEqual('STOP_UNCONFIRMED', failure['instrumentation_cleanup'])
+            for private in ['123456', '/data/', 'private', 'PIN']:
+                self.assertNotIn(private, json.dumps(failure))
+
 
 if __name__ == '__main__':
     unittest.main()

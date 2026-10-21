@@ -13,7 +13,7 @@ import time
 import xml.etree.ElementTree as ET
 
 from isolated_alpha_preflight import require
-from run_isolated_alpha_device import emulator_fence, created_user, switch_complete
+from run_isolated_alpha_device import emulator_fence, created_user, switch_complete, failure_caller_state
 from run_encrypted_persistence_device import parse_results
 from owner_alpha_pilot_artifact import check_badging
 
@@ -159,6 +159,7 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
         'api': api, 'phase': phase, 'physical_device': False,
         'locations': failure_locations(output),
         'ui_configuration': failure_configuration(output),
+        'caller_state': failure_caller_state(output),
         'instrumentation_cleanup': 'STOP_UNCONFIRMED',
     }
     # Preserve the original sanitized evidence before cleanup can itself fail or stall.
