@@ -565,7 +565,6 @@ class OwnerPilotInstrumentedTest {
                         id(),
                         1,
                         160,
-                        sourceFrameOffset = 160,
                     ),
                     AudioFormat.PCM,
                     ByteArray(320) { 6 },

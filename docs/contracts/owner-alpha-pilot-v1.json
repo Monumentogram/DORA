@@ -33,6 +33,7 @@
     ".github/workflows/stage8-alpha.yml",
     "android/app/build.gradle.kts",
     "android/app/gradle.lockfile",
+    "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorInstrumentedTest.kt",
     "android/app/src/androidTestOwnerPilot/kotlin/com/monumentogram/dora/ownerpilot/OwnerPilotInstrumentedTest.kt",
     "android/app/src/androidTestOwnerPilot/kotlin/com/monumentogram/dora/ownerpilot/ReleaseOverrideAssertions.kt",
     "android/app/src/androidTestOwnerPilot/kotlin/com/monumentogram/dora/ownerpilot/SyntheticSystemKeyguard.kt",

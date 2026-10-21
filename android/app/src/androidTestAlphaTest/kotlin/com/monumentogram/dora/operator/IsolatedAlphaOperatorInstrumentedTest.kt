@@ -519,6 +519,7 @@ class IsolatedAlphaOperatorInstrumentedTest {
     }
 
     private fun uiReadback(host: Activity) {
+        awaitCallerResumed(host)
         instrumentation.uiAutomation
             .executeAndWaitForEvent(
                 {
