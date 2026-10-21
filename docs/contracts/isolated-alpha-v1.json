@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "baseline": "1442f0db8a6936920a692913035d100f68871f81",
+  "application_id": "com.monumentogram.dora.alpha.test",
+  "physical_operations_authorized": false,
+  "security_restoration": "OPEN",
+  "stage_8_6": "NOT_READY",
+  "mandatory_inherited_jobs": [
+    "alpha-contracts",
+    "alpha-software",
+    "alpha-encrypted-api28",
+    "alpha-encrypted-api36"
+  ],
+  "mandatory_additional_jobs": [
+    "isolated-alpha-software",
+    "isolated-alpha-api28",
+    "isolated-alpha-api36"
+  ],
+  "implementation_paths": [
+    ".github/workflows/isolated-alpha.yml",
+    ".github/workflows/stage8-alpha.yml",
+    "android/app/build.gradle.kts",
+    "android/app/gradle.lockfile",
+    "android/app/src/alphaTest/AndroidManifest.xml",
+    "android/app/src/alphaTest/kotlin/com/monumentogram/dora/operator/AndroidOperatorEnvironment.kt",
+    "android/app/src/alphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperator.kt",
+    "android/app/src/alphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorActivity.kt",
+    "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorInstrumentedTest.kt",
+    "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/SyntheticSystemKeyguard.kt",
+    "android/app/src/testAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorTest.kt",
+    "android/core/audio/gradle.lockfile",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/ProductAudioPort.kt",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/EncryptedAudioVault.kt",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomAudioJournal.kt",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/runtime/AudioRuntimeCoordinator.kt",
+    "android/ml/vad-api/gradle.lockfile",
+    "android/ml/vad-sherpa/gradle.lockfile",
+    "docs/POCO_ISOLATED_ALPHA_PHYSICAL_SMOKE_PROTOCOL.md",
+    "docs/adr/ADR-RECORDING-012-isolated-alpha-operator.md",
+    "docs/contracts/isolated-alpha-v1.json",
+    "docs/plans/2026-10-21-isolated-alpha-operator.md",
+    "tools/isolated_alpha_apk.py",
+    "tools/isolated_alpha_preflight.py",
+    "tools/run_isolated_alpha_device.py",
+    "tools/test_isolated_alpha_apk.py",
+    "tools/test_isolated_alpha_contract.py",
+    "tools/test_isolated_alpha_device.py",
+    "tools/test_isolated_alpha_preflight.py",
+    "tools/validate_stage8_alpha.py"
+  ]
+}

@@ -2,7 +2,7 @@ name: Stage8 limited Alpha
 
 on:
   push:
-    branches: ["codex/stage8-alpha-fast-track"]
+    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator"]
   workflow_dispatch:
 
 permissions:
@@ -31,6 +31,10 @@ jobs:
           python3 -m unittest discover -s tools -p test_logical_recovery_stream_diagnostics.py
           python3 -m unittest discover -s tools -p test_build_internal_alpha.py
           python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+          python3 -m unittest discover -s tools -p test_isolated_alpha_preflight.py
+          python3 -m unittest discover -s tools -p test_isolated_alpha_apk.py
+          python3 -m unittest discover -s tools -p test_isolated_alpha_device.py
+          python3 -m unittest discover -s tools -p test_isolated_alpha_contract.py
 
   alpha-software:
     runs-on: ubuntu-latest

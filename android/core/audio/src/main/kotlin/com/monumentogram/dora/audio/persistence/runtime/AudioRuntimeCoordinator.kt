@@ -28,6 +28,15 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal interface RuntimeVault : AutoCloseable {
+    fun findRecording(
+        recordingId: com.monumentogram.dora.model.alpha.RecordingId
+    ): AudioResult<AudioIdentity> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
+    fun inspectAudioDeletion(
+        identity: AudioIdentity
+    ): AudioResult<com.monumentogram.dora.audio.AudioDeletionInspection> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val logicalRecordings: com.monumentogram.dora.audio.logical.LogicalRecordingPort
         get() =
             com.monumentogram.dora.audio.logical.LogicalRecordingPort {
@@ -226,6 +235,15 @@ internal class AudioRuntimeCoordinator(
         val vault: RuntimeVault,
         val authorization: AppLockSession.Authorization,
     ) : ProductAudioSession {
+        override fun findRecording(recordingId: com.monumentogram.dora.model.alpha.RecordingId) =
+            invoke {
+                findRecording(recordingId)
+            }
+
+        override fun inspectAudioDeletion(identity: AudioIdentity) = invoke {
+            inspectAudioDeletion(identity)
+        }
+
         override val logicalRecordings =
             com.monumentogram.dora.audio.logical.LogicalRecordingPort { reference ->
                 invoke { logicalRecordings.read(reference) }

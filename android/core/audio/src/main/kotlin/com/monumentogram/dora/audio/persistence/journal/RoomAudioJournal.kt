@@ -260,6 +260,15 @@ private constructor(
         }
     }
 
+    fun findRecording(recordingId: com.monumentogram.dora.model.alpha.RecordingId): AudioIdentity? {
+        checkOpen()
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        val selected = dao.recordingAssets(recordingId.value).singleOrNull() ?: return null
+        val row = checkNotNull(dao.asset(selected))
+        check(row.ownerId == binding.ownerId && row.vaultId == binding.vaultId)
+        return row.identity().also { diagnostic.requireNewSource(it) }
+    }
+
     val bootstrapJournal: RecoveryRunBootstrapJournal = BootstrapJournal()
     val microfileJournal: RecoveryMicrofileJournal = MicrofileJournal()
     val quarantineJournal: RecoveryQuarantineJournal = QuarantineJournal()

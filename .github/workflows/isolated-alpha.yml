@@ -1,0 +1,121 @@
+name: Isolated Alpha package and operator
+
+on:
+  push:
+    branches: ["codex/stage8-isolated-alpha-operator"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: isolated-alpha-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-alpha-software:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - name: Isolated variant JVM, UI compilation, lint and release dependency boundary
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict
+          -PdoraTestBuildType=alphaTest -PdoraAlphaTestInstrumentationSigning=true
+          spotlessCheck detekt :app:testAlphaTestUnitTest :app:lintAlphaTest
+          :app:assembleAlphaTest :app:assembleAlphaTestAndroidTest
+      - name: Host denial controls and native packaging
+        run: |
+          python3 -m unittest discover -s tools -p 'test_isolated_alpha_*.py'
+          python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/alphaTest/app-alphaTest.apk --allowlist android/product-native-libs-allowlist.txt
+          python3 tools/validate_stage8_alpha.py --apk android/app/build/outputs/apk/alphaTest/app-alphaTest.apk
+      - name: Publish synthetic software results only
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: isolated-alpha-software
+          path: |
+            android/app/build/test-results/testAlphaTestUnitTest/*.xml
+            android/app/build/reports/lint-results-alphaTest.xml
+          retention-days: 7
+          if-no-files-found: error
+
+  isolated-alpha-device:
+    name: isolated-alpha-api${{ matrix.api }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [28, 36]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - name: Install SDK
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools" "emulator" "platforms;android-36" "build-tools;36.0.0"
+          "system-images;android-${{ matrix.api }};google_apis;x86_64"
+      - name: Compile release-security variant with instrumentation signer only
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict
+          -PdoraTestBuildType=alphaTest -PdoraAlphaTestInstrumentationSigning=true
+          :app:assembleAlphaTest :app:assembleAlphaTestAndroidTest
+      - name: Create disposable emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/isolated-alpha-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name dora_isolated_alpha --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_isolated_alpha -port 5554 \
+            -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics \
+            -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            kill -0 "${emulator_pid}" 2>/dev/null || exit 1
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot}" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Real authenticated operator, exact deletion and cross-user Keystore/file denial
+        run: >-
+          python3 tools/run_isolated_alpha_device.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }}
+          --apk android/app/build/outputs/apk/alphaTest/app-alphaTest.apk
+          --test-apk android/app/build/outputs/apk/androidTest/alphaTest/app-alphaTest-androidTest.apk
+          --receipt "${RUNNER_TEMP}/isolated-alpha/operator.json"
+      - name: Publish content-free synthetic receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: isolated-alpha-api${{ matrix.api }}
+          path: ${{ runner.temp }}/isolated-alpha/*.json
+          retention-days: 7
+          if-no-files-found: error
