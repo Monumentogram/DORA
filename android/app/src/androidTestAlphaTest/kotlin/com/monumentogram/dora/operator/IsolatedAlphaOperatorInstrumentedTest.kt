@@ -75,9 +75,17 @@ class IsolatedAlphaOperatorInstrumentedTest {
         try {
             automation.serviceInfo =
                 automation.serviceInfo.apply {
-                    flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+                    flags =
+                        flags or
+                            AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS or
+                            AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
                 }
-            unlockSystemKeyguardIfNeeded()
+            SyntheticSystemKeyguard(
+                    instrumentation,
+                    { checkNotNull(arguments.getString("syntheticAuthPin")) },
+                    ::node,
+                )
+                .unlockIfNeeded()
             val host =
                 instrumentation
                     .startActivitySync(
@@ -349,40 +357,6 @@ class IsolatedAlphaOperatorInstrumentedTest {
         return "callerResumedAtRequest=$resumed focusAtRequest=$focus " +
             "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
             "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed}"
-    }
-
-    private fun unlockSystemKeyguardIfNeeded() {
-        val keyguard = context.getSystemService(KeyguardManager::class.java)
-        assertTrue(
-            "Synthetic secondary credential must already be configured",
-            keyguard.isDeviceSecure,
-        )
-        if (!keyguard.isDeviceLocked) return
-        // Separate OS-user unlock from App Lock. Neither a shell dismissal nor a device PIN
-        // typed into an unrelated lockscreen is evidence that DORA accepted its own prompt.
-        if (node { it.isPassword && it.isEditable && it.isFocused } == null) {
-            instrumentation.uiAutomation
-                .executeAndWaitForEvent(
-                    {
-                        ParcelFileDescriptor.AutoCloseInputStream(
-                                instrumentation.uiAutomation.executeShellCommand(
-                                    "input keyevent ${KeyEvent.KEYCODE_WAKEUP} ${KeyEvent.KEYCODE_MENU}"
-                                )
-                            )
-                            .use { it.readBytes() }
-                    },
-                    { node { it.isPassword && it.isEditable && it.isFocused } != null },
-                    15_000,
-                )
-                .recycle()
-        }
-        enterCredential()
-        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30)
-        while (keyguard.isDeviceLocked && System.nanoTime() < deadline) Thread.sleep(100)
-        assertFalse(
-            "Real system credential did not unlock the secondary keyguard",
-            keyguard.isDeviceLocked,
-        )
     }
 
     private fun awaitCallerResumed(host: Activity) {
