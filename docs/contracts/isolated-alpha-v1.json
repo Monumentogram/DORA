@@ -26,6 +26,7 @@
     "android/app/src/alphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperator.kt",
     "android/app/src/alphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorActivity.kt",
     "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorInstrumentedTest.kt",
+    "android/app/src/androidTestAlphaTest/kotlin/com/monumentogram/dora/operator/SyntheticSystemKeyguard.kt",
     "android/app/src/testAlphaTest/kotlin/com/monumentogram/dora/operator/IsolatedAlphaOperatorTest.kt",
     "android/core/audio/gradle.lockfile",
     "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/ProductAudioPort.kt",
