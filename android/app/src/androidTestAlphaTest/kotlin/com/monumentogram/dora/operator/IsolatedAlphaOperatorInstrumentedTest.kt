@@ -71,15 +71,20 @@ class IsolatedAlphaOperatorInstrumentedTest {
         )
         val automation = instrumentation.uiAutomation
         val previous = automation.serviceInfo
-        val host =
-            instrumentation.startActivitySync(
-                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
+        var openedHost: Activity? = null
         try {
             automation.serviceInfo =
                 automation.serviceInfo.apply {
                     flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
                 }
+            unlockSystemKeyguardIfNeeded()
+            val host =
+                instrumentation
+                    .startActivitySync(
+                        Intent(context, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                    .also { openedHost = it }
             val first = unlock(host)
             // Prompt pauses revoke local operator proof; explicit identity admission is repeated.
             assertTrue(operator.admit(expectedUser, "FULL_SECONDARY_USER:$expectedUser:$serial"))
@@ -193,7 +198,7 @@ class IsolatedAlphaOperatorInstrumentedTest {
             automation.serviceInfo = previous
             instrumentation.runOnMainSync {
                 runtime.lock()
-                host.finish()
+                openedHost?.finish()
             }
         }
     }
@@ -296,6 +301,7 @@ class IsolatedAlphaOperatorInstrumentedTest {
     }
 
     private fun unlock(host: Activity): ProductAudioSession {
+        awaitCallerResumed(host)
         val done = CountDownLatch(1)
         var result: AudioAvailability? = null
         var resumedAtRequest = false
@@ -321,21 +327,85 @@ class IsolatedAlphaOperatorInstrumentedTest {
                 )
                 .recycle()
         } catch (_: TimeoutException) {
-            val keyguard = context.getSystemService(KeyguardManager::class.java)
             throw AssertionError(
                 "Credential prompt timeout: ${availabilityCode(result)} " +
-                    "callerResumedAtRequest=$resumedAtRequest focusAtRequest=$focusAtRequest " +
-                    "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
-                    "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed}"
+                    callerDiagnostics(host, resumedAtRequest, focusAtRequest)
             )
         }
         enterCredential()
         val completed = done.await(60, TimeUnit.SECONDS)
         // Never stringify a session, identity, provider exception or storage path in diagnostics.
-        val state = availabilityCode(result)
+        val state =
+            availabilityCode(result) +
+                " " +
+                callerDiagnostics(host, resumedAtRequest, focusAtRequest)
         assertTrue("Real authenticated open timed out: $state", completed)
         assertTrue("Real authenticated open failed: $state", result is AudioAvailability.Available)
         return (result as AudioAvailability.Available).session
+    }
+
+    private fun callerDiagnostics(host: Activity, resumed: Boolean, focus: Boolean): String {
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        return "callerResumedAtRequest=$resumed focusAtRequest=$focus " +
+            "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
+            "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed}"
+    }
+
+    private fun unlockSystemKeyguardIfNeeded() {
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        assertTrue(
+            "Synthetic secondary credential must already be configured",
+            keyguard.isDeviceSecure,
+        )
+        if (!keyguard.isDeviceLocked) return
+        // Separate OS-user unlock from App Lock. Neither a shell dismissal nor a device PIN
+        // typed into an unrelated lockscreen is evidence that DORA accepted its own prompt.
+        if (node { it.isPassword && it.isEditable && it.isFocused } == null) {
+            instrumentation.uiAutomation
+                .executeAndWaitForEvent(
+                    {
+                        ParcelFileDescriptor.AutoCloseInputStream(
+                                instrumentation.uiAutomation.executeShellCommand(
+                                    "input keyevent ${KeyEvent.KEYCODE_WAKEUP} ${KeyEvent.KEYCODE_MENU}"
+                                )
+                            )
+                            .use { it.readBytes() }
+                    },
+                    { node { it.isPassword && it.isEditable && it.isFocused } != null },
+                    15_000,
+                )
+                .recycle()
+        }
+        enterCredential()
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30)
+        while (keyguard.isDeviceLocked && System.nanoTime() < deadline) Thread.sleep(100)
+        assertFalse(
+            "Real system credential did not unlock the secondary keyguard",
+            keyguard.isDeviceLocked,
+        )
+    }
+
+    private fun awaitCallerResumed(host: Activity) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
+        var resumed = false
+        while (!resumed && System.nanoTime() < deadline) {
+            instrumentation.runOnMainSync {
+                resumed =
+                    ActivityLifecycleMonitorRegistry.getInstance()
+                        .getActivitiesInStage(Stage.RESUMED)
+                        .any { it === host }
+            }
+            if (!resumed) Thread.sleep(100)
+        }
+        assertTrue(
+            "Fixture caller never resumed: " +
+                callerDiagnostics(host, resumed, host.hasWindowFocus()),
+            resumed,
+        )
+        assertFalse(
+            "App Lock requires an already unlocked system keyguard",
+            context.getSystemService(KeyguardManager::class.java).isDeviceLocked,
+        )
     }
 
     private fun availabilityCode(result: AudioAvailability?): String =
