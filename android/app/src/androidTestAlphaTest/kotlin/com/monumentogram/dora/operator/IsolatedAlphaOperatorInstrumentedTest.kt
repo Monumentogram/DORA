@@ -620,7 +620,9 @@ class IsolatedAlphaOperatorInstrumentedTest {
                 else ->
                     (0 until current.childCount).firstNotNullOfOrNull { find(current.getChild(it)) }
             }
-        return instrumentation.uiAutomation.windows.firstNotNullOfOrNull { find(it.root) }
+        val automation = instrumentation.uiAutomation
+        return automation.windows.firstNotNullOfOrNull { find(it.root) }
+            ?: find(automation.rootInActiveWindow)
     }
 
     private fun success(result: AudioResult<*>) =

@@ -8,7 +8,6 @@ import android.os.ParcelFileDescriptor
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 
@@ -32,30 +31,22 @@ internal class SyntheticSystemKeyguard(
         // Separate OS-user unlock from App Lock. Neither a shell dismissal nor a device PIN
         // typed into an unrelated lockscreen is evidence that DORA accepted its own prompt.
         if (!systemKeyguardPinSurface()) {
-            try {
-                instrumentation.uiAutomation
-                    .executeAndWaitForEvent(
-                        {
-                            ParcelFileDescriptor.AutoCloseInputStream(
-                                    instrumentation.uiAutomation.executeShellCommand(
-                                        "input keyevent ${KeyEvent.KEYCODE_WAKEUP} ${KeyEvent.KEYCODE_MENU}"
-                                    )
-                                )
-                                .use { it.readBytes() }
-                        },
-                        { systemKeyguardPinSurface() },
-                        15_000,
+            ParcelFileDescriptor.AutoCloseInputStream(
+                    instrumentation.uiAutomation.executeShellCommand(
+                        "input keyevent ${KeyEvent.KEYCODE_WAKEUP} ${KeyEvent.KEYCODE_MENU}"
                     )
-                    .recycle()
-            } catch (_: TimeoutException) {
-                throw AssertionError(
-                    "SystemUI locked PIN surface not recognized: locked=${keyguard.isDeviceLocked}"
                 )
-            }
+                .use { it.readBytes() }
+            // Accessibility events may precede population of their window trees. Poll the
+            // same exact observed surface instead of requiring another event to recheck it.
+            val surfaceDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
+            while (!systemKeyguardPinSurface() && System.nanoTime() < surfaceDeadline) Thread.sleep(
+                100
+            )
         }
         assertTrue("System keyguard must remain locked at PIN entry", keyguard.isDeviceLocked)
         assertTrue(
-            "PIN entry requires the actual SystemUI keyguard keypad",
+            "PIN entry requires the actual SystemUI keyguard keypad: " + windowMetadata(),
             systemKeyguardPinSurface(),
         )
         // API28 keyguard uses custom PIN widgets. Its known SystemUI keypad is a separate
@@ -75,6 +66,30 @@ internal class SyntheticSystemKeyguard(
             "Real system credential did not unlock the secondary keyguard",
             keyguard.isDeviceLocked,
         )
+    }
+
+    private fun windowMetadata(): String {
+        val automation = instrumentation.uiAutomation
+        fun describe(root: AccessibilityNodeInfo?): String {
+            if (root == null) return "NONE"
+            val ids = mutableSetOf<String>()
+            var remaining = 512
+            val known =
+                Regex("com\\.android\\.systemui:id/(key[0-9]|keyguard_pin_view|pinEntry|key_enter)")
+            fun visit(current: AccessibilityNodeInfo?) {
+                if (current == null || remaining-- <= 0) return
+                current.viewIdResourceName?.takeIf(known::matches)?.let(ids::add)
+                for (index in 0 until current.childCount) visit(current.getChild(index))
+            }
+            visit(root)
+            return "package=${root.packageName} class=${root.className} " +
+                "visible=${root.isVisibleToUser} focused=${root.isFocused} knownIds=${ids.sorted()}"
+        }
+        val windows = automation.windows
+        return "windows=${windows.size} roots=" +
+            windows.take(8).joinToString(";") { describe(it.root) } +
+            " active=" +
+            describe(automation.rootInActiveWindow)
     }
 
     private fun systemKeyguardPinSurface(): Boolean {
