@@ -53,6 +53,7 @@ def failure_caller_state(output):
             'INVALID_INPUT', 'COLLISION', 'KEY_UNAVAILABLE', 'KEY_INVALIDATED',
             'AUTHENTICATION_FAILED', 'INCOMPLETE', 'CORRUPT', 'BUSY', 'UNCERTAIN')
     }
+    configuration_flags = ('DENSITY', 'FONT_SCALE', 'ORIENTATION', 'SCREEN_SIZE', 'UI_MODE', 'OTHER')
     observations = set()
     for line in output.splitlines():
         match = re.fullmatch(
@@ -60,18 +61,31 @@ def failure_caller_state(output):
             + '|'.join(re.escape(message) for message in messages) +
             r'): (?:([A-Z_]{1,40}) )?callerResumedAtRequest=(true|false) '
             r'focusAtRequest=(true|false) secure=(true|false) locked=(true|false) '
-            r'callerFinishing=(true|false) callerDestroyed=(true|false)', line)
+            r'callerFinishing=(true|false) callerDestroyed=(true|false)'
+            r'(?: callerChangingConfigurations=(true|false) configurationChanges=([A-Z_,]{1,80}) '
+            r'otherMainResumed=(true|false))?', line)
         if match:
             kind, state = messages[match[1]], match[2]
             if (kind == 'CALLER_NOT_RESUMED' and state is not None) or (
                     kind != 'CALLER_NOT_RESUMED' and state not in availability):
                 return None
-            observations.add((kind, state, *(value == 'true' for value in match.groups()[2:])))
+            changing, changes, replacement = match.groups()[8:]
+            flags = () if changes in (None, 'NONE') else tuple(changes.split(','))
+            if flags != tuple(flag for flag in configuration_flags if flag in flags):
+                return None
+            observations.add((kind, state, *(value == 'true' for value in match.groups()[2:8]),
+                              changing, flags, replacement))
     if len(observations) != 1:
         return None
     keys = ('failure', 'availability', 'caller_resumed_at_request', 'focus_at_request',
             'secure', 'locked', 'caller_finishing', 'caller_destroyed')
-    return dict(zip(keys, observations.pop()))
+    observation = observations.pop()
+    result = dict(zip(keys, observation[:8]))
+    if observation[8] is not None:
+        result.update(caller_changing_configurations=observation[8] == 'true',
+                      configuration_changes=list(observation[9]),
+                      other_main_resumed=observation[10] == 'true')
+    return result
 
 
 def failure_summary(output, api):

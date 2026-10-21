@@ -8,6 +8,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.ParcelFileDescriptor
@@ -875,9 +876,37 @@ class OwnerPilotInstrumentedTest {
 
     private fun callerDiagnostics(host: Activity, resumed: Boolean, focus: Boolean): String {
         val keyguard = context.getSystemService(KeyguardManager::class.java)
+        var changing = false
+        var changes = 0
+        var otherMainResumed = false
+        instrumentation.runOnMainSync {
+            changing = host.isChangingConfigurations
+            changes = host.changingConfigurations
+            otherMainResumed =
+                ActivityLifecycleMonitorRegistry.getInstance()
+                    .getActivitiesInStage(Stage.RESUMED)
+                    .any { it is MainActivity && it !== host }
+        }
+        val known =
+            listOf(
+                "DENSITY" to ActivityInfo.CONFIG_DENSITY,
+                "FONT_SCALE" to ActivityInfo.CONFIG_FONT_SCALE,
+                "ORIENTATION" to ActivityInfo.CONFIG_ORIENTATION,
+                "SCREEN_SIZE" to
+                    (ActivityInfo.CONFIG_SCREEN_SIZE or
+                        ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE or
+                        ActivityInfo.CONFIG_SCREEN_LAYOUT),
+                "UI_MODE" to ActivityInfo.CONFIG_UI_MODE,
+            )
+        val flags = known.filter { changes and it.second != 0 }.map { it.first }.toMutableList()
+        val knownMask = known.fold(0) { mask, entry -> mask or entry.second }
+        if (changes and knownMask.inv() != 0) flags.add("OTHER")
+        val categories = if (flags.isEmpty()) "NONE" else flags.joinToString(",")
         return "callerResumedAtRequest=$resumed focusAtRequest=$focus " +
             "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
-            "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed}"
+            "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed} " +
+            "callerChangingConfigurations=$changing configurationChanges=$categories " +
+            "otherMainResumed=$otherMainResumed"
     }
 
     private fun awaitCallerResumed(host: Activity) {

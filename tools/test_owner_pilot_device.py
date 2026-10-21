@@ -227,7 +227,8 @@ class PilotRunnerTests(unittest.TestCase):
         raw = ('PIN=123456 /data/user/10/private\n'
                'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Fixture caller never resumed: '
                'callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '
-               'callerFinishing=false callerDestroyed=true\n')
+               'callerFinishing=false callerDestroyed=true callerChangingConfigurations=true '
+               'configurationChanges=DENSITY,FONT_SCALE otherMainResumed=true\n')
         def rejected(*args):
             raise ValueError('private cleanup error')
         with tempfile.TemporaryDirectory() as directory:
@@ -236,9 +237,39 @@ class PilotRunnerTests(unittest.TestCase):
             failure = json.loads(receipt.with_suffix('.failure.json').read_text())
             self.assertEqual('CALLER_NOT_RESUMED', failure['caller_state']['failure'])
             self.assertTrue(failure['caller_state']['caller_destroyed'])
+            self.assertTrue(failure['caller_state']['caller_changing_configurations'])
+            self.assertEqual(['DENSITY', 'FONT_SCALE'], failure['caller_state']['configuration_changes'])
+            self.assertTrue(failure['caller_state']['other_main_resumed'])
             self.assertEqual('STOP_UNCONFIRMED', failure['instrumentation_cleanup'])
             for private in ['123456', '/data/', 'private', 'PIN']:
                 self.assertNotIn(private, json.dumps(failure))
+
+    def test_caller_configuration_diagnostics_are_canonical_allowlisted_values_only(self):
+        base = ('INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+                'Credential prompt timeout: FAILED_CANCELLED callerResumedAtRequest=true '
+                'focusAtRequest=true secure=true locked=false callerFinishing=false callerDestroyed=true')
+        for changes in ['NONE', 'DENSITY', 'FONT_SCALE,ORIENTATION', 'SCREEN_SIZE,UI_MODE,OTHER',
+                        'DENSITY,FONT_SCALE,ORIENTATION,SCREEN_SIZE,UI_MODE,OTHER']:
+            line = base + ' callerChangingConfigurations=true configurationChanges=' + changes + ' otherMainResumed=false'
+            result = self.runner.failure_caller_state(line)
+            with self.subTest(changes=changes):
+                self.assertIsNotNone(result)
+                self.assertEqual([] if changes == 'NONE' else changes.split(','), result['configuration_changes'])
+                self.assertTrue(result['caller_changing_configurations'])
+                self.assertFalse(result['other_main_resumed'])
+        suffix = ' callerChangingConfigurations=true configurationChanges=DENSITY,FONT_SCALE otherMainResumed=false'
+        line = base + suffix
+        for invalid in ['FONT_SCALE,DENSITY', 'DENSITY,DENSITY', 'NONE,DENSITY', 'SECRET',
+                        '123456', '', 'DENSITY,', ',DENSITY', 'density', 'DENSITY,' * 30]:
+            with self.subTest(changes=invalid):
+                self.assertIsNone(self.runner.failure_caller_state(line.replace('DENSITY,FONT_SCALE', invalid)))
+        for invalid in [line + ' PIN=123456', line + ' /private/path',
+                        line.replace('callerChangingConfigurations=true', 'callerChangingConfigurations=1'),
+                        line.replace('otherMainResumed=false', 'otherMainResumed=FALSE'),
+                        line.replace(' otherMainResumed=false', ''),
+                        line + '\n' + line.replace('otherMainResumed=false', 'otherMainResumed=true')]:
+            with self.subTest(invalid=invalid):
+                self.assertIsNone(self.runner.failure_caller_state(invalid))
 
 
 if __name__ == '__main__':
