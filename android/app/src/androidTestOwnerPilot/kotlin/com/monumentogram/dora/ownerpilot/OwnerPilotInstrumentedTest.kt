@@ -279,6 +279,7 @@ class OwnerPilotInstrumentedTest {
             shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
             awaitLocked()
             assertNoPlaintext(third, selected)
+            awaitSystemKeyguardLocked()
             shell("input keyevent ${KeyEvent.KEYCODE_WAKEUP}")
             SyntheticSystemKeyguard(
                     instrumentation,
@@ -653,6 +654,7 @@ class OwnerPilotInstrumentedTest {
                     ByteArray(320) { 6 },
                 )
             )
+            awaitSystemKeyguardLocked()
             shell("input keyevent ${KeyEvent.KEYCODE_WAKEUP}")
             SyntheticSystemKeyguard(
                     instrumentation,
@@ -740,6 +742,14 @@ class OwnerPilotInstrumentedTest {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
         while (runtime.isRecordingUiAuthorized() && System.nanoTime() < deadline) Thread.sleep(100)
         assertFalse(runtime.isRecordingUiAuthorized())
+    }
+
+    private fun awaitSystemKeyguardLocked() {
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
+        // App Lock revokes on pause, before the independent OS keyguard finishes locking.
+        while (!keyguard.isDeviceLocked && System.nanoTime() < deadline) Thread.sleep(100)
+        assertTrue("Screen-off must lock the system keyguard before wake", keyguard.isDeviceLocked)
     }
 
     private fun shell(command: String) {
