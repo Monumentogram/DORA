@@ -171,8 +171,12 @@ class OwnerPilotInstrumentedTest {
         val expectedUser = checkNotNull(arguments.getString("pilotUserId")).toInt()
         val expectedSerial = checkNotNull(arguments.getString("pilotUserSerial")).toLong()
         assertTrue(expectedUser > 0)
-        assertEquals(360, context.resources.configuration.screenWidthDp)
-        assertTrue(context.resources.configuration.fontScale >= 2.0f)
+        val configuration = context.resources.configuration
+        val configurationEvidence =
+            "PILOT_UI_CONFIGURATION width_dp=${configuration.screenWidthDp} " +
+                "font_scale_permille=${(configuration.fontScale * 1000).toInt()}"
+        assertEquals(configurationEvidence, 360, configuration.screenWidthDp)
+        assertTrue(configurationEvidence, configuration.fontScale >= 2.0f)
         assertEquals(expectedUser, processUser())
         assertEquals(
             expectedSerial,

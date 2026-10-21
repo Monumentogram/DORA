@@ -147,6 +147,53 @@ class PilotRunnerTests(unittest.TestCase):
                     self.runner.main()
                 launched.assert_not_called()
 
+    def test_secondary_viewport_is_set_only_after_confirmed_user_switch(self):
+        calls = []
+        ready = False
+        def command(*args):
+            calls.append(args)
+            if args == ('shell', 'am', 'get-current-user'):
+                return '12' if ready else '0'
+            if args[:3] in [('shell', 'wm', 'density'), ('shell', 'wm', 'size')]:
+                self.assertTrue(ready, 'Display mutation before the secondary switch loses per-user density')
+        def wait(user):
+            nonlocal ready
+            calls.append(('SWITCH_CONFIRMED', user))
+            ready = True
+        self.runner.switch_to_secondary_viewport(command, wait, 12)
+        self.assertEqual([
+            ('shell', 'am', 'switch-user', '12'), ('SWITCH_CONFIRMED', 12),
+            ('shell', 'am', 'get-current-user'),
+            ('shell', 'settings', '--user', '12', 'put', 'system', 'font_scale', '2.0'),
+            ('shell', 'wm', 'size', '1080x1920'), ('shell', 'wm', 'density', '480'),
+        ], calls)
+
+    def test_unconfirmed_or_wrong_user_prevents_viewport_mutation(self):
+        for timed_out in (False, True):
+            calls = []
+            def command(*args):
+                calls.append(args)
+                return '0'
+            def wait(user):
+                if timed_out:
+                    raise ValueError('USER_SWITCH_COMPLETION_TIMEOUT')
+            with self.subTest(timed_out=timed_out), self.assertRaises(ValueError):
+                self.runner.switch_to_secondary_viewport(command, wait, 12)
+            self.assertTrue(all(call[:2] == ('shell', 'am') for call in calls))
+
+    def test_configuration_diagnostics_are_exact_bounded_numeric_values_only(self):
+        line = ('INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+                'PILOT_UI_CONFIGURATION width_dp=411 font_scale_permille=2000')
+        expected = {'width_dp': 411, 'font_scale_permille': 2000}
+        self.assertEqual(expected, self.runner.failure_configuration(line))
+        self.assertEqual(expected, self.runner.failure_configuration(line + ' expected:<360> but was:<411>'))
+        for invalid in [line + ' PIN=123456', line.replace('411', '123456'),
+                        line.replace('2000', '123456'), line.replace('411', '0'),
+                        line.replace('2000', '9999'), line.replace('PILOT_UI_CONFIGURATION', 'SECRET'),
+                        line + '\n' + line.replace('411', '412')]:
+            with self.subTest(invalid=invalid):
+                self.assertIsNone(self.runner.failure_configuration(invalid))
+
 
 if __name__ == '__main__':
     unittest.main()

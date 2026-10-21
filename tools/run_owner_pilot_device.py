@@ -83,6 +83,37 @@ def failure_locations(output):
     return locations
 
 
+def failure_configuration(output):
+    observations = set()
+    for line in output.splitlines():
+        match = re.fullmatch(
+            r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
+            r'PILOT_UI_CONFIGURATION width_dp=([1-9][0-9]{1,3}) '
+            r'font_scale_permille=([1-9][0-9]{2,3})'
+            r'(?: expected:<360> but was:<\1>)?', line)
+        if match:
+            width, font = map(int, match.groups())
+            if 100 <= width <= 2000 and 500 <= font <= 3000:
+                observations.add((width, font))
+    if len(observations) != 1:
+        return None
+    width, font = observations.pop()
+    return {'width_dp': width, 'font_scale_permille': font}
+
+
+def switch_to_secondary_viewport(command, wait_for_switch, user):
+    require(type(user) is int and user > 0, 'SYNTHETIC_SECONDARY_REQUIRED')
+    command('shell', 'am', 'switch-user', str(user))
+    wait_for_switch(user)
+    require(command('shell', 'am', 'get-current-user') == str(user),
+            'SECONDARY_VIEWPORT_USER_MISMATCH')
+    # AOSP wm density uses USER_CURRENT; setCurrentUser reloads the new user's density.
+    # Apply the compact fixture only after the secondary switch has completed.
+    command('shell', 'settings', '--user', str(user), 'put', 'system', 'font_scale', '2.0')
+    command('shell', 'wm', 'size', '1080x1920')
+    command('shell', 'wm', 'density', '480')
+
+
 def admit_apk_inputs(app_badging, test_badging, test_manifest):
     check_badging(app_badging)
     packages = re.findall(r"^package: name='([^']+)'", test_badging, re.MULTILINE)
@@ -127,6 +158,7 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
         'schema_version': 1, 'status': 'FAILED_NOT_ACCEPTANCE',
         'api': api, 'phase': phase, 'physical_device': False,
         'locations': failure_locations(output),
+        'ui_configuration': failure_configuration(output),
         'instrumentation_cleanup': 'STOP_UNCONFIRMED',
     }
     # Preserve the original sanitized evidence before cleanup can itself fail or stall.
@@ -223,12 +255,7 @@ def main():
         command('shell', 'am', 'start-user', str(user))
         # Skip account/setup screens only in the disposable emulator, not lock/authentication.
         command('shell', 'settings', '--user', str(user), 'put', 'secure', 'user_setup_complete', '1')
-        # Compact phone viewport and enlarged text are synthetic emulator accessibility evidence.
-        command('shell', 'settings', '--user', str(user), 'put', 'system', 'font_scale', '2.0')
-        command('shell', 'wm', 'size', '1080x1920')
-        command('shell', 'wm', 'density', '480')
-        command('shell', 'am', 'switch-user', str(user))
-        wait_for_switch(user)
+        switch_to_secondary_viewport(command, wait_for_switch, user)
         for package in (PACKAGE, PACKAGE + '.test'):
             output = command('shell', 'cmd', 'package', 'install-existing', '--user', str(user), package)
             require('installed for user' in output, 'SECONDARY_INSTALL_FAILED')
