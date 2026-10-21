@@ -17,6 +17,14 @@ class ReleasePreflightTests(unittest.TestCase):
                 preflight.check_version(code, 4)
         preflight.check_version(5, 4)
 
+    def test_build_receipt_binds_each_artifact_to_exact_clean_source(self):
+        receipt = {'source_sha': 'a' * 40, 'sha256': 'b' * 64, 'source_clean': True}
+        preflight.check_build_receipt(receipt, 'a' * 40, 'b' * 64)
+        for changed in ({**receipt, 'source_sha': 'c' * 40}, {**receipt, 'sha256': 'd' * 64},
+                        {**receipt, 'source_clean': False}, {}):
+            with self.assertRaises(ValueError):
+                preflight.check_build_receipt(changed, 'a' * 40, 'b' * 64)
+
     def test_dex_denial_rejects_true_branch_marker_reads_and_early_returns(self):
         good = '.method public final allowed(Ljava/lang/String;ZLjava/io/File;)Z\n .registers 4\n const-string p0, "packageName"\n invoke-static {p1, p0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V\n const/4 p0, 0x0\n return p0\n.end method'
         preflight.check_denial_code(good, 'allowed(Ljava/lang/String;ZLjava/io/File;)Z')

@@ -17,8 +17,8 @@ Architecture: retain existing fail-closed runtime and debug/release source separ
 
 ## Tasks
 
-- [ ] Audit security source, existing tests and installed version; create ten-control matrix and owner restoration runbook.
-- [ ] Add successor artifact verification with negative tests; extend release override controls; admit exact successor scope and version without rewriting historical evidence.
+- [x] Audit security source, existing tests and installed version; create ten-control matrix and owner restoration runbook.
+- [x] Add successor artifact verification with negative tests; extend release override controls; admit exact successor scope and version without rewriting historical evidence.
 - [ ] Run local host/JVM/static checks and exact-SHA API28/API36 CI (4 inherited + 3 isolated + artifact checks).
 - [ ] Execute two clean strict production builds, validate package/DEX/manifest/native dependencies, generate SBOM, verify authorized owner-local signing or retain explicit unsigned blocker.
 - [ ] Independent whole-branch review, publication audit, commit/push/draft PR; record final results and owner-only next gate.
@@ -29,3 +29,6 @@ Architecture: retain existing fail-closed runtime and debug/release source separ
 - Remote #104/#105 refs matched supplied SHAs. Read-only `dumpsys package com.monumentogram.dora` reports installed code 4/name alpha.2; no application launch or vault access.
 - Historical `build_internal_alpha.py` deliberately admits only Stage7 and no microphone. Preserve it and add a successor process.
 - Independent reviewer dispatched under requesting-code-review. Runtime review so far finds no confirmed bypass; full result remains pending.
+- Baseline strict release build passed after fixing a Windows CRLF checkout transformation of the vendor POM; its original pinned SHA256 was retained. Local Detekt/JVM/test-APK compilation passed after splitting the new matrix helper out of the large instrumentation class.
+- Final independent review raised two P2s: bind artifact digest to builder source receipt, and move marker fixture writes after secondary-user admission. Both addressed in successor changes, with stale-source/hash/dirty receipt rejection tests and admission before helper invocation. Candidate outputs from the earlier SHA are not final release evidence.
+- Source receipt binding is local build provenance, not a cryptographically signed remote attestation. CI creates its digest receipt immediately after its own build in the same clean exact-SHA job.

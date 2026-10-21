@@ -89,6 +89,8 @@ def main():
     exact_source(args.source_sha)
     command = [sys.executable, str(ROOT / 'tools/alpha_security_preflight.py'),
                '--apk', str(args.output / 'build1/candidate.apk'), '--compare', str(args.output / 'build2/candidate.apk'),
+               '--build-receipt', str(args.output / 'build1/source.json'),
+               '--compare-build-receipt', str(args.output / 'build2/source.json'),
                '--sdk', str(args.sdk), '--source-sha', args.source_sha,
                '--installed-version-code', str(args.installed_version_code), '--aar', str(aar),
                '--receipt', str(args.output / 'artifact-preflight.json')]

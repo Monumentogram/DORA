@@ -33,6 +33,11 @@ def check_version(code, installed):
             'VERSION_CODE_NOT_MONOTONIC')
 
 
+def check_build_receipt(receipt, source, artifact_sha):
+    require(receipt.get('source_sha') == source and receipt.get('source_clean') is True and
+            receipt.get('sha256') == artifact_sha, 'ARTIFACT_BUILD_PROVENANCE_MISMATCH')
+
+
 def check_badging(text, code, name):
     match = re.search(r"^package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", text, re.M)
     require(match and match.groups() == (APPLICATION_ID, str(code), name), 'PRODUCTION_IDENTITY_MISMATCH')
@@ -87,6 +92,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--compare', type=Path)
+    parser.add_argument('--build-receipt', type=Path, required=True)
+    parser.add_argument('--compare-build-receipt', type=Path)
     parser.add_argument('--sdk', type=Path, required=True)
     parser.add_argument('--source-sha', required=True)
     parser.add_argument('--installed-version-code', type=int, required=True)
@@ -94,6 +101,7 @@ def main():
     parser.add_argument('--signed', action='store_true')
     parser.add_argument('--receipt', type=Path, required=True)
     args = parser.parse_args()
+    require(bool(args.compare) == bool(args.compare_build_receipt), 'COMPARE_BUILD_RECEIPT_REQUIRED')
     require(not args.receipt.exists(), 'RECEIPT_EXISTS')
     def run(command):
         result = subprocess.run([str(item) for item in command], cwd=ROOT,
@@ -110,7 +118,12 @@ def main():
     bat = '.bat' if os.name == 'nt' else ''
     analyzer = args.sdk / ('cmdline-tools/latest/bin/apkanalyzer' + bat)
     inventories, builds = [], []
-    for path in [args.apk] + ([args.compare] if args.compare else []):
+    artifacts = [(args.apk, args.build_receipt)]
+    if args.compare:
+        artifacts.append((args.compare, args.compare_build_receipt))
+    for path, build_receipt in artifacts:
+        artifact_sha = sha(path)
+        check_build_receipt(json.loads(build_receipt.read_text(encoding='utf-8')), args.source_sha, artifact_sha)
         check_badging(run([bt / ('aapt' + exe), 'dump', 'badging', path]), code, version)
         xml = run([analyzer, 'manifest', 'print', path])
         components = check_manifest(xml)
@@ -141,14 +154,17 @@ def main():
                     for name in native.namelist():
                         if name.startswith('jni/') and not name.endswith('/'):
                             require(inventory.get('lib/' + name[4:]) == hashlib.sha256(native.read(name)).hexdigest(), 'NATIVE_PAYLOAD_MISMATCH')
-        builds.append({'apk_sha256': sha(path), 'size_bytes': path.stat().st_size,
+        require(sha(path) == artifact_sha, 'ARTIFACT_CHANGED_DURING_VERIFICATION')
+        builds.append({'apk_sha256': artifact_sha, 'size_bytes': path.stat().st_size,
+                       'build_receipt_sha256': sha(build_receipt),
                        'payload': inventory, 'dex_inventory': dex_names, 'components': components,
                        'release_override_dex': override_code,
                        'manifest_sha256': hashlib.sha256(xml.encode()).hexdigest()})
         inventories.append(inventory)
     diff = differences(*inventories) if len(inventories) == 2 else None
     require(diff is None or not diff, 'CLEAN_BUILD_PAYLOAD_MISMATCH')
-    receipt = {'source_sha': args.source_sha, 'application_id': APPLICATION_ID,
+    receipt = {'source_sha': args.source_sha, 'provenance': 'LOCAL_BUILD_RECEIPT_BOUND_NOT_REMOTE_ATTESTATION',
+               'application_id': APPLICATION_ID,
                'version_code': code, 'version_name': version, 'builds': builds,
                'certificate_sha256': CERTIFICATE_SHA256 if args.signed else None,
                'payload_differences': diff, 'private_vad_verified': args.aar is not None,
