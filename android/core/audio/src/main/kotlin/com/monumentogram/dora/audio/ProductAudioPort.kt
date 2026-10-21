@@ -181,6 +181,14 @@ enum class AudioDeletionCategory {
  * failed extraction invalidates the whole attempt, including earlier callbacks.
  */
 interface ProductAudioSession {
+    /** Exact identity from this authenticated local vault; ambiguous recordings fail closed. */
+    fun findRecording(recordingId: RecordingId): AudioResult<AudioIdentity> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
+    /** Rechecks durable tombstone and absence of every retained file/key deletion target. */
+    fun inspectAudioDeletion(identity: AudioIdentity): AudioResult<AudioDeletionInspection> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val logicalRecordings: com.monumentogram.dora.audio.logical.LogicalRecordingPort
         get() =
             com.monumentogram.dora.audio.logical.LogicalRecordingPort {
@@ -206,6 +214,15 @@ interface ProductAudioSession {
 
     /** Resumes only an already durably confirmed exact audio deletion; never starts one. */
     fun retryRemainingDeletion(identity: AudioIdentity): AudioResult<Unit>
+}
+
+data class AudioDeletionInspection(
+    val tombstoneComplete: Boolean,
+    val audioArtifactsAbsent: Boolean,
+    val keyReferencesAbsent: Boolean,
+) {
+    val complete: Boolean
+        get() = tombstoneComplete && audioArtifactsAbsent && keyReferencesAbsent
 }
 
 interface ProductAudioRuntime {

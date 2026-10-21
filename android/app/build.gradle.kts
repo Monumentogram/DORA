@@ -73,7 +73,20 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
+        create("alphaTest") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".alpha.test"
+            matchingFallbacks += "release"
+            if (providers.gradleProperty("doraAlphaTestInstrumentationSigning").orNull == "true") {
+                signingConfig = signingConfigs.getByName("debug")
+            }
+        }
     }
+
+    testBuildType =
+        providers.gradleProperty("doraTestBuildType").orElse("debug").get().also {
+            check(it in setOf("debug", "alphaTest")) { "Unsupported instrumentation build type" }
+        }
 
     buildFeatures {
         compose = true
@@ -86,6 +99,13 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+androidComponents {
+    beforeVariants(selector().withBuildType("alphaTest")) {
+        it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =
+            true
     }
 }
 

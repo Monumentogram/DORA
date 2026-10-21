@@ -59,7 +59,10 @@ import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliati
 import java.io.File
 import java.io.FileDescriptor
 
-@Suppress("LongParameterList") // Private constructor owns the single composition resource boundary.
+@Suppress(
+    "LongParameterList",
+    "TooManyFunctions",
+) // One authenticated vault owns all resource boundaries.
 internal class EncryptedAudioVault
 private constructor(
     private val journal: RoomAudioJournal,
@@ -71,6 +74,42 @@ private constructor(
     override val protection: VaultKeyProtection,
 ) : RuntimeVault {
     @Volatile private var closed = false
+
+    override fun findRecording(
+        recordingId: com.monumentogram.dora.model.alpha.RecordingId
+    ): AudioResult<AudioIdentity> = operation {
+        journal.findRecording(recordingId)?.let { AudioResult.Value(it) }
+            ?: AudioResult.Failed(AudioFailure.INVALID_INPUT)
+    }
+
+    override fun inspectAudioDeletion(
+        identity: AudioIdentity
+    ): AudioResult<com.monumentogram.dora.audio.AudioDeletionInspection> = operation {
+        journal.requireMutableSource(identity)
+        val lease =
+            journal.catalog.tryAcquire(identity)
+                ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+        lease.use {
+            val snapshot =
+                journal.loadDeletion(identity)
+                    ?: return@operation AudioResult.Failed(AudioFailure.INVALID_INPUT)
+            val complete =
+                journal.sourceState(identity) == AudioSourceState.UserDeleted &&
+                    snapshot.state == "USER_DELETED" &&
+                    snapshot.steps.all { it.completed }
+            val keys =
+                snapshot.steps.filter { it.target.kind == AudioDeletionTargetKind.KEY_REFERENCE }
+            val files =
+                snapshot.steps.filter { it.target.kind != AudioDeletionTargetKind.KEY_REFERENCE }
+            AudioResult.Value(
+                com.monumentogram.dora.audio.AudioDeletionInspection(
+                    complete,
+                    files.all { deletionStorage.verifiedAbsent(it.target) },
+                    keys.all { deletionStorage.verifiedAbsent(it.target) },
+                )
+            )
+        }
+    }
 
     override val logicalRecordings: com.monumentogram.dora.audio.logical.LogicalRecordingPort
         get() =
