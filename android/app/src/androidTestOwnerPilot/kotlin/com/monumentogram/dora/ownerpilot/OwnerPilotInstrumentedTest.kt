@@ -333,18 +333,24 @@ class OwnerPilotInstrumentedTest {
             .performClick()
         ui.onNodeWithText("Начать запись").assertIsDisplayed().assertIsEnabled().performClick()
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
-        val systemPackages =
-            setOf(
-                "com.android.packageinstaller",
-                "com.android.permissioncontroller",
-                "com.google.android.permissioncontroller",
+        val denialButtons =
+            mapOf(
+                "com.android.packageinstaller" to
+                    "com.android.packageinstaller:id/permission_deny_button",
+                "com.google.android.packageinstaller" to
+                    "com.android.packageinstaller:id/permission_deny_button",
+                "com.android.permissioncontroller" to
+                    "com.android.permissioncontroller:id/permission_deny_button",
+                "com.google.android.permissioncontroller" to
+                    "com.android.permissioncontroller:id/permission_deny_button",
             )
         var deny: AccessibilityNodeInfo? = null
         while (deny == null && System.nanoTime() < deadline) {
             deny = node {
-                val owner = it.packageName?.toString()
-                owner in systemPackages &&
-                    it.viewIdResourceName == "$owner:id/permission_deny_button" &&
+                val resource = denialButtons[it.packageName?.toString()]
+                resource != null &&
+                    it.viewIdResourceName == resource &&
+                    it.isVisibleToUser &&
                     it.isEnabled &&
                     it.isClickable
             }
@@ -476,7 +482,7 @@ class OwnerPilotInstrumentedTest {
         loadSaved(identity)
         prompt { ui.onNodeWithText("Удалить аудио…").performScrollTo().performClick() }
         enterCredential()
-        clickNative("Cancel")
+        clickAudioDeletionDialog("Cancel")
         waitText("Удаление не подтверждено: CANCELLED")
         loadSaved(identity)
         prompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
@@ -485,7 +491,7 @@ class OwnerPilotInstrumentedTest {
         loadSaved(identity)
         prompt { ui.onNodeWithText("Удалить аудио…").performScrollTo().performClick() }
         enterCredential()
-        clickNative("Delete audio")
+        clickAudioDeletionDialog("Delete audio")
         waitText("Аудио удалено. Удаление проверено.")
     }
 
@@ -613,12 +619,35 @@ class OwnerPilotInstrumentedTest {
             .recycle()
     }
 
-    private fun clickNative(text: String) {
+    @Suppress(
+        "CyclomaticComplexMethod"
+    ) // Match the exact app dialog, never a system credential button.
+    private fun clickAudioDeletionDialog(text: String) {
+        val resource =
+            when (text) {
+                "Cancel" -> "android:id/button2"
+                "Delete audio" -> "android:id/button1"
+                else -> error("Unsupported audio deletion action")
+            }
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30)
         var button: AccessibilityNodeInfo? = null
         while (button == null && System.nanoTime() < deadline) {
-            button = node {
-                it.text?.toString()?.equals(text, ignoreCase = true) == true && it.isClickable
+            val title = node {
+                it.packageName?.toString() == context.packageName &&
+                    it.viewIdResourceName == "android:id/alertTitle" &&
+                    it.text?.toString() == "Delete audio" &&
+                    it.isVisibleToUser
+            }
+            if (title != null) {
+                button = node {
+                    it.packageName?.toString() == context.packageName &&
+                        it.windowId == title.windowId &&
+                        it.viewIdResourceName == resource &&
+                        it.text?.toString()?.equals(text, ignoreCase = true) == true &&
+                        it.isVisibleToUser &&
+                        it.isEnabled &&
+                        it.isClickable
+                }
             }
             if (button == null) Thread.sleep(100)
         }
