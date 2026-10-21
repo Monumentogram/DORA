@@ -81,11 +81,21 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
         }
+        create("ownerPilot") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".alpha.pilot"
+            matchingFallbacks += "release"
+            if (providers.gradleProperty("doraOwnerPilotInstrumentationSigning").orNull == "true") {
+                signingConfig = signingConfigs.getByName("debug")
+            }
+        }
     }
 
     testBuildType =
         providers.gradleProperty("doraTestBuildType").orElse("debug").get().also {
-            check(it in setOf("debug", "alphaTest")) { "Unsupported instrumentation build type" }
+            check(it in setOf("debug", "alphaTest", "ownerPilot")) {
+                "Unsupported instrumentation build type"
+            }
         }
 
     buildFeatures {
@@ -103,6 +113,16 @@ android {
 }
 
 androidComponents {
+    onVariants(selector().withBuildType("ownerPilot")) { variant ->
+        variant.outputs.forEach { output ->
+            output.versionCode.set(1)
+            output.versionName.set("0.1.0-owner-alpha.1")
+        }
+    }
+    beforeVariants(selector().withBuildType("ownerPilot")) {
+        it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =
+            true
+    }
     beforeVariants(selector().withBuildType("alphaTest")) {
         it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =
             true

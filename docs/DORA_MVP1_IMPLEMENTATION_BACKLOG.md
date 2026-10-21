@@ -1,3 +1,16 @@
+## 2026-10-21 — Separate operator-free owner Alpha pilot
+
+Owner authorizes SOFTWARE_IMPLEMENTATION_ONLY for `com.monumentogram.dora.alpha.pilot`
+from PR106 baseline, independently of PR107. Release-derived runtime, separate local
+signer, ordinary authenticated saved-audio verification/deletion and synthetic API28/36
+acceptance are specified in [ADR-RECORDING-013](adr/ADR-RECORDING-013-isolated-owner-alpha-pilot.md).
+The [physical pilot protocol](ISOLATED_OWNER_ALPHA_PILOT_PHYSICAL_PROTOCOL.md) requires
+a later exact-artifact decision and fresh user10/serial10 admission. Software checks,
+review and artifact identities are recorded in the terminal execution report.
+Physical installation/launch/recording/deletion/distribution remain NOT_RUN/NOT_GRANTED.
+Restoration OPEN; Stage8.6 NOT_READY; LONG02 root cause NOT_PROVEN;
+production upgrade safety UNPROVEN. This pilot is not production-equivalent.
+
 ## 2026-10-21 - Alpha security/release preflight successor
 
 Owner-scoped successor of PR105. Production candidate code 5 / alpha.3;

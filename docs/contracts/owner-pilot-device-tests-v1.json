@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "package": "com.monumentogram.dora.alpha.pilot",
+  "phases": {
+    "owner_initial": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#noSystemCredentialCannotOpenVault",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#packageManifestAndReleaseOverridesAreClosed",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#seedOwnerIsolationSentinel"
+    ],
+    "secondary": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#packageManifestAndReleaseOverridesAreClosed",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#secondaryCannotReadOwnerSentinel"
+    ],
+    "owner_final": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#verifyOwnerIsolationSentinelUnchanged"
+    ]
+  }
+}

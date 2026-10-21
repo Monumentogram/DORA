@@ -2,7 +2,7 @@ name: Stage8 limited Alpha
 
 on:
   push:
-    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator", "codex/alpha-security-release-preflight"]
+    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator", "codex/alpha-security-release-preflight", "codex/isolated-owner-alpha-pilot"]
   workflow_dispatch:
 
 permissions:
