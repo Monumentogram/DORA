@@ -67,6 +67,24 @@ def check_apk(path):
                 "Signing material in APK")
 
 
+def isolated_scope(contract):
+    require(contract['baseline'] == '1442f0db8a6936920a692913035d100f68871f81',
+            'Unexpected isolated successor baseline')
+    require(contract['application_id'] == 'com.monumentogram.dora.alpha.test', 'Isolated runtime ID changed')
+    require(contract['physical_operations_authorized'] is False and
+            contract['security_restoration'] == 'OPEN' and contract['stage_8_6'] == 'NOT_READY',
+            'Isolated software cannot close physical/security gates')
+    require(contract['mandatory_additional_jobs'] ==
+            ['isolated-alpha-software', 'isolated-alpha-api28', 'isolated-alpha-api36'],
+            'Mandatory additional jobs changed')
+    paths = contract['implementation_paths']
+    require(bool(paths) and len(paths) == len(set(paths)) and all(
+        isinstance(path, str) and path and not path.startswith('/') and
+        not any(value in path for value in ('..', '*', '?', '\\', ':')) for path in paths),
+        'Ambiguous successor scope')
+    return set(paths)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", type=Path, action="append", default=[])
@@ -79,8 +97,14 @@ def main():
     changed = set(git("diff", "--name-only", BASE).decode().splitlines())
     changed |= set(git("ls-files", "--others", "--exclude-standard").decode().splitlines())
     allowed = set(profile["implementation_paths"])
-    require(changed <= allowed, "Out-of-scope files: " + ", ".join(sorted(changed - allowed)))
     require(len(allowed) == len(profile["implementation_paths"]), "Duplicate scope entry")
+    isolated = ROOT / 'docs/contracts/isolated-alpha-v1.json'
+    if isolated.exists():
+        successor = json.loads(isolated.read_text(encoding='utf-8'))
+        allowed |= isolated_scope(successor)
+        subprocess.run(['git', 'merge-base', '--is-ancestor', successor['baseline'], 'HEAD'],
+                       cwd=ROOT, check=True)
+    require(changed <= allowed, "Out-of-scope files: " + ", ".join(sorted(changed - allowed)))
     for path in profile["append_only_decisions"]:
         old = git("show", BASE + ":" + path).decode().replace("\r\n", "\n")
         require((ROOT / path).read_text(encoding="utf-8").endswith(old), "Historical source was rewritten: " + path)
