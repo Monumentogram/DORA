@@ -59,6 +59,7 @@ class IsolatedAlphaOperatorInstrumentedTest {
 
     @Test
     fun realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen() {
+        assertReleaseOverridesDenyAllInputs(context)
         val expectedUser = checkNotNull(arguments.getString("operatorUserId"))
         val serial = checkNotNull(arguments.getString("operatorUserSerial"))
         val operator =

@@ -55,7 +55,7 @@ class ReleaseSbomTest(unittest.TestCase):
         original = graph()
         result = sbom.generate(original, SOURCE, {"sample:runtime:1.2.3"}, original)
         self.assertEqual(result["specVersion"], "1.6")
-        self.assertEqual(result["metadata"]["component"]["version"], "0.1.0-alpha.2")
+        self.assertEqual(result["metadata"]["component"]["version"], "0.1.0-alpha.3")
         external = next(c for c in result["components"] if c["name"] == "runtime")
         self.assertEqual(external["purl"], "pkg:maven/sample/runtime@1.2.3")
         self.assertEqual(len(result["dependencies"]), 3)

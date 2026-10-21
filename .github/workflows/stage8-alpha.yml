@@ -2,7 +2,7 @@ name: Stage8 limited Alpha
 
 on:
   push:
-    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator"]
+    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator", "codex/alpha-security-release-preflight"]
   workflow_dispatch:
 
 permissions:
@@ -35,6 +35,7 @@ jobs:
           python3 -m unittest discover -s tools -p test_isolated_alpha_apk.py
           python3 -m unittest discover -s tools -p test_isolated_alpha_device.py
           python3 -m unittest discover -s tools -p test_isolated_alpha_contract.py
+          python3 -m unittest discover -s tools -p test_alpha_security_preflight.py
 
   alpha-software:
     runs-on: ubuntu-latest
@@ -72,6 +73,12 @@ jobs:
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/release/app-release-unsigned.apk --allowlist android/product-native-libs-allowlist.txt
           python3 tools/validate_stage8_alpha.py --apk android/app/build/outputs/apk/debug/app-debug.apk --apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+      - name: Inspect actual production DEX denial and manifest boundary
+        run: >-
+          python3 tools/alpha_security_preflight.py
+          --apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          --sdk "${ANDROID_HOME}" --source-sha "${GITHUB_SHA}"
+          --installed-version-code 4 --receipt "${RUNNER_TEMP}/production-preflight.json"
       - name: Publish synthetic test reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -80,6 +87,7 @@ jobs:
           path: |
             android/**/build/test-results/test*UnitTest/*.xml
             android/**/build/reports/lint-results-*.xml
+            ${{ runner.temp }}/production-preflight.json
           retention-days: 7
           if-no-files-found: error
 

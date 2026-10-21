@@ -2,7 +2,7 @@ name: Isolated Alpha package and operator
 
 on:
   push:
-    branches: ["codex/stage8-isolated-alpha-operator"]
+    branches: ["codex/stage8-isolated-alpha-operator", "codex/alpha-security-release-preflight"]
   workflow_dispatch:
 
 permissions:
