@@ -63,7 +63,9 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
     }
     val currentAuthorization by rememberUpdatedState(authorized)
     LaunchedEffect(authorized) {
-        if (!authorized) {
+        // A delayed presentation snapshot must not erase a result from fresh authority.
+        // ON_PAUSE above still clears private state synchronously on every background transition.
+        if (!authorized && !app.audioRuntime.isRecordingUiAuthorized()) {
             entries = emptyList()
             acknowledged = false
             pending = null

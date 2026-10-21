@@ -574,6 +574,12 @@ class OwnerPilotInstrumentedTest {
         assertFalse(runtime.isRecordingUiAuthorized())
         assertNoPlaintext(current, selected)
         ui.onNodeWithText(verification).assertDoesNotExist()
+        ui.runOnIdle { presentedAuthorization.value = true }
+        ui.waitForIdle()
+        assertFalse(runtime.isRecordingUiAuthorized())
+        ui.onNodeWithText(verification).assertDoesNotExist()
+        ui.runOnIdle { presentedAuthorization.value = false }
+        ui.waitForIdle()
         val reopened = unlock(activity)
         ui.runOnIdle { presentedAuthorization.value = true }
         ui.waitForIdle()
