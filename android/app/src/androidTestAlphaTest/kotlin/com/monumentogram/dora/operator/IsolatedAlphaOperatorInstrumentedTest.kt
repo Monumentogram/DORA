@@ -4,6 +4,7 @@ package com.monumentogram.dora.operator
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
+import android.app.KeyguardManager
 import android.content.Intent
 import android.os.ParcelFileDescriptor
 import android.security.keystore.KeyGenParameterSpec
@@ -16,6 +17,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.audio.AudioAvailability
@@ -35,6 +38,7 @@ import java.security.KeyStore
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.crypto.KeyGenerator
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -294,35 +298,54 @@ class IsolatedAlphaOperatorInstrumentedTest {
     private fun unlock(host: Activity): ProductAudioSession {
         val done = CountDownLatch(1)
         var result: AudioAvailability? = null
-        instrumentation.uiAutomation
-            .executeAndWaitForEvent(
-                {
-                    instrumentation.runOnMainSync {
-                        runtime.requestOpen(host, runtime.recordingOpenMode()) {
-                            result = it
-                            done.countDown()
+        var resumedAtRequest = false
+        var focusAtRequest = false
+        try {
+            instrumentation.uiAutomation
+                .executeAndWaitForEvent(
+                    {
+                        instrumentation.runOnMainSync {
+                            resumedAtRequest =
+                                ActivityLifecycleMonitorRegistry.getInstance()
+                                    .getActivitiesInStage(Stage.RESUMED)
+                                    .any { it === host }
+                            focusAtRequest = host.hasWindowFocus()
+                            runtime.requestOpen(host, runtime.recordingOpenMode()) {
+                                result = it
+                                done.countDown()
+                            }
                         }
-                    }
-                },
-                { node { it.isPassword && it.isEditable && it.isFocused } != null },
-                15_000,
+                    },
+                    { node { it.isPassword && it.isEditable && it.isFocused } != null },
+                    15_000,
+                )
+                .recycle()
+        } catch (_: TimeoutException) {
+            val keyguard = context.getSystemService(KeyguardManager::class.java)
+            throw AssertionError(
+                "Credential prompt timeout: ${availabilityCode(result)} " +
+                    "callerResumedAtRequest=$resumedAtRequest focusAtRequest=$focusAtRequest " +
+                    "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
+                    "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed}"
             )
-            .recycle()
+        }
         enterCredential()
         val completed = done.await(60, TimeUnit.SECONDS)
         // Never stringify a session, identity, provider exception or storage path in diagnostics.
-        val state =
-            when (val outcome = result) {
-                null -> "NO_RESULT"
-                AudioAvailability.Locked -> "LOCKED"
-                AudioAvailability.Opening -> "OPENING"
-                is AudioAvailability.Available -> "AVAILABLE"
-                is AudioAvailability.Failed -> "FAILED_${outcome.reason.name}"
-            }
+        val state = availabilityCode(result)
         assertTrue("Real authenticated open timed out: $state", completed)
         assertTrue("Real authenticated open failed: $state", result is AudioAvailability.Available)
         return (result as AudioAvailability.Available).session
     }
+
+    private fun availabilityCode(result: AudioAvailability?): String =
+        when (result) {
+            null -> "NO_RESULT"
+            AudioAvailability.Locked -> "LOCKED"
+            AudioAvailability.Opening -> "OPENING"
+            is AudioAvailability.Available -> "AVAILABLE"
+            is AudioAvailability.Failed -> "FAILED_${result.reason.name}"
+        }
 
     private fun enterCredential() {
         instrumentation.uiAutomation.waitForIdle(500, 10_000)
