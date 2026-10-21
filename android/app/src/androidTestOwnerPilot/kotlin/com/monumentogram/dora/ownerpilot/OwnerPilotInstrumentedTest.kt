@@ -17,10 +17,19 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -48,7 +57,9 @@ import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import com.monumentogram.dora.poc.recovery.contract.RecoveryRelativeNames
 import com.monumentogram.dora.recording.ProductRecordingService
+import com.monumentogram.dora.recording.RecordingRecoveryCard
 import com.monumentogram.dora.recording.SavedRecordingVerification
+import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 import java.io.File
 import java.io.RandomAccessFile
 import java.security.KeyStore
@@ -286,11 +297,14 @@ class OwnerPilotInstrumentedTest {
             val inspection = fourth.inspectAudioDeletion(selected)
             assertTrue(inspection is AudioResult.Value && inspection.value.complete)
             assertNoPlaintext(fourth, selected)
+            val afterPresentation = exerciseStaleRecoveryPresentation(activity, fourth)
             val corrupted = identity()
             val damaged = AudioStorageUnitIdentity(corrupted, id(), 0, 0)
-            success(fourth.writer.createLogicalRecording(corrupted))
-            success(fourth.writer.append(damaged, AudioFormat.PCM, ByteArray(320) { 11 }))
-            success(fourth.writer.finalize(corrupted))
+            success(afterPresentation.writer.createLogicalRecording(corrupted))
+            success(
+                afterPresentation.writer.append(damaged, AudioFormat.PCM, ByteArray(320) { 11 })
+            )
+            success(afterPresentation.writer.finalize(corrupted))
             val encrypted =
                 File(
                     context.noBackupFilesDir,
@@ -303,7 +317,10 @@ class OwnerPilotInstrumentedTest {
                 file.seek(16)
                 file.writeByte(byte.toInt() xor 1)
             }
-            assertTrue(SavedRecordingVerification.verify(fourth, corrupted) is AudioResult.Failed)
+            assertTrue(
+                SavedRecordingVerification.verify(afterPresentation, corrupted)
+                    is AudioResult.Failed
+            )
             exerciseRecordingAuthority(activity)
         } finally {
             automation.serviceInfo = previous
@@ -502,6 +519,66 @@ class OwnerPilotInstrumentedTest {
         }
         enterCredential()
         waitText("Идентификатор записи: ${identity.recordingId.value}")
+    }
+
+    private fun exerciseStaleRecoveryPresentation(
+        host: Activity,
+        initial: ProductAudioSession,
+    ): ProductAudioSession {
+        val selected = identity()
+        success(initial.writer.createLogicalRecording(selected))
+        success(
+            initial.writer.append(
+                AudioStorageUnitIdentity(selected, id(), 0, 0),
+                AudioFormat.PCM,
+                ByteArray(640) { 9 },
+            )
+        )
+        success(initial.writer.finalize(selected))
+        val presentedAuthorization = mutableStateOf(true)
+        val activity = host as MainActivity
+        instrumentation.runOnMainSync {
+            activity.setContent {
+                DoraBootstrapTheme {
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        RecordingRecoveryCard(activity, presentedAuthorization.value)
+                    }
+                }
+            }
+        }
+        loadSaved(selected)
+        prompt {
+            ui.onNode(hasText("Проверить аудио") and isEnabled()).performScrollTo().performClick()
+        }
+        enterCredential()
+        val verification = "Аудио проверено: 320 кадров · 1 блоков"
+        waitText(verification)
+        val current = checkNotNull(runtime.availability as? AudioAvailability.Available).session
+        awaitCallerResumed(activity)
+        assertTrue(runtime.isRecordingUiAuthorized())
+        // Deliver only a stale UI snapshot; real App Lock authority stays unchanged.
+        ui.runOnIdle { presentedAuthorization.value = false }
+        ui.waitForIdle()
+        assertTrue(runtime.isRecordingUiAuthorized())
+        assertTrue((runtime.availability as? AudioAvailability.Available)?.session === current)
+        ui.runOnIdle { presentedAuthorization.value = true }
+        ui.waitForIdle()
+        assertTrue(runtime.isRecordingUiAuthorized())
+        assertTrue((runtime.availability as? AudioAvailability.Available)?.session === current)
+        ui.onNodeWithText(verification).assertExists()
+        ui.runOnIdle {
+            runtime.lock()
+            presentedAuthorization.value = false
+        }
+        ui.waitForIdle()
+        assertFalse(runtime.isRecordingUiAuthorized())
+        assertNoPlaintext(current, selected)
+        ui.onNodeWithText(verification).assertDoesNotExist()
+        val reopened = unlock(activity)
+        ui.runOnIdle { presentedAuthorization.value = true }
+        ui.waitForIdle()
+        ui.onNodeWithText(verification).assertDoesNotExist()
+        return reopened
     }
 
     /**
