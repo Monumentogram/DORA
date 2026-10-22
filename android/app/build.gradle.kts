@@ -65,7 +65,6 @@ android {
         applicationId = "com.monumentogram.dora"
         versionCode = alphaIdentity.getProperty("versionCode").toInt()
         versionName = alphaIdentity.getProperty("versionName")
-        resValue("string", "alpha_version_label", "DORA Alpha $versionName ($versionCode)")
     }
 
     buildTypes {
@@ -113,11 +112,24 @@ android {
 }
 
 androidComponents {
-    onVariants(selector().withBuildType("ownerPilot")) { variant ->
-        variant.outputs.forEach { output ->
-            output.versionCode.set(1)
-            output.versionName.set("0.1.0-owner-alpha.1")
+    onVariants(selector().all()) { variant ->
+        // Fail closed if split outputs ever acquire independent version identities.
+        val output = variant.outputs.single()
+        val ownerPilot = variant.buildType == "ownerPilot"
+        if (ownerPilot) {
+            output.versionCode.set(2)
+            output.versionName.set("0.1.0-owner-alpha.2")
         }
+        val prefix = if (ownerPilot) "DORA Owner Alpha" else "DORA Alpha"
+        variant.resValues.put(
+            variant.makeResValueKey("string", "alpha_version_label"),
+            output.versionName.zip(output.versionCode) { name, code ->
+                com.android.build.api.variant.ResValue(
+                    "$prefix $name ($code)",
+                    "Final APK identity",
+                )
+            },
+        )
     }
     beforeVariants(selector().withBuildType("ownerPilot")) {
         it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =

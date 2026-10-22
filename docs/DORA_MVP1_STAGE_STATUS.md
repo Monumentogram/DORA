@@ -1,3 +1,13 @@
+## Owner Alpha P2 software successor — 22 October 2026
+
+Physical v1 acceptance is stopped at `PILOT_FIRST_LAUNCH_VERSION_LABEL_MISMATCH`,
+before recording. Code 2 / `0.1.0-owner-alpha.2` is the software remediation candidate.
+Source now binds its badge to the final APK identity; exact-SHA verification,
+reproducibility and review outcomes belong in the external acceptance receipts.
+Physical update and acceptance of this successor are NOT_RUN and need a fresh
+owner confirmation. Security restoration remains OPEN, Stage8.6 NOT_READY,
+LONG02 root cause NOT_PROVEN, production upgrade safety UNPROVEN.
+
 ## 2026-10-21 — Separate operator-free owner Alpha pilot
 
 Owner authorizes SOFTWARE_IMPLEMENTATION_ONLY for `com.monumentogram.dora.alpha.pilot`

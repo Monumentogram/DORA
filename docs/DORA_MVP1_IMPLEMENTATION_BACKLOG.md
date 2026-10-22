@@ -1,3 +1,13 @@
+## Owner Alpha P2 version-label remediation — 22 October 2026
+
+Scope: `PILOT_FIRST_LAUNCH_VERSION_LABEL_MISMATCH`, software only. Replace the two
+competing resource definitions with final-output generation; advance pilot to 2 /
+`0.1.0-owner-alpha.2`. Acceptance requires four-variant compiled-resource parity,
+normal Activity display/recreation on API28/API36, negative artifact controls,
+exact-SHA mandatory CI, identical clean signed builds and independent review.
+The immutable external acceptance receipts determine completion; no physical
+acceptance or historical-vault readiness follows from this source change.
+
 ## 2026-10-21 — Separate operator-free owner Alpha pilot
 
 Owner authorizes SOFTWARE_IMPLEMENTATION_ONLY for `com.monumentogram.dora.alpha.pilot`

@@ -16,12 +16,13 @@ from alpha_release_identity import CERTIFICATE_SHA256 as PRODUCTION_CERTIFICATE
 from alpha_security_preflight import check_denial_code, require
 from build_internal_alpha import verify_certificate
 from isolated_alpha_apk import AAR_SHA, MODEL_SHA, payload, sha
+from version_label import check_label
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.monumentogram.dora.alpha.pilot'
 NAMESPACE = 'com.monumentogram.dora'
-VERSION_CODE = 1
-VERSION_NAME = '0.1.0-owner-alpha.1'
+VERSION_CODE = 2
+VERSION_NAME = '0.1.0-owner-alpha.2'
 OWNER_CERTIFICATE = 'a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d'
 EXCLUDED_CERTIFICATES = {
     'diagnostic': '2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8',
@@ -211,11 +212,13 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
     bt = sdk / 'build-tools/36.0.0'
     exe, bat = ('.exe', '.bat') if os.name == 'nt' else ('', '')
     analyzer = sdk / ('cmdline-tools/latest/bin/apkanalyzer' + bat)
-    check_badging(run([bt / ('aapt' + exe), 'dump', 'badging', path]))
+    badging = run([bt / ('aapt' + exe), 'dump', 'badging', path])
+    check_badging(badging)
     xml = run([analyzer, 'manifest', 'print', path])
     components = check_manifest(xml)
     app = ET.fromstring(xml).find('application')
     resources = run([bt / ('aapt' + exe), 'dump', '--values', 'resources', path])
+    version_label = check_label(badging, resources, 'ownerPilot')
     backup_xml = []
     for attribute, name in (('fullBackupContent', 'backup_rules'), ('dataExtractionRules', 'data_extraction_rules')):
         file = backup_resource_path(resources, app.get(ANDROID + attribute), name)
@@ -256,6 +259,7 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
                     require(inventory.get('lib/' + name[4:]) == hashlib.sha256(source.read(name)).hexdigest(), 'PACKAGED_VAD_NATIVE_MISMATCH')
     require(sha(path) == before, 'ARTIFACT_CHANGED_DURING_AUDIT')
     return {'apk_sha256': before, 'size_bytes': path.stat().st_size, 'payload': inventory,
+            'compiled_version_label': version_label, 'version_label_parity': 'PASS',
             'components': components, 'dex_inventory': dex_names, 'release_denial_dex': override,
             'diagnostic_false_dex_sha256': hashlib.sha256(diagnostic.encode()).hexdigest(),
             'backup_policy_sha256': [hashlib.sha256(value.encode()).hexdigest() for value in backup_xml],

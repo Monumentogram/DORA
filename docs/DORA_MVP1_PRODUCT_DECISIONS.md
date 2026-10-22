@@ -1,3 +1,12 @@
+## Owner Alpha version-label correction — 22 October 2026
+
+Owner-approved P2 remediation under ADR-RECORDING-013: the displayed version must
+come from the final APK variant identity. Pilot advances from code 1 to code 2 /
+`0.1.0-owner-alpha.2` with unchanged package and signer; production stays code 5.
+Physical v1 acceptance stopped before recording because the badge showed the
+production version. The software successor does not authorize a phone update,
+clear app data, change credentials/users, or close any historical security gate.
+
 ## 2026-10-21 — Separate operator-free owner Alpha pilot
 
 Owner authorizes SOFTWARE_IMPLEMENTATION_ONLY for `com.monumentogram.dora.alpha.pilot`

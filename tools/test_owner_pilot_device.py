@@ -66,7 +66,7 @@ class PilotRunnerTests(unittest.TestCase):
 
     def test_apk_input_admission_denies_other_packages_and_wrong_test_targets(self):
         package = self.runner.PACKAGE
-        app = f"package: name='{package}' versionCode='1' versionName='0.1.0-owner-alpha.1'"
+        app = f"package: name='{package}' versionCode='2' versionName='0.1.0-owner-alpha.2'"
         test = f"package: name='{package}.test' versionCode='1' versionName=''"
         xml = ('<manifest xmlns:android="http://schemas.android.com/apk/res/android" '
                f'package="{package}.test"><instrumentation '

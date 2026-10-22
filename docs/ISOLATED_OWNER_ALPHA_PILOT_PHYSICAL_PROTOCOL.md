@@ -1,6 +1,8 @@
 # Isolated owner Alpha pilot — prospective physical protocol
 
-Status: **NOT_RUN / OWNER_INSTALLATION_DECISION_REQUIRED**.
+Original protocol status: **NOT_RUN / OWNER_INSTALLATION_DECISION_REQUIRED**.
+The 2026-10-22 amendment below supersedes the original fresh-install admission;
+its version 2 update remains NOT_RUN.
 This software-only task grants no phone access. Do not execute this document until
 the owner approves an exact APK, device/user tuple and bounded session. The phone
 and historical DORA remain unchanged during software preparation.
@@ -118,3 +120,55 @@ scope. Installation is not distribution approval.
 Unchanged: security restoration OPEN; Stage8.6 NOT_READY; LONG02 root cause NOT_PROVEN;
 production upgrade safety UNPROVEN. This is an owner-only isolated pilot, not production
 equivalence and not proof of historical user0 preservation.
+
+## 6. Version 2 update amendment — 2026-10-22 (NOT_RUN)
+
+Historical version 1 was installed in user10, then stopped at first-launch version
+label mismatch before the authorized recording. Preserve its evidence and app data.
+The replacement candidate is `0.1.0-owner-alpha.2 (2)`; old version is
+`0.1.0-owner-alpha.1 (1)`. Package and pinned owner certificate above are unchanged.
+No update is authorized by the software remediation decision.
+
+Before proposing the one update, bind the immutable software report to the exact
+source SHA, full signed APK SHA256, two identical clean build receipts, unchanged
+signer, all sixteen mandatory exact-SHA CI jobs, independent zero-P0/P1/P2 review
+and publication audit. Populate the owner-local command with the accepted APK path
+and privately verified serial; placeholders are not an executable authorization.
+
+After the owner explicitly says **«Готов. Разрешаю обновление»**:
+
+1. Repeat read-only physical device, topology, user10/serial10 and package guards.
+   Require v1 pilot only in user10, matching signer, no pending install session,
+   and unchanged historical package metadata. STOP if the pilot is installed for
+   another user: Android package code is shared across users, even with `--user 10`.
+2. Verify the candidate SHA, signer, package and code2 again. Require idle pilot,
+   no microphone/FGS or active recording. Do not launch to make this check pass.
+3. Ask the owner to unlock the main profile if Xiaomi requires its user0 installer
+   window. Do not change PIN, security settings, markers or user data. The owner
+   performs profile/unlock/security confirmations personally. Do not start early;
+   the OEM confirmation previously timed out quickly.
+4. Perform exactly one bounded replacement command, with no downgrade, clear,
+   grant-all or bypass flag:
+
+   `adb -s <verified-device-serial> install -r --user 10 <accepted-version-2.apk>`
+
+5. The owner confirms Xiaomi if prompted; no automated security button presses.
+   Wait for the attempt's terminal result. On timeout/rejection, preserve limited
+   diagnostics and STOP. No automatic retry, uninstall/reinstall, data clearing,
+   downgrade, credential change or Recovery to repair the installation.
+6. On success, verify installed APK bytes/signature and version2, user10-only
+   installed state, retained pilot UID/data namespace, and unchanged historical
+   package metadata. A successful install alone is not physical acceptance.
+7. Under the separately confirmed bounded physical scenario, return to user10,
+   have the owner unlock personally and launch only the pilot. Require the actual
+   visible badge `DORA Owner Alpha 0.1.0-owner-alpha.2 (2)` before continuing the
+   original cancellation, permission, one <=5-minute synthetic recording,
+   authenticated readback and exact deletion protocol. Stop on any mismatch.
+
+`-r` requests replacement with app data retained; it is not a backup or proof of
+Keystore/vault recoverability. The signed code change does not migrate storage,
+but install interruption/OEM failure and later runtime behavior remain physical
+risks. Do not promise rollback; reinstall/downgrade may be unsafe and is not approved.
+No historical vault is opened to prove package metadata continuity. Security
+restoration stays OPEN, production readiness remains unproven, and physical
+acceptance of v2 remains NOT_RUN until separately executed and evidenced.

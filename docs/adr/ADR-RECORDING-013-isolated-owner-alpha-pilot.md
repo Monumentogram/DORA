@@ -58,3 +58,25 @@ package isolation and stale sessions need explicit tests and independent review.
 `DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE = OPEN`, `STAGE_8_6 = NOT_READY`,
 `LONG02_ROOT_CAUSE = NOT_PROVEN`, `PRODUCTION_UPGRADE_SAFETY = UNPROVEN`.
 Software PASS is specific to this pilot, never production equivalence or physical PASS.
+
+## Owner-approved version-label P2 remediation — 2026-10-22
+
+The installed version 1 candidate at source `37677527ba8e6261c17e1be27819045512c8f442`
+showed `DORA Alpha 0.1.0-alpha.3 (5)` instead of its actual package identity
+`0.1.0-owner-alpha.1 (1)`. Physical acceptance stopped before recording.
+The defaultConfig generated resource shadowed the ownerPilot XML override and
+was evaluated before variant output version overrides (and debug suffixes).
+
+The successor is code 2 / `0.1.0-owner-alpha.2`, same package and owner signer.
+Generate one `alpha_version_label` lazily from the final variant output name/code;
+remove both competing definitions. Multiple outputs fail closed until explicitly
+supported. Production remains code 5 / `0.1.0-alpha.3`; debug includes `-debug`.
+No runtime, schema, Recovery, security, VAD or model behavior changes.
+
+The actual APK audit rejects missing, conflicting/qualified or mismatched labels.
+Independent PackageManager expectations drive normal MainActivity display and
+recreation tests for debug, alphaTest and ownerPilot on API28/API36. Release is
+checked through its actual packaged resource. Require all sixteen mandatory CI
+jobs at the exact successor SHA plus two identical clean signed owner builds.
+Historical v1 identity/finding and private acceptance evidence remain preserved.
+This decision authorizes software remediation only, not another POCO install.
