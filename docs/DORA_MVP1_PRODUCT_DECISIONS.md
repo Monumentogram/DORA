@@ -1,3 +1,25 @@
+## Owner Alpha version-label correction — 22 October 2026
+
+Owner-approved P2 remediation under ADR-RECORDING-013: the displayed version must
+come from the final APK variant identity. Pilot advances from code 1 to code 2 /
+`0.1.0-owner-alpha.2` with unchanged package and signer; production stays code 5.
+Physical v1 acceptance stopped before recording because the badge showed the
+production version. The software successor does not authorize a phone update,
+clear app data, change credentials/users, or close any historical security gate.
+
+## 2026-10-21 — Separate operator-free owner Alpha pilot
+
+Owner authorizes SOFTWARE_IMPLEMENTATION_ONLY for `com.monumentogram.dora.alpha.pilot`
+from PR106 baseline, independently of PR107. Release-derived runtime, separate local
+signer, ordinary authenticated saved-audio verification/deletion and synthetic API28/36
+acceptance are specified in [ADR-RECORDING-013](adr/ADR-RECORDING-013-isolated-owner-alpha-pilot.md).
+The [physical pilot protocol](ISOLATED_OWNER_ALPHA_PILOT_PHYSICAL_PROTOCOL.md) requires
+a later exact-artifact decision and fresh user10/serial10 admission. Software checks,
+review and artifact identities are recorded in the terminal execution report.
+Physical installation/launch/recording/deletion/distribution remain NOT_RUN/NOT_GRANTED.
+Restoration OPEN; Stage8.6 NOT_READY; LONG02 root cause NOT_PROVEN;
+production upgrade safety UNPROVEN. This pilot is not production-equivalent.
+
 ## 2026-10-20 — Owner-scoped five-minute Alpha profile
 
 [ADR-RECORDING-011](adr/ADR-RECORDING-011-limited-alpha-recording.md) introduces

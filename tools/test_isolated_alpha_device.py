@@ -17,6 +17,7 @@ class DeviceRunnerTests(unittest.TestCase):
 '''
         self.assertEqual({
             'schema_version': 1, 'status': 'FAILED_NOT_ACCEPTANCE', 'api': 36,
+            'caller_state': None,
             'stage': 'SYSTEM_KEYGUARD_SETUP', 'locations': [
                 {'class': 'SyntheticSystemKeyguard', 'method': 'unlockIfNeeded',
                  'source': 'SyntheticSystemKeyguard.kt', 'line': 45},
@@ -81,6 +82,33 @@ class DeviceRunnerTests(unittest.TestCase):
                 self.assertEqual([], failure_summary(frame, 36)['locations'])
         with self.assertRaises(ValueError):
             failure_summary(output, 0)
+
+    def test_failure_receipt_shares_bounded_caller_diagnostics(self):
+        line = ('INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+                'Credential prompt timeout: NO_RESULT callerResumedAtRequest=true '
+                'focusAtRequest=false secure=true locked=true '
+                'callerFinishing=false callerDestroyed=false')
+        frame = ('\n    at com.monumentogram.dora.operator.IsolatedAlphaOperatorInstrumentedTest.'
+                 'unlock(IsolatedAlphaOperatorInstrumentedTest.kt:339)\n')
+        for assertion, valid in [(line, True), (line + ' PIN=123456 /private/location', False),
+                                 (line.replace('NO_RESULT', 'FAILED_SECRET'), False),
+                                 (line + '\n' + line.replace('locked=true', 'locked=false'), False)]:
+            with self.subTest(valid=valid), tempfile.TemporaryDirectory() as directory:
+                receipt = Path(directory) / 'operator.json'
+                write_failure_diagnostics(receipt, assertion + frame, 36)
+                public = json.loads(receipt.with_suffix('.failure.json').read_text(encoding='utf-8'))
+                self.assertEqual('FAILED_NOT_ACCEPTANCE', public['status'])
+                self.assertEqual('AUTHENTICATED_OPEN', public['stage'])
+                self.assertEqual(339, public['locations'][0]['line'])
+                if valid:
+                    self.assertEqual('PROMPT_TIMEOUT', public['caller_state']['failure'])
+                    self.assertEqual('NO_RESULT', public['caller_state']['availability'])
+                    self.assertTrue(public['caller_state']['locked'])
+                    self.assertFalse(public['caller_state']['caller_destroyed'])
+                else:
+                    self.assertIsNone(public['caller_state'])
+                for private in ('123456', '/private/', 'SECRET', 'PIN', 'AssertionError'):
+                    self.assertNotIn(private, json.dumps(public))
 
     def test_physical_serial_never_reaches_adb(self):
         calls = []

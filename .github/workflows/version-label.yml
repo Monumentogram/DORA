@@ -1,0 +1,89 @@
+name: Version label APK and Activity parity
+
+on:
+  push:
+    branches: ["codex/isolated-owner-alpha-pilot"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: version-label-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  version-label-device:
+    name: version-label-${{ matrix.variant }}-api${{ matrix.api }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [28, 36]
+        include:
+          - variant: debug
+            task: Debug
+          - variant: alphaTest
+            task: AlphaTest
+          - variant: ownerPilot
+            task: OwnerPilot
+        variant: [debug, alphaTest, ownerPilot]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - name: Install SDK
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools" "emulator" "platforms;android-36" "build-tools;36.0.0"
+          "system-images;android-${{ matrix.api }};google_apis;x86_64"
+      - name: Compile actual pilot variant with disposable instrumentation signer and public inputs only
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace --dependency-verification strict
+          -PdoraTestBuildType=${{ matrix.variant }} -PdoraOwnerPilotInstrumentationSigning=true
+          -PdoraAlphaTestInstrumentationSigning=true
+          :app:assemble${{ matrix.task }} :app:assemble${{ matrix.task }}AndroidTest
+      - name: Create disposable emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/version-label-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name dora_version_label --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_version_label -port 5554 \
+            -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics \
+            -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            kill -0 "${emulator_pid}" 2>/dev/null || exit 1
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot}" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Actual package identity, visible label and Activity recreation
+        run: >-
+          python3 tools/run_version_label_device.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }} --variant ${{ matrix.variant }}
+          --apk android/app/build/outputs/apk/${{ matrix.variant }}/app-${{ matrix.variant }}.apk
+          --test-apk android/app/build/outputs/apk/androidTest/${{ matrix.variant }}/app-${{ matrix.variant }}-androidTest.apk
+          --receipt "${RUNNER_TEMP}/version-label.json"
+      - name: Publish content-free version receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: version-label-${{ matrix.variant }}-api${{ matrix.api }}
+          path: ${{ runner.temp }}/version-label.json
+          retention-days: 7
+          if-no-files-found: error

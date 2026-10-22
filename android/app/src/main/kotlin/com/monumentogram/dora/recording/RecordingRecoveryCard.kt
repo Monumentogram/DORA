@@ -16,6 +16,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.monumentogram.dora.DoraApplication
+import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
@@ -40,12 +44,33 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
     var acknowledged by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<RecordingRecovery?>(null) }
     var loading by remember { mutableStateOf(false) }
+    val actions = remember(activity) { SavedRecordingActions(activity as MainActivity) }
+    DisposableEffect(activity) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                entries = emptyList()
+                message = null
+                acknowledged = false
+                pending = null
+                actions.clearVisible()
+            }
+        }
+        (activity as MainActivity).lifecycle.addObserver(observer)
+        onDispose {
+            activity.lifecycle.removeObserver(observer)
+            actions.close()
+        }
+    }
     val currentAuthorization by rememberUpdatedState(authorized)
     LaunchedEffect(authorized) {
-        if (!authorized) {
+        // A delayed presentation snapshot must not erase a result from fresh authority.
+        // ON_PAUSE above still clears private state synchronously on every background transition.
+        if (!authorized && !app.audioRuntime.isRecordingUiAuthorized()) {
             entries = emptyList()
             acknowledged = false
             pending = null
+            message = null
+            actions.clearVisible()
         }
     }
     val permission =
@@ -57,7 +82,7 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
             else message = "Микрофон не разрешён. Запись не возобновлена"
         }
     fun load(after: String = "") {
-        if (loading || !authorized) return
+        if (loading || actions.busy || !authorized) return
         if (app.audioRuntime.recordingOpenMode() == AudioOpenMode.CREATE_NEW) {
             message = "Сохранённых записей пока нет"
             return
@@ -65,7 +90,12 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         loading = true
         app.audioRuntime.requestRecordingRecovery(activity, after) { result ->
             loading = false
-            if (!currentAuthorization) return@requestRecordingRecovery
+            if (
+                !app.audioRuntime.isRecordingUiAuthorized() ||
+                    activity.isFinishing ||
+                    activity.isDestroyed
+            )
+                return@requestRecordingRecovery
             when (result) {
                 is AudioResult.Value -> {
                     entries = result.value
@@ -76,7 +106,6 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
             }
         }
     }
-    LaunchedEffect(authorized) { if (authorized) load() }
     if (!authorized) {
         Text("Сохранённые записи защищены. Разблокируйте DORA для восстановления.")
         Button(onClick = { app.audioRuntime.requestRecordingUiUnlock(activity) {} }) {
@@ -84,10 +113,12 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         }
         return
     }
-    TextButton(enabled = authorized && !loading, onClick = { load() }) {
+    TextButton(enabled = authorized && !loading && !actions.busy, onClick = { load() }) {
         Text(if (loading) "Проверяем сохранение…" else "Проверить сохранённые записи")
     }
     message?.let { Text(it) }
+    actions.message?.let { Text(it) }
+    if (actions.busy) Text("Проверяем защищённое аудио…")
     if (authorized && entries.isNotEmpty()) {
         if (entries.any { it.canResume && AlphaRecordingLimit.remaining(it.recoveredFrames) > 0 }) {
             Text("Продолжение снова включает микрофон. Аудио остаётся только на устройстве.")
@@ -103,6 +134,28 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         }
         entries.forEach { entry ->
             Column {
+                entry.identity?.let { identity ->
+                    Text("Идентификатор записи: ${identity.recordingId.value}")
+                    Text("Сохранено кадров: ${entry.recoveredFrames}")
+                    Button(
+                        enabled =
+                            !actions.busy &&
+                                !loading &&
+                                entry.completionState == RecordingCompletionState.FINALIZED,
+                        onClick = { actions.verify(identity) },
+                    ) {
+                        Text("Проверить аудио")
+                    }
+                    TextButton(
+                        enabled =
+                            !actions.busy &&
+                                !loading &&
+                                entry.completionState != RecordingCompletionState.DELETED,
+                        onClick = { actions.delete(identity) },
+                    ) {
+                        Text("Удалить аудио…")
+                    }
+                }
                 Text(
                     when (entry.completionState) {
                         RecordingCompletionState.FINALIZED ->

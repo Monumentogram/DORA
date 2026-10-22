@@ -2,7 +2,7 @@ name: Stage8 limited Alpha
 
 on:
   push:
-    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator", "codex/alpha-security-release-preflight"]
+    branches: ["codex/stage8-alpha-fast-track", "codex/stage8-isolated-alpha-operator", "codex/alpha-security-release-preflight", "codex/isolated-owner-alpha-pilot"]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +26,7 @@ jobs:
       - name: Negative receipt, process-death and profile regressions
         run: |
           python3 -m unittest discover -s tools -p test_stage8_alpha.py
+          python3 -m unittest discover -s tools -p test_version_label.py
           python3 -m unittest discover -s tools -p test_encrypted_persistence_device.py
           python3 -m unittest discover -s tools -p test_encrypted_persistence_crash.py
           python3 -m unittest discover -s tools -p test_logical_recovery_stream_diagnostics.py
@@ -73,6 +74,8 @@ jobs:
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/release/app-release-unsigned.apk --allowlist android/product-native-libs-allowlist.txt
           python3 tools/validate_stage8_alpha.py --apk android/app/build/outputs/apk/debug/app-debug.apk --apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          python3 tools/version_label.py --variant debug --apk android/app/build/outputs/apk/debug/app-debug.apk
+          python3 tools/version_label.py --variant release --apk android/app/build/outputs/apk/release/app-release-unsigned.apk
       - name: Inspect actual production DEX denial and manifest boundary
         run: |
           python3 - <<'PY'

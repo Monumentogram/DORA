@@ -85,6 +85,25 @@ def isolated_scope(contract):
     return set(paths)
 
 
+def owner_pilot_scope(contract):
+    expected = {
+        'baseline': '52e4ce8bdf074ec021ae52c3c38ad9d26c24e128',
+        'application_id': 'com.monumentogram.dora.alpha.pilot',
+        'security_restoration': 'OPEN', 'stage_8_6': 'NOT_READY',
+        'long02_root_cause': 'NOT_PROVEN', 'production_upgrade_safety': 'UNPROVEN',
+        'distribution': 'BLOCKED',
+    }
+    require(all(contract.get(key) == value for key, value in expected.items()) and
+            contract.get('physical_operations_authorized') is False,
+            'Invalid owner pilot software boundary')
+    paths = contract['implementation_paths']
+    require(bool(paths) and len(paths) == len(set(paths)) and all(
+        isinstance(path, str) and path and not path.startswith('/') and
+        not any(value in path for value in ('..', '*', '?', '\\', ':')) for path in paths),
+        'Ambiguous owner pilot scope')
+    return set(paths)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apk", type=Path, action="append", default=[])
@@ -119,6 +138,12 @@ def main():
         subprocess.run(['git', 'merge-base', '--is-ancestor', contract['baseline'], 'HEAD'],
                        cwd=ROOT, check=True)
         allowed |= set(paths)
+    pilot = ROOT / 'docs/contracts/owner-alpha-pilot-v1.json'
+    if pilot.exists():
+        contract = json.loads(pilot.read_text(encoding='utf-8'))
+        allowed |= owner_pilot_scope(contract)
+        subprocess.run(['git', 'merge-base', '--is-ancestor', contract['baseline'], 'HEAD'],
+                       cwd=ROOT, check=True)
     require(changed <= allowed, "Out-of-scope files: " + ", ".join(sorted(changed - allowed)))
     for path in profile["append_only_decisions"]:
         old = git("show", BASE + ":" + path).decode().replace("\r\n", "\n")
