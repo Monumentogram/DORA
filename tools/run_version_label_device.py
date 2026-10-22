@@ -24,6 +24,14 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def installed_path(output):
+    paths = output.splitlines()
+    require(len(paths) == 1 and
+            re.fullmatch(r'package:/data/app/(?:[A-Za-z0-9_+=~.-]+/){1,2}base\.apk', paths[0]) and
+            not {'.', '..'} & set(paths[0].split('/')), 'INSTALLED_PATH_INVALID')
+    return paths[0].removeprefix('package:')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--serial', required=True)
@@ -65,11 +73,10 @@ def main():
     for path, flags in ((args.apk, []), (args.test_apk, ['-t'])):
         fence()
         require(command('install', *flags, '--user', '0', str(path)).splitlines()[-1] == 'Success', 'INSTALL_FAILED')
-    paths = command('shell', 'pm', 'path', '--user', '0', package).splitlines()
-    require(len(paths) == 1 and re.fullmatch(r'package:/data/app/[A-Za-z0-9_+=/.-]+\.apk', paths[0]), 'INSTALLED_PATH_INVALID')
+    path = installed_path(command('shell', 'pm', 'path', '--user', '0', package))
     with tempfile.TemporaryDirectory() as temp:
         installed_apk = Path(temp) / 'installed.apk'
-        command('pull', paths[0].removeprefix('package:'), str(installed_apk))
+        command('pull', path, str(installed_apk))
         require(digest(installed_apk) == apk_sha, 'INSTALLED_APK_BYTES_MISMATCH')
     fence()
     output = command('shell', 'am', 'instrument', '--user', '0', '-w', '-r', '-e', 'class', TEST,

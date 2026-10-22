@@ -2,9 +2,23 @@
 import unittest
 
 from version_label import check_label
+from run_version_label_device import installed_path
 
 
 class VersionLabelTests(unittest.TestCase):
+    def test_installed_apk_path_accepts_legacy_and_randomized_android_layouts(self):
+        for path in ('/data/app/com.monumentogram.dora.debug-fixture==/base.apk',
+                     '/data/app/~~fixture-token==/com.monumentogram.dora.debug-fixture==/base.apk'):
+            self.assertEqual(path, installed_path('package:' + path))
+
+    def test_installed_apk_path_rejects_split_ambiguous_and_outside_package_tree(self):
+        valid = 'package:/data/app/~~fixture==/package-fixture==/base.apk'
+        for output in ('', valid + '\n' + valid, valid.replace('/base.apk', '/split.apk'),
+                       valid.replace('/data/app/', '/sdcard/'), valid.replace('~~fixture==', '..'),
+                       valid + ';unexpected', valid.replace('base.apk', 'base.apk/extra')):
+            with self.subTest(output=output), self.assertRaises(ValueError):
+                installed_path(output)
+
     def table(self, package, label, qualifier='(default)'):
         return (f'    config {qualifier}:\n'
                 f'      resource 0x7f080000 {package}:string/alpha_version_label: t=0x03 d=0x40\n'
