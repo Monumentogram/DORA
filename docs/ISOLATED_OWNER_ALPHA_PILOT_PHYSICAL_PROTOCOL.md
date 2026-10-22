@@ -146,7 +146,8 @@ After the owner explicitly says **«Готов. Разрешаю обновле�
 3. Ask the owner to unlock the main profile if Xiaomi requires its user0 installer
    window. Do not change PIN, security settings, markers or user data. The owner
    performs profile/unlock/security confirmations personally. Do not start early;
-   the OEM confirmation previously timed out quickly.
+   the prior attempt ended in rejection after about 25 seconds; whether the
+   prompt timed out is unproven.
 4. Perform exactly one bounded replacement command, with no downgrade, clear,
    grant-all or bypass flag:
 
