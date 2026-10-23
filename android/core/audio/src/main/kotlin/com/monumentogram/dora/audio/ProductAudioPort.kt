@@ -55,7 +55,6 @@ data class AudioStorageUnitIdentity(
 enum class AudioFailure {
     LOCKED,
     CANCELLED,
-    CREDENTIAL_SETUP_REQUIRED,
     UNAVAILABLE,
     INVALID_INPUT,
     COLLISION,

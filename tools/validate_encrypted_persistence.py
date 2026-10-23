@@ -407,9 +407,13 @@ def validate_compiled(root, contract, *, include_app=True):
         with zipfile.ZipFile(io.BytesIO(aar.read('classes.jar'))) as classes:
             names = set(classes.namelist())
             prefix = 'com/monumentogram/dora/audio/persistence/'
+            local_access = 'auth/AndroidLocalAccess' if contract.get('local_access_profile') == 'ADR-0021' else 'auth/AndroidAppLock'
             for name in ('EncryptedAudioVault', 'database/SqlCipherJournalHelperFactory',
-                         'journal/RoomAudioJournal', 'keys/VaultSecretStore', 'auth/AndroidAppLock'):
+                         'journal/RoomAudioJournal', 'keys/VaultSecretStore', local_access):
                 require(prefix + name + '.class' in names, 'Required encrypted runtime class was not compiled')
+            if contract.get('local_access_profile') == 'ADR-0021':
+                require(prefix + 'auth/AndroidAppLock.class' not in names,
+                        'Removed application authentication runtime compiled again')
     if include_app:
         import persistence_release_inventory as inventory
         record = inventory.read_and_validate(root, contract, approved_release_graph(root, contract))

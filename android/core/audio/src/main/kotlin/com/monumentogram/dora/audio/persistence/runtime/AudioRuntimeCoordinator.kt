@@ -20,8 +20,8 @@ import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
-import com.monumentogram.dora.audio.persistence.auth.AppLockSession
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -64,7 +64,7 @@ internal interface RuntimeVault : AutoCloseable {
 internal class AudioRuntimeCoordinator(
     private val isMainThread: () -> Boolean,
     private val openVault:
-        (AudioOpenMode, AppLockSession.Authorization) -> AudioResult<RuntimeVault>,
+        (AudioOpenMode, LocalAccessSession.Authorization) -> AudioResult<RuntimeVault>,
 ) : AutoCloseable {
     private companion object {
         const val CLOSE_WAIT_SECONDS = 5L
@@ -85,16 +85,16 @@ internal class AudioRuntimeCoordinator(
     var availability: AudioAvailability = AudioAvailability.Locked
         private set
 
-    /** The successful prompt result precedes this separate, revocable authority handoff. */
-    fun openAuthenticated(
+    /** An explicit foreground action precedes this revocable local authority handoff. */
+    fun openLocal(
         mode: AudioOpenMode,
-        capture: () -> AppLockSession.Authorization,
+        capture: () -> LocalAccessSession.Authorization,
         completion: (AudioAvailability) -> Unit,
     ) {
         val authorization =
             try {
                 capture()
-            } catch (_: AppLockedException) {
+            } catch (_: LocalAccessDeniedException) {
                 revoke()
                 completion(AudioAvailability.Locked)
                 return
@@ -104,7 +104,7 @@ internal class AudioRuntimeCoordinator(
 
     fun open(
         mode: AudioOpenMode,
-        authorization: AppLockSession.Authorization,
+        authorization: LocalAccessSession.Authorization,
         completion: (AudioAvailability) -> Unit,
     ) {
         val request =
@@ -144,7 +144,7 @@ internal class AudioRuntimeCoordinator(
                             }
                         }
                     }
-            } catch (_: AppLockedException) {
+            } catch (_: LocalAccessDeniedException) {
                 synchronized(monitor) {
                     if (epoch == request) availability = AudioAvailability.Locked
                 }
@@ -193,9 +193,9 @@ internal class AudioRuntimeCoordinator(
         synchronized(monitor) { current === session }
 
     fun requireCurrent(session: ProductAudioSession) {
-        val handle = session as? Handle ?: throw AppLockedException()
+        val handle = session as? Handle ?: throw LocalAccessDeniedException()
         handle.authorization.requireActive()
-        if (!isCurrent(handle)) throw AppLockedException()
+        if (!isCurrent(handle)) throw LocalAccessDeniedException()
     }
 
     fun confirmedDelete(
@@ -213,7 +213,7 @@ internal class AudioRuntimeCoordinator(
 
     private fun checkRequest(request: Long) =
         synchronized(monitor) {
-            if (epoch != request) throw AppLockedException()
+            if (epoch != request) throw LocalAccessDeniedException()
         }
 
     private fun publishFailure(request: Long, reason: AudioFailure) =
@@ -233,7 +233,7 @@ internal class AudioRuntimeCoordinator(
 
     private inner class Handle(
         val vault: RuntimeVault,
-        val authorization: AppLockSession.Authorization,
+        val authorization: LocalAccessSession.Authorization,
     ) : ProductAudioSession {
         override fun findRecording(recordingId: com.monumentogram.dora.model.alpha.RecordingId) =
             invoke {
@@ -334,7 +334,7 @@ internal class AudioRuntimeCoordinator(
                 requireCurrent(this)
                 if (Thread.currentThread().isInterrupted) AudioResult.Failed(AudioFailure.UNCERTAIN)
                 else awaitOperation(worker.submit<AudioResult<T>> { perform(block) })
-            } catch (_: AppLockedException) {
+            } catch (_: LocalAccessDeniedException) {
                 AudioResult.Failed(AudioFailure.LOCKED)
             } catch (_: Exception) {
                 AudioResult.Failed(AudioFailure.UNAVAILABLE)
@@ -369,7 +369,7 @@ internal class AudioRuntimeCoordinator(
                 val result = vault.block()
                 authorization.withPlaintextDelivery { requireCurrent(this) }
                 result
-            } catch (_: AppLockedException) {
+            } catch (_: LocalAccessDeniedException) {
                 AudioResult.Failed(AudioFailure.LOCKED)
             } catch (_: Exception) {
                 AudioResult.Failed(AudioFailure.UNAVAILABLE)

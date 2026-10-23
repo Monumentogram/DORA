@@ -1,0 +1,16 @@
+name: Permanent PIN-free local access
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  no-application-pin-or-biometric-prompt:
+    name: NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tools -p test_pin_free_local_access.py

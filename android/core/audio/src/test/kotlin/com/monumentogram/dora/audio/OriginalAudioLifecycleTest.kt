@@ -1,6 +1,6 @@
 package com.monumentogram.dora.audio
 
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
@@ -215,7 +215,7 @@ class OriginalAudioLifecycleTest {
             }
 
         fun gate() {
-            if (locked) throw AppLockedException()
+            if (locked) throw LocalAccessDeniedException()
         }
 
         val lifecycle =

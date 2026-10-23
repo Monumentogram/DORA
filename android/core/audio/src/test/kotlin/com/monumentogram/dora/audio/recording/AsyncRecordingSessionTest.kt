@@ -6,8 +6,8 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.ProductAudioWriterPort
-import com.monumentogram.dora.audio.persistence.auth.AppLockSession
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.util.UUID
@@ -24,13 +24,10 @@ import org.junit.Test
 
 class AsyncRecordingSessionTest {
     @Test
-    fun deviceLockDuringActiveAppendFencesResumeAndRetiresOnlyAfterWriterReturns() {
+    fun writerRevocationDuringActiveAppendFencesResumeAndRetiresOnlyAfterWriterReturns() {
         val secure = AtomicBoolean(true)
-        val appLock = AppLockSession({ 100L }) { secure.get() }
+        val appLock = LocalAccessSession { secure.get() }
         appLock.resume()
-        val attempt = appLock.begin()
-        check(appLock.recordResult(attempt))
-        check(appLock.complete(attempt) { true })
         val foreground = appLock.capture()
         val authority =
             RecordingAuthority(
@@ -57,7 +54,7 @@ class AsyncRecordingSessionTest {
                     try {
                         authority.requireWriter()
                         writer.append(segment, format, pcm).also { authority.requireWriter() }
-                    } catch (_: AppLockedException) {
+                    } catch (_: LocalAccessDeniedException) {
                         AudioResult.Failed(AudioFailure.LOCKED)
                     }
             }
@@ -72,7 +69,7 @@ class AsyncRecordingSessionTest {
             recording.pause()
             assertEquals(RecordingPhase.PAUSED, recording.state.phase)
             secure.set(false)
-            org.junit.Assert.assertThrows(AppLockedException::class.java) {
+            org.junit.Assert.assertThrows(LocalAccessDeniedException::class.java) {
                 authority.resume(foreground::withPlaintextDelivery) {
                     org.junit.Assert.fail("Locked Resume")
                 }

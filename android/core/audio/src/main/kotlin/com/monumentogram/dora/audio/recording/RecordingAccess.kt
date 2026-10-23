@@ -9,12 +9,12 @@ import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.SegmentationMetadata
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.persistence.runtime.RuntimeVault
 
 /**
  * Process-local, exact-source writer; no read/delete/export/catalog authority. Runtime constructs
- * it only after real system authentication. All writer calls and close share its monitor, so close
+ * it only for an explicit foreground action. All writer calls and close share its monitor, so close
  * cannot race a borrowed write. The caller must be a background persistence worker.
  */
 class RecordingAccess
@@ -30,7 +30,7 @@ internal constructor(
     private var created = continuation != null
     private var finalized = false
 
-    /** Consumed only at the visible, authenticated initial microphone-start boundary. */
+    /** Consumed only at the visible, locally authorized initial microphone-start boundary. */
     fun activate(start: () -> Unit) = authority.activate(start)
 
     fun onRevocation(listener: () -> Unit) = authority.onRevocation(listener)
@@ -100,10 +100,10 @@ internal constructor(
         if (isMainThread()) return AudioResult.Failed(AudioFailure.BUSY)
         if (target != identity) return AudioResult.Failed(AudioFailure.INVALID_INPUT)
         return try {
-            if (closed) throw AppLockedException()
+            if (closed) throw LocalAccessDeniedException()
             authority.requireWriter()
             action().also { authority.requireWriter() }
-        } catch (_: AppLockedException) {
+        } catch (_: LocalAccessDeniedException) {
             AudioResult.Failed(AudioFailure.LOCKED)
         } catch (_: Exception) {
             AudioResult.Failed(AudioFailure.UNAVAILABLE)

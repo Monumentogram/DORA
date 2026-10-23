@@ -14,7 +14,7 @@ IDENTITIES = {
     'release': ('com.monumentogram.dora', '5', '0.1.0-alpha.3'),
     'debug': ('com.monumentogram.dora.debug', '5', '0.1.0-alpha.3-debug'),
     'alphaTest': ('com.monumentogram.dora.alpha.test', '5', '0.1.0-alpha.3'),
-    'ownerPilot': ('com.monumentogram.dora.alpha.pilot', '2', '0.1.0-owner-alpha.2'),
+    'ownerPilot': ('com.monumentogram.dora.alpha.pilot', '3', '0.1.0-owner-alpha.3'),
 }
 
 

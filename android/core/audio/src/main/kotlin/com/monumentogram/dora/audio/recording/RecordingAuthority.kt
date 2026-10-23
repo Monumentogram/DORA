@@ -1,11 +1,11 @@
 package com.monumentogram.dora.audio.recording
 
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 
 /** Separate from foreground read authority. Never persisted or revived after revocation. */
 internal class RecordingAuthority(
     private val foreground: () -> Unit,
-    private val deviceSecure: () -> Boolean,
+    private val ownerCurrent: () -> Boolean,
     private val foregroundBoundary: (() -> Unit) -> Unit,
 ) {
     private var active = false
@@ -14,7 +14,7 @@ internal class RecordingAuthority(
 
     @Synchronized
     fun requireForeground() {
-        if (revoked) throw AppLockedException()
+        if (revoked) throw LocalAccessDeniedException()
         foreground()
     }
 
@@ -22,7 +22,7 @@ internal class RecordingAuthority(
     fun activate(start: () -> Unit) {
         foregroundBoundary {
             requireForeground()
-            if (active || !deviceSecure()) throw AppLockedException()
+            if (active || !ownerCurrent()) throw LocalAccessDeniedException()
             start()
             active = true
         }
@@ -31,7 +31,7 @@ internal class RecordingAuthority(
     @Synchronized
     fun resume(boundary: (() -> Unit) -> Unit, start: () -> Unit) {
         requireWriter()
-        if (!active) throw AppLockedException()
+        if (!active) throw LocalAccessDeniedException()
         boundary {
             requireWriter()
             start()
@@ -40,8 +40,8 @@ internal class RecordingAuthority(
 
     @Synchronized
     fun requireWriter() {
-        if (!deviceSecure()) revoked = true
-        if (revoked) throw AppLockedException()
+        if (!ownerCurrent()) revoked = true
+        if (revoked) throw LocalAccessDeniedException()
         if (!active) foreground()
     }
 

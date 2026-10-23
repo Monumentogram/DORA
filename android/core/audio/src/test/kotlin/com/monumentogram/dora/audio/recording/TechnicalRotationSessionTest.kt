@@ -10,7 +10,6 @@ import com.monumentogram.dora.model.alpha.RecordingId
 import java.security.MessageDigest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class TechnicalRotationSessionTest {
@@ -36,7 +35,7 @@ class TechnicalRotationSessionTest {
     }
 
     @Test
-    fun capInsideBlockPreservesHashSourceIdentityAndCaptureEpoch() {
+    fun alphaCapPreservesAcceptedPrefixHashSourceIdentityAndCaptureEpoch() {
         val writer = Writer()
         val identity =
             AudioIdentity(
@@ -48,7 +47,7 @@ class TechnicalRotationSessionTest {
         session.start()
         val epoch = session.captureEpochId
         val source = MessageDigest.getInstance("SHA-256")
-        val total = 19_200_783L
+        val total = AlphaRecordingLimit.MAX_ALPHA_FRAMES
         var first = 0L
         while (first < total) {
             val count = minOf(1234L, total - first).toInt()
@@ -66,11 +65,11 @@ class TechnicalRotationSessionTest {
         assertArrayEquals(source.digest(), writer.hash.digest())
         val groups = writer.units.groupBy { it.first.physicalSegmentId }.values.toList()
         assertEquals(
-            listOf(9_600_000, 9_600_000, 783),
+            listOf(4_800_000),
             groups.map { it.sumOf { unit -> unit.second } },
         )
         assertEquals(
-            listOf(0L, 9_600_000L, 19_200_000L),
+            listOf(0L),
             groups.map { it.first().first.physicalFirstFrame },
         )
         var expected = 0L
@@ -84,7 +83,7 @@ class TechnicalRotationSessionTest {
     }
 
     @Test
-    fun pauseResumeAfterRotationUsesFreshEpochAndKeepsLogicalIdentity() {
+    fun pauseResumeBeforeAlphaCapUsesFreshEpochAndKeepsLogicalIdentity() {
         val writer = Writer()
         val session =
             RecordingSession(
@@ -97,8 +96,8 @@ class TechnicalRotationSessionTest {
             )
         session.start()
         val epoch = session.captureEpochId
-        repeat(121) { session.accept(ByteArray(160000), epoch, session.state.frames) }
-        assertNotEquals(epoch, session.physicalId)
+        repeat(30) { session.accept(ByteArray(160000), epoch, session.state.frames) }
+        assertEquals(epoch, session.physicalId)
         session.pause()
         session.resume("resumed-epoch")
         session.accept(ByteArray(32), "resumed-epoch", session.state.frames)

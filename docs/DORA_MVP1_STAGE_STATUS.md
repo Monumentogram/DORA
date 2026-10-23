@@ -1,3 +1,21 @@
+## 2026-10-23 — ADR-0021 PIN-free local runtime implementation
+
+PIN/App Lock and biometric challenges are removed from local product actions.
+Foreground Activity/session/generation authority replaces credential proof; an admitted
+recording writer retains its separate epoch while the screen is off. Encryption,
+consent and microphone permission remain required as applicable.
+
+Pilot candidate: `0.1.0-owner-alpha.3 (3)`. Software requalification is IN_PROGRESS;
+API28/API36, exact-SHA CI and two signed clean builds are not yet certified here.
+No physical install or historical user0 vault operation is authorized by this entry.
+PIN-specific legacy gates: **SUPERSEDED_BY_ADR_0021 / REQUALIFICATION_REQUIRED**.
+Historical vault continuity, LONG-01/LONG-02, production upgrade, signing custody,
+Cloud consent/identity and release approval remain separate and unclosed.
+See [requalification contract](security/ADR-0021-local-access-requalification.md).
+Earlier dated records below remain historical evidence.
+
+---
+
 ## Owner Alpha P2 software successor — 22 October 2026
 
 Physical v1 acceptance is stopped at `PILOT_FIRST_LAUNCH_VERSION_LABEL_MISMATCH`,

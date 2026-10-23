@@ -23,10 +23,14 @@ internal class SyntheticSystemKeyguard(
 ) {
     fun unlockIfNeeded() {
         val keyguard = instrumentation.targetContext.getSystemService(KeyguardManager::class.java)
-        assertTrue(
-            "Synthetic secondary credential must already be configured",
-            keyguard.isDeviceSecure,
-        )
+        if (!keyguard.isDeviceSecure) {
+            ParcelFileDescriptor.AutoCloseInputStream(
+                    instrumentation.uiAutomation.executeShellCommand("wm dismiss-keyguard")
+                )
+                .use { it.readBytes() }
+            assertFalse(keyguard.isDeviceLocked)
+            return
+        }
         if (!keyguard.isDeviceLocked) return
         // Separate OS-user unlock from App Lock. Neither a shell dismissal nor a device PIN
         // typed into an unrelated lockscreen is evidence that DORA accepted its own prompt.

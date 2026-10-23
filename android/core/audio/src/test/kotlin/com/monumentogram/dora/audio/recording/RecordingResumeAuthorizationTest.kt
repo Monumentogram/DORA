@@ -1,7 +1,7 @@
 package com.monumentogram.dora.audio.recording
 
-import com.monumentogram.dora.audio.persistence.auth.AppLockSession
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
@@ -9,13 +9,10 @@ import org.junit.Test
 
 class RecordingResumeAuthorizationTest {
     private var deviceReady = true
-    private val lock = AppLockSession({ 100L }) { deviceReady }
+    private val lock = LocalAccessSession { deviceReady }
 
     private fun unlock() {
         lock.resume()
-        val attempt = lock.begin()
-        check(lock.recordResult(attempt))
-        check(lock.complete(attempt) { true })
     }
 
     private fun authority(): RecordingAuthority {
@@ -30,7 +27,7 @@ class RecordingResumeAuthorizationTest {
     }
 
     @Test
-    fun sameForegroundAuthorityResumesWithoutBeginningAnotherAuthentication() {
+    fun sameForegroundAuthorityResumesWithoutBeginningCredentialAuthentication() {
         val authority = authority()
         val foreground = lock.capture()
         var starts = 0
@@ -40,28 +37,27 @@ class RecordingResumeAuthorizationTest {
     }
 
     @Test
-    fun revokedForegroundGrantStaysInvalidAfterLaterSuccessfulUnlock() {
+    fun revokedForegroundGrantStaysInvalidAfterLaterForegroundReturn() {
         val authority = authority()
         val stale = lock.capture()
         lock.pause()
         unlock()
-        assertThrows(AppLockedException::class.java) {
+        assertThrows(LocalAccessDeniedException::class.java) {
             authority.resume(stale::withPlaintextDelivery) { fail("Stale grant started") }
         }
         authority.resume(lock.capture()::withPlaintextDelivery) {}
     }
 
     @Test
-    fun deviceLockBetweenPauseAndResumeRequiresFreshProof() {
+    fun deviceLockBetweenPauseAndResumeRequiresNewForegroundAction() {
         val authority = authority()
         val before = lock.capture()
         deviceReady = false
-        assertThrows(AppLockedException::class.java) {
+        assertThrows(LocalAccessDeniedException::class.java) {
             authority.resume(before::withPlaintextDelivery) { fail("Locked device started") }
         }
         deviceReady = true
-        assertThrows(AppLockedException::class.java) { lock.capture() }
-        unlock()
+        assertThrows(LocalAccessDeniedException::class.java) { before.requireActive() }
         authority.resume(lock.capture()::withPlaintextDelivery) {}
     }
 
@@ -70,14 +66,14 @@ class RecordingResumeAuthorizationTest {
         authority()
         lock.pause()
         lock.resume()
-        assertThrows(AppLockedException::class.java) { lock.capture() }
+        lock.capture().requireActive()
     }
 
     @Test
     fun authorityRevokedInsideResumeBoundaryRejectsNativeStart() {
         val authority = authority()
         val foreground = lock.capture()
-        assertThrows(AppLockedException::class.java) {
+        assertThrows(LocalAccessDeniedException::class.java) {
             authority.resume({ block ->
                 authority.revoke()
                 foreground.withPlaintextDelivery(block)

@@ -24,8 +24,10 @@ RUNNER = PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner'
 ROOT = Path(__file__).resolve().parents[1]
 
 PHASES = {
-    'owner_initial': ('noSystemCredentialCannotOpenVault', 'packageManifestAndReleaseOverridesAreClosed', 'seedOwnerIsolationSentinel'),
+    'owner_initial': ('noSystemCredentialCanOpenEncryptedVault', 'packageManifestAndReleaseOverridesAreClosed', 'seedOwnerIsolationSentinel', 'seedRestartEncryptedRecording'),
     'secondary': ('realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen', 'packageManifestAndReleaseOverridesAreClosed', 'secondaryCannotReadOwnerSentinel'),
+    'secondary_no_pin': ('realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen', 'packageManifestAndReleaseOverridesAreClosed', 'secondaryCannotReadOwnerSentinel'),
+    'owner_restart': ('restartReadbackWithoutAutomaticCapture',),
     'owner_final': ('verifyOwnerIsolationSentinelUnchanged',),
 }
 
@@ -73,7 +75,7 @@ def failure_locations(output):
             r'\s+at com\.monumentogram\.dora\.ownerpilot\.'
             r'(OwnerPilotInstrumentedTest|SyntheticSystemKeyguard|ReleaseOverrideAssertionsKt)'
             r'\.[A-Za-z0-9_$]+\((OwnerPilotInstrumentedTest|SyntheticSystemKeyguard|ReleaseOverrideAssertions)'
-            r'\.kt:([1-9][0-9]{0,2})\)\s*', line)
+            r'\.kt:([1-9][0-9]{0,3})\)\s*', line)
         if match and match[1].removesuffix('Kt') == match[2]:
             location = {'source': match[2] + '.kt', 'line': int(match[3])}
             if location not in locations:
@@ -101,6 +103,59 @@ def failure_configuration(output):
     return {'width_dp': width, 'font_scale_permille': font}
 
 
+def validated_caller_transition(raw):
+    if raw is None:
+        return None
+    result = failure_caller_state(
+        'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+        'Fixture caller never resumed: ' + raw)
+    if result is None:
+        raise ValueError('INVALID_CALLER_TRANSITION')
+    del result['failure']
+    del result['availability']
+    return json.dumps(result, sort_keys=True)
+
+
+def failure_local_access_state(output):
+    allowed = {'NO_RESULT', 'LOCKED', 'OPENING', 'AVAILABLE'} | {
+        'FAILED_' + reason for reason in (
+            'LOCKED', 'CANCELLED', 'UNAVAILABLE', 'INVALID_INPUT', 'COLLISION',
+            'KEY_UNAVAILABLE', 'KEY_INVALIDATED', 'AUTHENTICATION_FAILED',
+            'INCOMPLETE', 'CORRUPT', 'BUSY', 'UNCERTAIN')
+    }
+    states = set()
+    for line in output.splitlines():
+        match = re.fullmatch(
+            r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
+            r'Local open failed: ([A-Z_]{1,40})(?: before=([01]{7}) after=([01]{7})'
+            r'(?: ownerBefore=([01]{4}) ownerAfter=([01]{4}) '
+            r'generationChanged=(true|false) extraCoordinatorChange=(true|false))?)?'
+            r'(?: caller=([^\r\n]{1,350}))?', line)
+        if match and match[1] in allowed:
+            try:
+                states.add((*match.groups()[:-1], validated_caller_transition(match[8])))
+            except ValueError:
+                return None
+    if len(states) != 1:
+        return None
+    availability, before, after, owner_before, owner_after, generation, coordinator, caller = states.pop()
+    result = {'availability': availability}
+    if caller is not None:
+        result['caller_transition'] = json.loads(caller)
+    fields = ('resumed', 'focused', 'interactive', 'device_locked',
+              'keyguard_showing', 'finishing', 'destroyed')
+    if before is not None:
+        result.update(before=dict(zip(fields, (bit == '1' for bit in before))),
+                      after=dict(zip(fields, (bit == '1' for bit in after))))
+    if owner_before is not None:
+        owner_fields = ('exact_activity', 'foreground', 'interactive', 'device_locked')
+        result.update(owner_before=dict(zip(owner_fields, (bit == '1' for bit in owner_before))),
+                      owner_after=dict(zip(owner_fields, (bit == '1' for bit in owner_after))),
+                      generation_changed=generation == 'true',
+                      extra_coordinator_change=coordinator == 'true')
+    return result
+
+
 def switch_to_secondary_viewport(command, wait_for_switch, user):
     require(type(user) is int and user > 0, 'SYNTHETIC_SECONDARY_REQUIRED')
     command('shell', 'am', 'switch-user', str(user))
@@ -112,6 +167,27 @@ def switch_to_secondary_viewport(command, wait_for_switch, user):
     command('shell', 'settings', '--user', str(user), 'put', 'system', 'font_scale', '2.0')
     command('shell', 'wm', 'size', '1080x1920')
     command('shell', 'wm', 'density', '480')
+
+
+def failure_readback_state(output):
+    states = set()
+    for line in output.splitlines():
+        match = re.fullmatch(
+            r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
+            r'Authenticated readback failed: ([A-Z_]{1,40})(?: caller=([^\r\n]{1,350}))?', line)
+        if match:
+            validated = failure_local_access_state(
+                'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+                'Local open failed: FAILED_' + match[1])
+            if validated is not None:
+                try:
+                    states.add((match[1], validated_caller_transition(match[2])))
+                except ValueError:
+                    return None
+    if len(states) != 1:
+        return None
+    reason, caller = states.pop()
+    return {'reason': reason, **({'caller_transition': json.loads(caller)} if caller else {})}
 
 
 def admit_apk_inputs(app_badging, test_badging, test_manifest):
@@ -151,6 +227,60 @@ def stop_synthetic_instrumentation(command, user):
         command('shell', 'am', 'force-stop', '--user', str(user), package)
 
 
+def reboot_completed(previous_boot, current_boot, completed):
+    boot = r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}'
+    require(re.fullmatch(boot, previous_boot) is not None, 'INVALID_PREVIOUS_BOOT_ID')
+    return (re.fullmatch(boot, current_boot) is not None and
+            previous_boot != current_boot and completed == '1')
+
+
+def boot_theme_snapshot(dump, logs):
+    # Android 16 can publish a default-color ready before real boot wallpaper colors.
+    # Consume only trusted SystemUI state; never return or publish wallpaper values.
+    colors = re.findall(r'^\s*mSystemColors=\{([^\r\n]*)\}\s*$', dump, re.MULTILINE)
+    deferred = re.findall(r'^\s*mDeferredThemeEvaluation=(true|false)\s*$', dump, re.MULTILINE)
+    if (len(colors) != 1 or deferred != ['false'] or
+            re.search(r'(?:^|,\s*)0=\[WallpaperColors: [^\]\r\n]+\]', colors[0]) is None):
+        return None
+    started, completed = 0, 0
+    for line in logs.splitlines():
+        if line.startswith('updateThemeOverlays. Setting:'):
+            started += 1
+        elif (line == 'ThemeHomeDelay: ThemeOverlayController ready with user 0' and
+              completed < started):
+            completed += 1
+    return (started, completed) if started > 0 and started == completed else None
+
+
+def await_boot_theme(command, api, boot):
+    if api == 28:
+        return 'NOT_APPLICABLE'
+    require(api == 36, 'BOOT_THEME_API_NOT_SUPPORTED')
+    def snapshot():
+        require(command('shell', 'cat', '/proc/sys/kernel/random/boot_id') == boot,
+                'BOOT_CHANGED_DURING_THEME_WAIT')
+        require(command('shell', 'am', 'get-current-user') == '0', 'BOOT_THEME_OWNER_REQUIRED')
+        pid = command('shell', 'pidof', 'com.android.systemui')
+        require(re.fullmatch(r'[1-9][0-9]{0,9}', pid) is not None, 'SYSTEMUI_PID_NOT_UNIQUE')
+        dump = command('shell', 'dumpsys', 'activity', 'service',
+                       'com.android.systemui/.SystemUIService', 'ThemeOverlayController')
+        logs = command('logcat', '-d', '-b', 'main', '--pid=' + pid, '-v', 'raw',
+                       '-s', 'ThemeOverlayController:D', '*:S')
+        state = boot_theme_snapshot(dump, logs)
+        return (pid, state) if state is not None else None
+    deadline = time.monotonic() + 90
+    while time.monotonic() < deadline:
+        before = snapshot()
+        if before is not None:
+            # Overlay commit queues configuration delivery on a system broadcast looper.
+            command('shell', 'am', 'wait-for-broadcast-barrier',
+                    '--flush-broadcast-loopers', '--flush-application-threads', timeout=60)
+            if snapshot() == before:
+                return 'READY_AND_DELIVERED'
+        time.sleep(1)
+    raise ValueError('BOOT_THEME_CONFIGURATION_NOT_READY')
+
+
 def record_instrumentation_failure(receipt, output, api, phase, command, user):
     receipt.parent.mkdir(parents=True, exist_ok=True)
     diagnostic = receipt.with_suffix('.failure.json')
@@ -160,6 +290,8 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
         'locations': failure_locations(output),
         'ui_configuration': failure_configuration(output),
         'caller_state': failure_caller_state(output),
+        'local_access_state': failure_local_access_state(output),
+        'readback_state': failure_readback_state(output),
         'instrumentation_cleanup': 'STOP_UNCONFIRMED',
     }
     # Preserve the original sanitized evidence before cleanup can itself fail or stall.
@@ -179,7 +311,7 @@ def main():
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--test-apk', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
-    parser.add_argument('--inventory', type=Path, default=Path('docs/contracts/owner-pilot-device-tests-v1.json'))
+    parser.add_argument('--inventory', type=Path, default=Path('docs/contracts/owner-pilot-device-tests-v2.json'))
     args = parser.parse_args()
     require(bool(re.fullmatch(r'emulator-\d+', args.serial)), 'EXPLICIT_EMULATOR_REQUIRED')
     source = source_binding(git_command, os.environ.get('GITHUB_SHA'))
@@ -243,55 +375,79 @@ def main():
             indent=2) + '\n', encoding='utf-8')
 
     instrument(0, 'owner_initial')
-    user = created_user(command('shell', 'pm', 'create-user', 'DoraOwnerPilotSynthetic'))
-    pin = str(secrets.randbelow(900000) + 100000)
-    pin_set = False
-    serial_number = None
-    try:
-        dump = command('shell', 'dumpsys', 'user')
-        match = re.search(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
-        require(match is not None and int(match[1]) > 0, 'USER_SERIAL_NOT_CONFIRMED')
-        serial_number = match[1]
-        # API28 start-user has no -w option; the explicit switch readiness gate follows.
-        command('shell', 'am', 'start-user', str(user))
-        # Skip account/setup screens only in the disposable emulator, not lock/authentication.
-        command('shell', 'settings', '--user', str(user), 'put', 'secure', 'user_setup_complete', '1')
-        switch_to_secondary_viewport(command, wait_for_switch, user)
-        for package in (PACKAGE, PACKAGE + '.test'):
-            output = command('shell', 'cmd', 'package', 'install-existing', '--user', str(user), package)
-            require('installed for user' in output, 'SECONDARY_INSTALL_FAILED')
-        require('Pin set to' in command('shell', 'locksettings', 'set-pin', '--user', str(user), pin),
-                'SYNTHETIC_CREDENTIAL_SETUP_FAILED')
-        pin_set = True
-        command('shell', 'input', 'keyevent', '224')
-        command('shell', 'wm', 'dismiss-keyguard')
-        instrument(user, 'secondary',
-                   ('-e', 'syntheticAuthPin', pin, '-e', 'pilotUserId', str(user),
-                    '-e', 'pilotUserSerial', serial_number))
-    finally:
-        if pin_set:
-            require('Lock credential cleared' in command('shell', 'locksettings', 'clear', '--user', str(user), '--old', pin),
-                    'SYNTHETIC_CREDENTIAL_CLEANUP_FAILED')
-        command('shell', 'am', 'switch-user', '0')
-        wait_for_switch(0)
-        # get-current-user can change before the old user's switch callbacks finish.
-        command('shell', 'am', 'stop-user', '-w', '-f', str(user))
-        require(serial_number is not None, 'SYNTHETIC_USER_SERIAL_UNPROVEN')
-        deadline = time.monotonic() + 60
-        while True:
-            dump = command('shell', 'dumpsys', 'user')
-            remaining = re.findall(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
-            if not remaining:
+    # Restart the disposable emulator and verify no recording service before an explicit launch.
+    previous_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
+    reboot_completed(previous_boot, previous_boot, '1')  # Validate before mutation.
+    command('reboot')
+    deadline = time.monotonic() + 180
+    while True:
+        try:
+            current_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
+            if reboot_completed(previous_boot, current_boot,
+                                command('shell', 'getprop', 'sys.boot_completed')):
                 break
-            require(remaining == [serial_number], 'SYNTHETIC_USER_ID_REUSED')
-            try:
-                command('shell', 'pm', 'remove-user', str(user))
-            except ValueError:
-                # Android can still protect the previous current user while its
-                # asynchronous switch finishes. Never select another user as fallback.
-                pass
-            require(time.monotonic() < deadline, 'SYNTHETIC_USER_CLEANUP_FAILED')
-            time.sleep(1)
+        except ValueError:
+            pass
+        require(time.monotonic() < deadline, 'EMULATOR_REBOOT_TIMEOUT')
+        time.sleep(2)
+    emulator_fence(args.serial, args.expected_api, command)
+    require('ProductRecordingService' not in command('shell', 'dumpsys', 'activity', 'services', PACKAGE),
+            'UNEXPECTED_CAPTURE_SERVICE_AFTER_REBOOT')
+    command('shell', 'input', 'keyevent', '224')
+    command('shell', 'wm', 'dismiss-keyguard')
+    boot_theme = await_boot_theme(command, args.expected_api, current_boot)
+    instrument(0, 'owner_restart')
+    for secure in (False, True):
+        user = created_user(command('shell', 'pm', 'create-user', 'DoraOwnerPilotSynthetic'))
+        pin = str(secrets.randbelow(900000) + 100000)
+        pin_set = False
+        serial_number = None
+        try:
+            dump = command('shell', 'dumpsys', 'user')
+            match = re.search(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
+            require(match is not None and int(match[1]) > 0, 'USER_SERIAL_NOT_CONFIRMED')
+            serial_number = match[1]
+            # API28 start-user has no -w option; the explicit switch readiness gate follows.
+            command('shell', 'am', 'start-user', str(user))
+            # Skip account/setup screens only in the disposable emulator, not lock/authentication.
+            command('shell', 'settings', '--user', str(user), 'put', 'secure', 'user_setup_complete', '1')
+            switch_to_secondary_viewport(command, wait_for_switch, user)
+            for package in (PACKAGE, PACKAGE + '.test'):
+                output = command('shell', 'cmd', 'package', 'install-existing', '--user', str(user), package)
+                require('installed for user' in output, 'SECONDARY_INSTALL_FAILED')
+            if secure:
+                require('Pin set to' in command('shell', 'locksettings', 'set-pin', '--user', str(user), pin),
+                        'SYNTHETIC_CREDENTIAL_SETUP_FAILED')
+                pin_set = True
+            command('shell', 'input', 'keyevent', '224')
+            command('shell', 'wm', 'dismiss-keyguard')
+            instrument(user, 'secondary' if secure else 'secondary_no_pin',
+                       ('-e', 'syntheticAuthPin', pin, '-e', 'pilotUserId', str(user),
+                        '-e', 'pilotUserSerial', serial_number))
+        finally:
+            if pin_set:
+                require('Lock credential cleared' in command('shell', 'locksettings', 'clear', '--user', str(user), '--old', pin),
+                        'SYNTHETIC_CREDENTIAL_CLEANUP_FAILED')
+            command('shell', 'am', 'switch-user', '0')
+            wait_for_switch(0)
+            # get-current-user can change before the old user's switch callbacks finish.
+            command('shell', 'am', 'stop-user', '-w', '-f', str(user))
+            require(serial_number is not None, 'SYNTHETIC_USER_SERIAL_UNPROVEN')
+            deadline = time.monotonic() + 60
+            while True:
+                dump = command('shell', 'dumpsys', 'user')
+                remaining = re.findall(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
+                if not remaining:
+                    break
+                require(remaining == [serial_number], 'SYNTHETIC_USER_ID_REUSED')
+                try:
+                    command('shell', 'pm', 'remove-user', str(user))
+                except ValueError:
+                    # Android can still protect the previous current user while its
+                    # asynchronous switch finishes. Never select another user as fallback.
+                    pass
+                require(time.monotonic() < deadline, 'SYNTHETIC_USER_CLEANUP_FAILED')
+                time.sleep(1)
     instrument(0, 'owner_final')
     users = command('shell', 'pm', 'list', 'users')
     require(not re.search(r'UserInfo\{' + str(user) + ':', users), 'SYNTHETIC_USER_REMAINS')
@@ -304,6 +460,8 @@ def main():
     receipt = {'schema_version': 1, 'status': 'PASS_OWNER_PILOT_SYNTHETIC_ONLY',
                **source,
                'api': args.expected_api, 'phases': rows, 'synthetic_user_removed': True,
+               'changed_boot_identity_verified': True,
+               'boot_theme_configuration_barrier': boot_theme,
                'inventory_sha256': inventory_hash, 'signing_scope': 'DISPOSABLE_TEST_ONLY',
                'private_vad_acceptance': 'NOT_CLAIMED',
                'ui_fixture': {'width_dp': 360, 'font_scale': 2.0},

@@ -15,9 +15,39 @@ import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.util.UUID
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class RecordingAccessTest {
+    @Test
+    fun issuedResumeCannotStartAfterAccessCloseOrOwnerReplacement() {
+        val local = com.monumentogram.dora.audio.persistence.auth.LocalAccessSession()
+        local.resume()
+        val foreground = local.capture()
+        var epoch = 1
+        val authority =
+            RecordingAuthority(
+                foreground::requireActive,
+                { epoch == 1 },
+                foreground::withPlaintextDelivery,
+            )
+        val vault = WriterVault()
+        val access = RecordingAccess(identity(), authority, vault, { false }) { it.close() }
+        access.activate {}
+        val beforeReplacement = access.resumeGrant(foreground::withPlaintextDelivery)
+        epoch++
+        var starts = 0
+        assertThrows(IllegalStateException::class.java) { beforeReplacement.consume { starts++ } }
+        val replacement = access(identity(), WriterVault())
+        replacement.activate {}
+        val beforeClose = replacement.resumeGrant(foreground::withPlaintextDelivery)
+        replacement.close()
+        assertThrows(IllegalStateException::class.java) { beforeClose.consume { starts++ } }
+        assertEquals(0, starts)
+        access.close()
+        assertEquals(1, vault.closes)
+    }
+
     @Test
     fun directWriterRejectsBeyondAlphaBoundaryBeforeTouchingStorage() {
         val vault = WriterVault()

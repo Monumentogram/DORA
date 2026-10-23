@@ -7,15 +7,22 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.KeyguardManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.os.PowerManager
 import android.os.Process
 import android.os.UserManager
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.view.Choreographer
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.compose.setContent
@@ -37,6 +44,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
@@ -68,7 +76,6 @@ import java.util.Collections
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import javax.crypto.KeyGenerator
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -81,7 +88,7 @@ import org.junit.Test
     "LongMethod",
     "TooManyFunctions",
     "LargeClass",
-) // Shared real-credential fixture and bounded end-to-end lifecycle.
+) // PIN_FREE_LOCAL_ACCESS fixture and bounded end-to-end lifecycle.
 class OwnerPilotInstrumentedTest {
     @get:Rule val ui = createEmptyComposeRule()
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -91,7 +98,7 @@ class OwnerPilotInstrumentedTest {
         get() = (context.applicationContext as DoraApplication).audioRuntime
 
     @Test
-    fun noSystemCredentialCannotOpenVault() {
+    fun noSystemCredentialCanOpenEncryptedVault() {
         assertEquals(0, processUser())
         assertFalse(context.getSystemService(KeyguardManager::class.java).isDeviceSecure)
         val vault = File(context.noBackupFilesDir, "dora-vault-v1")
@@ -108,8 +115,8 @@ class OwnerPilotInstrumentedTest {
                 }
             }
             assertTrue(done.await(15, TimeUnit.SECONDS))
-            assertEquals(AudioAvailability.Failed(AudioFailure.CREDENTIAL_SETUP_REQUIRED), result)
-            assertFalse(vault.exists())
+            assertTrue(result is AudioAvailability.Available)
+            assertTrue(vault.exists())
         } finally {
             instrumentation.runOnMainSync {
                 runtime.lock()
@@ -117,6 +124,90 @@ class OwnerPilotInstrumentedTest {
             }
         }
     }
+
+    @Test
+    fun seedRestartEncryptedRecording() {
+        val host = launch()
+        try {
+            val session = openLocal(host)
+            val audio = restartIdentity()
+            success(session.writer.createLogicalRecording(audio))
+            success(
+                session.writer.append(
+                    AudioStorageUnitIdentity(audio, id(), 0, 0),
+                    AudioFormat.PCM,
+                    ByteArray(640) { 11 },
+                )
+            )
+            success(session.writer.finalize(audio))
+            verified(host, session, audio, 320, 1)
+        } finally {
+            instrumentation.runOnMainSync {
+                runtime.lock()
+                host.finish()
+            }
+        }
+    }
+
+    @Test
+    fun restartReadbackWithoutAutomaticCapture() {
+        val app = context.applicationContext as DoraApplication
+        assertFalse(app.recording.state.value.captureThreadHealthy)
+        assertEquals(null, app.recording.actionToken)
+        assertTrue(
+            context
+                .getSystemService(ActivityManager::class.java)
+                .getRunningServices(Int.MAX_VALUE)
+                .none { it.service.className == ProductRecordingService::class.java.name }
+        )
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            try {
+                val host = settledForegroundHost(scenario)
+                verified(host, openLocal(host), restartIdentity(), 320, 1)
+                assertNoCredentialPrompt()
+            } finally {
+                instrumentation.runOnMainSync { runtime.lock() }
+            }
+        }
+    }
+
+    /** Observe the current foreground caller before one action; never retry revoked access. */
+    private fun settledForegroundHost(scenario: ActivityScenario<MainActivity>): MainActivity {
+        assertNoCredentialPrompt()
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
+        var previous: MainActivity? = null
+        var previousConfiguration: Configuration? = null
+        while (System.nanoTime() < deadline) {
+            ui.waitForIdle()
+            val frame = CountDownLatch(1)
+            instrumentation.runOnMainSync {
+                Choreographer.getInstance().postFrameCallback { frame.countDown() }
+            }
+            assertTrue("Restart fixture frame timed out", frame.await(5, TimeUnit.SECONDS))
+            instrumentation.waitForIdleSync()
+            var current: MainActivity? = null
+            var configuration: Configuration? = null
+            scenario.onActivity { host ->
+                if (localCallerState(host) == "1110000") {
+                    current = host
+                    configuration = Configuration(host.resources.configuration)
+                }
+            }
+            if (current != null && current === previous && configuration == previousConfiguration) {
+                return checkNotNull(current)
+            }
+            previous = current
+            previousConfiguration = configuration
+        }
+        throw AssertionError("Restart fixture configuration did not settle")
+    }
+
+    private fun restartIdentity() =
+        AudioIdentity(
+            RecordingId("c2383106-6d99-4460-a3fb-1b73ce452201"),
+            AudioAssetId("c2383106-6d99-4460-a3fb-1b73ce452202"),
+            "c2383106-6d99-4460-a3fb-1b73ce452203",
+        )
 
     @Test
     fun packageManifestAndReleaseOverridesAreClosed() {
@@ -131,8 +222,8 @@ class OwnerPilotInstrumentedTest {
                     PackageManager.GET_PERMISSIONS or
                     PackageManager.GET_INSTRUMENTATION,
             )
-        assertEquals(2L, info.longVersionCode)
-        assertEquals("0.1.0-owner-alpha.2", info.versionName)
+        assertEquals(3L, info.longVersionCode)
+        assertEquals("0.1.0-owner-alpha.3", info.versionName)
         assertEquals(null, info.sharedUserId)
         assertEquals(Process.myUid(), context.applicationInfo.uid)
         assertEquals(0, context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)
@@ -198,7 +289,7 @@ class OwnerPilotInstrumentedTest {
         )
         val automation = instrumentation.uiAutomation
         val previous = automation.serviceInfo
-        var host: Activity? = null
+        var scenario: ActivityScenario<MainActivity>? = null
         try {
             automation.serviceInfo =
                 automation.serviceInfo.apply {
@@ -213,9 +304,12 @@ class OwnerPilotInstrumentedTest {
                     ::node,
                 )
                 .unlockIfNeeded()
-            val activity = launch().also { host = it }
+            val ownedScenario = ActivityScenario.launch(MainActivity::class.java)
+            scenario = ownedScenario
+            settledForegroundHost(ownedScenario)
             firstRunRequiresAcknowledgementAndMicrophonePermission()
-            val first = unlock(activity)
+            var activity = settledForegroundHost(ownedScenario)
+            val first = openLocal(activity)
             val selected = identity()
             val unit = AudioStorageUnitIdentity(selected, id(), 0, 0)
             success(first.writer.createLogicalRecording(selected))
@@ -249,7 +343,7 @@ class OwnerPilotInstrumentedTest {
                 )
             )
             success(first.writer.finalize(selected))
-            verified(first, selected, 320, 2)
+            verified(activity, first, selected, 320, 2)
             assertTrue(
                 SavedRecordingVerification.verify(first, selected.copy(sessionId = id()))
                     is AudioResult.Failed
@@ -259,25 +353,23 @@ class OwnerPilotInstrumentedTest {
             assertTrue(checkNotNull(borrowed).all { it == 0.toByte() })
             instrumentation.runOnMainSync { runtime.lock() }
             assertNoPlaintext(first, selected)
-            cancelAuthentication(activity)
             assertNoPlaintext(first, selected)
-            val second = unlock(activity)
+            val second = openLocal(activity)
             assertNoPlaintext(first, selected)
-            verified(second, selected, 320, 2)
-            // Actual OS background revocation, followed by a fresh real credential prompt.
+            verified(activity, second, selected, 320, 2)
+            // Actual OS background revocation, followed by a fresh foreground action.
             shell("input keyevent ${KeyEvent.KEYCODE_HOME}")
             awaitLocked()
             assertNoPlaintext(second, selected)
             instrumentation.runOnMainSync {
                 activity.startActivity(
-                    Intent(context, MainActivity::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    Intent(activity.intent).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 )
             }
-            awaitCallerResumed(activity)
-            val third = unlock(activity)
-            verified(third, selected, 320, 2)
-            shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
+            activity = settledForegroundHost(ownedScenario)
+            val third = openLocal(activity)
+            verified(activity, third, selected, 320, 2)
+            screenOff()
             awaitLocked()
             assertNoPlaintext(third, selected)
             awaitSystemKeyguardLocked()
@@ -288,10 +380,30 @@ class OwnerPilotInstrumentedTest {
                     ::node,
                 )
                 .unlockIfNeeded()
-            awaitCallerResumed(activity)
-            unlock(activity)
+            activity = settledForegroundHost(ownedScenario)
+            assertNoPlaintext(third, selected)
+            // Exercise replacement deterministically even when this OS did not recreate on wake.
+            val oldActivity = activity
+            ownedScenario.recreate()
+            activity = settledForegroundHost(ownedScenario)
+            assertTrue(oldActivity.isDestroyed)
+            assertTrue(oldActivity !== activity)
+            val rejected = CountDownLatch(1)
+            var oldCallerResult: AudioAvailability? = null
+            instrumentation.runOnMainSync {
+                runtime.requestOpen(oldActivity, AudioOpenMode.OPEN_EXISTING) {
+                    oldCallerResult = it
+                    rejected.countDown()
+                }
+            }
+            assertTrue(rejected.await(60, TimeUnit.SECONDS))
+            assertEquals(AudioAvailability.Locked, oldCallerResult)
+            assertNoPlaintext(third, selected)
+            val afterWake = openLocal(activity)
+            assertNoPlaintext(third, selected)
+            verified(activity, afterWake, selected, 320, 2)
             exerciseProductUi(selected)
-            val fourth = unlock(activity)
+            val fourth = openLocal(activity)
             assertEquals(
                 AudioResult.Value(AudioSourceState.UserDeleted),
                 fourth.sourceState(selected),
@@ -323,13 +435,13 @@ class OwnerPilotInstrumentedTest {
                 SavedRecordingVerification.verify(afterPresentation, corrupted)
                     is AudioResult.Failed
             )
-            exerciseRecordingAuthority(activity)
+            exerciseRecordingAuthority(activity, ownedScenario)
         } finally {
             automation.serviceInfo = previous
             instrumentation.runOnMainSync {
                 runtime.lock()
-                host?.finish()
             }
+            scenario?.close()
         }
     }
 
@@ -343,7 +455,7 @@ class OwnerPilotInstrumentedTest {
             context.checkSelfPermission(Manifest.permission.RECORD_AUDIO),
         )
         assertFalse(vault.exists())
-        assertFalse(runtime.isRecordingUiAuthorized())
+        assertTrue(runtime.isRecordingUiAuthorized())
         ui.onNodeWithContentDescription("Открыть экран записи").performClick()
         ui.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
         ui.onNodeWithContentDescription("Я предупредил(а) участников о записи")
@@ -400,7 +512,7 @@ class OwnerPilotInstrumentedTest {
                 .getRunningServices(Int.MAX_VALUE)
                 .none { it.service.className == ProductRecordingService::class.java.name },
         )
-        assertFalse(runtime.isRecordingUiAuthorized())
+        assertTrue(runtime.isRecordingUiAuthorized())
         assertTrue(runtime.availability !is AudioAvailability.Available)
         assertFalse(vault.exists())
         assertTrue(
@@ -412,13 +524,21 @@ class OwnerPilotInstrumentedTest {
     }
 
     private fun verified(
+        host: Activity,
         session: ProductAudioSession,
         identity: AudioIdentity,
         frames: Long,
         units: Int,
     ) {
+        var before = ""
+        instrumentation.runOnMainSync { before = localCallerState(host) }
         val result = SavedRecordingVerification.verify(session, identity)
-        assertTrue("Full authenticated original verification failed", result is AudioResult.Value)
+        val code = (result as? AudioResult.Failed)?.reason?.name ?: "NOT_FAILED"
+        assertTrue(
+            "Authenticated readback failed: $code caller=" +
+                callerDiagnostics(host, before[0] == '1', before[1] == '1'),
+            result is AudioResult.Value,
+        )
         val value = (result as AudioResult.Value).value
         assertEquals(identity, value.identity)
         assertEquals(frames, value.frames)
@@ -432,94 +552,44 @@ class OwnerPilotInstrumentedTest {
         assertTrue(SavedRecordingVerification.verify(session, identity) is AudioResult.Failed)
     }
 
-    @Suppress(
-        "CyclomaticComplexMethod",
-        "LoopWithTooManyJumpStatements",
-    ) // Abort each input unless the system credential surface is still visible.
-    private fun cancelAuthentication(host: Activity) {
-        awaitCallerResumed(host)
-        val done = CountDownLatch(1)
-        var result: AudioAvailability? = null
-        prompt {
-            instrumentation.runOnMainSync {
-                runtime.requestOpen(host, runtime.recordingOpenMode()) {
-                    result = it
-                    done.countDown()
-                }
-            }
-        }
-        // The first BACK can dismiss only the system credential IME. Never send a second
-        // BACK unless that credential surface still exists and the caller has not resumed.
-        var backPresses = 0
-        while (backPresses < 2) {
-            if (done.count == 0L) break
-            var callerResumed = false
-            instrumentation.runOnMainSync {
-                callerResumed =
-                    ActivityLifecycleMonitorRegistry.getInstance()
-                        .getActivitiesInStage(Stage.RESUMED)
-                        .any { it === host }
-            }
-            val credential = node {
-                it.packageName?.toString() in
-                    setOf("com.android.settings", "com.android.systemui") &&
-                    it.isPassword &&
-                    it.isEditable &&
-                    it.isVisibleToUser
-            }
-            if (callerResumed || credential == null || done.count == 0L) break
-            val cancel = node {
-                it.packageName?.toString() == "com.android.settings" &&
-                    it.viewIdResourceName == "com.android.settings:id/cancel_button" &&
-                    it.windowId == credential.windowId &&
-                    it.isVisibleToUser &&
-                    it.isEnabled &&
-                    it.isClickable
-            }
-            if (cancel != null) {
-                assertTrue(cancel.performAction(AccessibilityNodeInfo.ACTION_CLICK))
-                break
-            }
-            shell("input keyevent ${KeyEvent.KEYCODE_BACK}")
-            backPresses++
-            if (done.await(2, TimeUnit.SECONDS)) break
-        }
-        assertTrue(done.await(30, TimeUnit.SECONDS))
-        assertTrue(result !is AudioAvailability.Available)
-        assertFalse(runtime.isRecordingUiAuthorized())
-        awaitCallerResumed(host)
-        assertFalse(host.isFinishing || host.isDestroyed)
-    }
-
     private fun exerciseProductUi(identity: AudioIdentity) {
         ui.onNodeWithContentDescription("Открыть экран записи").performClick()
         loadSaved(identity)
         ui.onNodeWithText("Сохранено кадров: 320").performScrollTo().assertIsDisplayed()
-        prompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
-        enterCredential()
+        actWithoutPrompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
         waitText("Аудио проверено: 320 кадров · 2 блоков")
         loadSaved(identity)
-        prompt { ui.onNodeWithText("Удалить аудио…").performScrollTo().performClick() }
-        enterCredential()
+        actWithoutPrompt {
+            ui.onNodeWithText("Удалить аудио…").performScrollTo().assertIsEnabled().performClick()
+        }
         clickAudioDeletionDialog("Cancel")
         waitText("Удаление не подтверждено: CANCELLED")
         loadSaved(identity)
-        prompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
-        enterCredential()
+        actWithoutPrompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
         waitText("Аудио проверено: 320 кадров · 2 блоков")
         loadSaved(identity)
-        prompt { ui.onNodeWithText("Удалить аудио…").performScrollTo().performClick() }
-        enterCredential()
+        actWithoutPrompt {
+            ui.onNodeWithText("Удалить аудио…").performScrollTo().assertIsEnabled().performClick()
+        }
         clickAudioDeletionDialog("Delete audio")
         waitText("Аудио удалено. Удаление проверено.")
     }
 
     private fun loadSaved(identity: AudioIdentity) {
         waitText("Проверить сохранённые записи")
-        prompt {
-            ui.onNodeWithText("Проверить сохранённые записи").performScrollTo().performClick()
+        actWithoutPrompt {
+            ui.onNodeWithText("Проверить сохранённые записи")
+                .performScrollTo()
+                .assertIsEnabled()
+                .performClick()
         }
-        enterCredential()
+        // An existing row remains visible while its asynchronous reload runs.
+        // Wait for completion, not the stale row, before clicking a disabled action.
+        ui.waitUntil(60_000) {
+            ui.onAllNodes(hasText("Проверить сохранённые записи") and isEnabled())
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         waitText("Идентификатор записи: ${identity.recordingId.value}")
     }
 
@@ -549,16 +619,15 @@ class OwnerPilotInstrumentedTest {
             }
         }
         loadSaved(selected)
-        prompt {
+        actWithoutPrompt {
             ui.onNode(hasText("Проверить аудио") and isEnabled()).performScrollTo().performClick()
         }
-        enterCredential()
         val verification = "Аудио проверено: 320 кадров · 1 блоков"
         waitText(verification)
         val current = checkNotNull(runtime.availability as? AudioAvailability.Available).session
         awaitCallerResumed(activity)
         assertTrue(runtime.isRecordingUiAuthorized())
-        // Deliver only a stale UI snapshot; real App Lock authority stays unchanged.
+        // Deliver only a stale UI snapshot; real foreground authority stays unchanged.
         ui.runOnIdle { presentedAuthorization.value = false }
         ui.waitForIdle()
         assertTrue(runtime.isRecordingUiAuthorized())
@@ -582,7 +651,7 @@ class OwnerPilotInstrumentedTest {
         ui.onNodeWithText(verification).assertDoesNotExist()
         ui.runOnIdle { presentedAuthorization.value = false }
         ui.waitForIdle()
-        val reopened = unlock(activity)
+        val reopened = openLocal(activity)
         ui.runOnIdle { presentedAuthorization.value = true }
         ui.waitForIdle()
         ui.onNodeWithText(verification).assertDoesNotExist()
@@ -592,11 +661,14 @@ class OwnerPilotInstrumentedTest {
     /**
      * Real recording authority with synthetic PCM; no claim of microphone or private VAD evidence.
      */
-    private fun exerciseRecordingAuthority(host: Activity) {
+    private fun exerciseRecordingAuthority(
+        host: Activity,
+        scenario: ActivityScenario<MainActivity>,
+    ) {
         val selected = identity()
         val done = CountDownLatch(1)
         var opened: AudioResult<RecordingAccess>? = null
-        prompt {
+        actWithoutPrompt {
             instrumentation.runOnMainSync {
                 runtime.requestRecording(host, selected) {
                     opened = it
@@ -604,7 +676,6 @@ class OwnerPilotInstrumentedTest {
                 }
             }
         }
-        enterCredential()
         assertTrue(done.await(60, TimeUnit.SECONDS))
         success(checkNotNull(opened))
         val access = (opened as AudioResult.Value).value
@@ -628,11 +699,14 @@ class OwnerPilotInstrumentedTest {
                 ),
             )
             var stale: AudioResult<RecordingResumeGrant>? = null
+            var unusedUntilWake: AudioResult<RecordingResumeGrant>? = null
             instrumentation.runOnMainSync {
                 runtime.requestRecordingResume(host, access) { stale = it }
+                runtime.requestRecordingResume(host, access) { unusedUntilWake = it }
             }
             success(checkNotNull(stale))
-            shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
+            success(checkNotNull(unusedUntilWake))
+            screenOff()
             awaitLocked()
             var denied = false
             try {
@@ -663,21 +737,33 @@ class OwnerPilotInstrumentedTest {
                     ::node,
                 )
                 .unlockIfNeeded()
-            awaitCallerResumed(host)
+            val resumedHost = settledForegroundHost(scenario)
+            var staleAfterWakeDenied = false
+            instrumentation.runOnMainSync {
+                try {
+                    (unusedUntilWake as AudioResult.Value).value.consume { starts++ }
+                } catch (_: IllegalStateException) {
+                    staleAfterWakeDenied = true
+                }
+            }
+            assertTrue(
+                "An unused pre-lock grant must stay revoked after wake",
+                staleAfterWakeDenied,
+            )
+            assertEquals(1, starts)
             val resumed = CountDownLatch(1)
             var grant: AudioResult<RecordingResumeGrant>? = null
             var prompted = false
-            prompt {
+            actWithoutPrompt {
                 instrumentation.runOnMainSync {
-                    runtime.requestRecordingResume(host, access, { prompted = it }) {
+                    runtime.requestRecordingResume(resumedHost, access, { prompted = it }) {
                         grant = it
                         resumed.countDown()
                     }
                 }
             }
-            assertTrue(prompted)
+            assertFalse(prompted)
             assertEquals(1, starts)
-            enterCredential()
             assertTrue(resumed.await(60, TimeUnit.SECONDS))
             success(checkNotNull(grant))
             instrumentation.runOnMainSync {
@@ -694,14 +780,16 @@ class OwnerPilotInstrumentedTest {
         ui.waitUntil(60_000) { ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
     }
 
-    private fun prompt(action: () -> Unit) {
-        instrumentation.uiAutomation
-            .executeAndWaitForEvent(
-                action,
-                { node { it.isPassword && it.isEditable && it.isFocused } != null },
-                15_000,
-            )
-            .recycle()
+    private fun actWithoutPrompt(action: () -> Unit) {
+        action()
+        instrumentation.waitForIdleSync()
+        assertNoCredentialPrompt()
+    }
+
+    private fun assertNoCredentialPrompt() {
+        assertEquals(null, node { it.isPassword && it.isEditable && it.isVisibleToUser })
+        ui.onNodeWithText("Разблокировать").assertDoesNotExist()
+        ui.onNodeWithText("Разблокировать сохранённые записи").assertDoesNotExist()
     }
 
     @Suppress(
@@ -745,12 +833,41 @@ class OwnerPilotInstrumentedTest {
         assertFalse(runtime.isRecordingUiAuthorized())
     }
 
+    private fun screenOff() {
+        val delivered = CountDownLatch(1)
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    if (intent?.action == Intent.ACTION_SCREEN_OFF) delivered.countDown()
+                }
+            }
+        val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        else context.registerReceiver(receiver, filter)
+        try {
+            shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
+            assertTrue("SCREEN_OFF delivery timed out", delivered.await(15, TimeUnit.SECONDS))
+            instrumentation.waitForIdleSync()
+            assertFalse(context.getSystemService(PowerManager::class.java).isInteractive)
+        } finally {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
     private fun awaitSystemKeyguardLocked() {
         val keyguard = context.getSystemService(KeyguardManager::class.java)
+        val secure = keyguard.isDeviceSecure
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
-        // App Lock revokes on pause, before the independent OS keyguard finishes locking.
-        while (!keyguard.isDeviceLocked && System.nanoTime() < deadline) Thread.sleep(100)
-        assertTrue("Screen-off must lock the system keyguard before wake", keyguard.isDeviceLocked)
+        // The no-PIN swipe keyguard also appears asynchronously. Do not wake while
+        // its earlier screen-off transition is still pending.
+        while (System.nanoTime() < deadline) {
+            if (keyguard.isKeyguardLocked && (!secure || keyguard.isDeviceLocked)) break
+            Thread.sleep(100)
+        }
+        assertTrue("Screen-off keyguard must finish showing before wake", keyguard.isKeyguardLocked)
+        assertEquals(secure, keyguard.isDeviceLocked)
+        assertFalse(context.getSystemService(PowerManager::class.java).isInteractive)
     }
 
     private fun shell(command: String) {
@@ -830,47 +947,35 @@ class OwnerPilotInstrumentedTest {
         )
     }
 
-    private fun unlock(host: Activity): ProductAudioSession {
+    private fun openLocal(host: Activity): ProductAudioSession {
         awaitCallerResumed(host)
         val done = CountDownLatch(1)
         var result: AudioAvailability? = null
-        var resumedAtRequest = false
-        var focusAtRequest = false
-        try {
-            instrumentation.uiAutomation
-                .executeAndWaitForEvent(
-                    {
-                        instrumentation.runOnMainSync {
-                            resumedAtRequest =
-                                ActivityLifecycleMonitorRegistry.getInstance()
-                                    .getActivitiesInStage(Stage.RESUMED)
-                                    .any { it === host }
-                            focusAtRequest = host.hasWindowFocus()
-                            runtime.requestOpen(host, runtime.recordingOpenMode()) {
-                                result = it
-                                done.countDown()
-                            }
-                        }
-                    },
-                    { node { it.isPassword && it.isEditable && it.isFocused } != null },
-                    15_000,
-                )
-                .recycle()
-        } catch (_: TimeoutException) {
-            throw AssertionError(
-                "Credential prompt timeout: ${availabilityCode(result)} " +
-                    callerDiagnostics(host, resumedAtRequest, focusAtRequest)
-            )
+        var before = ""
+        var after = ""
+        lateinit var authorityBefore: LocalAuthoritySnapshot
+        lateinit var authorityAfter: LocalAuthoritySnapshot
+        instrumentation.runOnMainSync {
+            before = localCallerState(activity = host)
+            authorityBefore = localAuthoritySnapshot(host)
+            runtime.requestOpen(host, runtime.recordingOpenMode()) {
+                result = it
+                after = localCallerState(activity = host)
+                authorityAfter = localAuthoritySnapshot(host)
+                done.countDown()
+            }
         }
-        enterCredential()
-        val completed = done.await(60, TimeUnit.SECONDS)
-        // Never stringify a session, identity, provider exception or storage path in diagnostics.
-        val state =
-            availabilityCode(result) +
-                " " +
-                callerDiagnostics(host, resumedAtRequest, focusAtRequest)
-        assertTrue("Real authenticated open timed out: $state", completed)
-        assertTrue("Real authenticated open failed: $state", result is AudioAvailability.Available)
+        assertTrue("Local open timed out", done.await(60, TimeUnit.SECONDS))
+        assertNoCredentialPrompt()
+        assertTrue(
+            "Local open failed: ${availabilityCode(result)} before=$before after=$after " +
+                "ownerBefore=${authorityBefore.bits} ownerAfter=${authorityAfter.bits} " +
+                "generationChanged=${authorityBefore.generation != authorityAfter.generation} " +
+                "extraCoordinatorChange=${authorityAfter.epoch - authorityBefore.epoch != 1L} " +
+                "caller=" +
+                callerDiagnostics(host, before[0] == '1', before[1] == '1'),
+            result is AudioAvailability.Available,
+        )
         return (result as AudioAvailability.Available).session
     }
 
@@ -906,6 +1011,7 @@ class OwnerPilotInstrumentedTest {
             "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
             "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed} " +
             "callerChangingConfigurations=$changing configurationChanges=$categories " +
+            "configurationMask=${changes.toUInt().toString(16).padStart(8, '0')} " +
             "otherMainResumed=$otherMainResumed"
     }
 
@@ -914,10 +1020,7 @@ class OwnerPilotInstrumentedTest {
         var resumed = false
         while (!resumed && System.nanoTime() < deadline) {
             instrumentation.runOnMainSync {
-                resumed =
-                    ActivityLifecycleMonitorRegistry.getInstance()
-                        .getActivitiesInStage(Stage.RESUMED)
-                        .any { it === host }
+                resumed = localCallerState(host) == "1110000"
             }
             if (!resumed) Thread.sleep(100)
         }
@@ -927,9 +1030,61 @@ class OwnerPilotInstrumentedTest {
             resumed,
         )
         assertFalse(
-            "App Lock requires an already unlocked system keyguard",
+            "Foreground actions require an unlocked Android session",
             context.getSystemService(KeyguardManager::class.java).isDeviceLocked,
         )
+    }
+
+    /** Fixed boolean order only; never includes identifiers, content or provider messages. */
+    private fun localCallerState(activity: Activity): String {
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        return listOf(
+                ActivityLifecycleMonitorRegistry.getInstance()
+                    .getActivitiesInStage(Stage.RESUMED)
+                    .any { it === activity },
+                activity.hasWindowFocus(),
+                context.getSystemService(PowerManager::class.java).isInteractive,
+                keyguard.isDeviceLocked,
+                keyguard.isKeyguardLocked,
+                activity.isFinishing,
+                activity.isDestroyed,
+            )
+            .joinToString("") { if (it) "1" else "0" }
+    }
+
+    private data class LocalAuthoritySnapshot(
+        val bits: String,
+        val generation: Long,
+        val epoch: Long,
+    )
+
+    /** Read-only fixture diagnostics: never writes a field or calls a readiness-mutating method. */
+    private fun localAuthoritySnapshot(activity: Activity): LocalAuthoritySnapshot {
+        fun field(owner: Any, name: String): Any? =
+            owner.javaClass.getDeclaredField(name).let {
+                it.isAccessible = true
+                it.get(owner)
+            }
+        val local = checkNotNull(field(runtime, "localAccess"))
+        val session = checkNotNull(field(local, "session"))
+        val (foreground, generation) =
+            synchronized(checkNotNull(field(session, "monitor"))) {
+                (field(session, "foreground") as Boolean) to (field(session, "generation") as Long)
+            }
+        val coordinator = checkNotNull(field(runtime, "coordinator"))
+        val epoch =
+            synchronized(checkNotNull(field(coordinator, "monitor"))) {
+                field(coordinator, "epoch") as Long
+            }
+        val bits =
+            listOf(
+                    field(local, "resumed") === activity,
+                    foreground,
+                    (field(local, "power") as PowerManager).isInteractive,
+                    (field(local, "keyguard") as KeyguardManager).isDeviceLocked,
+                )
+                .joinToString("") { if (it) "1" else "0" }
+        return LocalAuthoritySnapshot(bits, generation, epoch)
     }
 
     private fun availabilityCode(result: AudioAvailability?): String =
@@ -940,33 +1095,6 @@ class OwnerPilotInstrumentedTest {
             is AudioAvailability.Available -> "AVAILABLE"
             is AudioAvailability.Failed -> "FAILED_${result.reason.name}"
         }
-
-    private fun enterCredential() {
-        instrumentation.uiAutomation.waitForIdle(500, 10_000)
-        val pin = checkNotNull(arguments.getString("syntheticAuthPin"))
-        require(pin.matches(Regex("[0-9]{6}")))
-        val field = checkNotNull(node { it.isPassword && it.isEditable && it.isFocused })
-        assertTrue(
-            "Credential input must belong to the actual system prompt",
-            field.packageName?.toString() in setOf("com.android.systemui", "com.android.settings"),
-        )
-        assertTrue(field.isFocused && field.isEnabled && field.isEditable && field.isPassword)
-        // API36 SystemUI advertises ACTION_SET_TEXT but rejects it for this secure field.
-        // Ordinary focused key events still pass through the real system credential verifier.
-        val events = pin.map { KeyEvent.KEYCODE_0 + it.digitToInt() }.joinToString(" ")
-        ParcelFileDescriptor.AutoCloseInputStream(
-                instrumentation.uiAutomation.executeShellCommand("input keyevent $events")
-            )
-            .use { it.readBytes() }
-        assertTrue("System credential field disappeared before submission", field.refresh())
-        assertEquals("System credential input length", 6, field.text?.length)
-        ParcelFileDescriptor.AutoCloseInputStream(
-                instrumentation.uiAutomation.executeShellCommand(
-                    "input keyevent ${KeyEvent.KEYCODE_ENTER}"
-                )
-            )
-            .use { it.readBytes() }
-    }
 
     private fun node(predicate: (AccessibilityNodeInfo) -> Boolean): AccessibilityNodeInfo? {
         fun find(current: AccessibilityNodeInfo?): AccessibilityNodeInfo? =

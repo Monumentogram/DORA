@@ -21,6 +21,15 @@ class PilotRunnerTests(unittest.TestCase):
             self.runner.emulator_fence('physical-fixture', 36, lambda *args: calls.append(args))
         self.assertEqual([], calls)
 
+    def test_reboot_requires_new_boot_identity_and_completion(self):
+        old = '00000000-0000-0000-0000-000000000001'
+        new = '00000000-0000-0000-0000-000000000002'
+        for boot, completed in ((old, '1'), (new, '0'), ('', '1'), ('provider-error', '1')):
+            self.assertFalse(self.runner.reboot_completed(old, boot, completed))
+        self.assertTrue(self.runner.reboot_completed(old, new, '1'))
+        with self.assertRaises(ValueError):
+            self.runner.reboot_completed('', new, '1')
+
     def test_named_emulator_still_requires_qemu_and_exact_api(self):
         for qemu, api in [('0', '36'), ('1', '28')]:
             def command(*args):
@@ -28,8 +37,62 @@ class PilotRunnerTests(unittest.TestCase):
             with self.subTest(qemu=qemu, api=api), self.assertRaises(ValueError):
                 self.runner.emulator_fence('emulator-5554', 36, command)
 
+    def test_boot_theme_requires_real_colors_and_all_started_evaluations_completed(self):
+        dump = 'mSystemColors={0=[WallpaperColors: ff000000 h: 1]}\nmDeferredThemeEvaluation=false'
+        start = 'updateThemeOverlays. Setting: SYNTHETIC'
+        ready = 'ThemeHomeDelay: ThemeOverlayController ready with user 0'
+        logs = start + '\n' + ready
+        self.assertEqual((1, 1), self.runner.boot_theme_snapshot(dump, logs))
+        self.assertEqual((2, 2), self.runner.boot_theme_snapshot(dump, logs + '\n' + logs))
+        for state, events in (
+                (dump.replace('[WallpaperColors: ff000000 h: 1]', 'null'), logs),
+                (dump.replace('false', 'true'), logs),
+                (dump.replace('0=', '10='), logs),
+                (dump, ready), (dump, start), (dump, logs + '\n' + start),
+                (dump, start + '\n' + start + '\n' + ready),
+                (dump, logs.replace('user 0', 'user 10'))):
+            self.assertIsNone(self.runner.boot_theme_snapshot(state, events))
+
+    def test_boot_theme_barrier_is_api36_only_and_rechecks_delivery(self):
+        calls = []
+        boot = '00000000-0000-0000-0000-000000000002'
+        dump = 'mSystemColors={0=[WallpaperColors: ff000000 h: 1]}\nmDeferredThemeEvaluation=false'
+        logs = ('updateThemeOverlays. Setting: SYNTHETIC\n'
+                'ThemeHomeDelay: ThemeOverlayController ready with user 0')
+        def command(*args, **kwargs):
+            calls.append(args)
+            if args[:2] == ('shell', 'cat'): return boot
+            if args == ('shell', 'am', 'get-current-user'): return '0'
+            if args[:2] == ('shell', 'pidof'): return '971'
+            if args[:2] == ('shell', 'dumpsys'): return dump
+            if args[0] == 'logcat': return logs
+            return ''
+        self.assertEqual('NOT_APPLICABLE', self.runner.await_boot_theme(command, 28, boot))
+        self.assertEqual([], calls)
+        self.assertEqual('READY_AND_DELIVERED', self.runner.await_boot_theme(command, 36, boot))
+        barrier = ('shell', 'am', 'wait-for-broadcast-barrier',
+                   '--flush-broadcast-loopers', '--flush-application-threads')
+        self.assertEqual(1, calls.count(barrier))
+        self.assertEqual(2, sum(call[0] == 'logcat' for call in calls))
+        self.assertEqual(2, sum(call[:2] == ('shell', 'dumpsys') for call in calls))
+        with self.assertRaisesRegex(ValueError, 'BOOT_CHANGED_DURING_THEME_WAIT'):
+            self.runner.await_boot_theme(command, 36, boot[:-1] + '3')
+
+        observed = 0
+        def pending_after_barrier(*args, **kwargs):
+            nonlocal observed
+            result = command(*args, **kwargs)
+            if args[0] == 'logcat':
+                observed += 1
+                if observed == 2: result += '\nupdateThemeOverlays. Setting: SYNTHETIC'
+            return result
+        with patch.object(self.runner.time, 'monotonic', side_effect=[0, 0, 91]), \
+                patch.object(self.runner.time, 'sleep'), \
+                self.assertRaisesRegex(ValueError, 'BOOT_THEME_CONFIGURATION_NOT_READY'):
+            self.runner.await_boot_theme(pending_after_barrier, 36, boot)
+
     def test_inventory_rejects_omission_duplicate_unexpected_and_operator_tests(self):
-        contract = json.loads((Path(__file__).parents[1] / 'docs/contracts/owner-pilot-device-tests-v1.json').read_text())
+        contract = json.loads((Path(__file__).parents[1] / 'docs/contracts/owner-pilot-device-tests-v2.json').read_text())
         self.runner.validate_inventory(contract)
         for mutation in ('missing', 'duplicate', 'operator', 'unknown'):
             invalid = json.loads(json.dumps(contract))
@@ -66,7 +129,7 @@ class PilotRunnerTests(unittest.TestCase):
 
     def test_apk_input_admission_denies_other_packages_and_wrong_test_targets(self):
         package = self.runner.PACKAGE
-        app = f"package: name='{package}' versionCode='2' versionName='0.1.0-owner-alpha.2'"
+        app = f"package: name='{package}' versionCode='3' versionName='0.1.0-owner-alpha.3'"
         test = f"package: name='{package}.test' versionCode='1' versionName=''"
         xml = ('<manifest xmlns:android="http://schemas.android.com/apk/res/android" '
                f'package="{package}.test"><instrumentation '
@@ -97,6 +160,8 @@ class PilotRunnerTests(unittest.TestCase):
                '    at com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest.secret(OwnerPilotInstrumentedTest.kt:123456)\n')
         result = self.runner.failure_locations(raw)
         self.assertEqual([{'source': 'OwnerPilotInstrumentedTest.kt', 'line': 123}], result)
+        self.assertEqual([{'source': 'OwnerPilotInstrumentedTest.kt', 'line': 1023}],
+                         self.runner.failure_locations(raw.replace('.kt:123)', '.kt:1023)')))
         for private in ['123456', 'PIN', 'secret', '/data/', 'vault']:
             self.assertNotIn(private, json.dumps(result))
 
@@ -193,6 +258,64 @@ class PilotRunnerTests(unittest.TestCase):
                         line + '\n' + line.replace('411', '412')]:
             with self.subTest(invalid=invalid):
                 self.assertIsNone(self.runner.failure_configuration(invalid))
+
+    def test_local_access_diagnostics_never_publish_arbitrary_failure_text(self):
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Local open failed: '
+        self.assertEqual({'availability': 'LOCKED'}, self.runner.failure_local_access_state(prefix + 'LOCKED'))
+        self.assertEqual({'availability': 'FAILED_CANCELLED'}, self.runner.failure_local_access_state(prefix + 'FAILED_CANCELLED'))
+        observed = self.runner.failure_local_access_state(prefix + 'LOCKED before=1110000 after=0010100')
+        self.assertTrue(observed['before']['focused'])
+        self.assertFalse(observed['after']['resumed'])
+        self.assertTrue(observed['after']['keyguard_showing'])
+        owner = ('LOCKED before=1110000 after=1110000 ownerBefore=1110 ownerAfter=1110 '
+                 'generationChanged=true extraCoordinatorChange=false')
+        observed = self.runner.failure_local_access_state(prefix + owner)
+        self.assertTrue(observed['owner_before']['exact_activity'])
+        self.assertTrue(observed['generation_changed'])
+        self.assertFalse(observed['extra_coordinator_change'])
+        for text in ['PRIVATE', 'LOCKED PIN=123456', 'FAILED_/private/path',
+                     owner + ' private=123456', owner.replace('ownerAfter=1110', 'ownerAfter=1234'),
+                     owner.replace('generationChanged=true', 'generationChanged=123456'),
+                     'LOCKED before=1110000 after=0010100 private=123456',
+                     'LOCKED before=1110000 after=0010102', 'LOCKED before=1110000',
+                     'LOCKED\n' + prefix + 'FAILED_CANCELLED']:
+            self.assertIsNone(self.runner.failure_local_access_state(prefix + text))
+
+    def test_readback_diagnostics_allow_only_one_known_failure_enum(self):
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Authenticated readback failed: '
+        for reason in ('LOCKED', 'INCOMPLETE', 'CORRUPT', 'KEY_UNAVAILABLE'):
+            self.assertEqual({'reason': reason}, self.runner.failure_readback_state(prefix + reason))
+        for invalid in ('PRIVATE', '/private/path', 'LOCKED PIN=123456', 'NOT_FAILED',
+                        'LOCKED\n' + prefix + 'CORRUPT'):
+            self.assertIsNone(self.runner.failure_readback_state(prefix + invalid))
+
+    def test_operation_transitions_retain_only_allowlisted_configuration_state(self):
+        fields = ('callerResumedAtRequest=true focusAtRequest=true secure=false locked=false '
+                  'callerFinishing=false callerDestroyed=true callerChangingConfigurations=true '
+                  'configurationChanges=DENSITY,FONT_SCALE otherMainResumed=true')
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+        for message, parse in (
+                ('Local open failed: LOCKED', self.runner.failure_local_access_state),
+                ('Authenticated readback failed: LOCKED', self.runner.failure_readback_state)):
+            line = prefix + message + ' caller=' + fields
+            observed = parse(line)['caller_transition']
+            self.assertTrue(observed['caller_destroyed'])
+            self.assertTrue(observed['caller_changing_configurations'])
+            self.assertEqual(['DENSITY', 'FONT_SCALE'], observed['configuration_changes'])
+            self.assertTrue(observed['other_main_resumed'])
+            masked = line.replace(' otherMainResumed=', ' configurationMask=80000000 otherMainResumed=')
+            self.assertEqual('80000000', parse(masked)['caller_transition']['configuration_change_mask'])
+            for invalid in (line + ' PIN=123456', line + ' /private/path',
+                            masked.replace('80000000', '800000000'),
+                            masked.replace('80000000', '/private'),
+                            masked.replace('80000000', 'PIN12345'),
+                            line.replace('DENSITY,FONT_SCALE', 'PRIVATE'),
+                            line.replace('DENSITY,FONT_SCALE', 'FONT_SCALE,DENSITY'),
+                            line.replace('DENSITY,FONT_SCALE', 'DENSITY,DENSITY'),
+                            line.replace('secure=false', 'secure=123456'),
+                            line + '\n' + line.replace('callerDestroyed=true', 'callerDestroyed=false')):
+                with self.subTest(message=message, invalid=invalid):
+                    self.assertIsNone(parse(invalid))
 
     def test_caller_diagnostics_accept_only_known_messages_enums_and_booleans(self):
         fields = ('callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '

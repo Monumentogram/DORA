@@ -13,9 +13,8 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.persistence.EncryptedAudioVault
-import com.monumentogram.dora.audio.persistence.auth.AndroidAppLock
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
-import com.monumentogram.dora.audio.persistence.auth.UnlockResult
+import com.monumentogram.dora.audio.persistence.auth.AndroidLocalAccess
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
 import com.monumentogram.dora.audio.recording.RecordingAccess
 import com.monumentogram.dora.audio.recording.RecordingAuthority
@@ -25,7 +24,7 @@ import java.util.concurrent.Executors
 /** Same vault after exclusive retirement; no parallel audio store or retained reader authority. */
 internal class AndroidRecordingAccessManager(
     private val application: Application,
-    private val appLock: AndroidAppLock,
+    private val localAccess: AndroidLocalAccess,
     private val coordinator: AudioRuntimeCoordinator,
 ) {
     private val main = Handler(Looper.getMainLooper())
@@ -61,36 +60,22 @@ internal class AndroidRecordingAccessManager(
         }
         inUse = true
         opening = true
-        val requestEpoch = ++epoch
-        appLock.requestUnlock(activity) { result ->
-            if (result != UnlockResult.UNLOCKED) {
-                opening = false
-                inUse = false
-                completion(
-                    AudioResult.Failed(
-                        when (result) {
-                            UnlockResult.CANCELLED -> AudioFailure.CANCELLED
-                            UnlockResult.CREDENTIAL_SETUP_REQUIRED ->
-                                AudioFailure.CREDENTIAL_SETUP_REQUIRED
-                            else -> AudioFailure.UNAVAILABLE
-                        }
-                    )
-                )
-            } else afterAuthentication(mode, identity, resumeExisting, requestEpoch, completion)
-        }
+        epoch++
+        openForAction(activity, mode, identity, resumeExisting, completion)
     }
 
-    private fun afterAuthentication(
+    private fun openForAction(
+        activity: Activity,
         mode: AudioOpenMode,
         identity: AudioIdentity,
         resumeExisting: Boolean,
-        requestEpoch: Long,
         completion: (AudioResult<RecordingAccess>) -> Unit,
     ) {
+        val requestEpoch = epoch
         val foreground =
             try {
-                appLock.captureAuthorization()
-            } catch (_: AppLockedException) {
+                localAccess.capture(activity)
+            } catch (_: LocalAccessDeniedException) {
                 opening = false
                 inUse = false
                 completion(AudioResult.Failed(AudioFailure.LOCKED))
@@ -99,7 +84,7 @@ internal class AndroidRecordingAccessManager(
         val authority =
             RecordingAuthority(
                 foreground::requireActive,
-                { appLock.deviceSecurity.credentialAvailable() && epoch == requestEpoch },
+                { epoch == requestEpoch },
                 foreground::withPlaintextDelivery,
             )
         currentAuthority = authority
@@ -114,7 +99,7 @@ internal class AndroidRecordingAccessManager(
                         try {
                             authority.requireForeground()
                             opened
-                        } catch (_: AppLockedException) {
+                        } catch (_: LocalAccessDeniedException) {
                             AudioResult.Failed(AudioFailure.LOCKED)
                         }
                     if (checked is AudioResult.Value) active = checked.value
@@ -146,7 +131,7 @@ internal class AndroidRecordingAccessManager(
                     application,
                     mode == AudioOpenMode.CREATE_NEW,
                     authority::requireWriter,
-                    { throw AppLockedException() },
+                    { throw LocalAccessDeniedException() },
                 )
             if (result is AudioResult.Failed) throw RecordingOpenException(result.reason)
             val vault = (result as AudioResult.Value).value
@@ -171,7 +156,7 @@ internal class AndroidRecordingAccessManager(
             AudioResult.Value(access)
         } catch (error: RecordingOpenException) {
             AudioResult.Failed(error.reason)
-        } catch (_: AppLockedException) {
+        } catch (_: LocalAccessDeniedException) {
             AudioResult.Failed(AudioFailure.LOCKED)
         } catch (_: Exception) {
             AudioResult.Failed(AudioFailure.UNAVAILABLE)
@@ -201,10 +186,10 @@ internal class AndroidRecordingAccessManager(
         boundary: (() -> Unit) -> Unit,
     ): com.monumentogram.dora.audio.recording.RecordingResumeGrant {
         val issuedEpoch = epoch
-        if (active !== expected) throw AppLockedException()
+        if (active !== expected) throw LocalAccessDeniedException()
         return expected.resumeGrant { start ->
             boundary {
-                if (active !== expected || epoch != issuedEpoch) throw AppLockedException()
+                if (active !== expected || epoch != issuedEpoch) throw LocalAccessDeniedException()
                 start()
             }
         }

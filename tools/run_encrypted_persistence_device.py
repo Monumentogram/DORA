@@ -12,6 +12,7 @@ import persistence_instrumentation_diagnostics as diagnostics
 
 PACKAGE = 'com.monumentogram.dora.audio.persistence'
 NO_CREDENTIAL = PACKAGE + '.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup'
+LOCAL_ACCESS = PACKAGE + '.auth.AndroidLocalAccessTest#exactResumedActivityRequiredWithoutCredentialPrompt'
 RUNNER = 'com.monumentogram.dora.audio.test/androidx.test.runner.AndroidJUnitRunner'
 
 
@@ -54,7 +55,8 @@ def parse_results(output, *, expected_skips=frozenset()):
 
 def validate_inventory(inventory):
     expected, controls = inventory['tests'], inventory['no_credential_tests']
-    require(len(expected) == len(set(expected)) and NO_CREDENTIAL in controls
+    pin_free = inventory.get('profile') == 'PIN_FREE_LOCAL_ACCESS'
+    require(len(expected) == len(set(expected)) and (LOCAL_ACCESS if pin_free else NO_CREDENTIAL) in controls
             and all(name.startswith(PACKAGE + '.') and re.fullmatch(r'[A-Za-z0-9_.$]+#[A-Za-z0-9_$]+', name)
                     for name in expected), 'Invalid persistence test inventory')
     require(len(controls) == len(set(controls)) and set(controls) <= set(expected),
@@ -133,7 +135,9 @@ def main():
     page_measurement = measure_page_sizes(command, api, abi)
     page_size = page_measurement['page_size']
     require((api, page_size) == (args.expected_api, args.expected_page_size), 'Runtime API/page-size identity mismatch')
-    expected, no_credential = validate_inventory(json.loads(args.inventory.read_text(encoding='utf-8')))
+    inventory = json.loads(args.inventory.read_text(encoding='utf-8'))
+    expected, no_credential = validate_inventory(inventory)
+    pin_free = inventory.get('profile') == 'PIN_FREE_LOCAL_ACCESS'
     selected = expected
     if args.diagnostic_class:
         selected = {name for name in expected if name.split('#')[0] == args.diagnostic_class}
@@ -166,18 +170,24 @@ def main():
         require({row['name'] for row in rows} == no_credential, 'No-credential controls did not execute')
         return rows
 
-    # Prove fresh-package denial before a successful run can create the canonical vault.
+    # ADR-0021 runs the complete persistence suite without a secure credential.
+    # Historical inventories retain their original denial-control semantics.
     initial_no_credential_rows = run_no_credential_controls('initial-no-credential')
+    if pin_free:
+        output = instrument(selectors(selected, exact_inventory=True), selected,
+                            'pin-free', 1800)
+        no_pin_rows = parse_results(output)
+        diagnostics.require_complete([row['name'] for row in no_pin_rows], selected)
     # This fresh test-emulator-only setup cannot replace an existing credential without its old value.
     pin = str(secrets.randbelow(900000) + 100000)
     credential_rows = []
     with diagnostics.synthetic_credential(command, pin):
         command('shell', 'input', 'keyevent', '82')
         selector = selectors(selected, diagnostic=bool(args.diagnostic_class),
-                             exact_inventory=args.exact_inventory)
+                             exact_inventory=args.exact_inventory or pin_free)
         output = instrument([*selector, '-e', 'syntheticAuthPin', pin], selected,
                             'credential', 600 if args.diagnostic_class else 1800)
-        credential_rows = parse_results(output, expected_skips=no_credential & selected)
+        credential_rows = parse_results(output, expected_skips=frozenset() if pin_free else no_credential & selected)
         diagnostics.require_complete([row['name'] for row in credential_rows], selected)
     no_credential_rows = run_no_credential_controls('final-no-credential')
     receipt = {'schema_version': 1, 'status': 'DIAGNOSTIC_BATCH_COMPLETE' if args.diagnostic_class else 'PASS_COMPONENT_RUNTIME_ONLY',
@@ -189,6 +199,8 @@ def main():
                'synthetic_credential_cleanup': 'VERIFIED', 'physical_device': False,
                'diagnostic_only': bool(args.diagnostic_class),
                'stage_acceptance': 'NOT_CLAIMED'}
+    if pin_free:
+        receipt.update(profile='PIN_FREE_LOCAL_ACCESS', pin_free_tests=no_pin_rows)
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n', encoding='utf-8')
     print(f'{receipt["status"]}: {len(selected)} distinct persistence tests, API {api}, page size {page_size}')
