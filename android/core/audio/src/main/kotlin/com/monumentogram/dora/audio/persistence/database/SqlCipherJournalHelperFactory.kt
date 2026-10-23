@@ -146,12 +146,9 @@ private class GuardedHelper(
             override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
                 check(
                     (oldVersion == 1 && newVersion == 2) ||
-                        (oldVersion in 1..2 &&
-                            newVersion ==
-                                SEGMENTATION_SCHEMA_VERSION) ||
+                        (oldVersion in 1..2 && newVersion == SEGMENTATION_SCHEMA_VERSION) ||
                         (oldVersion in 1..SEGMENTATION_SCHEMA_VERSION &&
-                            newVersion ==
-                                TRANSCRIPT_SCHEMA_VERSION)
+                            newVersion == TRANSCRIPT_SCHEMA_VERSION)
                 ) {
                     "Unadmitted database migration"
                 }

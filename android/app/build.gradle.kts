@@ -22,6 +22,55 @@ check(!providers.gradleProperty("doraAlphaUpgradeTest").isPresent) {
 
 // Explicit controlled-local packaging. Normal CI has neither input nor custody credentials.
 val privateVadDirectory = providers.gradleProperty("doraPrivateVadDir")
+val privateAsrDirectory = providers.gradleProperty("doraPrivateAsrDir")
+val privateAsrTestDirectory = providers.gradleProperty("doraPrivateAsrTestDir")
+
+check(!(privateAsrDirectory.isPresent && privateAsrTestDirectory.isPresent)) {
+    "Product and emulator ASR artifacts are mutually exclusive"
+}
+
+check(!privateAsrTestDirectory.isPresent || !privateVadDirectory.isPresent) {
+    "The x86 emulator ASR path cannot include the arm64 private VAD"
+}
+
+check(
+    !(privateAsrDirectory.isPresent || privateAsrTestDirectory.isPresent) ||
+        providers.environmentVariable("GITHUB_ACTIONS").orNull != "true"
+) {
+    "Private ASR packaging is restricted to controlled local builds"
+}
+
+check(
+    !privateAsrTestDirectory.isPresent ||
+        providers.gradleProperty("doraTestBuildType").orElse("debug").get() == "debug"
+) {
+    "The unadmitted ASR test runtime is debug-only"
+}
+
+val privateAsr =
+    if (privateAsrDirectory.isPresent || privateAsrTestDirectory.isPresent)
+        tasks.register<VerifyPrivateAsrTask>("verifyPrivateAsr") {
+            val test = privateAsrTestDirectory.isPresent
+            val directory =
+                file(if (test) privateAsrTestDirectory.get() else privateAsrDirectory.get())
+            emulatorTest.set(test)
+            nativeDirectory.set(directory)
+            receipt.set(
+                directory.parentFile.resolve(
+                    if (test) "test-build-receipt.json" else "build-receipt.json"
+                )
+            )
+            retainedNotices.set(directory.parentFile.resolve("notices"))
+            projectNotices.set(rootProject.file("../docs/evidence/stage9-asr"))
+            adapterSource.set(file("src/main/cpp/whisper_jni.cpp"))
+            cmakeSource.set(file("src/main/cpp/CMakeLists.txt"))
+            outputDirectory.set(
+                layout.buildDirectory.dir(if (test) "private-asr-test" else "private-asr")
+            )
+        }
+    else null
+
+if (privateAsr != null) tasks.configureEach { if (name == "preBuild") dependsOn(privateAsr) }
 
 check(
     !privateVadDirectory.isPresent ||
@@ -52,6 +101,14 @@ if (privateVad != null) {
 
 android {
     namespace = "com.monumentogram.dora"
+    if (privateAsr != null) {
+        val test = privateAsrTestDirectory.isPresent
+        val generated = layout.buildDirectory.dir(if (test) "private-asr-test" else "private-asr")
+        val sourceSet = sourceSets.getByName(if (test) "debug" else "main")
+        sourceSet.jniLibs.directories.add(generated.get().dir("jniLibs").asFile.absolutePath)
+        sourceSet.assets.directories.add(generated.get().dir("assets").asFile.absolutePath)
+        defaultConfig.ndk.abiFilters.add(if (test) "x86_64" else "arm64-v8a")
+    }
     if (privateVad != null) {
         sourceSets
             .getByName("main")
@@ -104,6 +161,15 @@ android {
     }
 
     packaging {
+        jniLibs.keepDebugSymbols +=
+            setOf(
+                "**/libdora-whisper-jni.so",
+                "**/libwhisper.so",
+                "**/libggml.so",
+                "**/libggml-base.so",
+                "**/libggml-cpu.so",
+                "**/libc++_shared.so",
+            )
         jniLibs.keepDebugSymbols += setOf("**/libonnxruntime.so", "**/libsherpa-onnx-jni.so")
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -112,6 +178,9 @@ android {
 }
 
 androidComponents {
+    beforeVariants(selector().all()) {
+        if (privateAsrTestDirectory.isPresent && it.buildType != "debug") it.enable = false
+    }
     onVariants(selector().all()) { variant ->
         // Fail closed if split outputs ever acquire independent version identities.
         val output = variant.outputs.single()

@@ -134,7 +134,8 @@ internal object TranscriptCodec {
 
     fun validate(doc: TranscriptDocument) {
         require(
-            doc.revision >= 0 && doc.source.version == 1 &&
+            doc.revision >= 0 &&
+                doc.source.version == 1 &&
                 doc.source.frames in 1..AlphaRecordingLimit.MAX_ALPHA_FRAMES
         )
         require(doc.source.digest.matches(Regex("[a-f0-9]{64}")))
@@ -156,7 +157,8 @@ internal object TranscriptCodec {
         doc.versions.forEach {
             TranscriptReducer.validText(it.text)
             require(
-                it.createdAt >= 0 && it.model.isNotBlank() &&
+                it.createdAt >= 0 &&
+                    it.model.isNotBlank() &&
                     it.model.length <= TranscriptReducer.MAX_MODEL_NAME_LENGTH
             )
             require(doc.jobs.single { job -> job.id == it.id }.status == "SUCCEEDED")

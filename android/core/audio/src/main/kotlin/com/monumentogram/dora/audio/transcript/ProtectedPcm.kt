@@ -20,7 +20,9 @@ class ProtectedPcm private constructor(val samples: FloatArray) : AutoCloseable 
             if (cancelled()) throw CancellationException()
         }
 
-        @Suppress("TooGenericExceptionCaught") // Wipe owned samples for every failure, including native errors.
+        @Suppress(
+            "TooGenericExceptionCaught"
+        ) // Wipe owned samples for every failure, including native errors.
         fun read(
             port: OriginalAudioPort,
             source: OriginalAudioReference,
@@ -33,11 +35,16 @@ class ProtectedPcm private constructor(val samples: FloatArray) : AutoCloseable 
                 val result =
                     port.extract(source) { first, bytes ->
                         checkCancellation(cancelled)
-                        require(first == next && bytes.isNotEmpty() && bytes.size % PCM_SAMPLE_BYTES == 0)
+                        require(
+                            first == next &&
+                                bytes.isNotEmpty() &&
+                                bytes.size % PCM_SAMPLE_BYTES == 0
+                        )
                         require(bytes.size / PCM_SAMPLE_BYTES.toLong() <= source.frames - next)
                         for (index in bytes.indices step PCM_SAMPLE_BYTES) {
                             val value =
-                                (bytes[index].toInt() and UNSIGNED_BYTE_MASK) or (bytes[index + 1].toInt() shl Byte.SIZE_BITS)
+                                (bytes[index].toInt() and UNSIGNED_BYTE_MASK) or
+                                    (bytes[index + 1].toInt() shl Byte.SIZE_BITS)
                             owned.samples[next.toInt()] = value.toShort() / PCM_NORMALIZATION
                             next++
                         }
