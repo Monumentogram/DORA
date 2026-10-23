@@ -150,6 +150,14 @@ jobs:
           --apk android/app/build/outputs/apk/ownerPilot/app-ownerPilot.apk
           --test-apk android/app/build/outputs/apk/androidTest/ownerPilot/app-ownerPilot-androidTest.apk
           --receipt "${RUNNER_TEMP}/owner-alpha-pilot/pilot.json"
+      - name: Publish pilot UI receipt before independent persistence tests
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: owner-alpha-pilot-ui-api${{ matrix.api }}
+          path: ${{ runner.temp }}/owner-alpha-pilot/*.json
+          retention-days: 7
+          if-no-files-found: warn
       - name: Compile persistence regression APK
         id: persistence_compile
         if: ${{ !cancelled() && steps.emulator.outcome == 'success' }}

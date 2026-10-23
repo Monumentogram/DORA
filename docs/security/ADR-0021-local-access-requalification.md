@@ -99,3 +99,14 @@ resumed-Activity fact. A fresh explicit request from that exact live Activity ca
 acquire the current generation after revocation; an old handle remains revoked.
 The device fixture now waits for resumed + interactive rather than synthesizing a
 HOME/reorder lifecycle race. The failed runs remain historical non-acceptance evidence.
+
+Subsequent fixture diagnostics reproduced a disabled deletion-button click: a reload
+kept the old recording row visible while asynchronous work was still in progress.
+The fixture now waits for the reload control to become enabled and explicitly checks
+both deletion buttons are enabled. The complete secondary-user scenario then passed
+locally on API28 with and without an OS PIN, including cancel/delete, screen-off
+writer continuity and stale Resume rejection. These diagnostic runs do not replace
+the exact-source full runner. The API36 component run at `b45ed3c` passed all 158
+persistence tests in both credential states; its separate Pilot reboot/readback
+failure remains non-acceptance evidence pending requalification. Readback failures
+now publish only an allowlisted failure enum, never arbitrary provider text.

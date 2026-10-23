@@ -150,6 +150,21 @@ def switch_to_secondary_viewport(command, wait_for_switch, user):
     command('shell', 'wm', 'density', '480')
 
 
+def failure_readback_state(output):
+    states = set()
+    for line in output.splitlines():
+        match = re.fullmatch(
+            r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
+            r'Authenticated readback failed: ([A-Z_]{1,40})', line)
+        if match:
+            validated = failure_local_access_state(
+                'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+                'Local open failed: FAILED_' + match[1])
+            if validated is not None:
+                states.add(match[1])
+    return {'reason': states.pop()} if len(states) == 1 else None
+
+
 def admit_apk_inputs(app_badging, test_badging, test_manifest):
     check_badging(app_badging)
     packages = re.findall(r"^package: name='([^']+)'", test_badging, re.MULTILINE)
@@ -204,6 +219,7 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
         'ui_configuration': failure_configuration(output),
         'caller_state': failure_caller_state(output),
         'local_access_state': failure_local_access_state(output),
+        'readback_state': failure_readback_state(output),
         'instrumentation_cleanup': 'STOP_UNCONFIRMED',
     }
     # Preserve the original sanitized evidence before cleanup can itself fail or stall.

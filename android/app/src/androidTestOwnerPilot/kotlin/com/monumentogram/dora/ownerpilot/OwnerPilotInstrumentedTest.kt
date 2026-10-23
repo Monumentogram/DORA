@@ -477,7 +477,8 @@ class OwnerPilotInstrumentedTest {
         units: Int,
     ) {
         val result = SavedRecordingVerification.verify(session, identity)
-        assertTrue("Full authenticated original verification failed", result is AudioResult.Value)
+        val code = (result as? AudioResult.Failed)?.reason?.name ?: "NOT_FAILED"
+        assertTrue("Authenticated readback failed: $code", result is AudioResult.Value)
         val value = (result as AudioResult.Value).value
         assertEquals(identity, value.identity)
         assertEquals(frames, value.frames)
@@ -498,14 +499,18 @@ class OwnerPilotInstrumentedTest {
         actWithoutPrompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
         waitText("Аудио проверено: 320 кадров · 2 блоков")
         loadSaved(identity)
-        actWithoutPrompt { ui.onNodeWithText("Удалить аудио…").performScrollTo().performClick() }
+        actWithoutPrompt {
+            ui.onNodeWithText("Удалить аудио…").performScrollTo().assertIsEnabled().performClick()
+        }
         clickAudioDeletionDialog("Cancel")
         waitText("Удаление не подтверждено: CANCELLED")
         loadSaved(identity)
         actWithoutPrompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }
         waitText("Аудио проверено: 320 кадров · 2 блоков")
         loadSaved(identity)
-        actWithoutPrompt { ui.onNodeWithText("Удалить аудио…").performScrollTo().performClick() }
+        actWithoutPrompt {
+            ui.onNodeWithText("Удалить аудио…").performScrollTo().assertIsEnabled().performClick()
+        }
         clickAudioDeletionDialog("Delete audio")
         waitText("Аудио удалено. Удаление проверено.")
     }
@@ -513,7 +518,17 @@ class OwnerPilotInstrumentedTest {
     private fun loadSaved(identity: AudioIdentity) {
         waitText("Проверить сохранённые записи")
         actWithoutPrompt {
-            ui.onNodeWithText("Проверить сохранённые записи").performScrollTo().performClick()
+            ui.onNodeWithText("Проверить сохранённые записи")
+                .performScrollTo()
+                .assertIsEnabled()
+                .performClick()
+        }
+        // An existing row remains visible while its asynchronous reload runs.
+        // Wait for completion, not the stale row, before clicking a disabled action.
+        ui.waitUntil(60_000) {
+            ui.onAllNodes(hasText("Проверить сохранённые записи") and isEnabled())
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
         waitText("Идентификатор записи: ${identity.recordingId.value}")
     }

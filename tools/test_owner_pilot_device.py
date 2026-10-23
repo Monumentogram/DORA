@@ -225,6 +225,14 @@ class PilotRunnerTests(unittest.TestCase):
                      'LOCKED\n' + prefix + 'FAILED_CANCELLED']:
             self.assertIsNone(self.runner.failure_local_access_state(prefix + text))
 
+    def test_readback_diagnostics_allow_only_one_known_failure_enum(self):
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Authenticated readback failed: '
+        for reason in ('LOCKED', 'INCOMPLETE', 'CORRUPT', 'KEY_UNAVAILABLE'):
+            self.assertEqual({'reason': reason}, self.runner.failure_readback_state(prefix + reason))
+        for invalid in ('PRIVATE', '/private/path', 'LOCKED PIN=123456', 'NOT_FAILED',
+                        'LOCKED\n' + prefix + 'CORRUPT'):
+            self.assertIsNone(self.runner.failure_readback_state(prefix + invalid))
+
     def test_caller_diagnostics_accept_only_known_messages_enums_and_booleans(self):
         fields = ('callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '
                   'callerFinishing=false callerDestroyed=true')
