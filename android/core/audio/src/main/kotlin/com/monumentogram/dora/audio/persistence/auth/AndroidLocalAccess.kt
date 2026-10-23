@@ -26,6 +26,9 @@ internal class AndroidLocalAccess(application: Application, private val onRevoke
         check(Looper.myLooper() == Looper.getMainLooper())
         if (resumed !== activity || activity.isFinishing || activity.isDestroyed)
             throw LocalAccessDeniedException()
+        // A fresh explicit action in this exact resumed Activity may acquire the
+        // current generation after revocation. It never revives an issued handle.
+        session.resume()
         return session.capture()
     }
 

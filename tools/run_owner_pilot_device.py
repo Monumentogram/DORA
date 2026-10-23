@@ -103,6 +103,23 @@ def failure_configuration(output):
     return {'width_dp': width, 'font_scale_permille': font}
 
 
+def failure_local_access_state(output):
+    allowed = {'NO_RESULT', 'LOCKED', 'OPENING', 'AVAILABLE'} | {
+        'FAILED_' + reason for reason in (
+            'LOCKED', 'CANCELLED', 'UNAVAILABLE', 'INVALID_INPUT', 'COLLISION',
+            'KEY_UNAVAILABLE', 'KEY_INVALIDATED', 'AUTHENTICATION_FAILED',
+            'INCOMPLETE', 'CORRUPT', 'BUSY', 'UNCERTAIN')
+    }
+    states = set()
+    for line in output.splitlines():
+        match = re.fullmatch(
+            r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
+            r'Local open failed: ([A-Z_]{1,40})', line)
+        if match and match[1] in allowed:
+            states.add(match[1])
+    return states.pop() if len(states) == 1 else None
+
+
 def switch_to_secondary_viewport(command, wait_for_switch, user):
     require(type(user) is int and user > 0, 'SYNTHETIC_SECONDARY_REQUIRED')
     command('shell', 'am', 'switch-user', str(user))
@@ -169,6 +186,7 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
         'locations': failure_locations(output),
         'ui_configuration': failure_configuration(output),
         'caller_state': failure_caller_state(output),
+        'local_access_state': failure_local_access_state(output),
         'instrumentation_cleanup': 'STOP_UNCONFIRMED',
     }
     # Preserve the original sanitized evidence before cleanup can itself fail or stall.

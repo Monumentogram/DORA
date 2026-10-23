@@ -30,6 +30,8 @@ class AndroidLocalAccessTest {
                 val old = local.capture(host)
                 local.revoke()
                 assertThrows(LocalAccessDeniedException::class.java) { old.requireActive() }
+                local.capture(host).requireActive()
+                assertThrows(LocalAccessDeniedException::class.java) { old.requireActive() }
             }
         } finally {
             instrumentation.runOnMainSync { host.finish() }

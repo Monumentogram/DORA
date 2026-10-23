@@ -823,16 +823,6 @@ class OwnerPilotInstrumentedTest {
     }
 
     private fun openLocal(host: Activity): ProductAudioSession {
-        if (!runtime.isRecordingUiAuthorized()) {
-            shell("input keyevent ${KeyEvent.KEYCODE_HOME}")
-            awaitLocked()
-            instrumentation.runOnMainSync {
-                host.startActivity(
-                    Intent(context, MainActivity::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                )
-            }
-        }
         awaitCallerResumed(host)
         val done = CountDownLatch(1)
         var result: AudioAvailability? = null
@@ -894,7 +884,8 @@ class OwnerPilotInstrumentedTest {
                 resumed =
                     ActivityLifecycleMonitorRegistry.getInstance()
                         .getActivitiesInStage(Stage.RESUMED)
-                        .any { it === host }
+                        .any { it === host } &&
+                        context.getSystemService(PowerManager::class.java).isInteractive
             }
             if (!resumed) Thread.sleep(100)
         }

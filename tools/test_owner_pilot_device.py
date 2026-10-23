@@ -203,6 +203,14 @@ class PilotRunnerTests(unittest.TestCase):
             with self.subTest(invalid=invalid):
                 self.assertIsNone(self.runner.failure_configuration(invalid))
 
+    def test_local_access_diagnostics_never_publish_arbitrary_failure_text(self):
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Local open failed: '
+        self.assertEqual('LOCKED', self.runner.failure_local_access_state(prefix + 'LOCKED'))
+        self.assertEqual('FAILED_CANCELLED', self.runner.failure_local_access_state(prefix + 'FAILED_CANCELLED'))
+        for text in ['PRIVATE', 'LOCKED PIN=123456', 'FAILED_/private/path',
+                     'LOCKED\n' + prefix + 'FAILED_CANCELLED']:
+            self.assertIsNone(self.runner.failure_local_access_state(prefix + text))
+
     def test_caller_diagnostics_accept_only_known_messages_enums_and_booleans(self):
         fields = ('callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '
                   'callerFinishing=false callerDestroyed=true')

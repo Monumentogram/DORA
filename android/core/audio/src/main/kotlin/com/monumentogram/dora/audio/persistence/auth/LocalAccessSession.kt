@@ -42,7 +42,8 @@ internal class LocalAccessSession(private val deviceReady: () -> Boolean = { tru
                 false
             }
         if (!ready) {
-            foreground = false
+            // Readiness can lag onResume during wake. Revoke every old handle but
+            // keep the independent lifecycle fact; only pause/revoke clears it.
             generation++
         }
         if (!foreground || generation != expected) throw LocalAccessDeniedException()

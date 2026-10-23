@@ -57,8 +57,7 @@ class RecordingResumeAuthorizationTest {
             authority.resume(before::withPlaintextDelivery) { fail("Locked device started") }
         }
         deviceReady = true
-        assertThrows(LocalAccessDeniedException::class.java) { lock.capture() }
-        unlock()
+        assertThrows(LocalAccessDeniedException::class.java) { before.requireActive() }
         authority.resume(lock.capture()::withPlaintextDelivery) {}
     }
 

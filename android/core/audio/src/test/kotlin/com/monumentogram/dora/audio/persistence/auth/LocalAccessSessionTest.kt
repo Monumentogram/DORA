@@ -38,7 +38,7 @@ class LocalAccessSessionTest {
     }
 
     @Test
-    fun noninteractiveStateRevokesEvenBeforeLifecycleCallback() {
+    fun readinessLossRevokesHandlesWithoutForgettingResumedActivity() {
         var interactive = true
         val session = LocalAccessSession { interactive }
         session.resume()
@@ -46,10 +46,22 @@ class LocalAccessSessionTest {
         interactive = false
         assertThrows(LocalAccessDeniedException::class.java) { old.requireActive() }
         interactive = true
-        assertThrows(LocalAccessDeniedException::class.java) { session.capture() }
-        session.resume()
         session.capture().requireActive()
         assertThrows(LocalAccessDeniedException::class.java) { old.requireActive() }
+        session.pause()
+        assertThrows(LocalAccessDeniedException::class.java) { session.capture() }
+    }
+
+    @Test
+    fun resumeBeforeInteractiveDoesNotPermanentlyDisableTheVisibleUi() {
+        var interactive = false
+        val session = LocalAccessSession { interactive }
+        session.resume()
+        assertFalse(session.isForeground)
+        assertThrows(LocalAccessDeniedException::class.java) { session.capture() }
+        interactive = true
+        assertTrue(session.isForeground)
+        session.capture().requireActive()
     }
 
     @Test

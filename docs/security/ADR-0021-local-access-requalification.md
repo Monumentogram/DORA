@@ -75,10 +75,19 @@ segmentation deferrals from Stage8 limited Alpha. Their historical source tests 
 unchanged. AlphaRecordingRuntimeTest and AlphaRecordingProcessDeathTest retain the
 299/300-second cap and durable restart boundary; no long-test PASS is claimed.
 
-Local verification: core/audio debug 240 and release 241 tests; Pilot JVM 86;
+Local verification: core/audio debug 241 and release 242 tests; Pilot JVM 86;
 Recovery 414; VAD API 52 and adapter 5; formatting, Detekt, Pilot lint and both
 instrumentation APK compilations passed. The broad historical Python discovery ran
 1160 tests and reported 31 failures/errors, including obsolete stage topology/source
 seals and three stale Pilot version fixtures (the latter fixed and rerun). This is
 not represented as an all-repository PASS. Relevant Pilot/runner/version host suites
 and the ADR-0021 preservation/source validator pass; device evidence remains pending.
+
+The first API28/API36 run passed no-system-PIN vault open and reboot/readback without
+automatic capture, then exposed a foreground reacquisition failure. Two new JVM
+regressions reproduced it before the fix: Android readiness can lag onResume, and
+checking readiness must revoke issued handles without erasing the independent
+resumed-Activity fact. A fresh explicit request from that exact live Activity can
+acquire the current generation after revocation; an old handle remains revoked.
+The device fixture now waits for resumed + interactive rather than synthesizing a
+HOME/reorder lifecycle race. The failed runs remain historical non-acceptance evidence.

@@ -35,7 +35,9 @@ jobs:
         run: >-
           ./gradlew --no-daemon --stacktrace --dependency-verification strict
           -PdoraTestBuildType=ownerPilot -PdoraOwnerPilotInstrumentationSigning=true
-          spotlessCheck detekt :core:audio:testReleaseUnitTest :app:testOwnerPilotUnitTest :app:lintOwnerPilot
+          spotlessCheck detekt :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
+          :poc:recovery:testDebugUnitTest :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest
+          :app:testOwnerPilotUnitTest :app:lintOwnerPilot
           :app:assembleOwnerPilot :app:assembleOwnerPilotAndroidTest
       - name: Host denial controls and native packaging
         run: |
