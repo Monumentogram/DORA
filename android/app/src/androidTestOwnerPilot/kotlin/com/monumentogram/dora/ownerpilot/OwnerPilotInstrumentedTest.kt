@@ -306,8 +306,9 @@ class OwnerPilotInstrumentedTest {
                 .unlockIfNeeded()
             val ownedScenario = ActivityScenario.launch(MainActivity::class.java)
             scenario = ownedScenario
-            var activity = settledForegroundHost(ownedScenario)
+            settledForegroundHost(ownedScenario)
             firstRunRequiresAcknowledgementAndMicrophonePermission()
+            var activity = settledForegroundHost(ownedScenario)
             val first = openLocal(activity)
             val selected = identity()
             val unit = AudioStorageUnitIdentity(selected, id(), 0, 0)

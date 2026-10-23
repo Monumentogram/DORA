@@ -153,3 +153,10 @@ Activity open is denied and a new explicit current-Activity open succeeds. A sep
 unused pre-screen-off Resume grant is consumed for the first time after wake and must
 still fail without starting capture. Scenario cleanup also closes replacements.
 These are test ownership and assertion improvements; production authority is unchanged.
+
+At `d60a6d8` the complete local API36 runner passed all five phases with both OS
+credential states and verified cleanup. Both owner-signed clean builds also matched.
+CI independently observed recreation across the initial microphone permission dialog,
+before the first open. The fixture now resolves its current caller after that real
+permission flow as well, before making the single open request. The failed CI receipt
+is retained; local PASS and reproducibility do not override final-head CI acceptance.
