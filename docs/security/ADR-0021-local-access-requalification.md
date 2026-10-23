@@ -140,3 +140,16 @@ wallpaper values and raw SystemUI logs are not retained or published. A local re
 reboot with this barrier passed single-attempt open/readback. This is evidence of
 the diagnosed boot work completing, not a guarantee against future independent
 configuration changes; exact-head CI remains the acceptance gate.
+
+The local `2f14130` full run passed owner startup, reboot/readback and the complete
+secondary no-PIN phase. In the secure secondary phase, Android delivered another
+`CONFIG_ASSETS_PATHS` recreation after real screen-off/unlock. The test incorrectly
+retained the destroyed caller. The secondary fixture now owns replacements through
+ActivityScenario and resolves the current resumed caller before each new foreground
+action. It retains and rejects the old sessions, never retries a rejected open or
+read, and preserves the original intent filters on HOME return. After natural wake
+revocation checks, deterministic recreation additionally proves that one destroyed
+Activity open is denied and a new explicit current-Activity open succeeds. A separate
+unused pre-screen-off Resume grant is consumed for the first time after wake and must
+still fail without starting capture. Scenario cleanup also closes replacements.
+These are test ownership and assertion improvements; production authority is unchanged.

@@ -75,7 +75,7 @@ def failure_locations(output):
             r'\s+at com\.monumentogram\.dora\.ownerpilot\.'
             r'(OwnerPilotInstrumentedTest|SyntheticSystemKeyguard|ReleaseOverrideAssertionsKt)'
             r'\.[A-Za-z0-9_$]+\((OwnerPilotInstrumentedTest|SyntheticSystemKeyguard|ReleaseOverrideAssertions)'
-            r'\.kt:([1-9][0-9]{0,2})\)\s*', line)
+            r'\.kt:([1-9][0-9]{0,3})\)\s*', line)
         if match and match[1].removesuffix('Kt') == match[2]:
             location = {'source': match[2] + '.kt', 'line': int(match[3])}
             if location not in locations:

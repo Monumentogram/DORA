@@ -162,7 +162,7 @@ class OwnerPilotInstrumentedTest {
         )
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             try {
-                val host = settledRestartHost(scenario)
+                val host = settledForegroundHost(scenario)
                 verified(host, openLocal(host), restartIdentity(), 320, 1)
                 assertNoCredentialPrompt()
             } finally {
@@ -171,8 +171,8 @@ class OwnerPilotInstrumentedTest {
         }
     }
 
-    /** Observe startup configuration before the single open; never retry revoked access. */
-    private fun settledRestartHost(scenario: ActivityScenario<MainActivity>): MainActivity {
+    /** Observe the current foreground caller before one action; never retry revoked access. */
+    private fun settledForegroundHost(scenario: ActivityScenario<MainActivity>): MainActivity {
         assertNoCredentialPrompt()
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
         var previous: MainActivity? = null
@@ -289,7 +289,7 @@ class OwnerPilotInstrumentedTest {
         )
         val automation = instrumentation.uiAutomation
         val previous = automation.serviceInfo
-        var host: Activity? = null
+        var scenario: ActivityScenario<MainActivity>? = null
         try {
             automation.serviceInfo =
                 automation.serviceInfo.apply {
@@ -304,7 +304,9 @@ class OwnerPilotInstrumentedTest {
                     ::node,
                 )
                 .unlockIfNeeded()
-            val activity = launch().also { host = it }
+            val ownedScenario = ActivityScenario.launch(MainActivity::class.java)
+            scenario = ownedScenario
+            var activity = settledForegroundHost(ownedScenario)
             firstRunRequiresAcknowledgementAndMicrophonePermission()
             val first = openLocal(activity)
             val selected = identity()
@@ -360,11 +362,10 @@ class OwnerPilotInstrumentedTest {
             assertNoPlaintext(second, selected)
             instrumentation.runOnMainSync {
                 activity.startActivity(
-                    Intent(context, MainActivity::class.java)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    Intent(activity.intent).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
                 )
             }
-            awaitCallerResumed(activity)
+            activity = settledForegroundHost(ownedScenario)
             val third = openLocal(activity)
             verified(activity, third, selected, 320, 2)
             screenOff()
@@ -378,7 +379,25 @@ class OwnerPilotInstrumentedTest {
                     ::node,
                 )
                 .unlockIfNeeded()
-            awaitCallerResumed(activity)
+            activity = settledForegroundHost(ownedScenario)
+            assertNoPlaintext(third, selected)
+            // Exercise replacement deterministically even when this OS did not recreate on wake.
+            val oldActivity = activity
+            ownedScenario.recreate()
+            activity = settledForegroundHost(ownedScenario)
+            assertTrue(oldActivity.isDestroyed)
+            assertTrue(oldActivity !== activity)
+            val rejected = CountDownLatch(1)
+            var oldCallerResult: AudioAvailability? = null
+            instrumentation.runOnMainSync {
+                runtime.requestOpen(oldActivity, AudioOpenMode.OPEN_EXISTING) {
+                    oldCallerResult = it
+                    rejected.countDown()
+                }
+            }
+            assertTrue(rejected.await(60, TimeUnit.SECONDS))
+            assertEquals(AudioAvailability.Locked, oldCallerResult)
+            assertNoPlaintext(third, selected)
             val afterWake = openLocal(activity)
             assertNoPlaintext(third, selected)
             verified(activity, afterWake, selected, 320, 2)
@@ -415,13 +434,13 @@ class OwnerPilotInstrumentedTest {
                 SavedRecordingVerification.verify(afterPresentation, corrupted)
                     is AudioResult.Failed
             )
-            exerciseRecordingAuthority(activity)
+            exerciseRecordingAuthority(activity, ownedScenario)
         } finally {
             automation.serviceInfo = previous
             instrumentation.runOnMainSync {
                 runtime.lock()
-                host?.finish()
             }
+            scenario?.close()
         }
     }
 
@@ -641,7 +660,10 @@ class OwnerPilotInstrumentedTest {
     /**
      * Real recording authority with synthetic PCM; no claim of microphone or private VAD evidence.
      */
-    private fun exerciseRecordingAuthority(host: Activity) {
+    private fun exerciseRecordingAuthority(
+        host: Activity,
+        scenario: ActivityScenario<MainActivity>,
+    ) {
         val selected = identity()
         val done = CountDownLatch(1)
         var opened: AudioResult<RecordingAccess>? = null
@@ -676,10 +698,13 @@ class OwnerPilotInstrumentedTest {
                 ),
             )
             var stale: AudioResult<RecordingResumeGrant>? = null
+            var unusedUntilWake: AudioResult<RecordingResumeGrant>? = null
             instrumentation.runOnMainSync {
                 runtime.requestRecordingResume(host, access) { stale = it }
+                runtime.requestRecordingResume(host, access) { unusedUntilWake = it }
             }
             success(checkNotNull(stale))
+            success(checkNotNull(unusedUntilWake))
             screenOff()
             awaitLocked()
             var denied = false
@@ -711,13 +736,26 @@ class OwnerPilotInstrumentedTest {
                     ::node,
                 )
                 .unlockIfNeeded()
-            awaitCallerResumed(host)
+            val resumedHost = settledForegroundHost(scenario)
+            var staleAfterWakeDenied = false
+            instrumentation.runOnMainSync {
+                try {
+                    (unusedUntilWake as AudioResult.Value).value.consume { starts++ }
+                } catch (_: IllegalStateException) {
+                    staleAfterWakeDenied = true
+                }
+            }
+            assertTrue(
+                "An unused pre-lock grant must stay revoked after wake",
+                staleAfterWakeDenied,
+            )
+            assertEquals(1, starts)
             val resumed = CountDownLatch(1)
             var grant: AudioResult<RecordingResumeGrant>? = null
             var prompted = false
             actWithoutPrompt {
                 instrumentation.runOnMainSync {
-                    runtime.requestRecordingResume(host, access, { prompted = it }) {
+                    runtime.requestRecordingResume(resumedHost, access, { prompted = it }) {
                         grant = it
                         resumed.countDown()
                     }

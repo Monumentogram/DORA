@@ -160,6 +160,8 @@ class PilotRunnerTests(unittest.TestCase):
                '    at com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest.secret(OwnerPilotInstrumentedTest.kt:123456)\n')
         result = self.runner.failure_locations(raw)
         self.assertEqual([{'source': 'OwnerPilotInstrumentedTest.kt', 'line': 123}], result)
+        self.assertEqual([{'source': 'OwnerPilotInstrumentedTest.kt', 'line': 1023}],
+                         self.runner.failure_locations(raw.replace('.kt:123)', '.kt:1023)')))
         for private in ['123456', 'PIN', 'secret', '/data/', 'vault']:
             self.assertNotIn(private, json.dumps(result))
 
