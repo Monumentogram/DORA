@@ -1,0 +1,82 @@
+name: Stage9 local ASR transcript software
+on:
+  push:
+    branches: ["codex/stage9-local-asr"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stage9-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  software:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "17"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-provider: basic, validate-wrappers: true}
+      - run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - name: Compile, analyze and run JVM regression suites
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --dependency-verification strict
+          spotlessCheck detekt :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
+          :app:testDebugUnitTest :core:model:testDebugUnitTest :core:common:testDebugUnitTest
+          :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest :poc:recovery:testDebugUnitTest
+          :app:lintDebug :core:audio:lintDebug :app:assembleDebug :app:assembleRelease
+          :app:assembleDebugAndroidTest :core:audio:assembleDebugAndroidTest
+      - name: PIN-free, contract and native admission guards
+        run: |
+          python3 -m unittest discover -s tools -p test_pin_free_local_access.py
+          python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+          python3 -m unittest discover -s tools -p test_build_stage9_whisper_adapter.py
+          python3 -m unittest discover -s tools -p test_stage9_emulator.py
+          python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stage9-synthetic-test-apks
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/apk/androidTest/debug/*.apk
+            android/core/audio/build/outputs/apk/androidTest/debug/*.apk
+          retention-days: 7
+  emulator:
+    needs: software
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix: {api: [28, 36]}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with: {name: stage9-synthetic-test-apks, path: apks}
+      - name: Create isolated emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/stage9-avd
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "emulator" "platform-tools" "system-images;android-${{ matrix.api }};google_apis;x86_64"
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd --name stage9 --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @stage9 -port 5554 -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          for attempt in $(seq 1 120); do
+            boot=$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "$boot" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Synthetic encrypted migration, restart and editor tests
+        run: |
+          python3 tools/run_stage9_emulator.py --serial emulator-5554 --api ${{ matrix.api }} --apk-root apks --receipt "${RUNNER_TEMP}/stage9-api${{ matrix.api }}.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: stage9-api${{ matrix.api }}-receipt
+          path: ${{ runner.temp }}/stage9-api${{ matrix.api }}.json
+          retention-days: 7
