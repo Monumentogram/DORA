@@ -7,6 +7,8 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteStatement
 import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.audio.persistence.journal.JournalSchemaVerifier
+import com.monumentogram.dora.audio.persistence.journal.SEGMENTATION_SCHEMA_VERSION
+import com.monumentogram.dora.audio.persistence.journal.TRANSCRIPT_SCHEMA_VERSION
 import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
@@ -144,10 +146,9 @@ private class GuardedHelper(
             override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
                 check(
                     (oldVersion == 1 && newVersion == 2) ||
-                        (oldVersion in 1..2 &&
-                            newVersion ==
-                                com.monumentogram.dora.audio.persistence.journal
-                                    .SEGMENTATION_SCHEMA_VERSION)
+                        (oldVersion in 1..2 && newVersion == SEGMENTATION_SCHEMA_VERSION) ||
+                        (oldVersion in 1..SEGMENTATION_SCHEMA_VERSION &&
+                            newVersion == TRANSCRIPT_SCHEMA_VERSION)
                 ) {
                     "Unadmitted database migration"
                 }

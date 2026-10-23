@@ -1,3 +1,16 @@
+## 2026-10-23 — Stage9 local ASR and transcript implementation
+
+Owner-scoped successor of PR111 on `codex/stage9-local-asr`.
+**PARTIAL / STAGE9_IMPLEMENTATION_INCOMPLETE**: protected local ASR integration,
+encrypted immutable versions/edits/selections and foreground editor are implemented;
+new-adapter inference and final API28/API36/exact-SHA checks are not certified here.
+See [ADR-0022](adr/ADR-0022-stage9-bounded-local-transcript.md) and
+[verification record](evidence/stage9-asr/RESULT.md). No physical install authorized.
+ADR-0021, the 300-second cap, Stage8.6 NOT_READY and historical gates remain unchanged.
+Earlier entries remain historical evidence.
+
+---
+
 ## 2026-10-23 — ADR-0021 PIN-free local runtime implementation
 
 PIN/App Lock and biometric challenges are removed from local product actions.

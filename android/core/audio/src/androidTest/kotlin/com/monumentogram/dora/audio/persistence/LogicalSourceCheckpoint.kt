@@ -6,7 +6,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.persistence.database.SqlCipherJournalHelperFactory
-import com.monumentogram.dora.audio.persistence.journal.SEGMENTATION_SCHEMA_VERSION
+import com.monumentogram.dora.audio.persistence.journal.TRANSCRIPT_SCHEMA_VERSION
 import com.monumentogram.dora.audio.persistence.keys.AndroidVaultBundleStorage
 import com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyBackend
 import com.monumentogram.dora.audio.persistence.keys.KeyAccess
@@ -33,7 +33,7 @@ internal object LogicalSourceCheckpoint {
                     SupportSQLiteOpenHelper.Configuration.builder(context)
                         .name(file.path)
                         .callback(
-                            object : SupportSQLiteOpenHelper.Callback(SEGMENTATION_SCHEMA_VERSION) {
+                            object : SupportSQLiteOpenHelper.Callback(TRANSCRIPT_SCHEMA_VERSION) {
                                 override fun onCreate(db: SupportSQLiteDatabase) =
                                     error("Existing source required")
 

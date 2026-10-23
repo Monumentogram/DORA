@@ -1,0 +1,87 @@
+{
+  "abi": "arm64-v8a",
+  "adapterExports": [
+    "Java_com_monumentogram_dora_transcript_WhisperNative_nativeAvailable",
+    "Java_com_monumentogram_dora_transcript_WhisperNative_nativeRecognize"
+  ],
+  "adapterNeeded": [
+    "libdl.so",
+    "libm.so",
+    "libc++_shared.so",
+    "libc.so"
+  ],
+  "artifacts": {
+    "libc++_shared.so": {
+      "bytes": 9236352,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2"
+    },
+    "libdora-whisper-jni.so": {
+      "bytes": 268120,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "0564a0e9d7d413c5b4c533aa44397588c246187be8f43a70dbbf237df9306ba8"
+    },
+    "libggml-base.so": {
+      "bytes": 5904504,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "ef2fab9ca78cb998feed953755c394d46cd5182b355909032415e79ad522e049"
+    },
+    "libggml-cpu.so": {
+      "bytes": 4699840,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "ab61e958ed28b6ec9ef1c92bd141f99149bb02e6147c1d710824565bdb2c7a14"
+    },
+    "libggml.so": {
+      "bytes": 533264,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "032f86f3f42ba9dedeac0f7f0b69c818917c6ddab6da98b677f2cef6dbea4f97"
+    },
+    "libwhisper.so": {
+      "bytes": 7176544,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "sha256": "b67a219f3610f9085a75fe4dd7c2c11a18edea60068e63c2f4b63c330d5f96e3"
+    }
+  },
+  "deviceRuntimeTested": false,
+  "minimumApi": 28,
+  "modelPackaged": false,
+  "ndk": "28.2.13676358",
+  "result": "PASS_BUILD_AND_STATIC_LAYOUT_ONLY",
+  "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+  "runtimeRebuilt": false,
+  "sourcePins": {
+    "CMakeLists.txt": {
+      "bytes": 1507,
+      "sha256": "8d082f272ca4f7d14a2c65299c3274a430f08ff12aa7fe7aa2b45ecc4a68a996"
+    },
+    "whisper_jni.cpp": {
+      "bytes": 10484,
+      "sha256": "e9c39a1f949d1a7b3d6194d1869f21fc8e61771d2c15e59c424aa1dfd725cba1"
+    }
+  }
+}

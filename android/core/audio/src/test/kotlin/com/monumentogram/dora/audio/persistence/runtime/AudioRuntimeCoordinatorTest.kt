@@ -31,6 +31,27 @@ import org.junit.Test
 
 class AudioRuntimeCoordinatorTest {
     @Test
+    fun transcriptDeliveryAndOldHandleRespectRevocation() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                assertEquals(AudioResult.Value(null), session.transcripts.load(identity))
+                vault.onTranscriptLoad = {
+                    lock.revoke()
+                    runtime.revoke()
+                }
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    session.transcripts.load(identity),
+                )
+                assertEquals(AudioResult.Failed(AudioFailure.LOCKED), session.transcripts.history())
+                assertEquals(2, vault.transcriptReads)
+            }
+    }
+
+    @Test
     fun runtimeHandlePreservesLogicalCreateAndRevocation() {
         val lock = LocalAccessSession { true }
         val vault = FixtureVault()
@@ -325,6 +346,23 @@ class AudioRuntimeCoordinatorTest {
             AudioResult.Value(emptyList())
         }
     ) : RuntimeVault {
+        var transcriptReads = 0
+        var onTranscriptLoad: () -> Unit = {}
+        override val transcripts =
+            object :
+                com.monumentogram.dora.audio.transcript.TranscriptPort by com.monumentogram.dora
+                    .audio
+                    .transcript
+                    .UnavailableTranscriptPort {
+                override fun load(
+                    identity: AudioIdentity
+                ): AudioResult<com.monumentogram.dora.audio.transcript.TranscriptDocument?> {
+                    transcriptReads++
+                    onTranscriptLoad()
+                    return AudioResult.Value(null)
+                }
+            }
+
         override fun recordingRecoveryPage(after: String) = recovery()
 
         override val originals =

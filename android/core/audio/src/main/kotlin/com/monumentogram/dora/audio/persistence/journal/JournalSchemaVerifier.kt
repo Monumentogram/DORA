@@ -5,7 +5,7 @@ import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 
 /** Room's identity hash alone does not detect DDL tampering with an unchanged master row. */
 internal object JournalSchemaVerifier {
-    fun verify(database: SupportSQLiteDatabase, version: Int = SEGMENTATION_SCHEMA_VERSION) {
+    fun verify(database: SupportSQLiteDatabase, version: Int = TRANSCRIPT_SCHEMA_VERSION) {
         val actual = mutableMapOf<String, String>()
         database
             .query(
@@ -30,12 +30,15 @@ internal object JournalSchemaVerifier {
                     )
                 }
             }
-        check(version in 1..SEGMENTATION_SCHEMA_VERSION)
+        check(version in 1..TRANSCRIPT_SCHEMA_VERSION)
         val schema =
             expected +
                 (if (version >= 2) originalReferenceSchema else emptyMap()) +
                 (if (version >= SEGMENTATION_SCHEMA_VERSION)
                     mapOf("audio_segmentation" to schemaDigest(SegmentationMigration.TABLE_SQL))
+                else emptyMap()) +
+                (if (version >= TRANSCRIPT_SCHEMA_VERSION)
+                    mapOf("transcript_state" to schemaDigest(TranscriptMigration.TABLE_SQL))
                 else emptyMap())
         check(actual == schema) { "Journal schema rejected" }
         database.query("PRAGMA foreign_key_check").use {
