@@ -234,6 +234,53 @@ def reboot_completed(previous_boot, current_boot, completed):
             previous_boot != current_boot and completed == '1')
 
 
+def boot_theme_snapshot(dump, logs):
+    # Android 16 can publish a default-color ready before real boot wallpaper colors.
+    # Consume only trusted SystemUI state; never return or publish wallpaper values.
+    colors = re.findall(r'^\s*mSystemColors=\{([^\r\n]*)\}\s*$', dump, re.MULTILINE)
+    deferred = re.findall(r'^\s*mDeferredThemeEvaluation=(true|false)\s*$', dump, re.MULTILINE)
+    if (len(colors) != 1 or deferred != ['false'] or
+            re.search(r'(?:^|,\s*)0=\[WallpaperColors: [^\]\r\n]+\]', colors[0]) is None):
+        return None
+    started, completed = 0, 0
+    for line in logs.splitlines():
+        if line.startswith('updateThemeOverlays. Setting:'):
+            started += 1
+        elif (line == 'ThemeHomeDelay: ThemeOverlayController ready with user 0' and
+              completed < started):
+            completed += 1
+    return (started, completed) if started > 0 and started == completed else None
+
+
+def await_boot_theme(command, api, boot):
+    if api == 28:
+        return 'NOT_APPLICABLE'
+    require(api == 36, 'BOOT_THEME_API_NOT_SUPPORTED')
+    def snapshot():
+        require(command('shell', 'cat', '/proc/sys/kernel/random/boot_id') == boot,
+                'BOOT_CHANGED_DURING_THEME_WAIT')
+        require(command('shell', 'am', 'get-current-user') == '0', 'BOOT_THEME_OWNER_REQUIRED')
+        pid = command('shell', 'pidof', 'com.android.systemui')
+        require(re.fullmatch(r'[1-9][0-9]{0,9}', pid) is not None, 'SYSTEMUI_PID_NOT_UNIQUE')
+        dump = command('shell', 'dumpsys', 'activity', 'service',
+                       'com.android.systemui/.SystemUIService', 'ThemeOverlayController')
+        logs = command('logcat', '-d', '-b', 'main', '--pid=' + pid, '-v', 'raw',
+                       '-s', 'ThemeOverlayController:D', '*:S')
+        state = boot_theme_snapshot(dump, logs)
+        return (pid, state) if state is not None else None
+    deadline = time.monotonic() + 90
+    while time.monotonic() < deadline:
+        before = snapshot()
+        if before is not None:
+            # Overlay commit queues configuration delivery on a system broadcast looper.
+            command('shell', 'am', 'wait-for-broadcast-barrier',
+                    '--flush-broadcast-loopers', '--flush-application-threads', timeout=60)
+            if snapshot() == before:
+                return 'READY_AND_DELIVERED'
+        time.sleep(1)
+    raise ValueError('BOOT_THEME_CONFIGURATION_NOT_READY')
+
+
 def record_instrumentation_failure(receipt, output, api, phase, command, user):
     receipt.parent.mkdir(parents=True, exist_ok=True)
     diagnostic = receipt.with_suffix('.failure.json')
@@ -335,7 +382,8 @@ def main():
     deadline = time.monotonic() + 180
     while True:
         try:
-            if reboot_completed(previous_boot, command('shell', 'cat', '/proc/sys/kernel/random/boot_id'),
+            current_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
+            if reboot_completed(previous_boot, current_boot,
                                 command('shell', 'getprop', 'sys.boot_completed')):
                 break
         except ValueError:
@@ -347,6 +395,7 @@ def main():
             'UNEXPECTED_CAPTURE_SERVICE_AFTER_REBOOT')
     command('shell', 'input', 'keyevent', '224')
     command('shell', 'wm', 'dismiss-keyguard')
+    boot_theme = await_boot_theme(command, args.expected_api, current_boot)
     instrument(0, 'owner_restart')
     for secure in (False, True):
         user = created_user(command('shell', 'pm', 'create-user', 'DoraOwnerPilotSynthetic'))
@@ -412,6 +461,7 @@ def main():
                **source,
                'api': args.expected_api, 'phases': rows, 'synthetic_user_removed': True,
                'changed_boot_identity_verified': True,
+               'boot_theme_configuration_barrier': boot_theme,
                'inventory_sha256': inventory_hash, 'signing_scope': 'DISPOSABLE_TEST_ONLY',
                'private_vad_acceptance': 'NOT_CLAIMED',
                'ui_fixture': {'width_dp': 360, 'font_scale': 2.0},

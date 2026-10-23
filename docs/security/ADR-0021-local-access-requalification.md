@@ -127,5 +127,16 @@ now uses ActivityScenario to track and close replacements, initializes UI observ
 before opening, and observes the same resumed/focused Activity and Configuration
 across two frame/idle boundaries before its single open. It never retries a rejected
 open or revives an old capability. A later replacement still fails the test. The
-configuration subtype was outside the named diagnostic categories; no claim about
-the underlying Android configuration provider is made.
+two-frame observation alone was insufficient in the next CI run. Exact-mask
+diagnostics at `9884a9b` identified `CONFIG_ASSETS_PATHS` (`80000000`). Android 16
+[SystemUI theme application](https://github.com/aosp-mirror/platform_frameworks_base/blob/android16-release/packages/SystemUI/src/com/android/systemui/theme/ThemeOverlayController.java)
+can finish asynchronously after boot and enqueue resource configuration delivery.
+The API36 runner therefore waits for non-null owner wallpaper colors, no deferred
+theme evaluation, and completion of all observed started theme evaluations in the
+current SystemUI process. It drains Android's broadcast loopers/application threads
+and rechecks the same boot, owner, process and completed evaluation counts before
+launching the restart scenario. Only a finite barrier result enters the receipt;
+wallpaper values and raw SystemUI logs are not retained or published. A local real
+reboot with this barrier passed single-attempt open/readback. This is evidence of
+the diagnosed boot work completing, not a guarantee against future independent
+configuration changes; exact-head CI remains the acceptance gate.

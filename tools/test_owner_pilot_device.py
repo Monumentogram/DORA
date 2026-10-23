@@ -37,6 +37,60 @@ class PilotRunnerTests(unittest.TestCase):
             with self.subTest(qemu=qemu, api=api), self.assertRaises(ValueError):
                 self.runner.emulator_fence('emulator-5554', 36, command)
 
+    def test_boot_theme_requires_real_colors_and_all_started_evaluations_completed(self):
+        dump = 'mSystemColors={0=[WallpaperColors: ff000000 h: 1]}\nmDeferredThemeEvaluation=false'
+        start = 'updateThemeOverlays. Setting: SYNTHETIC'
+        ready = 'ThemeHomeDelay: ThemeOverlayController ready with user 0'
+        logs = start + '\n' + ready
+        self.assertEqual((1, 1), self.runner.boot_theme_snapshot(dump, logs))
+        self.assertEqual((2, 2), self.runner.boot_theme_snapshot(dump, logs + '\n' + logs))
+        for state, events in (
+                (dump.replace('[WallpaperColors: ff000000 h: 1]', 'null'), logs),
+                (dump.replace('false', 'true'), logs),
+                (dump.replace('0=', '10='), logs),
+                (dump, ready), (dump, start), (dump, logs + '\n' + start),
+                (dump, start + '\n' + start + '\n' + ready),
+                (dump, logs.replace('user 0', 'user 10'))):
+            self.assertIsNone(self.runner.boot_theme_snapshot(state, events))
+
+    def test_boot_theme_barrier_is_api36_only_and_rechecks_delivery(self):
+        calls = []
+        boot = '00000000-0000-0000-0000-000000000002'
+        dump = 'mSystemColors={0=[WallpaperColors: ff000000 h: 1]}\nmDeferredThemeEvaluation=false'
+        logs = ('updateThemeOverlays. Setting: SYNTHETIC\n'
+                'ThemeHomeDelay: ThemeOverlayController ready with user 0')
+        def command(*args, **kwargs):
+            calls.append(args)
+            if args[:2] == ('shell', 'cat'): return boot
+            if args == ('shell', 'am', 'get-current-user'): return '0'
+            if args[:2] == ('shell', 'pidof'): return '971'
+            if args[:2] == ('shell', 'dumpsys'): return dump
+            if args[0] == 'logcat': return logs
+            return ''
+        self.assertEqual('NOT_APPLICABLE', self.runner.await_boot_theme(command, 28, boot))
+        self.assertEqual([], calls)
+        self.assertEqual('READY_AND_DELIVERED', self.runner.await_boot_theme(command, 36, boot))
+        barrier = ('shell', 'am', 'wait-for-broadcast-barrier',
+                   '--flush-broadcast-loopers', '--flush-application-threads')
+        self.assertEqual(1, calls.count(barrier))
+        self.assertEqual(2, sum(call[0] == 'logcat' for call in calls))
+        self.assertEqual(2, sum(call[:2] == ('shell', 'dumpsys') for call in calls))
+        with self.assertRaisesRegex(ValueError, 'BOOT_CHANGED_DURING_THEME_WAIT'):
+            self.runner.await_boot_theme(command, 36, boot[:-1] + '3')
+
+        observed = 0
+        def pending_after_barrier(*args, **kwargs):
+            nonlocal observed
+            result = command(*args, **kwargs)
+            if args[0] == 'logcat':
+                observed += 1
+                if observed == 2: result += '\nupdateThemeOverlays. Setting: SYNTHETIC'
+            return result
+        with patch.object(self.runner.time, 'monotonic', side_effect=[0, 0, 91]), \
+                patch.object(self.runner.time, 'sleep'), \
+                self.assertRaisesRegex(ValueError, 'BOOT_THEME_CONFIGURATION_NOT_READY'):
+            self.runner.await_boot_theme(pending_after_barrier, 36, boot)
+
     def test_inventory_rejects_omission_duplicate_unexpected_and_operator_tests(self):
         contract = json.loads((Path(__file__).parents[1] / 'docs/contracts/owner-pilot-device-tests-v2.json').read_text())
         self.runner.validate_inventory(contract)
