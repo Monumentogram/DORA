@@ -205,9 +205,15 @@ class PilotRunnerTests(unittest.TestCase):
 
     def test_local_access_diagnostics_never_publish_arbitrary_failure_text(self):
         prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Local open failed: '
-        self.assertEqual('LOCKED', self.runner.failure_local_access_state(prefix + 'LOCKED'))
-        self.assertEqual('FAILED_CANCELLED', self.runner.failure_local_access_state(prefix + 'FAILED_CANCELLED'))
+        self.assertEqual({'availability': 'LOCKED'}, self.runner.failure_local_access_state(prefix + 'LOCKED'))
+        self.assertEqual({'availability': 'FAILED_CANCELLED'}, self.runner.failure_local_access_state(prefix + 'FAILED_CANCELLED'))
+        observed = self.runner.failure_local_access_state(prefix + 'LOCKED before=1110000 after=0010100')
+        self.assertTrue(observed['before']['focused'])
+        self.assertFalse(observed['after']['resumed'])
+        self.assertTrue(observed['after']['keyguard_showing'])
         for text in ['PRIVATE', 'LOCKED PIN=123456', 'FAILED_/private/path',
+                     'LOCKED before=1110000 after=0010100 private=123456',
+                     'LOCKED before=1110000 after=0010102', 'LOCKED before=1110000',
                      'LOCKED\n' + prefix + 'FAILED_CANCELLED']:
             self.assertIsNone(self.runner.failure_local_access_state(prefix + text))
 

@@ -342,7 +342,9 @@ class OwnerPilotInstrumentedTest {
                 )
                 .unlockIfNeeded()
             awaitCallerResumed(activity)
-            openLocal(activity)
+            val afterWake = openLocal(activity)
+            assertNoPlaintext(third, selected)
+            verified(afterWake, selected, 320, 2)
             exerciseProductUi(selected)
             val fourth = openLocal(activity)
             assertEquals(
@@ -826,16 +828,20 @@ class OwnerPilotInstrumentedTest {
         awaitCallerResumed(host)
         val done = CountDownLatch(1)
         var result: AudioAvailability? = null
+        var before = ""
+        var after = ""
         instrumentation.runOnMainSync {
+            before = localCallerState(activity = host)
             runtime.requestOpen(host, runtime.recordingOpenMode()) {
                 result = it
+                after = localCallerState(activity = host)
                 done.countDown()
             }
         }
         assertTrue("Local open timed out", done.await(60, TimeUnit.SECONDS))
         assertNoCredentialPrompt()
         assertTrue(
-            "Local open failed: ${availabilityCode(result)}",
+            "Local open failed: ${availabilityCode(result)} before=$before after=$after",
             result is AudioAvailability.Available,
         )
         return (result as AudioAvailability.Available).session
@@ -881,11 +887,7 @@ class OwnerPilotInstrumentedTest {
         var resumed = false
         while (!resumed && System.nanoTime() < deadline) {
             instrumentation.runOnMainSync {
-                resumed =
-                    ActivityLifecycleMonitorRegistry.getInstance()
-                        .getActivitiesInStage(Stage.RESUMED)
-                        .any { it === host } &&
-                        context.getSystemService(PowerManager::class.java).isInteractive
+                resumed = localCallerState(host) == "1110000"
             }
             if (!resumed) Thread.sleep(100)
         }
@@ -898,6 +900,23 @@ class OwnerPilotInstrumentedTest {
             "Foreground actions require an unlocked Android session",
             context.getSystemService(KeyguardManager::class.java).isDeviceLocked,
         )
+    }
+
+    /** Fixed boolean order only; never includes identifiers, content or provider messages. */
+    private fun localCallerState(activity: Activity): String {
+        val keyguard = context.getSystemService(KeyguardManager::class.java)
+        return listOf(
+                ActivityLifecycleMonitorRegistry.getInstance()
+                    .getActivitiesInStage(Stage.RESUMED)
+                    .any { it === activity },
+                activity.hasWindowFocus(),
+                context.getSystemService(PowerManager::class.java).isInteractive,
+                keyguard.isDeviceLocked,
+                keyguard.isKeyguardLocked,
+                activity.isFinishing,
+                activity.isDestroyed,
+            )
+            .joinToString("") { if (it) "1" else "0" }
     }
 
     private fun availabilityCode(result: AudioAvailability?): String =

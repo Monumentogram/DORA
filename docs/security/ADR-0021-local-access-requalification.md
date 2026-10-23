@@ -49,8 +49,10 @@ local DORA content access. Encryption at rest does not authenticate the human us
 `NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT` runs on every PR/push. Pilot CI additionally
 inspects the actual compiled manifest, all DEX files and decoded resources, and runs
 the release-derived variant on API28/API36. A new Owner ADR is required to reverse
-this product policy. A workflow failure must prevent acceptance; repository branch
-protection administration is outside this implementation.
+this product policy. The same unconditional regression suite also runs in the
+existing required `android-bootstrap` job, so failure blocks its protected-branch
+status without depending on historical validator profile routing. No branch
+protection setting or main branch was changed.
 
 ## Test migration
 
@@ -82,6 +84,12 @@ instrumentation APK compilations passed. The broad historical Python discovery r
 seals and three stale Pilot version fixtures (the latter fixed and rerun). This is
 not represented as an all-repository PASS. Relevant Pilot/runner/version host suites
 and the ADR-0021 preservation/source validator pass; device evidence remains pending.
+
+The exact ADR baseline comparison ran 1,159 Python tests and reported 29
+failures/errors. Comparing individual failing cases found only the already-fixed
+Pilot version fixtures newly failing in the first implementation run; the other
+historical failures also reproduce on the baseline. This comparison does not
+convert those failures to PASS.
 
 The first API28/API36 run passed no-system-PIN vault open and reboot/readback without
 automatic capture, then exposed a foreground reacquisition failure. Two new JVM

@@ -33,6 +33,9 @@ jobs:
       - name: Verify immutable baseline is present
         run: git cat-file -e '1be83e2940a09f7b23e33b4cdf3827de2690f3fd^{commit}'
 
+      - name: NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT
+        run: python3 -m unittest discover -s tools -p test_pin_free_local_access.py
+
       - name: Set up JDK 17
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
