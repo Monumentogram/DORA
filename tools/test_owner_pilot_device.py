@@ -247,7 +247,12 @@ class PilotRunnerTests(unittest.TestCase):
             self.assertTrue(observed['caller_changing_configurations'])
             self.assertEqual(['DENSITY', 'FONT_SCALE'], observed['configuration_changes'])
             self.assertTrue(observed['other_main_resumed'])
+            masked = line.replace(' otherMainResumed=', ' configurationMask=80000000 otherMainResumed=')
+            self.assertEqual('80000000', parse(masked)['caller_transition']['configuration_change_mask'])
             for invalid in (line + ' PIN=123456', line + ' /private/path',
+                            masked.replace('80000000', '800000000'),
+                            masked.replace('80000000', '/private'),
+                            masked.replace('80000000', 'PIN12345'),
                             line.replace('DENSITY,FONT_SCALE', 'PRIVATE'),
                             line.replace('DENSITY,FONT_SCALE', 'FONT_SCALE,DENSITY'),
                             line.replace('DENSITY,FONT_SCALE', 'DENSITY,DENSITY'),

@@ -63,18 +63,19 @@ def failure_caller_state(output):
             r'focusAtRequest=(true|false) secure=(true|false) locked=(true|false) '
             r'callerFinishing=(true|false) callerDestroyed=(true|false)'
             r'(?: callerChangingConfigurations=(true|false) configurationChanges=([A-Z_,]{1,80}) '
+            r'(?:configurationMask=([a-f0-9]{8}) )?'
             r'otherMainResumed=(true|false))?', line)
         if match:
             kind, state = messages[match[1]], match[2]
             if (kind == 'CALLER_NOT_RESUMED' and state is not None) or (
                     kind != 'CALLER_NOT_RESUMED' and state not in availability):
                 return None
-            changing, changes, replacement = match.groups()[8:]
+            changing, changes, mask, replacement = match.groups()[8:]
             flags = () if changes in (None, 'NONE') else tuple(changes.split(','))
             if flags != tuple(flag for flag in configuration_flags if flag in flags):
                 return None
             observations.add((kind, state, *(value == 'true' for value in match.groups()[2:8]),
-                              changing, flags, replacement))
+                              changing, flags, replacement, mask))
     if len(observations) != 1:
         return None
     keys = ('failure', 'availability', 'caller_resumed_at_request', 'focus_at_request',
@@ -85,6 +86,8 @@ def failure_caller_state(output):
         result.update(caller_changing_configurations=observation[8] == 'true',
                       configuration_changes=list(observation[9]),
                       other_main_resumed=observation[10] == 'true')
+    if observation[11] is not None:
+        result['configuration_change_mask'] = observation[11]
     return result
 
 

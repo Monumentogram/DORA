@@ -972,6 +972,7 @@ class OwnerPilotInstrumentedTest {
             "secure=${keyguard.isDeviceSecure} locked=${keyguard.isDeviceLocked} " +
             "callerFinishing=${host.isFinishing} callerDestroyed=${host.isDestroyed} " +
             "callerChangingConfigurations=$changing configurationChanges=$categories " +
+            "configurationMask=${changes.toUInt().toString(16).padStart(8, '0')} " +
             "otherMainResumed=$otherMainResumed"
     }
 
