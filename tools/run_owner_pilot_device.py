@@ -103,6 +103,19 @@ def failure_configuration(output):
     return {'width_dp': width, 'font_scale_permille': font}
 
 
+def validated_caller_transition(raw):
+    if raw is None:
+        return None
+    result = failure_caller_state(
+        'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+        'Fixture caller never resumed: ' + raw)
+    if result is None:
+        raise ValueError('INVALID_CALLER_TRANSITION')
+    del result['failure']
+    del result['availability']
+    return json.dumps(result, sort_keys=True)
+
+
 def failure_local_access_state(output):
     allowed = {'NO_RESULT', 'LOCKED', 'OPENING', 'AVAILABLE'} | {
         'FAILED_' + reason for reason in (
@@ -116,13 +129,19 @@ def failure_local_access_state(output):
             r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
             r'Local open failed: ([A-Z_]{1,40})(?: before=([01]{7}) after=([01]{7})'
             r'(?: ownerBefore=([01]{4}) ownerAfter=([01]{4}) '
-            r'generationChanged=(true|false) extraCoordinatorChange=(true|false))?)?', line)
+            r'generationChanged=(true|false) extraCoordinatorChange=(true|false))?)?'
+            r'(?: caller=([^\r\n]{1,350}))?', line)
         if match and match[1] in allowed:
-            states.add(match.groups())
+            try:
+                states.add((*match.groups()[:-1], validated_caller_transition(match[8])))
+            except ValueError:
+                return None
     if len(states) != 1:
         return None
-    availability, before, after, owner_before, owner_after, generation, coordinator = states.pop()
+    availability, before, after, owner_before, owner_after, generation, coordinator, caller = states.pop()
     result = {'availability': availability}
+    if caller is not None:
+        result['caller_transition'] = json.loads(caller)
     fields = ('resumed', 'focused', 'interactive', 'device_locked',
               'keyguard_showing', 'finishing', 'destroyed')
     if before is not None:
@@ -155,14 +174,20 @@ def failure_readback_state(output):
     for line in output.splitlines():
         match = re.fullmatch(
             r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
-            r'Authenticated readback failed: ([A-Z_]{1,40})', line)
+            r'Authenticated readback failed: ([A-Z_]{1,40})(?: caller=([^\r\n]{1,350}))?', line)
         if match:
             validated = failure_local_access_state(
                 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
                 'Local open failed: FAILED_' + match[1])
             if validated is not None:
-                states.add(match[1])
-    return {'reason': states.pop()} if len(states) == 1 else None
+                try:
+                    states.add((match[1], validated_caller_transition(match[2])))
+                except ValueError:
+                    return None
+    if len(states) != 1:
+        return None
+    reason, caller = states.pop()
+    return {'reason': reason, **({'caller_transition': json.loads(caller)} if caller else {})}
 
 
 def admit_apk_inputs(app_badging, test_badging, test_manifest):

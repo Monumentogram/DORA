@@ -233,6 +233,29 @@ class PilotRunnerTests(unittest.TestCase):
                         'LOCKED\n' + prefix + 'CORRUPT'):
             self.assertIsNone(self.runner.failure_readback_state(prefix + invalid))
 
+    def test_operation_transitions_retain_only_allowlisted_configuration_state(self):
+        fields = ('callerResumedAtRequest=true focusAtRequest=true secure=false locked=false '
+                  'callerFinishing=false callerDestroyed=true callerChangingConfigurations=true '
+                  'configurationChanges=DENSITY,FONT_SCALE otherMainResumed=true')
+        prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+        for message, parse in (
+                ('Local open failed: LOCKED', self.runner.failure_local_access_state),
+                ('Authenticated readback failed: LOCKED', self.runner.failure_readback_state)):
+            line = prefix + message + ' caller=' + fields
+            observed = parse(line)['caller_transition']
+            self.assertTrue(observed['caller_destroyed'])
+            self.assertTrue(observed['caller_changing_configurations'])
+            self.assertEqual(['DENSITY', 'FONT_SCALE'], observed['configuration_changes'])
+            self.assertTrue(observed['other_main_resumed'])
+            for invalid in (line + ' PIN=123456', line + ' /private/path',
+                            line.replace('DENSITY,FONT_SCALE', 'PRIVATE'),
+                            line.replace('DENSITY,FONT_SCALE', 'FONT_SCALE,DENSITY'),
+                            line.replace('DENSITY,FONT_SCALE', 'DENSITY,DENSITY'),
+                            line.replace('secure=false', 'secure=123456'),
+                            line + '\n' + line.replace('callerDestroyed=true', 'callerDestroyed=false')):
+                with self.subTest(message=message, invalid=invalid):
+                    self.assertIsNone(parse(invalid))
+
     def test_caller_diagnostics_accept_only_known_messages_enums_and_booleans(self):
         fields = ('callerResumedAtRequest=false focusAtRequest=false secure=true locked=false '
                   'callerFinishing=false callerDestroyed=true')

@@ -137,7 +137,7 @@ class OwnerPilotInstrumentedTest {
                 )
             )
             success(session.writer.finalize(audio))
-            verified(session, audio, 320, 1)
+            verified(host, session, audio, 320, 1)
         } finally {
             instrumentation.runOnMainSync {
                 runtime.lock()
@@ -159,7 +159,7 @@ class OwnerPilotInstrumentedTest {
         )
         val host = launch()
         try {
-            verified(openLocal(host), restartIdentity(), 320, 1)
+            verified(host, openLocal(host), restartIdentity(), 320, 1)
             assertNoCredentialPrompt()
         } finally {
             instrumentation.runOnMainSync {
@@ -307,7 +307,7 @@ class OwnerPilotInstrumentedTest {
                 )
             )
             success(first.writer.finalize(selected))
-            verified(first, selected, 320, 2)
+            verified(activity, first, selected, 320, 2)
             assertTrue(
                 SavedRecordingVerification.verify(first, selected.copy(sessionId = id()))
                     is AudioResult.Failed
@@ -320,7 +320,7 @@ class OwnerPilotInstrumentedTest {
             assertNoPlaintext(first, selected)
             val second = openLocal(activity)
             assertNoPlaintext(first, selected)
-            verified(second, selected, 320, 2)
+            verified(activity, second, selected, 320, 2)
             // Actual OS background revocation, followed by a fresh foreground action.
             shell("input keyevent ${KeyEvent.KEYCODE_HOME}")
             awaitLocked()
@@ -333,7 +333,7 @@ class OwnerPilotInstrumentedTest {
             }
             awaitCallerResumed(activity)
             val third = openLocal(activity)
-            verified(third, selected, 320, 2)
+            verified(activity, third, selected, 320, 2)
             screenOff()
             awaitLocked()
             assertNoPlaintext(third, selected)
@@ -348,7 +348,7 @@ class OwnerPilotInstrumentedTest {
             awaitCallerResumed(activity)
             val afterWake = openLocal(activity)
             assertNoPlaintext(third, selected)
-            verified(afterWake, selected, 320, 2)
+            verified(activity, afterWake, selected, 320, 2)
             exerciseProductUi(selected)
             val fourth = openLocal(activity)
             assertEquals(
@@ -471,14 +471,21 @@ class OwnerPilotInstrumentedTest {
     }
 
     private fun verified(
+        host: Activity,
         session: ProductAudioSession,
         identity: AudioIdentity,
         frames: Long,
         units: Int,
     ) {
+        var before = ""
+        instrumentation.runOnMainSync { before = localCallerState(host) }
         val result = SavedRecordingVerification.verify(session, identity)
         val code = (result as? AudioResult.Failed)?.reason?.name ?: "NOT_FAILED"
-        assertTrue("Authenticated readback failed: $code", result is AudioResult.Value)
+        assertTrue(
+            "Authenticated readback failed: $code caller=" +
+                callerDiagnostics(host, before[0] == '1', before[1] == '1'),
+            result is AudioResult.Value,
+        )
         val value = (result as AudioResult.Value).value
         assertEquals(identity, value.identity)
         assertEquals(frames, value.frames)
@@ -892,7 +899,9 @@ class OwnerPilotInstrumentedTest {
             "Local open failed: ${availabilityCode(result)} before=$before after=$after " +
                 "ownerBefore=${authorityBefore.bits} ownerAfter=${authorityAfter.bits} " +
                 "generationChanged=${authorityBefore.generation != authorityAfter.generation} " +
-                "extraCoordinatorChange=${authorityAfter.epoch - authorityBefore.epoch != 1L}",
+                "extraCoordinatorChange=${authorityAfter.epoch - authorityBefore.epoch != 1L} " +
+                "caller=" +
+                callerDiagnostics(host, before[0] == '1', before[1] == '1'),
             result is AudioAvailability.Available,
         )
         return (result as AudioAvailability.Available).session
