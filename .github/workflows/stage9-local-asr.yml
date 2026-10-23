@@ -65,11 +65,17 @@ jobs:
           printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd --name stage9 --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
           sudo chmod 666 /dev/kvm
           nohup "${ANDROID_HOME}/emulator/emulator" @stage9 -port 5554 -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
           for attempt in $(seq 1 120); do
-            boot=$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if ! kill -0 "${emulator_pid}" 2>/dev/null; then
+              tail -n 150 "${RUNNER_TEMP}/emulator.log"
+              exit 1
+            fi
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
             if [ "$boot" = "1" ]; then exit 0; fi
             sleep 5
           done
+          tail -n 150 "${RUNNER_TEMP}/emulator.log"
           exit 1
       - name: Synthetic encrypted migration, restart and editor tests
         run: |

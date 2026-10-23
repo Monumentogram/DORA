@@ -31,7 +31,7 @@ Late completion after cancel/revocation; interrupted transaction and redelivery;
 - [x] Add bounded PCM extraction and cancellation tests in core/audio; observe failures before implementation.
 - [x] Implement memory-only canonical PCM adapter and pinned optional model verification. Reject gaps, wrong source, failed extraction and oversize input; wipe buffers on all paths.
 - [x] Build thin JNI adapter from exact runtime headers; suppress native content logging, support abort and RU/EN. Keep new-runtime qualification separate from old Stage5 results.
-- [ ] Verify and commit scoped runtime/input changes.
+- [x] Verify and commit scoped runtime/input changes.
 
 ### Task 2: 9.2 asynchronous actual recognition
 
@@ -44,7 +44,7 @@ Late completion after cancel/revocation; interrupted transaction and redelivery;
 - [x] Test immutable versions, redelivery collision, independent edits, stale revisions, per-edit selection resolution, codec roundtrip and interruption.
 - [x] Extend Room schema with encrypted transcript state, migration and exact schema verification. Atomic guarded updates preserve histories and monotonic revisions. Retain source identity after audio loss.
 - [ ] Expose transcript operations through the existing session authority, with publish bound to current exact source. Test migration, SQLCipher reopen and stale-session denial on API28/API36.
-- [ ] Verify and commit the complete worker/persistence vertical slice.
+- [x] Verify and commit the complete worker/persistence vertical slice.
 
 ### Task 4: 9.4 UI and integration
 
@@ -57,3 +57,5 @@ Late completion after cancel/revocation; interrupted transaction and redelivery;
 ## Execution notes
 
 Owner explicitly requests implementation without planning approval pauses. Native worktree creation was unavailable because the chat root is a test directory, so a Git worktree was created in the existing sibling worktree directory. Initial normative and artifact audits run independently; implementation dependencies remain sequential.
+
+Source checkpoint30c4dfa: CI software job passed strict static/build/JVM/lint and debug/release assembly. API28/36 startup remained unobserved; successor uses explicit SDK adb and captures failed emulator startup logs. Actual speech inference remains NOT_RUN.
