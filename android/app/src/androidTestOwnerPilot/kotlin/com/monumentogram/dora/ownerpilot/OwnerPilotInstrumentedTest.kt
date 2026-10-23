@@ -7,10 +7,14 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.KeyguardManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.PowerManager
 import android.os.Process
@@ -330,7 +334,7 @@ class OwnerPilotInstrumentedTest {
             awaitCallerResumed(activity)
             val third = openLocal(activity)
             verified(third, selected, 320, 2)
-            shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
+            screenOff()
             awaitLocked()
             assertNoPlaintext(third, selected)
             awaitSystemKeyguardLocked()
@@ -621,7 +625,7 @@ class OwnerPilotInstrumentedTest {
                 runtime.requestRecordingResume(host, access) { stale = it }
             }
             success(checkNotNull(stale))
-            shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
+            screenOff()
             awaitLocked()
             var denied = false
             try {
@@ -735,16 +739,41 @@ class OwnerPilotInstrumentedTest {
         assertFalse(runtime.isRecordingUiAuthorized())
     }
 
+    private fun screenOff() {
+        val delivered = CountDownLatch(1)
+        val receiver =
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    if (intent?.action == Intent.ACTION_SCREEN_OFF) delivered.countDown()
+                }
+            }
+        val filter = IntentFilter(Intent.ACTION_SCREEN_OFF)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        else context.registerReceiver(receiver, filter)
+        try {
+            shell("input keyevent ${KeyEvent.KEYCODE_SLEEP}")
+            assertTrue("SCREEN_OFF delivery timed out", delivered.await(15, TimeUnit.SECONDS))
+            instrumentation.waitForIdleSync()
+            assertFalse(context.getSystemService(PowerManager::class.java).isInteractive)
+        } finally {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
     private fun awaitSystemKeyguardLocked() {
         val keyguard = context.getSystemService(KeyguardManager::class.java)
-        if (!keyguard.isDeviceSecure) {
-            assertFalse(context.getSystemService(PowerManager::class.java).isInteractive)
-            return
-        }
+        val secure = keyguard.isDeviceSecure
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
-        // Foreground authority revokes before the independent OS keyguard finishes locking.
-        while (!keyguard.isDeviceLocked && System.nanoTime() < deadline) Thread.sleep(100)
-        assertTrue("Screen-off must lock the system keyguard before wake", keyguard.isDeviceLocked)
+        // The no-PIN swipe keyguard also appears asynchronously. Do not wake while
+        // its earlier screen-off transition is still pending.
+        while (System.nanoTime() < deadline) {
+            if (keyguard.isKeyguardLocked && (!secure || keyguard.isDeviceLocked)) break
+            Thread.sleep(100)
+        }
+        assertTrue("Screen-off keyguard must finish showing before wake", keyguard.isKeyguardLocked)
+        assertEquals(secure, keyguard.isDeviceLocked)
+        assertFalse(context.getSystemService(PowerManager::class.java).isInteractive)
     }
 
     private fun shell(command: String) {
@@ -830,18 +859,25 @@ class OwnerPilotInstrumentedTest {
         var result: AudioAvailability? = null
         var before = ""
         var after = ""
+        lateinit var authorityBefore: LocalAuthoritySnapshot
+        lateinit var authorityAfter: LocalAuthoritySnapshot
         instrumentation.runOnMainSync {
             before = localCallerState(activity = host)
+            authorityBefore = localAuthoritySnapshot(host)
             runtime.requestOpen(host, runtime.recordingOpenMode()) {
                 result = it
                 after = localCallerState(activity = host)
+                authorityAfter = localAuthoritySnapshot(host)
                 done.countDown()
             }
         }
         assertTrue("Local open timed out", done.await(60, TimeUnit.SECONDS))
         assertNoCredentialPrompt()
         assertTrue(
-            "Local open failed: ${availabilityCode(result)} before=$before after=$after",
+            "Local open failed: ${availabilityCode(result)} before=$before after=$after " +
+                "ownerBefore=${authorityBefore.bits} ownerAfter=${authorityAfter.bits} " +
+                "generationChanged=${authorityBefore.generation != authorityAfter.generation} " +
+                "extraCoordinatorChange=${authorityAfter.epoch - authorityBefore.epoch != 1L}",
             result is AudioAvailability.Available,
         )
         return (result as AudioAvailability.Available).session
@@ -917,6 +953,41 @@ class OwnerPilotInstrumentedTest {
                 activity.isDestroyed,
             )
             .joinToString("") { if (it) "1" else "0" }
+    }
+
+    private data class LocalAuthoritySnapshot(
+        val bits: String,
+        val generation: Long,
+        val epoch: Long,
+    )
+
+    /** Read-only fixture diagnostics: never writes a field or calls a readiness-mutating method. */
+    private fun localAuthoritySnapshot(activity: Activity): LocalAuthoritySnapshot {
+        fun field(owner: Any, name: String): Any? =
+            owner.javaClass.getDeclaredField(name).let {
+                it.isAccessible = true
+                it.get(owner)
+            }
+        val local = checkNotNull(field(runtime, "localAccess"))
+        val session = checkNotNull(field(local, "session"))
+        val (foreground, generation) =
+            synchronized(checkNotNull(field(session, "monitor"))) {
+                (field(session, "foreground") as Boolean) to (field(session, "generation") as Long)
+            }
+        val coordinator = checkNotNull(field(runtime, "coordinator"))
+        val epoch =
+            synchronized(checkNotNull(field(coordinator, "monitor"))) {
+                field(coordinator, "epoch") as Long
+            }
+        val bits =
+            listOf(
+                    field(local, "resumed") === activity,
+                    foreground,
+                    (field(local, "power") as PowerManager).isInteractive,
+                    (field(local, "keyguard") as KeyguardManager).isDeviceLocked,
+                )
+                .joinToString("") { if (it) "1" else "0" }
+        return LocalAuthoritySnapshot(bits, generation, epoch)
     }
 
     private fun availabilityCode(result: AudioAvailability?): String =

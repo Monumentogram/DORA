@@ -114,18 +114,26 @@ def failure_local_access_state(output):
     for line in output.splitlines():
         match = re.fullmatch(
             r'INSTRUMENTATION_STATUS: stack=java\.lang\.AssertionError: '
-            r'Local open failed: ([A-Z_]{1,40})(?: before=([01]{7}) after=([01]{7}))?', line)
+            r'Local open failed: ([A-Z_]{1,40})(?: before=([01]{7}) after=([01]{7})'
+            r'(?: ownerBefore=([01]{4}) ownerAfter=([01]{4}) '
+            r'generationChanged=(true|false) extraCoordinatorChange=(true|false))?)?', line)
         if match and match[1] in allowed:
             states.add(match.groups())
     if len(states) != 1:
         return None
-    availability, before, after = states.pop()
+    availability, before, after, owner_before, owner_after, generation, coordinator = states.pop()
     result = {'availability': availability}
     fields = ('resumed', 'focused', 'interactive', 'device_locked',
               'keyguard_showing', 'finishing', 'destroyed')
     if before is not None:
         result.update(before=dict(zip(fields, (bit == '1' for bit in before))),
                       after=dict(zip(fields, (bit == '1' for bit in after))))
+    if owner_before is not None:
+        owner_fields = ('exact_activity', 'foreground', 'interactive', 'device_locked')
+        result.update(owner_before=dict(zip(owner_fields, (bit == '1' for bit in owner_before))),
+                      owner_after=dict(zip(owner_fields, (bit == '1' for bit in owner_after))),
+                      generation_changed=generation == 'true',
+                      extra_coordinator_change=coordinator == 'true')
     return result
 
 

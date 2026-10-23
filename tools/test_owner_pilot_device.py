@@ -211,7 +211,15 @@ class PilotRunnerTests(unittest.TestCase):
         self.assertTrue(observed['before']['focused'])
         self.assertFalse(observed['after']['resumed'])
         self.assertTrue(observed['after']['keyguard_showing'])
+        owner = ('LOCKED before=1110000 after=1110000 ownerBefore=1110 ownerAfter=1110 '
+                 'generationChanged=true extraCoordinatorChange=false')
+        observed = self.runner.failure_local_access_state(prefix + owner)
+        self.assertTrue(observed['owner_before']['exact_activity'])
+        self.assertTrue(observed['generation_changed'])
+        self.assertFalse(observed['extra_coordinator_change'])
         for text in ['PRIVATE', 'LOCKED PIN=123456', 'FAILED_/private/path',
+                     owner + ' private=123456', owner.replace('ownerAfter=1110', 'ownerAfter=1234'),
+                     owner.replace('generationChanged=true', 'generationChanged=123456'),
                      'LOCKED before=1110000 after=0010100 private=123456',
                      'LOCKED before=1110000 after=0010102', 'LOCKED before=1110000',
                      'LOCKED\n' + prefix + 'FAILED_CANCELLED']:

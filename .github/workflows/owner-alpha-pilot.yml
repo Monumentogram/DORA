@@ -124,6 +124,7 @@ jobs:
                           str(pathlib.Path(os.environ['RUNNER_TEMP']) / 'owner-alpha-pilot-artifact.json')], check=True)
           PY
       - name: Create disposable emulator
+        id: emulator
         env:
           ANDROID_AVD_HOME: ${{ runner.temp }}/owner-alpha-pilot-avd
         run: |
@@ -150,9 +151,12 @@ jobs:
           --test-apk android/app/build/outputs/apk/androidTest/ownerPilot/app-ownerPilot-androidTest.apk
           --receipt "${RUNNER_TEMP}/owner-alpha-pilot/pilot.json"
       - name: Compile persistence regression APK
+        id: persistence_compile
+        if: ${{ !cancelled() && steps.emulator.outcome == 'success' }}
         working-directory: android
         run: ./gradlew --no-daemon --dependency-verification strict :core:audio:assembleDebugAndroidTest
       - name: PIN_FREE_LOCAL_ACCESS complete encrypted persistence inventory with and without system PIN
+        if: ${{ !cancelled() && steps.persistence_compile.outcome == 'success' }}
         run: >-
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
