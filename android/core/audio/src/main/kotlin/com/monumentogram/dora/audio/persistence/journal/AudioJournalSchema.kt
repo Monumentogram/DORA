@@ -12,6 +12,24 @@ import androidx.room.RoomDatabase
 import androidx.room.Update
 
 @Entity(
+    tableName = "transcript_state",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = AssetEntity::class,
+                parentColumns = ["assetId"],
+                childColumns = ["assetId"],
+                onDelete = ForeignKey.RESTRICT,
+            )
+        ],
+)
+internal data class TranscriptEntity(
+    @PrimaryKey val assetId: String,
+    val revision: Long,
+    val payload: ByteArray,
+)
+
+@Entity(
     tableName = "audio_segmentation",
     primaryKeys = ["assetId", "recordKey"],
     foreignKeys =
@@ -398,6 +416,23 @@ internal data class DeletionTargetEntity(
 @Suppress("TooManyFunctions")
 @Dao
 internal interface AudioJournalDao {
+    @Query("SELECT * FROM transcript_state WHERE assetId=:asset")
+    fun transcript(asset: String): TranscriptEntity?
+
+    @Insert fun insert(value: TranscriptEntity)
+
+    @Query(
+        "UPDATE transcript_state SET revision=:revision,payload=:payload WHERE assetId=:asset AND revision=:expected"
+    )
+    fun replaceTranscript(asset: String, expected: Long, revision: Long, payload: ByteArray): Int
+
+    @Query(
+        "SELECT audio_asset.* FROM audio_asset INNER JOIN transcript_state USING(assetId) " +
+            "INNER JOIN original_audio_reference USING(assetId) " +
+            "WHERE ownerId=:owner AND vaultId=:vault ORDER BY assetId"
+    )
+    fun transcriptHistory(owner: String, vault: String): List<AssetEntity>
+
     @Query("SELECT * FROM audio_segmentation WHERE assetId=:asset AND recordKey=:key")
     fun segmentation(asset: String, key: String): SegmentationEntity?
 
@@ -540,8 +575,9 @@ internal interface AudioJournalDao {
             DeletionTargetEntity::class,
             OriginalAudioReferenceEntity::class,
             SegmentationEntity::class,
+            TranscriptEntity::class,
         ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 internal abstract class AudioJournalDatabase : RoomDatabase() {

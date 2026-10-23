@@ -87,6 +87,88 @@ private constructor(
         }
     val catalog: EncryptedAudioCatalog = Catalog()
 
+    fun transcript(
+        identity: AudioIdentity
+    ): com.monumentogram.dora.audio.transcript.TranscriptDocument? {
+        requireOperation(identity)
+        requireMutableSource(identity)
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        val row = dao.transcript(identity.assetId.value) ?: return null
+        return com.monumentogram.dora.audio.transcript.TranscriptCodec.decode(row.payload).also {
+            doc ->
+            check(doc.source.identity == identity && doc.revision == row.revision)
+            val source = checkNotNull(dao.originalReference(identity.assetId.value))
+            check(
+                source.digest == doc.source.digest &&
+                    source.version == doc.source.version &&
+                    source.frames == doc.source.frames
+            )
+        }
+    }
+
+    fun updateTranscript(
+        identity: AudioIdentity,
+        transform:
+            (
+                com.monumentogram.dora.audio.transcript.TranscriptDocument?
+            ) -> com.monumentogram.dora.audio.transcript.TranscriptDocument,
+    ): com.monumentogram.dora.audio.transcript.TranscriptDocument {
+        requireOperation(identity)
+        requireMutableSource(identity)
+        requireMutable()
+        val old = transcript(identity)
+        val next = transform(old)
+        check(next.source.identity == identity)
+        val source = checkNotNull(dao.originalReference(identity.assetId.value))
+        check(
+            source.digest == next.source.digest &&
+                source.version == next.source.version &&
+                source.frames == next.source.frames
+        )
+        if (next == old) return next
+        check(next.revision == Math.addExact(old?.revision ?: 0, 1))
+        val payload = com.monumentogram.dora.audio.transcript.TranscriptCodec.encode(next)
+        try {
+            commits.commit({
+                if (old == null)
+                    dao.insert(TranscriptEntity(identity.assetId.value, next.revision, payload))
+                else
+                    check(
+                        dao.replaceTranscript(
+                            identity.assetId.value,
+                            old.revision,
+                            next.revision,
+                            payload,
+                        ) == 1
+                    )
+            }) {
+                val retained = dao.transcript(identity.assetId.value)
+                retained != null &&
+                    retained.revision == next.revision &&
+                    retained.payload.contentEquals(payload)
+            }
+        } finally {
+            payload.fill(0)
+        }
+        return next
+    }
+
+    fun transcriptHistory(): List<AudioIdentity> {
+        checkOpen()
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        return dao.transcriptHistory(binding.ownerId, binding.vaultId)
+            .map { it.identity() }
+            .filter { !isProtected(it) }
+            .filter { identity ->
+                try {
+                    diagnostic.requireNewSource(identity)
+                    true
+                } catch (_: IllegalArgumentException) {
+                    false
+                }
+            }
+    }
+
     @Suppress(
         "LongMethod"
     ) // Validate source provenance then atomically insert the exact immutable row.
@@ -1372,7 +1454,7 @@ private constructor(
                     }
                     command.run()
                 }
-                .addMigrations(OriginalAudioMigration, SegmentationMigration)
+                .addMigrations(OriginalAudioMigration, SegmentationMigration, TranscriptMigration)
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                 .build()
 

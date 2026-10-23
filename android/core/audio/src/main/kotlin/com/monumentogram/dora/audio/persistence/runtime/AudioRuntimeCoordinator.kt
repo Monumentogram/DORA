@@ -22,12 +22,16 @@ import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
 import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
+import com.monumentogram.dora.audio.transcript.TranscriptPort
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal interface RuntimeVault : AutoCloseable {
+    val transcripts: com.monumentogram.dora.audio.transcript.TranscriptPort
+        get() = com.monumentogram.dora.audio.transcript.UnavailableTranscriptPort
+
     fun findRecording(
         recordingId: com.monumentogram.dora.model.alpha.RecordingId
     ): AudioResult<AudioIdentity> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
@@ -235,6 +239,66 @@ internal class AudioRuntimeCoordinator(
         val vault: RuntimeVault,
         val authorization: LocalAccessSession.Authorization,
     ) : ProductAudioSession {
+        override val transcripts: TranscriptPort =
+            object : TranscriptPort {
+                override fun load(identity: AudioIdentity) = invoke { transcripts.load(identity) }
+
+                override fun begin(
+                    source: OriginalAudioReference,
+                    jobId: String,
+                    language: String,
+                    createdAt: Long,
+                ) = invoke { transcripts.begin(source, jobId, language, createdAt) }
+
+                override fun running(identity: AudioIdentity, jobId: String) = invoke {
+                    transcripts.running(identity, jobId)
+                }
+
+                override fun finish(
+                    source: OriginalAudioReference,
+                    jobId: String,
+                    text: String,
+                    model: String,
+                    createdAt: Long,
+                ) = invoke { transcripts.finish(source, jobId, text, model, createdAt) }
+
+                override fun stop(identity: AudioIdentity, jobId: String, status: String) = invoke {
+                    transcripts.stop(identity, jobId, status)
+                }
+
+                override fun edit(
+                    identity: AudioIdentity,
+                    versionId: String,
+                    expectedRevision: Long,
+                    text: String,
+                    createdAt: Long,
+                ) = invoke {
+                    transcripts.edit(identity, versionId, expectedRevision, text, createdAt)
+                }
+
+                override fun select(
+                    identity: AudioIdentity,
+                    versionId: String,
+                    expectedRevision: Long,
+                    resolvedEditIds: Set<String>,
+                    createdAt: Long,
+                ) = invoke {
+                    transcripts.select(
+                        identity,
+                        versionId,
+                        expectedRevision,
+                        resolvedEditIds,
+                        createdAt,
+                    )
+                }
+
+                override fun recover(identity: AudioIdentity) = invoke {
+                    transcripts.recover(identity)
+                }
+
+                override fun history() = invoke { transcripts.history() }
+            }
+
         override fun findRecording(recordingId: com.monumentogram.dora.model.alpha.RecordingId) =
             invoke {
                 findRecording(recordingId)

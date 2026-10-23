@@ -14,6 +14,8 @@ import com.monumentogram.dora.audio.AudioSourceState
 import com.monumentogram.dora.audio.AudioStorageUnitIdentity
 import com.monumentogram.dora.audio.EncryptedAudioCatalog
 import com.monumentogram.dora.audio.OriginalAudioLifecycle
+import com.monumentogram.dora.audio.OriginalAudioReference
+import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioRecoverySource
 import com.monumentogram.dora.audio.ProductAudioWriterPort
@@ -38,6 +40,8 @@ import com.monumentogram.dora.audio.persistence.keys.VaultSecretStore
 import com.monumentogram.dora.audio.persistence.runtime.ResourceRetirement
 import com.monumentogram.dora.audio.persistence.runtime.RuntimeVault
 import com.monumentogram.dora.audio.recording.RecordingRecovery
+import com.monumentogram.dora.audio.transcript.TranscriptPort
+import com.monumentogram.dora.audio.transcript.TranscriptReducer
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryKeyBootstrapController
 import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryMicrofileCrypto
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
@@ -74,6 +78,126 @@ private constructor(
     override val protection: VaultKeyProtection,
 ) : RuntimeVault {
     @Volatile private var closed = false
+
+    override val transcripts: TranscriptPort =
+        object : TranscriptPort {
+            override fun load(identity: AudioIdentity) =
+                protectedTranscript(identity) { journal.transcript(identity) }
+
+            override fun begin(
+                source: OriginalAudioReference,
+                jobId: String,
+                language: String,
+                createdAt: Long,
+            ) =
+                availableTranscript(source) {
+                    journal.updateTranscript(source.identity) {
+                        TranscriptReducer.begin(it, source, jobId, language, createdAt)
+                    }
+                }
+
+            override fun running(identity: AudioIdentity, jobId: String) =
+                protectedTranscript(identity) {
+                    journal.updateTranscript(identity) {
+                        TranscriptReducer.running(requireNotNull(it), jobId)
+                    }
+                }
+
+            override fun finish(
+                source: OriginalAudioReference,
+                jobId: String,
+                text: String,
+                model: String,
+                createdAt: Long,
+            ) =
+                availableTranscript(source) {
+                    journal.updateTranscript(source.identity) {
+                        val old = requireNotNull(it)
+                        require(old.source == source)
+                        TranscriptReducer.finish(old, jobId, text, model, createdAt)
+                    }
+                }
+
+            override fun stop(identity: AudioIdentity, jobId: String, status: String) =
+                protectedTranscript(identity) {
+                    journal.updateTranscript(identity) {
+                        TranscriptReducer.stop(requireNotNull(it), jobId, status)
+                    }
+                }
+
+            override fun edit(
+                identity: AudioIdentity,
+                versionId: String,
+                expectedRevision: Long,
+                text: String,
+                createdAt: Long,
+            ) =
+                protectedTranscript(identity) {
+                    journal.updateTranscript(identity) {
+                        TranscriptReducer.edit(
+                            requireNotNull(it),
+                            versionId,
+                            expectedRevision,
+                            text,
+                            createdAt,
+                        )
+                    }
+                }
+
+            override fun select(
+                identity: AudioIdentity,
+                versionId: String,
+                expectedRevision: Long,
+                resolvedEditIds: Set<String>,
+                createdAt: Long,
+            ) =
+                protectedTranscript(identity) {
+                    journal.updateTranscript(identity) {
+                        TranscriptReducer.select(
+                            requireNotNull(it),
+                            versionId,
+                            expectedRevision,
+                            resolvedEditIds,
+                            createdAt,
+                        )
+                    }
+                }
+
+            override fun recover(identity: AudioIdentity) =
+                protectedTranscript(identity) {
+                    if (journal.transcript(identity) == null) null
+                    else
+                        journal.updateTranscript(identity) {
+                            TranscriptReducer.recover(requireNotNull(it))
+                        }
+                }
+
+            override fun history() = operation { AudioResult.Value(journal.transcriptHistory()) }
+        }
+
+    private fun <T> protectedTranscript(identity: AudioIdentity, action: () -> T): AudioResult<T> =
+        operation {
+            journal.requireMutableSource(identity)
+            val lease =
+                journal.catalog.tryAcquire(identity)
+                    ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+            lease.use { AudioResult.Value(action()) }
+        }
+
+    private fun <T> availableTranscript(
+        source: OriginalAudioReference,
+        action: () -> T,
+    ): AudioResult<T> = operation {
+        var value: AudioResult<T> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+        when (
+            val status = originals.withAvailable(source) { value = AudioResult.Value(action()) }
+        ) {
+            is AudioResult.Failed -> status
+            is AudioResult.Value ->
+                if (status.value is OriginalAudioStatus.Available) value
+                else AudioResult.Failed(AudioFailure.UNAVAILABLE)
+        }
+    }
 
     override fun findRecording(
         recordingId: com.monumentogram.dora.model.alpha.RecordingId
@@ -196,6 +320,7 @@ private constructor(
                     state != AudioSourceState.UserDeleted
             )
                 return@operation AudioResult.Failed(AudioFailure.INVALID_INPUT)
+            cancelTranscriptBeforeDeletion(identity)
             val snapshot =
                 if (allowNew) journal.beginDeletion(identity, emptyList())
                 else checkNotNull(journal.loadDeletion(identity))
@@ -236,6 +361,16 @@ private constructor(
             }
             AudioResult.Value(Unit)
         }
+    }
+
+    private fun cancelTranscriptBeforeDeletion(identity: AudioIdentity) {
+        val transcript = journal.transcript(identity)
+        val activeJob =
+            transcript?.jobs?.singleOrNull { it.status in TranscriptReducer.activeStatuses }
+        if (activeJob != null)
+            journal.updateTranscript(identity) {
+                TranscriptReducer.stop(requireNotNull(it), activeJob.id, "CANCELLED")
+            }
     }
 
     override fun sourceState(identity: AudioIdentity): AudioResult<AudioSourceState> = operation {
