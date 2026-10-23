@@ -69,8 +69,11 @@ No product limit is increased or disabled to make these tests pass.
 
 ## Verification state
 
-Implementation and new tests are in progress. This document is not a software PASS,
-physical Alpha acceptance, release approval or permission to install on POCO.
+The PIN-free implementation and successor contracts are implemented. Software
+acceptance requires the successful exact-head jobs and two clean signed build
+receipts linked from [Draft PR 111](https://github.com/Monumentogram/DORA/pull/111).
+This document alone is not a software PASS, physical Alpha acceptance, release
+approval or permission to install on POCO.
 
 The successor persistence inventory inherits only the two explicit over-five-minute
 segmentation deferrals from Stage8 limited Alpha. Their historical source tests remain
@@ -83,7 +86,8 @@ instrumentation APK compilations passed. The broad historical Python discovery r
 1160 tests and reported 31 failures/errors, including obsolete stage topology/source
 seals and three stale Pilot version fixtures (the latter fixed and rerun). This is
 not represented as an all-repository PASS. Relevant Pilot/runner/version host suites
-and the ADR-0021 preservation/source validator pass; device evidence remains pending.
+and the ADR-0021 preservation/source validator pass; device evidence is qualified
+separately by its exact source, platform and scope.
 
 The exact ADR baseline comparison ran 1,159 Python tests and reported 29
 failures/errors. Comparing individual failing cases found only the already-fixed
@@ -110,3 +114,18 @@ the exact-source full runner. The API36 component run at `b45ed3c` passed all 15
 persistence tests in both credential states; its separate Pilot reboot/readback
 failure remains non-acceptance evidence pending requalification. Readback failures
 now publish only an allowlisted failure enum, never arbitrary provider text.
+
+At `b45ed3c`, both API28 and API36 completed all 158 persistence tests without and
+with an OS PIN. At `b952f1d`, the full API28 Pilot runner passed locally and in CI,
+including reboot, both secondary-user credential states and verified cleanup.
+These predecessor results remain scoped evidence rather than final-head acceptance.
+
+The API36 `c5fc05f` receipt confirmed a startup configuration change destroyed the
+original Activity during asynchronous open after reboot; the new Activity was
+already resumed. Local authority correctly returned LOCKED. The restart fixture
+now uses ActivityScenario to track and close replacements, initializes UI observation
+before opening, and observes the same resumed/focused Activity and Configuration
+across two frame/idle boundaries before its single open. It never retries a rejected
+open or revives an old capability. A later replacement still fails the test. The
+configuration subtype was outside the named diagnostic categories; no claim about
+the underlying Android configuration provider is made.

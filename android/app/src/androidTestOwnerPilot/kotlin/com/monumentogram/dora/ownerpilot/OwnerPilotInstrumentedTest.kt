@@ -14,6 +14,7 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.PowerManager
@@ -21,6 +22,7 @@ import android.os.Process
 import android.os.UserManager
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.view.Choreographer
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.compose.setContent
@@ -42,6 +44,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
@@ -157,16 +160,46 @@ class OwnerPilotInstrumentedTest {
                 .getRunningServices(Int.MAX_VALUE)
                 .none { it.service.className == ProductRecordingService::class.java.name }
         )
-        val host = launch()
-        try {
-            verified(host, openLocal(host), restartIdentity(), 320, 1)
-            assertNoCredentialPrompt()
-        } finally {
-            instrumentation.runOnMainSync {
-                runtime.lock()
-                host.finish()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            try {
+                val host = settledRestartHost(scenario)
+                verified(host, openLocal(host), restartIdentity(), 320, 1)
+                assertNoCredentialPrompt()
+            } finally {
+                instrumentation.runOnMainSync { runtime.lock() }
             }
         }
+    }
+
+    /** Observe startup configuration before the single open; never retry revoked access. */
+    private fun settledRestartHost(scenario: ActivityScenario<MainActivity>): MainActivity {
+        assertNoCredentialPrompt()
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
+        var previous: MainActivity? = null
+        var previousConfiguration: Configuration? = null
+        while (System.nanoTime() < deadline) {
+            ui.waitForIdle()
+            val frame = CountDownLatch(1)
+            instrumentation.runOnMainSync {
+                Choreographer.getInstance().postFrameCallback { frame.countDown() }
+            }
+            assertTrue("Restart fixture frame timed out", frame.await(5, TimeUnit.SECONDS))
+            instrumentation.waitForIdleSync()
+            var current: MainActivity? = null
+            var configuration: Configuration? = null
+            scenario.onActivity { host ->
+                if (localCallerState(host) == "1110000") {
+                    current = host
+                    configuration = Configuration(host.resources.configuration)
+                }
+            }
+            if (current != null && current === previous && configuration == previousConfiguration) {
+                return checkNotNull(current)
+            }
+            previous = current
+            previousConfiguration = configuration
+        }
+        throw AssertionError("Restart fixture configuration did not settle")
     }
 
     private fun restartIdentity() =
