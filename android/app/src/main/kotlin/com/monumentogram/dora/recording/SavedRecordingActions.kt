@@ -82,7 +82,7 @@ internal class SavedRecordingActions(private val activity: MainActivity) {
                 action(request, availability.session)
             } else {
                 busy = false
-                message = "Доступ не подтверждён. Разблокируйте DORA и повторите действие."
+                message = "Хранилище недоступно. Повторите действие в открытом приложении."
             }
         }
     }

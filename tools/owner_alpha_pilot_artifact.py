@@ -21,19 +21,19 @@ from version_label import check_label
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.monumentogram.dora.alpha.pilot'
 NAMESPACE = 'com.monumentogram.dora'
-VERSION_CODE = 2
-VERSION_NAME = '0.1.0-owner-alpha.2'
+VERSION_CODE = 3
+VERSION_NAME = '0.1.0-owner-alpha.3'
 OWNER_CERTIFICATE = 'a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d'
 EXCLUDED_CERTIFICATES = {
     'diagnostic': '2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8',
     'debug': 'a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72',
 }
-BASE = '52e4ce8bdf074ec021ae52c3c38ad9d26c24e128'
+BASE = 'a14d30a8172f13361fbe29b08cdb463651fc954a'
 ANDROID = '{http://schemas.android.com/apk/res/android}'
 MODES = ('owner-local', 'ci-unsigned', 'ci-test-signed')
 PERMISSIONS = {'android.permission.' + name for name in (
     'RECORD_AUDIO', 'FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE',
-    'POST_NOTIFICATIONS', 'WAKE_LOCK', 'USE_BIOMETRIC', 'USE_FINGERPRINT')}
+    'POST_NOTIFICATIONS', 'WAKE_LOCK')}
 PERMISSIONS.add(PACKAGE + '.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION')
 
 
@@ -51,7 +51,7 @@ def exact_source(source, mode):
     run(['git', 'merge-base', '--is-ancestor', BASE, source])
     if mode == 'owner-local':
         require(os.environ.get('GITHUB_ACTIONS') != 'true', 'OWNER_LOCAL_ONLY')
-        require(run(['git', 'branch', '--show-current']).strip() == 'codex/isolated-owner-alpha-pilot', 'UNADMITTED_BRANCH')
+        require(run(['git', 'branch', '--show-current']).strip() == 'codex/implement-pin-free-dora', 'UNADMITTED_BRANCH')
 
 
 def check_badging(text):
@@ -83,7 +83,6 @@ def check_manifest(xml):
         require(app.get(ANDROID + flag, 'false') == 'false', 'UNSAFE_APPLICATION_FLAG:' + flag)
     allowed = {
         ('activity', NAMESPACE + '.MainActivity'),
-        ('activity', NAMESPACE + '.audio.persistence.auth.AppLockAuthenticationActivity'),
         ('service', NAMESPACE + '.recording.ProductRecordingService'),
         ('service', 'androidx.room.MultiInstanceInvalidationService'),
         ('provider', 'androidx.startup.InitializationProvider'),
@@ -146,7 +145,10 @@ def check_diagnostic_code(smali):
 def check_dex_bytes(data):
     require(data.startswith(b'dex\n'), 'INVALID_DEX')
     for token in (b'Lcom/monumentogram/dora/operator/', b'Landroidx/test/', b'Lorg/junit/',
-                  b'IsolatedAlphaOperator', b'dora-debug-unlock', b'dora-insecure-device'):
+                  b'IsolatedAlphaOperator', b'dora-debug-unlock', b'dora-insecure-device',
+                  b'BiometricPrompt', b'createConfirmDeviceCredentialIntent',
+                  b'AppLockAuthenticationActivity', b'AndroidAuthProof', b'AndroidAppLock',
+                  b'DevelopmentAppLockOverride', b'DevelopmentDeviceSecurityOverride'):
         require(token not in data, 'OPERATOR_TEST_OR_OVERRIDE_IN_DEX')
 
 
@@ -224,14 +226,8 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
         file = backup_resource_path(resources, app.get(ANDROID + attribute), name)
         backup_xml.append(run([analyzer, 'resources', 'xml', '--file', file, path]))
     check_backup_rules(*backup_xml)
-    override = {}
-    for owner, signature in (
-        ('DevelopmentDeviceSecurityOverride', 'allowed(Ljava/lang/String;ZLjava/io/File;)Z'),
-        ('DevelopmentAppLockOverride', 'unlock(Lcom/monumentogram/dora/audio/persistence/auth/AppLockSession;Ljava/lang/String;ZLkotlin/jvm/functions/Function0;)Z'),
-    ):
-        smali = run([analyzer, 'dex', 'code', '--class', NAMESPACE + '.audio.persistence.auth.' + owner, path])
-        check_denial_code(smali, signature)
-        override[owner] = hashlib.sha256(smali.encode()).hexdigest()
+    for token in ('Разблокировать', 'Разблокируйте DORA', 'Требуется разблокировка', 'Настройте PIN'):
+        require(token not in resources, 'NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT')
     diagnostic = run([analyzer, 'dex', 'code', '--class', NAMESPACE + '.audio.persistence.DiagnosticBuild', path])
     check_diagnostic_code(diagnostic)
     run([bt / ('zipalign' + exe), '-c', '-P', '16', '4', path])
@@ -260,7 +256,7 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
     require(sha(path) == before, 'ARTIFACT_CHANGED_DURING_AUDIT')
     return {'apk_sha256': before, 'size_bytes': path.stat().st_size, 'payload': inventory,
             'compiled_version_label': version_label, 'version_label_parity': 'PASS',
-            'components': components, 'dex_inventory': dex_names, 'release_denial_dex': override,
+            'components': components, 'dex_inventory': dex_names, 'no_application_pin_or_biometric_prompt': 'PASS',
             'diagnostic_false_dex_sha256': hashlib.sha256(diagnostic.encode()).hexdigest(),
             'backup_policy_sha256': [hashlib.sha256(value.encode()).hexdigest() for value in backup_xml],
             'manifest_sha256': hashlib.sha256(xml.encode()).hexdigest(), 'native_elf': native,

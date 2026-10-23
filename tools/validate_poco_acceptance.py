@@ -99,6 +99,9 @@ def validate_ci(environment, head, dirty, working):
 
 
 def validate_checkout(root=ROOT, *, allow_working=None):
+    import validate_pin_free_local_access as local_access
+    if local_access.candidate(root):
+        return local_access.validate_checkout(root, allow_working=allow_working)
     import validate_encrypted_persistence as persistence
     import validate_original_audio_lifecycle as lifecycle
     import validate_vad_runtime as vad

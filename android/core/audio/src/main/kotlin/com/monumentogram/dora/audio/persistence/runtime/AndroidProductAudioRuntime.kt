@@ -17,10 +17,8 @@ import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.ProductAudioRuntime
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.persistence.EncryptedAudioVault
-import com.monumentogram.dora.audio.persistence.auth.AndroidAppLock
-import com.monumentogram.dora.audio.persistence.auth.AppLockState
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
-import com.monumentogram.dora.audio.persistence.auth.UnlockResult
+import com.monumentogram.dora.audio.persistence.auth.AndroidLocalAccess
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.recording.RecordingAccess
 import com.monumentogram.dora.audio.recording.RecordingRecovery
 import com.monumentogram.dora.audio.recording.RecordingResumeGrant
@@ -47,17 +45,17 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
         }
     @Volatile private var denied: AudioFailure? = null
     @Volatile private var pending: PendingDeletion? = null
-    private val appLock =
-        AndroidAppLock(application) {
+    private val localAccess =
+        AndroidLocalAccess(application) {
             denied = null
             coordinator.revoke()
             val old = pending
             old?.confirmation?.cancel()
             main.post { if (pending === old) cancelPending(AudioFailure.LOCKED) }
         }
-    private val recordings = AndroidRecordingAccessManager(application, appLock, coordinator)
+    private val recordings = AndroidRecordingAccessManager(application, localAccess, coordinator)
 
-    fun isRecordingUiAuthorized(): Boolean = appLock.state == AppLockState.UNLOCKED
+    fun isRecordingUiAuthorized(): Boolean = localAccess.isForeground
 
     fun requestRecordingRecovery(
         activity: Activity,
@@ -79,19 +77,13 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
                             try {
                                 coordinator.requireCurrent(available.session)
                                 result
-                            } catch (_: AppLockedException) {
+                            } catch (_: LocalAccessDeniedException) {
                                 AudioResult.Failed(AudioFailure.LOCKED)
                             }
                         completion(checked)
                     }
                 }
         }
-    }
-
-    fun requestRecordingUiUnlock(activity: Activity, completion: (Boolean) -> Unit) {
-        requireMain()
-        secure(activity)
-        appLock.requestUnlock(activity) { completion(it == UnlockResult.UNLOCKED) }
     }
 
     /**
@@ -130,47 +122,29 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
     ) {
         requireMain()
         secure(activity)
-        val current =
+        authorityRoute(false)
+        val result =
             try {
-                val authorization = appLock.captureAuthorization()
-                recordings.resumeGrant(expected, authorization::withPlaintextDelivery)
-            } catch (_: AppLockedException) {
-                null
+                val authorization = localAccess.capture(activity)
+                AudioResult.Value(
+                    recordings.resumeGrant(expected, authorization::withPlaintextDelivery)
+                )
+            } catch (_: LocalAccessDeniedException) {
+                AudioResult.Failed(AudioFailure.LOCKED)
             }
-        if (current != null) {
-            authorityRoute(false)
-            completion(AudioResult.Value(current))
-            return
-        }
-        authorityRoute(true)
-        appLock.requestUnlock(activity) { result ->
-            if (result != UnlockResult.UNLOCKED) completion(AudioResult.Failed(AudioFailure.LOCKED))
-            else {
-                val result =
-                    try {
-                        val authorization = appLock.captureAuthorization()
-                        AudioResult.Value(
-                            recordings.resumeGrant(expected, authorization::withPlaintextDelivery)
-                        )
-                    } catch (_: AppLockedException) {
-                        AudioResult.Failed(AudioFailure.LOCKED)
-                    }
-                completion(result)
-            }
-        }
+        completion(result)
     }
 
     override val availability: AudioAvailability
         get() {
             if (
-                appLock.state == AppLockState.LOCKED &&
-                    coordinator.availability is AudioAvailability.Available
+                !localAccess.isForeground && coordinator.availability is AudioAvailability.Available
             )
                 coordinator.revoke()
             return denied?.let(AudioAvailability::Failed) ?: coordinator.availability
         }
 
-    /** Launches the system prompt on main; vault creation/opening runs only after real success. */
+    /** Captures local foreground authority on main; storage opens on its dedicated worker. */
     fun requestOpen(
         activity: Activity,
         mode: AudioOpenMode,
@@ -182,44 +156,25 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
             completion(AudioAvailability.Failed(AudioFailure.BUSY))
             return
         }
-        appLock.requestUnlock(activity) { result ->
-            if (result != UnlockResult.UNLOCKED) {
-                val failure =
-                    when (result) {
-                        UnlockResult.CANCELLED -> AudioFailure.CANCELLED
-                        UnlockResult.CREDENTIAL_SETUP_REQUIRED ->
-                            AudioFailure.CREDENTIAL_SETUP_REQUIRED
-                        else -> AudioFailure.UNAVAILABLE
-                    }
-                denied = failure
-                completion(AudioAvailability.Failed(failure))
-            } else {
-                coordinator.openAuthenticated(mode, appLock::captureAuthorization) { outcome ->
-                    main.post {
-                        val checked =
-                            if (outcome is AudioAvailability.Available) {
-                                try {
-                                    coordinator.requireCurrent(outcome.session)
-                                    outcome
-                                } catch (_: AppLockedException) {
-                                    AudioAvailability.Locked
-                                }
-                            } else outcome
-                        completion(checked)
-                    }
-                }
+        coordinator.openLocal(mode, { localAccess.capture(activity) }) { outcome ->
+            main.post {
+                val checked =
+                    if (outcome is AudioAvailability.Available) {
+                        try {
+                            coordinator.requireCurrent(outcome.session)
+                            outcome
+                        } catch (_: LocalAccessDeniedException) {
+                            AudioAvailability.Locked
+                        }
+                    } else outcome
+                completion(checked)
             }
         }
     }
 
     fun lock() {
         recordings.revoke()
-        appLock.lock()
-    }
-
-    fun openCredentialSetup(activity: Activity) {
-        requireMain()
-        appLock.openCredentialSetup(activity)
+        localAccess.revoke()
     }
 
     /**
@@ -233,8 +188,9 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
     ) {
         requireMain()
         try {
+            localAccess.capture(activity).requireActive()
             coordinator.requireCurrent(session)
-        } catch (_: AppLockedException) {
+        } catch (_: LocalAccessDeniedException) {
             completion(AudioResult.Failed(AudioFailure.LOCKED))
             return
         }
@@ -265,7 +221,7 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
                                     try {
                                         coordinator.requireCurrent(session)
                                         outcome
-                                    } catch (_: AppLockedException) {
+                                    } catch (_: LocalAccessDeniedException) {
                                         AudioResult.Failed(AudioFailure.LOCKED)
                                     }
                                 completion(checked)

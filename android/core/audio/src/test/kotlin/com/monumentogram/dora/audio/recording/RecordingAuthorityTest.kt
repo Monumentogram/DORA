@@ -1,6 +1,6 @@
 package com.monumentogram.dora.audio.recording
 
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -15,7 +15,7 @@ class RecordingAuthorityTest {
         authority.onRevocation { notified = true }
         authority.revoke()
         var microphoneStarted = false
-        assertThrows(AppLockedException::class.java) {
+        assertThrows(LocalAccessDeniedException::class.java) {
             authority.resume({ it() }) { microphoneStarted = true }
         }
         assertTrue(notified)
@@ -42,24 +42,28 @@ class RecordingAuthorityTest {
     fun preparedCapabilityCannotActivateAfterForegroundAuthorizationRevokes() {
         var foreground = true
         val authority =
-            RecordingAuthority({ if (!foreground) throw AppLockedException() }, { true }) { it() }
+            RecordingAuthority({ if (!foreground) throw LocalAccessDeniedException() }, { true }) {
+                it()
+            }
         foreground = false
-        assertThrows(AppLockedException::class.java) { authority.activate {} }
+        assertThrows(LocalAccessDeniedException::class.java) { authority.activate {} }
     }
 
     @Test
     fun activeWriterSurvivesUiLockButNotExplicitRevocation() {
         var foreground = true
         val authority =
-            RecordingAuthority({ if (!foreground) throw AppLockedException() }, { true }) { it() }
+            RecordingAuthority({ if (!foreground) throw LocalAccessDeniedException() }, { true }) {
+                it()
+            }
         authority.activate {}
         foreground = false
         authority.requireWriter()
-        assertThrows(AppLockedException::class.java) { authority.requireForeground() }
+        assertThrows(LocalAccessDeniedException::class.java) { authority.requireForeground() }
         authority.revoke()
-        assertThrows(AppLockedException::class.java) { authority.requireWriter() }
+        assertThrows(LocalAccessDeniedException::class.java) { authority.requireWriter() }
         foreground = true
-        assertThrows(AppLockedException::class.java) { authority.activate {} }
+        assertThrows(LocalAccessDeniedException::class.java) { authority.activate {} }
     }
 
     @Test
@@ -68,8 +72,8 @@ class RecordingAuthorityTest {
         val authority = RecordingAuthority({}, { secure }) { it() }
         authority.activate {}
         secure = false
-        assertThrows(AppLockedException::class.java) { authority.requireWriter() }
+        assertThrows(LocalAccessDeniedException::class.java) { authority.requireWriter() }
         secure = true
-        assertThrows(AppLockedException::class.java) { authority.requireWriter() }
+        assertThrows(LocalAccessDeniedException::class.java) { authority.requireWriter() }
     }
 }

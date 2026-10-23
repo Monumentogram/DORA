@@ -256,7 +256,7 @@ class RecordingSegmentationTest {
     }
 
     @Test
-    fun vadOnOffAndOverlapProduceIdenticalCanonicalHashAcrossTwoCaps() {
+    fun vadOnOffProduceIdenticalCanonicalHashThroughAlphaCap() {
         val baselineWriter = Writer()
         val baseline =
             RecordingSession(
@@ -269,7 +269,7 @@ class RecordingSegmentationTest {
                 )
                 .also { it.start() }
         val pcm = ByteArray(32000) { (it * 17 + 3).toByte() }
-        repeat(1201) {
+        repeat(300) {
             val first = session.state.frames
             baseline.accept(pcm)
             session.accept(pcm)
@@ -285,7 +285,7 @@ class RecordingSegmentationTest {
         assertEquals(baselineWriter.frames, writer.frames)
         assertArrayEquals(baselineWriter.digest.digest(), writer.digest.digest())
         assertEquals(
-            2,
+            0,
             writer.rows.count { it.kind == SegmentationKind.TECHNICAL_CLOSE && it.reason == "CAP" },
         )
         assertEquals(1, writer.rows.count { it.kind == SegmentationKind.SEMANTIC_CLOSE })

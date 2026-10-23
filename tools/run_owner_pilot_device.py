@@ -24,8 +24,10 @@ RUNNER = PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner'
 ROOT = Path(__file__).resolve().parents[1]
 
 PHASES = {
-    'owner_initial': ('noSystemCredentialCannotOpenVault', 'packageManifestAndReleaseOverridesAreClosed', 'seedOwnerIsolationSentinel'),
+    'owner_initial': ('noSystemCredentialCanOpenEncryptedVault', 'packageManifestAndReleaseOverridesAreClosed', 'seedOwnerIsolationSentinel', 'seedRestartEncryptedRecording'),
     'secondary': ('realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen', 'packageManifestAndReleaseOverridesAreClosed', 'secondaryCannotReadOwnerSentinel'),
+    'secondary_no_pin': ('realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen', 'packageManifestAndReleaseOverridesAreClosed', 'secondaryCannotReadOwnerSentinel'),
+    'owner_restart': ('restartReadbackWithoutAutomaticCapture',),
     'owner_final': ('verifyOwnerIsolationSentinelUnchanged',),
 }
 
@@ -151,6 +153,13 @@ def stop_synthetic_instrumentation(command, user):
         command('shell', 'am', 'force-stop', '--user', str(user), package)
 
 
+def reboot_completed(previous_boot, current_boot, completed):
+    boot = r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}'
+    require(re.fullmatch(boot, previous_boot) is not None, 'INVALID_PREVIOUS_BOOT_ID')
+    return (re.fullmatch(boot, current_boot) is not None and
+            previous_boot != current_boot and completed == '1')
+
+
 def record_instrumentation_failure(receipt, output, api, phase, command, user):
     receipt.parent.mkdir(parents=True, exist_ok=True)
     diagnostic = receipt.with_suffix('.failure.json')
@@ -179,7 +188,7 @@ def main():
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--test-apk', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
-    parser.add_argument('--inventory', type=Path, default=Path('docs/contracts/owner-pilot-device-tests-v1.json'))
+    parser.add_argument('--inventory', type=Path, default=Path('docs/contracts/owner-pilot-device-tests-v2.json'))
     args = parser.parse_args()
     require(bool(re.fullmatch(r'emulator-\d+', args.serial)), 'EXPLICIT_EMULATOR_REQUIRED')
     source = source_binding(git_command, os.environ.get('GITHUB_SHA'))
@@ -243,55 +252,77 @@ def main():
             indent=2) + '\n', encoding='utf-8')
 
     instrument(0, 'owner_initial')
-    user = created_user(command('shell', 'pm', 'create-user', 'DoraOwnerPilotSynthetic'))
-    pin = str(secrets.randbelow(900000) + 100000)
-    pin_set = False
-    serial_number = None
-    try:
-        dump = command('shell', 'dumpsys', 'user')
-        match = re.search(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
-        require(match is not None and int(match[1]) > 0, 'USER_SERIAL_NOT_CONFIRMED')
-        serial_number = match[1]
-        # API28 start-user has no -w option; the explicit switch readiness gate follows.
-        command('shell', 'am', 'start-user', str(user))
-        # Skip account/setup screens only in the disposable emulator, not lock/authentication.
-        command('shell', 'settings', '--user', str(user), 'put', 'secure', 'user_setup_complete', '1')
-        switch_to_secondary_viewport(command, wait_for_switch, user)
-        for package in (PACKAGE, PACKAGE + '.test'):
-            output = command('shell', 'cmd', 'package', 'install-existing', '--user', str(user), package)
-            require('installed for user' in output, 'SECONDARY_INSTALL_FAILED')
-        require('Pin set to' in command('shell', 'locksettings', 'set-pin', '--user', str(user), pin),
-                'SYNTHETIC_CREDENTIAL_SETUP_FAILED')
-        pin_set = True
-        command('shell', 'input', 'keyevent', '224')
-        command('shell', 'wm', 'dismiss-keyguard')
-        instrument(user, 'secondary',
-                   ('-e', 'syntheticAuthPin', pin, '-e', 'pilotUserId', str(user),
-                    '-e', 'pilotUserSerial', serial_number))
-    finally:
-        if pin_set:
-            require('Lock credential cleared' in command('shell', 'locksettings', 'clear', '--user', str(user), '--old', pin),
-                    'SYNTHETIC_CREDENTIAL_CLEANUP_FAILED')
-        command('shell', 'am', 'switch-user', '0')
-        wait_for_switch(0)
-        # get-current-user can change before the old user's switch callbacks finish.
-        command('shell', 'am', 'stop-user', '-w', '-f', str(user))
-        require(serial_number is not None, 'SYNTHETIC_USER_SERIAL_UNPROVEN')
-        deadline = time.monotonic() + 60
-        while True:
-            dump = command('shell', 'dumpsys', 'user')
-            remaining = re.findall(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
-            if not remaining:
+    # Restart the disposable emulator and verify no recording service before an explicit launch.
+    previous_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
+    reboot_completed(previous_boot, previous_boot, '1')  # Validate before mutation.
+    command('reboot')
+    deadline = time.monotonic() + 180
+    while True:
+        try:
+            if reboot_completed(previous_boot, command('shell', 'cat', '/proc/sys/kernel/random/boot_id'),
+                                command('shell', 'getprop', 'sys.boot_completed')):
                 break
-            require(remaining == [serial_number], 'SYNTHETIC_USER_ID_REUSED')
-            try:
-                command('shell', 'pm', 'remove-user', str(user))
-            except ValueError:
-                # Android can still protect the previous current user while its
-                # asynchronous switch finishes. Never select another user as fallback.
-                pass
-            require(time.monotonic() < deadline, 'SYNTHETIC_USER_CLEANUP_FAILED')
-            time.sleep(1)
+        except ValueError:
+            pass
+        require(time.monotonic() < deadline, 'EMULATOR_REBOOT_TIMEOUT')
+        time.sleep(2)
+    emulator_fence(args.serial, args.expected_api, command)
+    require('ProductRecordingService' not in command('shell', 'dumpsys', 'activity', 'services', PACKAGE),
+            'UNEXPECTED_CAPTURE_SERVICE_AFTER_REBOOT')
+    command('shell', 'input', 'keyevent', '224')
+    command('shell', 'wm', 'dismiss-keyguard')
+    instrument(0, 'owner_restart')
+    for secure in (False, True):
+        user = created_user(command('shell', 'pm', 'create-user', 'DoraOwnerPilotSynthetic'))
+        pin = str(secrets.randbelow(900000) + 100000)
+        pin_set = False
+        serial_number = None
+        try:
+            dump = command('shell', 'dumpsys', 'user')
+            match = re.search(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
+            require(match is not None and int(match[1]) > 0, 'USER_SERIAL_NOT_CONFIRMED')
+            serial_number = match[1]
+            # API28 start-user has no -w option; the explicit switch readiness gate follows.
+            command('shell', 'am', 'start-user', str(user))
+            # Skip account/setup screens only in the disposable emulator, not lock/authentication.
+            command('shell', 'settings', '--user', str(user), 'put', 'secure', 'user_setup_complete', '1')
+            switch_to_secondary_viewport(command, wait_for_switch, user)
+            for package in (PACKAGE, PACKAGE + '.test'):
+                output = command('shell', 'cmd', 'package', 'install-existing', '--user', str(user), package)
+                require('installed for user' in output, 'SECONDARY_INSTALL_FAILED')
+            if secure:
+                require('Pin set to' in command('shell', 'locksettings', 'set-pin', '--user', str(user), pin),
+                        'SYNTHETIC_CREDENTIAL_SETUP_FAILED')
+                pin_set = True
+            command('shell', 'input', 'keyevent', '224')
+            command('shell', 'wm', 'dismiss-keyguard')
+            instrument(user, 'secondary' if secure else 'secondary_no_pin',
+                       ('-e', 'syntheticAuthPin', pin, '-e', 'pilotUserId', str(user),
+                        '-e', 'pilotUserSerial', serial_number))
+        finally:
+            if pin_set:
+                require('Lock credential cleared' in command('shell', 'locksettings', 'clear', '--user', str(user), '--old', pin),
+                        'SYNTHETIC_CREDENTIAL_CLEANUP_FAILED')
+            command('shell', 'am', 'switch-user', '0')
+            wait_for_switch(0)
+            # get-current-user can change before the old user's switch callbacks finish.
+            command('shell', 'am', 'stop-user', '-w', '-f', str(user))
+            require(serial_number is not None, 'SYNTHETIC_USER_SERIAL_UNPROVEN')
+            deadline = time.monotonic() + 60
+            while True:
+                dump = command('shell', 'dumpsys', 'user')
+                remaining = re.findall(r'UserInfo\{' + str(user) + r':[^\r\n]*:[0-9a-fA-F]+\}\s+serialNo=(\d+)', dump)
+                if not remaining:
+                    break
+                require(remaining == [serial_number], 'SYNTHETIC_USER_ID_REUSED')
+                try:
+                    command('shell', 'pm', 'remove-user', str(user))
+                except ValueError:
+                    # Android can still protect the previous current user while its
+                    # asynchronous switch finishes. Never select another user as fallback.
+                    pass
+                require(time.monotonic() < deadline, 'SYNTHETIC_USER_CLEANUP_FAILED')
+                time.sleep(1)
     instrument(0, 'owner_final')
     users = command('shell', 'pm', 'list', 'users')
     require(not re.search(r'UserInfo\{' + str(user) + ':', users), 'SYNTHETIC_USER_REMAINS')
@@ -304,6 +335,7 @@ def main():
     receipt = {'schema_version': 1, 'status': 'PASS_OWNER_PILOT_SYNTHETIC_ONLY',
                **source,
                'api': args.expected_api, 'phases': rows, 'synthetic_user_removed': True,
+               'changed_boot_identity_verified': True,
                'inventory_sha256': inventory_hash, 'signing_scope': 'DISPOSABLE_TEST_ONLY',
                'private_vad_acceptance': 'NOT_CLAIMED',
                'ui_fixture': {'width_dp': 360, 'font_scale': 2.0},

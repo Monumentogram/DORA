@@ -20,7 +20,7 @@ import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.RecoveryAudioBridge
 import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.persistence.database.SqlCipherJournalHelperFactory
 import com.monumentogram.dora.audio.persistence.journal.AudioDeletionTargetKind
 import com.monumentogram.dora.audio.persistence.journal.RoomAudioJournal
@@ -317,7 +317,7 @@ private constructor(
         try {
             requireActive()
             block().also { requireActive() }
-        } catch (_: AppLockedException) {
+        } catch (_: LocalAccessDeniedException) {
             AudioResult.Failed(AudioFailure.LOCKED)
         } catch (_: UncertainAudioSourceState) {
             AudioResult.Failed(AudioFailure.UNCERTAIN)
@@ -547,7 +547,7 @@ private constructor(
                 journal?.let(failedOpenCleanup::retire)
                 AudioResult.Failed(
                     when (error) {
-                        is AppLockedException -> AudioFailure.LOCKED
+                        is LocalAccessDeniedException -> AudioFailure.LOCKED
                         is KeyBoundaryException -> error.failure.audioFailure()
                         else -> AudioFailure.UNAVAILABLE
                     }

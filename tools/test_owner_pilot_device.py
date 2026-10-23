@@ -21,6 +21,15 @@ class PilotRunnerTests(unittest.TestCase):
             self.runner.emulator_fence('physical-fixture', 36, lambda *args: calls.append(args))
         self.assertEqual([], calls)
 
+    def test_reboot_requires_new_boot_identity_and_completion(self):
+        old = '00000000-0000-0000-0000-000000000001'
+        new = '00000000-0000-0000-0000-000000000002'
+        for boot, completed in ((old, '1'), (new, '0'), ('', '1'), ('provider-error', '1')):
+            self.assertFalse(self.runner.reboot_completed(old, boot, completed))
+        self.assertTrue(self.runner.reboot_completed(old, new, '1'))
+        with self.assertRaises(ValueError):
+            self.runner.reboot_completed('', new, '1')
+
     def test_named_emulator_still_requires_qemu_and_exact_api(self):
         for qemu, api in [('0', '36'), ('1', '28')]:
             def command(*args):
@@ -29,7 +38,7 @@ class PilotRunnerTests(unittest.TestCase):
                 self.runner.emulator_fence('emulator-5554', 36, command)
 
     def test_inventory_rejects_omission_duplicate_unexpected_and_operator_tests(self):
-        contract = json.loads((Path(__file__).parents[1] / 'docs/contracts/owner-pilot-device-tests-v1.json').read_text())
+        contract = json.loads((Path(__file__).parents[1] / 'docs/contracts/owner-pilot-device-tests-v2.json').read_text())
         self.runner.validate_inventory(contract)
         for mutation in ('missing', 'duplicate', 'operator', 'unknown'):
             invalid = json.loads(json.dumps(contract))
@@ -66,7 +75,7 @@ class PilotRunnerTests(unittest.TestCase):
 
     def test_apk_input_admission_denies_other_packages_and_wrong_test_targets(self):
         package = self.runner.PACKAGE
-        app = f"package: name='{package}' versionCode='2' versionName='0.1.0-owner-alpha.2'"
+        app = f"package: name='{package}' versionCode='3' versionName='0.1.0-owner-alpha.3'"
         test = f"package: name='{package}.test' versionCode='1' versionName=''"
         xml = ('<manifest xmlns:android="http://schemas.android.com/apk/res/android" '
                f'package="{package}.test"><instrumentation '

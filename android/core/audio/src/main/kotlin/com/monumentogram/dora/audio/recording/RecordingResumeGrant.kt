@@ -1,6 +1,6 @@
 package com.monumentogram.dora.audio.recording
 
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 
 /** One explicit resume, with current foreground authority checked at the microphone boundary. */
 class RecordingResumeGrant internal constructor(private val startBoundary: (() -> Unit) -> Unit) {
@@ -8,7 +8,7 @@ class RecordingResumeGrant internal constructor(private val startBoundary: (() -
 
     @Synchronized
     fun consume(start: () -> Unit) {
-        if (consumed) throw AppLockedException()
+        if (consumed) throw LocalAccessDeniedException()
         consumed = true
         startBoundary(start)
     }

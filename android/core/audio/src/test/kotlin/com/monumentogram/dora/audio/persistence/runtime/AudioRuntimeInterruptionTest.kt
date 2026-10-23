@@ -14,7 +14,7 @@ import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.VaultKeyProtection
-import com.monumentogram.dora.audio.persistence.auth.AppLockSession
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.util.concurrent.CountDownLatch
@@ -158,11 +158,8 @@ class AudioRuntimeInterruptionTest {
     }
 
     private fun open(runtime: AudioRuntimeCoordinator): ProductAudioSession {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         lock.resume()
-        val attempt = lock.begin()
-        assertTrue(lock.recordResult(attempt))
-        assertTrue(lock.complete(attempt) { true })
         val done = CountDownLatch(1)
         runtime.open(AudioOpenMode.OPEN_EXISTING, lock.capture()) { done.countDown() }
         await(done)

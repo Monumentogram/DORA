@@ -443,12 +443,12 @@ jobs:
           done
           exit 1
 
-      - name: Verify exact persistence and system authentication runtime inventory
+      - name: Verify exact ADR-0021 persistence and local authority runtime inventory
         run: >-
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/persistence-8.6c3-device-tests.json
+          --inventory docs/contracts/pin-free-local-access-device-tests-v1.json
           --receipt "${RUNNER_TEMP}/persistence-runtime-receipt.json"
 
       - name: Preserve content-free persistence instrumentation diagnostics

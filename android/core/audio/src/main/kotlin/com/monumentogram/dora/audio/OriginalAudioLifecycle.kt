@@ -1,6 +1,6 @@
 package com.monumentogram.dora.audio
 
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.persistence.journal.UncertainAudioSourceState
 
 /** Product-owned policy; storage callbacks require this operation's exact catalog lease. */
@@ -100,7 +100,7 @@ internal class OriginalAudioLifecycle(
     ): AudioResult<OriginalAudioStatus> =
         try {
             block()
-        } catch (_: AppLockedException) {
+        } catch (_: LocalAccessDeniedException) {
             AudioResult.Failed(AudioFailure.LOCKED)
         } catch (_: UncertainAudioSourceState) {
             AudioResult.Failed(AudioFailure.UNCERTAIN)

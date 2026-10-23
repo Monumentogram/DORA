@@ -5,7 +5,7 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFaultFixture.Companion.success
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -278,7 +278,7 @@ class OriginalAudioRuntimeTest {
             EncryptedAudioVault.open(
                 f.context,
                 true,
-                { if (locked.get()) throw AppLockedException() },
+                { if (locked.get()) throw LocalAccessDeniedException() },
                 { it() },
             )
         val ref =

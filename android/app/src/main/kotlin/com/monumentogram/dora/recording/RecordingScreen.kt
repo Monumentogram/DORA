@@ -213,12 +213,8 @@ internal fun RecordingScreen(
                             persistenceMessage(state.persistenceFailure)
                                 ?: captureMessage(snapshot.failure)
                         )
-                        if (state.persistenceFailure == AudioFailure.CREDENTIAL_SETUP_REQUIRED)
-                            Button(onClick = { app.audioRuntime.openCredentialSetup(activity) }) {
-                                Text("Настроить защиту устройства")
-                            }
                         Text(
-                            "Сохранённое аудио остаётся на устройстве. Для проверки требуется разблокировка."
+                            "Сохранённое аудио остаётся на устройстве. Проверьте его состояние ниже."
                         )
                     }
                 },
@@ -343,13 +339,7 @@ internal fun RecordingScreen(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 } else {
-                    Text("Запись защищена. Разблокируйте DORA для просмотра.")
-                    Button(
-                        onClick = { app.audioRuntime.requestRecordingUiUnlock(activity) {} },
-                        modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
-                    ) {
-                        Text("Разблокировать")
-                    }
+                    Text("Откройте DORA для просмотра записи")
                 }
             }
             when (state.phase) {
@@ -595,9 +585,7 @@ private fun persistenceMessage(failure: AudioFailure?): String? =
     when (failure) {
         null -> null
         AudioFailure.LOCKED,
-        AudioFailure.CANCELLED -> "Требуется разблокировка DORA"
-        AudioFailure.CREDENTIAL_SETUP_REQUIRED ->
-            "Настройте PIN-код, пароль или графический ключ Android"
+        AudioFailure.CANCELLED -> "Действие прервано. Повторите в открытом приложении"
         AudioFailure.KEY_UNAVAILABLE -> "Ключ хранилища временно недоступен"
         AudioFailure.KEY_INVALIDATED ->
             "Ключ хранилища недоступен. Аудио сохранено в зашифрованном виде"

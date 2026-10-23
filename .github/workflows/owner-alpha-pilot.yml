@@ -2,7 +2,7 @@ name: Owner Alpha pilot software
 
 on:
   push:
-    branches: ["codex/isolated-owner-alpha-pilot"]
+    branches: ["codex/isolated-owner-alpha-pilot", "codex/implement-pin-free-dora"]
   workflow_dispatch:
 
 permissions:
@@ -35,11 +35,15 @@ jobs:
         run: >-
           ./gradlew --no-daemon --stacktrace --dependency-verification strict
           -PdoraTestBuildType=ownerPilot -PdoraOwnerPilotInstrumentationSigning=true
-          spotlessCheck detekt :app:testOwnerPilotUnitTest :app:lintOwnerPilot
+          spotlessCheck detekt :core:audio:testReleaseUnitTest :app:testOwnerPilotUnitTest :app:lintOwnerPilot
           :app:assembleOwnerPilot :app:assembleOwnerPilotAndroidTest
       - name: Host denial controls and native packaging
         run: |
           python3 -m unittest discover -s tools -p 'test_owner*.py'
+          python3 -m unittest discover -s tools -p 'test_pin_free_local_access.py'
+          python3 -m unittest discover -s tools -p 'test_version_label.py'
+          python3 -m unittest discover -s tools -p 'test_encrypted_persistence_device.py'
+          python3 tools/validate_pin_free_local_access.py
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/ownerPilot/app-ownerPilot.apk --allowlist android/product-native-libs-allowlist.txt
       - name: Audit actual pilot Manifest, DEX, release denials and disposable signing
         run: |
@@ -72,7 +76,7 @@ jobs:
   owner-alpha-pilot-device:
     name: owner-alpha-pilot-api${{ matrix.api }}
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 100
     strategy:
       fail-fast: false
       matrix:
@@ -136,13 +140,23 @@ jobs:
             sleep 5
           done
           exit 1
-      - name: Real authenticated pilot UI, exact deletion and cross-user Keystore/file denial
+      - name: PIN_FREE_LOCAL_ACCESS pilot UI, reboot, exact deletion and cross-user isolation with and without system PIN
         run: >-
           python3 tools/run_owner_pilot_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }}
           --apk android/app/build/outputs/apk/ownerPilot/app-ownerPilot.apk
           --test-apk android/app/build/outputs/apk/androidTest/ownerPilot/app-ownerPilot-androidTest.apk
           --receipt "${RUNNER_TEMP}/owner-alpha-pilot/pilot.json"
+      - name: Compile persistence regression APK
+        working-directory: android
+        run: ./gradlew --no-daemon --dependency-verification strict :core:audio:assembleDebugAndroidTest
+      - name: PIN_FREE_LOCAL_ACCESS complete encrypted persistence inventory with and without system PIN
+        run: >-
+          python3 tools/run_encrypted_persistence_device.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
+          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          --inventory docs/contracts/pin-free-local-access-device-tests-v1.json --exact-inventory
+          --receipt "${RUNNER_TEMP}/owner-alpha-pilot/persistence.json"
       - name: Publish content-free synthetic receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -151,5 +165,6 @@ jobs:
           path: |
             ${{ runner.temp }}/owner-alpha-pilot/*.json
             ${{ runner.temp }}/owner-alpha-pilot-artifact.json
+            ${{ runner.temp }}/owner-alpha-pilot/persistence-diagnostics/*.json*
           retention-days: 7
           if-no-files-found: error

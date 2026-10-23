@@ -17,8 +17,8 @@ import com.monumentogram.dora.audio.ProductAudioReaderPort
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.VaultKeyProtection
-import com.monumentogram.dora.audio.persistence.auth.AppLockSession
-import com.monumentogram.dora.audio.persistence.auth.AppLockedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
+import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
 import com.monumentogram.dora.audio.recording.RecordingRecovery
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
@@ -32,7 +32,7 @@ import org.junit.Test
 class AudioRuntimeCoordinatorTest {
     @Test
     fun runtimeHandlePreservesLogicalCreateAndRevocation() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         val vault = FixtureVault()
         AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
             .use { runtime ->
@@ -43,7 +43,7 @@ class AudioRuntimeCoordinatorTest {
                 )
                 assertEquals(1, vault.logicalCreates)
                 assertEquals(0, vault.writes)
-                lock.lock()
+                lock.revoke()
                 runtime.revoke()
                 assertEquals(
                     AudioResult.Failed(AudioFailure.LOCKED),
@@ -60,19 +60,17 @@ class AudioRuntimeCoordinatorTest {
             "00000000-0000-0000-0000-000000000003",
         )
 
-    private fun authorize(lock: AppLockSession): AppLockSession.Authorization {
+    private fun authorize(lock: LocalAccessSession): LocalAccessSession.Authorization {
         lock.resume()
-        val attempt = lock.begin()
-        assertTrue(lock.recordResult(attempt))
-        assertTrue(lock.complete(attempt) { true })
         return lock.capture()
     }
 
     @Test
     fun revocationAfterSuccessfulPromptBeforeCaptureCompletesLockedExactlyOnce() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         authorize(lock) // The real session state has already accepted successful proof.
-        lock.lock() // Revocation wins before the subsequent capture, without changing auth policy.
+        lock.revoke() // Revocation wins before the subsequent capture, without changing auth
+        // policy.
         var opens = 0
         val completions = mutableListOf<AudioAvailability>()
         AudioRuntimeCoordinator({ false }) { _, _ ->
@@ -81,7 +79,7 @@ class AudioRuntimeCoordinatorTest {
             }
             .use { runtime ->
                 val call = runCatching {
-                    runtime.openAuthenticated(
+                    runtime.openLocal(
                         AudioOpenMode.CREATE_NEW,
                         lock::capture,
                         completions::add,
@@ -96,7 +94,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun successfulPromptHandoffCapturesOnceAndOpensNormally() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         authorize(lock)
         var captures = 0
         var opens = 0
@@ -106,7 +104,7 @@ class AudioRuntimeCoordinatorTest {
                 AudioResult.Value(FixtureVault())
             }
             .use { runtime ->
-                runtime.openAuthenticated(
+                runtime.openLocal(
                     AudioOpenMode.OPEN_EXISTING,
                     {
                         captures++
@@ -124,13 +122,13 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun oldHandleNeverRevivesAfterReauthentication() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         val vault = FixtureVault()
         AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
             .use { runtime ->
                 val first = opened(runtime, authorize(lock))
                 assertEquals(AudioResult.Value(Unit), first.writer.create(identity))
-                lock.lock()
+                lock.revoke()
                 runtime.revoke()
                 assertEquals(AudioAvailability.Locked, runtime.availability)
                 assertEquals(AudioResult.Failed(AudioFailure.LOCKED), first.writer.create(identity))
@@ -142,7 +140,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun pendingOpenRevokedBeforePublicationClosesAndStaysLocked() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)
         val complete = CountDownLatch(1)
@@ -167,7 +165,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun borrowedCallbackCannotReenterWorkerAndMainThreadCannotPerformIo() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         var main = false
         val vault = FixtureVault()
         AudioRuntimeCoordinator({ main }) { _, _ -> AudioResult.Value(vault) }
@@ -187,7 +185,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun retryCannotCreateConfirmationAndTypedFailureIsPreserved() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         val vault = FixtureVault()
         AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
             .use { runtime ->
@@ -215,7 +213,7 @@ class AudioRuntimeCoordinatorTest {
 
     private fun opened(
         runtime: AudioRuntimeCoordinator,
-        authorization: AppLockSession.Authorization,
+        authorization: LocalAccessSession.Authorization,
     ): ProductAudioSession {
         val done = CountDownLatch(1)
         runtime.open(AudioOpenMode.CREATE_NEW, authorization) { done.countDown() }
@@ -225,7 +223,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun originalReferenceUsesGenerationFenceAndDependentCallbackCannotReenter() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(FixtureVault()) }
             .use { runtime ->
                 val first = opened(runtime, authorize(lock))
@@ -242,7 +240,7 @@ class AudioRuntimeCoordinatorTest {
                         )
                     },
                 )
-                lock.lock()
+                lock.revoke()
                 runtime.revoke()
                 val second = opened(runtime, authorize(lock))
                 assertEquals(
@@ -256,7 +254,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun recoveryScanRevokedDuringReadCompletesLocked() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)
         val done = CountDownLatch(1)
@@ -285,7 +283,7 @@ class AudioRuntimeCoordinatorTest {
                         done.countDown()
                     }
                     assertTrue(entered.await(5, TimeUnit.SECONDS))
-                    lock.lock()
+                    lock.revoke()
                     runtime.revoke()
                 } finally {
                     release.countDown()
@@ -298,7 +296,7 @@ class AudioRuntimeCoordinatorTest {
 
     @Test
     fun recoveredPageQueuedForUiCannotPassCurrentSessionFenceAfterLock() {
-        val lock = AppLockSession { true }
+        val lock = LocalAccessSession { true }
         val done = CountDownLatch(1)
         var delivered: AudioResult<List<RecordingRecovery>>? = null
         val vault = FixtureVault { AudioResult.Value(emptyList()) }
@@ -311,11 +309,13 @@ class AudioRuntimeCoordinatorTest {
                 }
                 assertTrue(done.await(5, TimeUnit.SECONDS))
                 assertTrue(delivered is AudioResult.Value)
-                lock.lock()
+                lock.revoke()
                 runtime.revoke()
                 // AndroidProductAudioRuntime applies this fence on main before invoking UI
                 // completion.
-                assertThrows(AppLockedException::class.java) { runtime.requireCurrent(session) }
+                assertThrows(LocalAccessDeniedException::class.java) {
+                    runtime.requireCurrent(session)
+                }
                 assertEquals(0, vault.writes)
             }
     }
