@@ -27,7 +27,7 @@ internal class LocalAsrModel(context: Context) {
     companion object {
         const val SIZE = 264_464_607L
         const val SHA256 = "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f"
-        val EXPIRES: Instant = Instant.parse("2026-10-26T00:00:00Z")
+        val EXPIRES: Instant = Instant.parse("2026-11-02T21:00:00Z")
         private val DIGEST = SHA256.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
         fun withinRetention(): Boolean = Instant.now().isBefore(EXPIRES)

@@ -33,10 +33,14 @@ the separate x86 test receipt and exact new test-runtime pins. Those properties
 are mutually exclusive and prohibited on GitHub Actions. Test mode disables all
 non-debug variants and cannot combine with the arm64-only private VAD path.
 
-Model use/import stops at `2026-10-26T00:00:00Z` (the end of the already admitted
-2026-10-25 UTC retention day). Inspection removes an expired installed model.
+On 2026-10-26 the owner explicitly renewed custody and local test use of the same
+exact artifact through 2026-11-02 inclusive, without publication or POCO operations.
+Model use/import now stops at `2026-11-02T21:00:00Z` (midnight starting November 3
+in the owner's Europe/Moscow timezone). The previous deadline was
+`2026-10-26T00:00:00Z`; this renewal does not rewrite that historical authorization.
+Inspection removes an expired installed model.
 The cancellation predicate also stops ongoing recognition after that deadline.
-This deadline is not a retention extension. Device wall time is the available
+No broader production admission is implied. Device wall time is the available
 local time authority; an offline app cannot establish an independent trusted
 clock or perform cleanup while it is not running.
 

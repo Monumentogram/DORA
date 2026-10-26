@@ -17,5 +17,10 @@ NDK's complete NOTICE and NOTICE.toolchain alongside its controlled output.
 
 Upstream conversion attribution and applicable notices must accompany separately
 authorized controlled copies. This attribution does not grant project production
-admission, extend the 2026-10-25 retention deadline, or claim that the historical
+admission, independently extend a retention deadline, or claim that the historical
 producer's converter/quantizer build was reproduced bit for bit.
+
+The original 2026-10-25 retention authorization remains historical. The owner's
+explicit 2026-10-26 renewal through 2026-11-02 inclusive (Europe/Moscow), limited
+to custody and local testing of the same artifact, is recorded separately in the
+[native admission record](../../stage1/DORA_STAGE9_NATIVE_ADMISSION.md).
