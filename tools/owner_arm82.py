@@ -116,17 +116,28 @@ def audit_dependencies(apk, sdk):
     return dependencies
 
 
-def enrich_sbom(bom):
+def enrich_sbom(bom, source):
+    require(re.fullmatch('[a-f0-9]{40}', source), 'INVALID_ADAPTER_SOURCE_SHA')
     check_sources()
     app = next(edge for edge in bom['dependencies'] if edge['ref'] == 'project::app')
     for name, pin in sorted(receipt()['artifacts'].items()):
         ref = 'private-arm82:' + name
         license_expression = 'Apache-2.0 WITH LLVM-exception' if name == 'libc++_shared.so' else 'MIT'
-        bom['components'].append({'type': 'library', 'bom-ref': ref, 'name': name,
+        component = {'type': 'library', 'bom-ref': ref, 'name': name,
             'version': receipt()['runtimeCommit'] if name != 'libc++_shared.so' else receipt()['ndk'],
             'hashes': [{'alg': 'SHA-256', 'content': pin['sha256']}],
             'licenses': [{'expression': license_expression}],
-            'properties': [{'name': 'dora:abi', 'value': 'arm64-v8a'}]})
+            'properties': [{'name': 'dora:abi', 'value': 'arm64-v8a'}]}
+        if name == 'libdora-whisper-jni.so':
+            component['version'] = source
+            component.pop('licenses')  # Project adapter has no separately assigned upstream license.
+            component['properties'].extend([
+                {'name': 'dora:adapter-source-sha256', 'value': receipt()['sourcePins']['whisper_jni.cpp']['sha256']},
+                {'name': 'dora:cmake-source-sha256', 'value': receipt()['sourcePins']['CMakeLists.txt']['sha256']},
+                {'name': 'dora:license-disposition', 'value': 'OWNER_LOCAL_PROJECT_SOURCE_NO_PUBLIC_DISTRIBUTION'},
+                {'name': 'dora:ndk', 'value': receipt()['ndk']},
+            ])
+        bom['components'].append(component)
         bom['dependencies'].append({'ref': ref, 'dependsOn': ['private-arm82:' + item for item in ASR_LINKS[name]]})
         app['dependsOn'].append(ref)
     bom['metadata']['properties'].extend([

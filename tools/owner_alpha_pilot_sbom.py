@@ -89,7 +89,7 @@ def generate(graph, source, *, private_vad=False, private_asr=False):
     if private_asr:
         require(private_vad, 'ASR_PILOT_REQUIRES_VAD')
         from owner_arm82 import enrich_sbom
-        bom = enrich_sbom(bom)
+        bom = enrich_sbom(bom, source)
     return bom
 
 

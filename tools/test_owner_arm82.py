@@ -48,9 +48,14 @@ class OwnerArm82Tests(unittest.TestCase):
     def test_sbom_records_asr_not_bundled_model_and_matches_current_sources(self):
         bom = {'components': [], 'dependencies': [{'ref': 'project::app', 'dependsOn': []}],
                'metadata': {'properties': []}}
-        result = self.audit.enrich_sbom(copy.deepcopy(bom))
+        result = self.audit.enrich_sbom(copy.deepcopy(bom), 'a' * 40)
         components = result['components']
         self.assertEqual(6, len(components))
+        adapter = next(c for c in components if c['name'] == 'libdora-whisper-jni.so')
+        self.assertEqual('a' * 40, adapter['version'])
+        self.assertNotIn('licenses', adapter)
+        self.assertIn({'name': 'dora:adapter-source-sha256', 'value':
+            self.audit.receipt()['sourcePins']['whisper_jni.cpp']['sha256']}, adapter['properties'])
         self.assertEqual(6, len(result['dependencies'][0]['dependsOn']))
         self.assertFalse(any(c['type'] == 'file' and c['name'].endswith('.bin') for c in components))
         self.assertEqual(self.audit.MODEL_SHA, next(p['value'] for p in result['metadata']['properties']
