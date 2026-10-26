@@ -222,8 +222,8 @@ class OwnerPilotInstrumentedTest {
                     PackageManager.GET_PERMISSIONS or
                     PackageManager.GET_INSTRUMENTATION,
             )
-        assertEquals(3L, info.longVersionCode)
-        assertEquals("0.1.0-owner-alpha.3", info.versionName)
+        assertEquals(4L, info.longVersionCode)
+        assertEquals("0.1.0-owner-alpha.4", info.versionName)
         assertEquals(null, info.sharedUserId)
         assertEquals(Process.myUid(), context.applicationInfo.uid)
         assertEquals(0, context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)

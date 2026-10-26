@@ -2,7 +2,7 @@ name: Owner Alpha pilot software
 
 on:
   push:
-    branches: ["codex/isolated-owner-alpha-pilot", "codex/implement-pin-free-dora"]
+    branches: ["codex/arm82-owner-alpha", "codex/isolated-owner-alpha-pilot", "codex/implement-pin-free-dora"]
   workflow_dispatch:
 
 permissions:
@@ -169,7 +169,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/pin-free-local-access-device-tests-v1.json --exact-inventory
+          --inventory docs/contracts/owner-arm82-persistence-tests-v1.json --exact-inventory
           --receipt "${RUNNER_TEMP}/owner-alpha-pilot/persistence.json"
       - name: Publish content-free synthetic receipt
         if: always()

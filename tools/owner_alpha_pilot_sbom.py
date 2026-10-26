@@ -49,7 +49,7 @@ def check_graph(graph):
     return release.normalize(graph)
 
 
-def generate(graph, source, *, private_vad=False):
+def generate(graph, source, *, private_vad=False, private_asr=False):
     require(re.fullmatch('[a-f0-9]{40}', source), 'INVALID_SOURCE_SHA')
     actual = check_graph(graph)
     approved = json.loads(APPROVED.read_text())
@@ -86,6 +86,10 @@ def generate(graph, source, *, private_vad=False):
             bom['components'].append(component)
             bom['dependencies'].append({'ref': ref, 'dependsOn': []})
             next(edge for edge in bom['dependencies'] if edge['ref'] == 'project::app')['dependsOn'].append(ref)
+    if private_asr:
+        require(private_vad, 'ASR_PILOT_REQUIRES_VAD')
+        from owner_arm82 import enrich_sbom
+        bom = enrich_sbom(bom)
     return bom
 
 

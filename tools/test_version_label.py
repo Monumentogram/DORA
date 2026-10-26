@@ -29,7 +29,7 @@ class VersionLabelTests(unittest.TestCase):
             ('release', 'com.monumentogram.dora', '5', '0.1.0-alpha.3', 'DORA Alpha'),
             ('debug', 'com.monumentogram.dora.debug', '5', '0.1.0-alpha.3-debug', 'DORA Alpha'),
             ('alphaTest', 'com.monumentogram.dora.alpha.test', '5', '0.1.0-alpha.3', 'DORA Alpha'),
-            ('ownerPilot', 'com.monumentogram.dora.alpha.pilot', '3', '0.1.0-owner-alpha.3', 'DORA Owner Alpha'),
+            ('ownerPilot', 'com.monumentogram.dora.alpha.pilot', '4', '0.1.0-owner-alpha.4', 'DORA Owner Alpha'),
         ):
             label = f'{prefix} {name} ({code})'
             badging = f"package: name='{package}' versionCode='{code}' versionName='{name}'"
@@ -38,10 +38,10 @@ class VersionLabelTests(unittest.TestCase):
 
     def test_missing_stale_wrong_name_code_and_qualified_overrides_fail(self):
         package = 'com.monumentogram.dora.alpha.pilot'
-        badging = f"package: name='{package}' versionCode='3' versionName='0.1.0-owner-alpha.3'"
-        good = self.table(package, 'DORA Owner Alpha 0.1.0-owner-alpha.3 (3)')
-        for broken in ('', good.replace('owner-alpha.3', 'owner-alpha.1'),
-                       good.replace('(3)', '(5)'), self.table(package, 'DORA Alpha 0.1.0-alpha.3 (5)'),
+        badging = f"package: name='{package}' versionCode='4' versionName='0.1.0-owner-alpha.4'"
+        good = self.table(package, 'DORA Owner Alpha 0.1.0-owner-alpha.4 (4)')
+        for broken in ('', good.replace('owner-alpha.4', 'owner-alpha.1'),
+                       good.replace('(4)', '(5)'), self.table(package, 'DORA Alpha 0.1.0-alpha.3 (5)'),
                        good + self.table(package, 'wrong', 'ru'), good + good,
                        good.replace('(string8)', '(reference)'),
                        good.replace('t=0x03', 't=0x01'), good.replace('(default)', 'ru')):
@@ -49,8 +49,8 @@ class VersionLabelTests(unittest.TestCase):
                 check_label(badging, broken, 'ownerPilot')
         # A self-consistent but unapproved package version is not a release pass.
         with self.assertRaises(ValueError):
-            check_label(badging.replace("versionCode='3'", "versionCode='1'"),
-                        good.replace('(3)', '(1)'), 'ownerPilot')
+            check_label(badging.replace("versionCode='4'", "versionCode='1'"),
+                        good.replace('(4)', '(1)'), 'ownerPilot')
 
 
 if __name__ == '__main__':
