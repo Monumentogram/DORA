@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-26",
+  "result": "PASS_BOUNDED_EMULATOR_NATIVE_INTEGRATION",
+  "productSourceCommit": "d54c556ea934946e6c817dafd6dd3d0372152d85",
+  "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+  "runtimeScope": "explicit unadmitted x86_64 emulator test build; ARM82/POCO qualification separate",
+  "modelExpiresExclusiveUtc": "2026-11-02T21:00:00Z",
+  "cancellationEvidence": "native callback-triggered cancellation; durable CANCELLED with unchanged transcript history; exact compute phase and latency not asserted",
+  "checks": [
+    {
+      "scope": "actual-native-x86-emulator-functional-only",
+      "api": 28,
+      "language": "en",
+      "result": "PASS",
+      "passedTests": 1,
+      "skipsAccepted": false,
+      "realInferenceCallsExpected": 3,
+      "completedInferencesExpected": 2,
+      "cancelledInferenceExpected": 1,
+      "elapsedSeconds": 44.2,
+      "pcmSha256": "a29462b8ebd467318000e683b9117ade46230d3255ed2024e7db894abd9b38c9",
+      "pcmFrames": 176000,
+      "modelSha256": "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f",
+      "apks": {
+        "app-debug.apk": "ecd0606dcd2d22819414a03529c167f4ab3810a7b4a01016e3b9fb7d444128e3",
+        "app-debug-androidTest.apk": "2ee342c178c93368ff65184304e4419abd7acc160db282166adcf04af745488c"
+      },
+      "physicalDeviceOperated": false,
+      "transcriptLogged": false
+    },
+    {
+      "scope": "actual-native-x86-emulator-functional-only",
+      "api": 28,
+      "language": "ru",
+      "result": "PASS",
+      "passedTests": 1,
+      "skipsAccepted": false,
+      "realInferenceCallsExpected": 3,
+      "completedInferencesExpected": 2,
+      "cancelledInferenceExpected": 1,
+      "elapsedSeconds": 52.56,
+      "pcmSha256": "02f5880702800e785d2e8630e82d6f9bce275b234485e92693043fa7a7169970",
+      "pcmFrames": 132240,
+      "modelSha256": "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f",
+      "apks": {
+        "app-debug.apk": "ecd0606dcd2d22819414a03529c167f4ab3810a7b4a01016e3b9fb7d444128e3",
+        "app-debug-androidTest.apk": "2ee342c178c93368ff65184304e4419abd7acc160db282166adcf04af745488c"
+      },
+      "physicalDeviceOperated": false,
+      "transcriptLogged": false
+    },
+    {
+      "scope": "actual-native-x86-emulator-functional-only",
+      "api": 36,
+      "applicationPageSizeAsserted": 16384,
+      "language": "en",
+      "result": "PASS",
+      "passedTests": 1,
+      "skipsAccepted": false,
+      "realInferenceCallsExpected": 3,
+      "completedInferencesExpected": 2,
+      "cancelledInferenceExpected": 1,
+      "elapsedSeconds": 35.66,
+      "pcmSha256": "a29462b8ebd467318000e683b9117ade46230d3255ed2024e7db894abd9b38c9",
+      "pcmFrames": 176000,
+      "modelSha256": "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f",
+      "apks": {
+        "app-debug.apk": "ecd0606dcd2d22819414a03529c167f4ab3810a7b4a01016e3b9fb7d444128e3",
+        "app-debug-androidTest.apk": "6bb9af452c20c735c14c4d68e572cc7b9456b8c43bd50bf65cb97a0ec75b446c"
+      },
+      "physicalDeviceOperated": false,
+      "transcriptLogged": false
+    },
+    {
+      "scope": "actual-native-x86-emulator-functional-only",
+      "api": 36,
+      "applicationPageSizeAsserted": 16384,
+      "language": "ru",
+      "result": "PASS",
+      "passedTests": 1,
+      "skipsAccepted": false,
+      "realInferenceCallsExpected": 3,
+      "completedInferencesExpected": 2,
+      "cancelledInferenceExpected": 1,
+      "elapsedSeconds": 46.39,
+      "pcmSha256": "02f5880702800e785d2e8630e82d6f9bce275b234485e92693043fa7a7169970",
+      "pcmFrames": 132240,
+      "modelSha256": "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f",
+      "apks": {
+        "app-debug.apk": "ecd0606dcd2d22819414a03529c167f4ab3810a7b4a01016e3b9fb7d444128e3",
+        "app-debug-androidTest.apk": "6bb9af452c20c735c14c4d68e572cc7b9456b8c43bd50bf65cb97a0ec75b446c"
+      },
+      "physicalDeviceOperated": false,
+      "transcriptLogged": false
+    }
+  ],
+  "ui": {
+    "api": 36,
+    "pageSizeMode": 16384,
+    "nativeRerunThroughProductUi": true,
+    "versionsBefore": 2,
+    "versionsAfter": 3,
+    "activeVersionUnchanged": true,
+    "manualEditSaved": true,
+    "manualEditSurvivedForceStopAndRelaunch": true,
+    "pinOrBiometricPromptObserved": false
+  },
+  "inputs": {
+    "en": {
+      "kind": "public speech sample from pinned whisper.cpp source",
+      "source": "samples/jfk.wav",
+      "wavSha256": "59dfb9a4acb36fe2a2affc14bacbee2920ff435cb13cc314a08c13f66ba7860e"
+    },
+    "ru": {
+      "kind": "synthetic offline speech",
+      "generator": "Windows System.Speech Microsoft Irina Desktop",
+      "format": "PCM16LE mono 16000Hz",
+      "wavSha256": "ae8caad19cee69abf93b142f1f7fad7e9bf471a646d6a4f1bd78be8d85e1ab92"
+    }
+  },
+  "historicalEvidenceRewritten": false,
+  "weightsAudioOrTranscriptPublished": false
+}

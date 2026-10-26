@@ -111,6 +111,10 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         Text(if (loading) "Проверяем сохранение…" else "Проверить сохранённые записи")
     }
     message?.let { Text(it) }
+    com.monumentogram.dora.transcript.TranscriptLauncher(
+        activity as MainActivity,
+        enabled = !loading && !actions.busy,
+    )
     actions.message?.let { Text(it) }
     if (actions.busy) Text("Проверяем защищённое аудио…")
     if (authorized && entries.isNotEmpty()) {
@@ -131,6 +135,11 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
                 entry.identity?.let { identity ->
                     Text("Идентификатор записи: ${identity.recordingId.value}")
                     Text("Сохранено кадров: ${entry.recoveredFrames}")
+                    com.monumentogram.dora.transcript.TranscriptLauncher(
+                        activity as MainActivity,
+                        identity,
+                        !loading && !actions.busy,
+                    )
                     Button(
                         enabled =
                             !actions.busy &&

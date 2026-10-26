@@ -70,8 +70,9 @@ class OriginalAudioFullMigrationTest {
             assertTrue(vault.deleteAudio(deleting) is AudioResult.Failed)
         }
         lateinit var before: Map<String, List<List<String?>>>
-        raw(f, 3) { db ->
-            before = snapshot(db)
+        raw(f, TRANSCRIPT_SCHEMA_VERSION) { db ->
+            JournalSchemaVerifier.verify(db)
+            before = snapshot(db, oldVersion)
             listOf(
                     "bootstrap",
                     "manifest",
@@ -84,9 +85,13 @@ class OriginalAudioFullMigrationTest {
                 .forEach {
                     assertTrue("Nonempty migration coverage: $it", before.getValue(it).isNotEmpty())
                 }
-            // Test fixture only: baseline writer produced the original twelve tables unchanged.
-            // Remove the additive v2 table, restore the exact exported v1 Room identity/version,
-            // and verify the complete accepted v1 DDL before allowing the product to open it.
+            if (oldVersion == 2) {
+                assertTrue(before.getValue("original_audio_reference").isNotEmpty())
+            }
+            // Test fixture only: the current writer preserves the published v1/v2 tables.
+            // Remove successor tables, restore the exact exported identity/version, and verify
+            // the complete accepted legacy DDL before allowing the product to migrate it.
+            db.execSQL("DROP TABLE transcript_state")
             db.execSQL("DROP TABLE audio_segmentation")
             if (oldVersion == 1) db.execSQL("DROP TABLE original_audio_reference")
             val roomIdentity =
@@ -97,12 +102,16 @@ class OriginalAudioFullMigrationTest {
             JournalSchemaVerifier.verify(db, oldVersion)
         }
         f.open(create = false).close()
-        raw(f, 3) { db ->
+        raw(f, TRANSCRIPT_SCHEMA_VERSION) { db ->
             assertTrue(
                 "Every existing encrypted row must survive migration",
-                before == snapshot(db),
+                before == snapshot(db, oldVersion),
             )
             JournalSchemaVerifier.verify(db)
+            db.query("SELECT count(*) FROM transcript_state").use {
+                assertTrue(it.moveToFirst())
+                assertEquals(0, it.getInt(0))
+            }
         }
         f.open(create = false).use { vault ->
             assertEquals(ref, reference(vault, f.audio))
@@ -160,7 +169,7 @@ class OriginalAudioFullMigrationTest {
         }
     }
 
-    private fun snapshot(db: SupportSQLiteDatabase) =
+    private fun snapshot(db: SupportSQLiteDatabase, oldVersion: Int) =
         listOf(
                 "vault_binding",
                 "audio_asset",
@@ -175,6 +184,7 @@ class OriginalAudioFullMigrationTest {
                 "deletion_tombstone",
                 "deletion_target",
             )
+            .let { tables -> if (oldVersion == 2) tables + "original_audio_reference" else tables }
             .associateWith { table ->
                 buildList {
                     db.query("SELECT * FROM $table ORDER BY rowid").use { cursor ->

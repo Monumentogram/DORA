@@ -1,0 +1,155 @@
+{
+  "abi": "x86_64",
+  "artifacts": {
+    "libc++_shared.so": {
+      "bytes": 8808664,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384,
+        16384
+      ],
+      "needed": [
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "e4cd73c8a3607269f3be58d15c21f78bff112e27f9398d6261e5f965668f8746"
+    },
+    "libdora-whisper-jni.so": {
+      "bytes": 261776,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "needed": [
+        "libdl.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libc.so"
+      ],
+      "sha256": "8480b58693f402e91d5a13ef1a89417ea5b3b19cc77c4aae5a3eab4fd7a2cbfd"
+    },
+    "libggml-base.so": {
+      "bytes": 5468592,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "libc++_shared.so",
+        "libc.so"
+      ],
+      "sha256": "45c5229b2902747d6dce6fc9dadfe2724e0d0fa09f8667c9ed0d09eb479027e3"
+    },
+    "libggml-cpu.so": {
+      "bytes": 4587072,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "needed": [
+        "libggml-base.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "sha256": "c2e77d61940ab49b164cdb67e8dc3874d7febec50c3856209f4ac4fed6ce1716"
+    },
+    "libggml.so": {
+      "bytes": 514600,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "needed": [
+        "libggml-cpu.so",
+        "libggml-base.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "sha256": "97acdfbe01c8938bce24094700ccef2a0f775bb913a198bd9776b57d044138b5"
+    },
+    "libwhisper.so": {
+      "bytes": 6856152,
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ],
+      "needed": [
+        "libggml.so",
+        "libggml-cpu.so",
+        "libggml-base.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "sha256": "3eb3dffd880750a95c34831b9fea095c1107545afc31965689ebc3454a9cd9b8"
+    }
+  },
+  "capabilityGuard": "EXPLICIT_COMPILE_TIME_TEST_VARIANT",
+  "deviceRuntimeTested": false,
+  "minimumApi": 28,
+  "modelPackaged": false,
+  "ndk": "28.2.13676358",
+  "productionAdmission": false,
+  "result": "PASS_TEST_BUILD_STATIC_ONLY",
+  "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+  "runtimeOptions": [
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DGGML_CPU=ON",
+    "-DWHISPER_BUILD_IS_DEV=OFF",
+    "-DWHISPER_BUILD_TESTS=OFF",
+    "-DWHISPER_BUILD_EXAMPLES=OFF",
+    "-DWHISPER_BUILD_SERVER=OFF",
+    "-DWHISPER_CURL=OFF",
+    "-DWHISPER_SDL2=OFF",
+    "-DWHISPER_COREML=OFF",
+    "-DWHISPER_OPENVINO=OFF",
+    "-DWHISPER_VITISAI=OFF",
+    "-DGGML_NATIVE=OFF",
+    "-DGGML_CPU_ALL_VARIANTS=OFF",
+    "-DGGML_BACKEND_DL=OFF",
+    "-DGGML_OPENMP=OFF",
+    "-DGGML_CCACHE=OFF",
+    "-DGGML_CUDA=OFF",
+    "-DGGML_METAL=OFF",
+    "-DGGML_ACCELERATE=OFF",
+    "-DGGML_BLAS=OFF",
+    "-DGGML_VULKAN=OFF",
+    "-DGGML_OPENCL=OFF",
+    "-DGGML_RPC=OFF",
+    "-DGGML_BUILD_TESTS=OFF",
+    "-DGGML_BUILD_EXAMPLES=OFF",
+    "-DGGML_SSE42=OFF",
+    "-DGGML_AVX=OFF",
+    "-DGGML_AVX2=OFF",
+    "-DGGML_AVX512=OFF",
+    "-DGGML_AVX_VNNI=OFF",
+    "-DGGML_FMA=OFF",
+    "-DGGML_F16C=OFF",
+    "-DGGML_CPU_KLEIDIAI=OFF"
+  ],
+  "scope": "UNADMITTED_DISPOSABLE_EMULATOR_FUNCTIONAL_TEST_ONLY",
+  "sourcePins": {
+    "CMakeLists.txt": {
+      "bytes": 1507,
+      "sha256": "8d082f272ca4f7d14a2c65299c3274a430f08ff12aa7fe7aa2b45ecc4a68a996"
+    },
+    "whisper_jni.cpp": {
+      "bytes": 10484,
+      "sha256": "e9c39a1f949d1a7b3d6194d1869f21fc8e61771d2c15e59c424aa1dfd725cba1"
+    }
+  }
+}

@@ -21,7 +21,7 @@ import com.monumentogram.dora.audio.StoredAudioAsset
 import com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFaultFixture.Companion.success
 import com.monumentogram.dora.audio.persistence.OriginalAudioRuntimeTest.Companion.reference
 import com.monumentogram.dora.audio.persistence.database.SqlCipherJournalHelperFactory
-import com.monumentogram.dora.audio.persistence.journal.SEGMENTATION_SCHEMA_VERSION
+import com.monumentogram.dora.audio.persistence.journal.TRANSCRIPT_SCHEMA_VERSION
 import com.monumentogram.dora.audio.persistence.keys.AndroidVaultBundleStorage
 import com.monumentogram.dora.audio.persistence.keys.AndroidVaultKeyBackend
 import com.monumentogram.dora.audio.persistence.keys.KeyAccess
@@ -175,7 +175,7 @@ class OriginalAudioProcessDeathTest {
                             .name(file.path)
                             .callback(
                                 object :
-                                    SupportSQLiteOpenHelper.Callback(SEGMENTATION_SCHEMA_VERSION) {
+                                    SupportSQLiteOpenHelper.Callback(TRANSCRIPT_SCHEMA_VERSION) {
                                     override fun onCreate(db: SupportSQLiteDatabase) =
                                         error("Existing source required")
 

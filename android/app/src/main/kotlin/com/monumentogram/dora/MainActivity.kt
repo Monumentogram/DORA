@@ -14,13 +14,42 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
 import com.monumentogram.dora.recording.ProductRecordingHost
 import com.monumentogram.dora.recording.ProductRecordingService
+import com.monumentogram.dora.transcript.ModelImportController
+import com.monumentogram.dora.transcript.ModelImportStatus
+import com.monumentogram.dora.transcript.registerModelPicker
 import com.monumentogram.dora.ui.BootstrapNavigationLayout
 import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 
 class MainActivity : ComponentActivity() {
+    private val modelImports by lazy {
+        ViewModelProvider(this)[ModelImportController::class.java]
+    }
+    // Stable registry key and unconditional Activity ownership survive dialog removal and rotation.
+    private val modelPicker =
+        registerModelPicker(activityResultRegistry, this) {
+            modelImports.completeSelection(it)
+        }
+
+    internal val modelImportStatus: ModelImportStatus
+        get() = modelImports.status
+
+    internal val modelImportMessage: String
+        get() = modelImportStatus.message
+
+    internal fun launchModelImport() {
+        if (modelImports.beginSelection()) {
+            try {
+                modelPicker.launch(arrayOf("application/octet-stream", "*/*"))
+            } catch (_: RuntimeException) {
+                modelImports.completeSelection(null)
+            }
+        }
+    }
+
     internal var presentationWindow = 0L
         private set
 

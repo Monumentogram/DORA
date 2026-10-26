@@ -1,3 +1,33 @@
+## 2026-10-26 — Stage9 runtime and migration verification
+
+Owner renewed exact SMALLq8 custody/local test use through November2 inclusive
+(Europe/Moscow), without publication or physical POCO operations. Actual local
+RU/EN recognition, repeat versions, edits, callback cancellation and encrypted
+reopen passed on disposable API28 and API36 page-size16KB emulators. The product
+UI reran real ASR, saved a correction and retained it after process restart.
+Ordinary published-schema migration coverage now includes v1/v2/v3→v4, preserving
+rows/source references and rejecting altered DDL. Final runner:20 tests/API.
+The software-ready verdict requires successful exact-head checks in
+[Draft PR112](https://github.com/Monumentogram/DORA/pull/112); the
+[evidence record](evidence/stage9-asr/RESULT.md) states observed results and scope.
+Physical ARM82/POCO, historical diagnostic-v3, release/distribution and Stage8.6
+NOT_READY remain separate. Earlier entries retain their historical meaning.
+
+---
+
+## 2026-10-23 — Stage9 local ASR and transcript implementation
+
+Owner-scoped successor of PR111 on `codex/stage9-local-asr`.
+**PARTIAL / STAGE9_IMPLEMENTATION_INCOMPLETE**: protected local ASR integration,
+encrypted immutable versions/edits/selections and foreground editor are implemented;
+new-adapter inference and final API28/API36/exact-SHA checks are not certified here.
+See [ADR-0022](adr/ADR-0022-stage9-bounded-local-transcript.md) and
+[verification record](evidence/stage9-asr/RESULT.md). No physical install authorized.
+ADR-0021, the 300-second cap, Stage8.6 NOT_READY and historical gates remain unchanged.
+Earlier entries remain historical evidence.
+
+---
+
 ## 2026-10-23 — ADR-0021 PIN-free local runtime implementation
 
 PIN/App Lock and biometric challenges are removed from local product actions.
