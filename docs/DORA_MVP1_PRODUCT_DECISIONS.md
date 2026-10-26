@@ -1,3 +1,16 @@
+## 2026-10-26 — ARM82 Owner Alpha preparation (ADR-0023)
+
+The release-derived isolated Pilot successor is code4 / `0.1.0-owner-alpha.4`,
+with the same package and owner signer. Controlled local packaging binds exact
+ARM82 ASR, VAD and encrypted storage inputs; model remains external.
+[Build/evidence boundary](evidence/arm82-owner-alpha/README.md) and
+[prospective physical protocol](ARM82_OWNER_ALPHA_PHYSICAL_PROTOCOL.md) govern
+acceptance. The final APK/CI verdict belongs to the exact-source draft PR and
+private build receipts; this source checkpoint does not predict those results.
+ARM82_DEVICE_RUNTIME=NOT_RUN; no POCO/ADB physical operation authorized/performed.
+Stage8.6 NOT_READY, historical diagnostic-v3 and production upgrade/security gates
+remain separate. Older status records below are preserved.
+
 ## 2026-10-26 — Stage9 runtime and migration verification
 
 Owner renewed exact SMALLq8 custody/local test use through November2 inclusive

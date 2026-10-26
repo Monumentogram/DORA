@@ -21,14 +21,14 @@ from version_label import check_label
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.monumentogram.dora.alpha.pilot'
 NAMESPACE = 'com.monumentogram.dora'
-VERSION_CODE = 3
-VERSION_NAME = '0.1.0-owner-alpha.3'
+VERSION_CODE = 4
+VERSION_NAME = '0.1.0-owner-alpha.4'
 OWNER_CERTIFICATE = 'a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d'
 EXCLUDED_CERTIFICATES = {
     'diagnostic': '2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8',
     'debug': 'a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72',
 }
-BASE = 'a14d30a8172f13361fbe29b08cdb463651fc954a'
+BASE = '4d1a92311dcdfd3d7f7bbcf53625caa9c1bdfdba'
 ANDROID = '{http://schemas.android.com/apk/res/android}'
 MODES = ('owner-local', 'ci-unsigned', 'ci-test-signed')
 PERMISSIONS = {'android.permission.' + name for name in (
@@ -51,7 +51,7 @@ def exact_source(source, mode):
     run(['git', 'merge-base', '--is-ancestor', BASE, source])
     if mode == 'owner-local':
         require(os.environ.get('GITHUB_ACTIONS') != 'true', 'OWNER_LOCAL_ONLY')
-        require(run(['git', 'branch', '--show-current']).strip() == 'codex/implement-pin-free-dora', 'UNADMITTED_BRANCH')
+        require(run(['git', 'branch', '--show-current']).strip() == 'codex/arm82-owner-alpha', 'UNADMITTED_BRANCH')
 
 
 def check_badging(text):
@@ -209,6 +209,11 @@ def native_alignment(data):
     return {'bits': 64 if bits == 2 else 32, 'load_alignment': loads}
 
 
+def check_pin_resources(resources):
+    for token in ('Разблокировать', 'Разблокируйте DORA', 'Требуется разблокировка', 'Настройте PIN'):
+        require(token not in resources, 'NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT')
+
+
 def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
     before = sha(path)
     bt = sdk / 'build-tools/36.0.0'
@@ -226,8 +231,7 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
         file = backup_resource_path(resources, app.get(ANDROID + attribute), name)
         backup_xml.append(run([analyzer, 'resources', 'xml', '--file', file, path]))
     check_backup_rules(*backup_xml)
-    for token in ('Разблокировать', 'Разблокируйте DORA', 'Требуется разблокировка', 'Настройте PIN'):
-        require(token not in resources, 'NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT')
+    check_pin_resources(resources)
     diagnostic = run([analyzer, 'dex', 'code', '--class', NAMESPACE + '.audio.persistence.DiagnosticBuild', path])
     check_diagnostic_code(diagnostic)
     run([bt / ('zipalign' + exe), '-c', '-P', '16', '4', path])
@@ -253,6 +257,12 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
                 require(names, 'AAR_NATIVE_MISSING')
                 for name in names:
                     require(inventory.get('lib/' + name[4:]) == hashlib.sha256(source.read(name)).hexdigest(), 'PACKAGED_VAD_NATIVE_MISMATCH')
+    asr_dependencies = {}
+    if mode == 'owner-local':
+        import owner_arm82
+        owner_arm82.check_sources()
+        owner_arm82.check_payload(inventory)
+        asr_dependencies = owner_arm82.audit_dependencies(path, sdk)
     require(sha(path) == before, 'ARTIFACT_CHANGED_DURING_AUDIT')
     return {'apk_sha256': before, 'size_bytes': path.stat().st_size, 'payload': inventory,
             'compiled_version_label': version_label, 'version_label_parity': 'PASS',
@@ -260,7 +270,7 @@ def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
             'diagnostic_false_dex_sha256': hashlib.sha256(diagnostic.encode()).hexdigest(),
             'backup_policy_sha256': [hashlib.sha256(value.encode()).hexdigest() for value in backup_xml],
             'manifest_sha256': hashlib.sha256(xml.encode()).hexdigest(), 'native_elf': native,
-            'zip_alignment_16k': 'PASS'}
+            'zip_alignment_16k': 'PASS', 'arm82_dependencies': asr_dependencies}
 
 
 def main():
@@ -307,7 +317,7 @@ def main():
     if args.graph or args.sbom:
         require(args.graph and args.sbom, 'GRAPH_AND_SBOM_REQUIRED_TOGETHER')
         from owner_alpha_pilot_sbom import generate
-        require(json.loads(args.sbom.read_text()) == generate(json.loads(args.graph.read_text()), args.source_sha, private_vad=owner), 'SBOM_MISMATCH')
+        require(json.loads(args.sbom.read_text()) == generate(json.loads(args.graph.read_text()), args.source_sha, private_vad=owner, private_asr=owner), 'SBOM_MISMATCH')
         sbom_hash, graph_hash = sha(args.sbom), sha(args.graph)
     exact_source(args.source_sha, args.mode)
     receipt = {'schema_version': 1, 'mode': args.mode, 'source_sha': args.source_sha, 'source_clean': True,
@@ -317,6 +327,7 @@ def main():
         'known_excluded_signers': {'production': PRODUCTION_CERTIFICATE,
             'diagnostic': args.diagnostic_certificate_sha256, 'debug': args.debug_certificate_sha256} if owner else {},
         'aar_sha256': AAR_SHA if owner else None, 'model_sha256': MODEL_SHA if owner else None,
+        'arm82_device_runtime': 'NOT_RUN', 'asr_runtime_packaged': owner,
         'byte_identical': len(records) == 2, 'sbom_sha256': sbom_hash, 'graph_sha256': graph_hash,
         'software_readiness': 'NOT_DETERMINED_BY_ARTIFACT_AUDIT', 'physical_installed': False,
         'distribution': 'BLOCKED', 'provenance': 'LOCAL_RECEIPT_NOT_REMOTE_ATTESTATION'}

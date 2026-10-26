@@ -186,8 +186,8 @@ androidComponents {
         val output = variant.outputs.single()
         val ownerPilot = variant.buildType == "ownerPilot"
         if (ownerPilot) {
-            output.versionCode.set(3)
-            output.versionName.set("0.1.0-owner-alpha.3")
+            output.versionCode.set(4)
+            output.versionName.set("0.1.0-owner-alpha.4")
         }
         val prefix = if (ownerPilot) "DORA Owner Alpha" else "DORA Alpha"
         variant.resValues.put(

@@ -16,7 +16,7 @@ class PilotArtifactTests(unittest.TestCase):
             self.fail('owner pilot artifact verifier must exist')
 
     def manifest(self):
-        return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.monumentogram.dora.alpha.pilot" android:versionCode="3" android:versionName="0.1.0-owner-alpha.3"><application android:allowBackup="false"><activity android:name="com.monumentogram.dora.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><service android:name="com.monumentogram.dora.recording.ProductRecordingService" android:exported="false" android:foregroundServiceType="microphone"/></application></manifest>'''
+        return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.monumentogram.dora.alpha.pilot" android:versionCode="4" android:versionName="0.1.0-owner-alpha.4"><application android:allowBackup="false"><activity android:name="com.monumentogram.dora.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><service android:name="com.monumentogram.dora.recording.ProductRecordingService" android:exported="false" android:foregroundServiceType="microphone"/></application></manifest>'''
 
     def test_namespace_is_not_runtime_package_and_launcher_is_only_export(self):
         self.assertEqual(2, len(self.pilot.check_manifest(self.manifest())))
@@ -41,7 +41,7 @@ class PilotArtifactTests(unittest.TestCase):
             ('<application ', '<uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/><application '),
             ('<application ', '<instrumentation android:name="Runner"/><application '),
             ('android:exported="false"', 'android:exported="false" android:singleUser="true"'),
-            ('versionCode="3"', 'versionCode="1"'),
+            ('versionCode="4"', 'versionCode="1"'),
         ):
             with self.subTest(new=new), self.assertRaises(ValueError):
                 self.pilot.check_manifest(self.manifest().replace(old, new))
@@ -54,10 +54,10 @@ class PilotArtifactTests(unittest.TestCase):
             self.pilot.check_manifest(xml.replace('</application>', '<activity android:name="com.monumentogram.dora.audio.persistence.auth.AppLockAuthenticationActivity" android:exported="false"/></application>'))
 
     def test_badging_rejects_legacy_packages_versions_and_network(self):
-        good = "package: name='com.monumentogram.dora.alpha.pilot' versionCode='3' versionName='0.1.0-owner-alpha.3'"
+        good = "package: name='com.monumentogram.dora.alpha.pilot' versionCode='4' versionName='0.1.0-owner-alpha.4'"
         self.pilot.check_badging(good)
         for broken in (good.replace('.alpha.pilot', ''), good.replace('.alpha.pilot', '.debug'),
-                       good.replace('.alpha.pilot', '.alpha.test'), good.replace("versionCode='3'", "versionCode='5'"),
+                       good.replace('.alpha.pilot', '.alpha.test'), good.replace("versionCode='4'", "versionCode='5'"),
                        good + "\nuses-permission: name='android.permission.INTERNET'"):
             with self.assertRaises(ValueError):
                 self.pilot.check_badging(broken)
@@ -190,7 +190,7 @@ class PilotArtifactTests(unittest.TestCase):
         graph['project_configurations'] = {c['path']: ('ownerPilotRuntimeClasspath' if c['path'] == ':app' else 'releaseRuntimeClasspath') for c in graph['components'] if c['kind'] == 'project'}
         ci = sbom.generate(graph, 'a' * 40)
         owner = sbom.generate(graph, 'a' * 40, private_vad=True)
-        self.assertEqual('0.1.0-owner-alpha.3', ci['metadata']['component']['version'])
+        self.assertEqual('0.1.0-owner-alpha.4', ci['metadata']['component']['version'])
         self.assertNotIn('private-vad-model', {c['bom-ref'] for c in ci['components']})
         model = next(c for c in owner['components'] if c['bom-ref'] == 'private-vad-model')
         self.assertEqual('1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3', model['hashes'][0]['content'])
@@ -205,8 +205,9 @@ class PilotBuildTests(unittest.TestCase):
             self.fail('owner pilot independent clean build tool must exist')
 
     def test_build_command_cleans_actual_owner_variant_and_disables_both_caches(self):
-        command = self.build.build_command(Path('/external/private-vad'))
+        command = self.build.build_command(Path('/external/private-vad'), Path('/external/private-asr'))
         self.assertIn('clean', command)
+        self.assertIn('-PdoraPrivateAsrDir=/external/private-asr', [x.replace('\\', '/') for x in command])
         self.assertIn(':app:assembleOwnerPilot', command)
         self.assertIn('--no-build-cache', command)
         self.assertIn('--no-configuration-cache', command)

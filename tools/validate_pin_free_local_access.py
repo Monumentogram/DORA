@@ -9,7 +9,7 @@ import pin_free_policy
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = 'a14d30a8172f13361fbe29b08cdb463651fc954a'
-INVENTORY = 'docs/contracts/pin-free-local-access-device-tests-v1.json'
+INVENTORY = 'docs/contracts/owner-arm82-persistence-tests-v1.json'
 
 
 def candidate(root=ROOT):
@@ -36,7 +36,8 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     changed = set(git('diff', '--name-only', BASE).splitlines())
     require(not historical.intersection(changed), 'Historical evidence, contracts, vendor or Recovery changed')
     require(not pin_free_policy.violations(root), 'NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT')
-    persistence.validate_product_sources(persistence.read_product_sources(root))
+    from owner_arm82_inventory import project_stage9_policy
+    persistence.validate_product_sources(project_stage9_policy(persistence.read_product_sources(root), root))
     manifest = (root / 'android/app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
     recording.validate_manifest(manifest)
     capture = {p.relative_to(root).as_posix(): p.read_text(encoding='utf-8')
@@ -68,12 +69,14 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     inventory, _ = device.validate_inventory(contract)
     require(contract.get('deferred_tests') == sorted(alpha.DEFERRED_DEVICE),
             'Only the accepted over-five-minute test deferrals are inherited')
-    require(inventory == tests - alpha.DEFERRED_DEVICE, 'ADR-0021 runtime inventory omits or invents tests')
+    from owner_arm82_inventory import validate_accounting
+    legacy = json.loads((root / 'docs/contracts/pin-free-local-access-device-tests-v1.json').read_text())
+    accounted = validate_accounting(contract, tests, set(legacy['tests']), alpha.DEFERRED_DEVICE)
     old = json.loads((root / 'docs/contracts/persistence-8.6c3-device-tests.json').read_text())
     superseded = {name for name in old['tests'] if '.auth.AndroidAppLockTest#' in name or
                   '.auth.AndroidAuthProofTest#' in name or
                   name.endswith(('#credentialVaultRoundTripRelockReopenConfirmedDeletion', '#noCredentialCannotCreateStorage'))}
-    require(set(old['tests']) - superseded - alpha.DEFERRED_DEVICE <= inventory,
+    require(set(old['tests']) - superseded - alpha.DEFERRED_DEVICE <= accounted,
             'Non-PIN security regression test removed')
     for path in ('docs/security/DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE.json',
                  'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/AndroidVaultKeyBackend.kt'):
