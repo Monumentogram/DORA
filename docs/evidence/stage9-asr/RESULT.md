@@ -1,6 +1,20 @@
 # Stage 9 local ASR and transcript — software evidence
 
 Current classification: **PARTIAL / STAGE9_IMPLEMENTATION_INCOMPLETE**.
+
+Resume checkpoint, 2026-10-26: CI run 39970852704 on
+`8903c085189348c62f85fbce1867f1d69b247bb0` passed the full software job
+and booted both API28/API36 emulators. Each passed the three encrypted transcript
+persistence tests, then failed both migration tests during fixture creation:
+the exported schema omits `indices` for two tables. The fixture now accepts that
+optional array, following the existing v1 migration fixture. This does not weaken
+the production schema verifier or the migration assertions. Successor CI must
+confirm migration, restart and editor execution; the failed run is not a PASS.
+
+The existing model-use deadline `2026-10-26T00:00:00Z` has now elapsed.
+No real inference or deadline extension was performed on resume. Further real
+ASR testing requires renewed explicit model custody/use authorization as well as
+disk space. Source-checkpoint statements below retain the earlier evidence.
 Branch: `codex/stage9-local-asr`, stacked on PR111 commit
 `4ee27ef2473b0b047ee73be0595e981d08848e94`. No merge or physical device operation.
 
