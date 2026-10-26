@@ -66,7 +66,10 @@ def main():
 
         prefix = "com.monumentogram.dora.audio.persistence."
         instrument("encrypted-persistence-and-migration", "com.monumentogram.dora.audio.test",
-                   prefix + "TranscriptPersistenceTest," + prefix + "journal.TranscriptMigrationTest", 5)
+                   prefix + "TranscriptPersistenceTest,"
+                   + prefix + "journal.TranscriptMigrationTest,"
+                   + prefix + "journal.OriginalAudioMigrationTest,"
+                   + prefix + "journal.OriginalAudioFullMigrationTest", 9)
         instrument("bounded-recording-and-pin-free-authority", "com.monumentogram.dora.audio.test",
                    prefix + "AlphaRecordingRuntimeTest," + prefix + "auth.AndroidLocalAccessTest", 3)
         run = "ci-" + uuid.uuid4().hex

@@ -33,11 +33,15 @@ class OriginalAudioMigrationTest {
                     assertNotNull(journal.catalog.load(fixture.pending)!!.pending)
                 }
             }
-        fixture.raw(4) { db ->
+        fixture.raw(TRANSCRIPT_SCHEMA_VERSION) { db ->
+            JournalSchemaVerifier.verify(db)
             assertEquals(fixture.before, snapshot(db))
-            db.query("SELECT count(*) FROM original_audio_reference").use {
-                assertTrue(it.moveToFirst())
-                assertEquals(0, it.getInt(0))
+            listOf("original_audio_reference", "audio_segmentation", "transcript_state").forEach {
+                table ->
+                db.query("SELECT count(*) FROM $table").use {
+                    assertTrue(it.moveToFirst())
+                    assertEquals(0, it.getInt(0))
+                }
             }
             db.query("PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
         }
