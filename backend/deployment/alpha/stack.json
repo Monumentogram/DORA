@@ -1,0 +1,936 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "DORA Stage18.1D.2 owner-only Alpha preparation. Apply requires separate approval; no app bootstrap or audio.",
+  "Parameters": {
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "Existing approved VPC in eu-central-1."
+    },
+    "SubnetId": {
+      "Type": "AWS::EC2::Subnet::Id",
+      "Description": "Existing public subnet with IGW route, in the selected VPC."
+    },
+    "ImageId": {
+      "Type": "AWS::EC2::Image::Id",
+      "Description": "Pinned official Canonical Ubuntu 24.04 LTS amd64 AMI in eu-central-1."
+    },
+    "SshKeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Existing operator SSH key pair; no private key in this stack."
+    },
+    "OwnerCidr": {
+      "Type": "String",
+      "AllowedPattern": "(\\d{1,3}\\.){3}\\d{1,3}/32",
+      "Description": "Single approved owner/operator public IPv4 /32; no global ingress."
+    },
+    "AlertEmail": {
+      "Type": "String",
+      "NoEcho": true,
+      "AllowedPattern": "[^\\s@]+@[^\\s@]+\\.[^\\s@]+",
+      "Description": "Private owner notification address; never commit parameter values."
+    },
+    "MonthlyBudgetUsd": {
+      "Type": "Number",
+      "Default": 20,
+      "MinValue": 1,
+      "MaxValue": 50
+    }
+  },
+  "Rules": {
+    "FrankfurtOnly": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Equals": [
+              {
+                "Ref": "AWS::Region"
+              },
+              "eu-central-1"
+            ]
+          },
+          "AssertDescription": "Content resources must stay in eu-central-1."
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "InputKey": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "Description": "DORA Alpha input custody",
+        "EnableKeyRotation": true,
+        "KeySpec": "SYMMETRIC_DEFAULT",
+        "KeyUsage": "ENCRYPT_DECRYPT",
+        "MultiRegion": false,
+        "PendingWindowInDays": 30,
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "EnableAccountIAMAuthorization",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "InputBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms",
+                "KMSMasterKeyID": {
+                  "Fn::GetAtt": [
+                    "InputKey",
+                    "Arn"
+                  ]
+                }
+              },
+              "BucketKeyEnabled": false
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "TemporaryOnly",
+              "Status": "Enabled",
+              "Prefix": "",
+              "ExpirationInDays": 1,
+              "AbortIncompleteMultipartUpload": {
+                "DaysAfterInitiation": 1
+              }
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "InputBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "InputBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "RequireTLS",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:s3:::${InputBucket}"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:s3:::${InputBucket}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            },
+            {
+              "Sid": "DenyForeignEncryption",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:s3:::${InputBucket}/*"
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption": "aws:kms"
+                }
+              }
+            },
+            {
+              "Sid": "DenyForeignKey",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:s3:::${InputBucket}/*"
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption-aws-kms-key-id": {
+                    "Fn::GetAtt": [
+                      "InputKey",
+                      "Arn"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "OutputKey": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "Description": "DORA Alpha output custody",
+        "EnableKeyRotation": true,
+        "KeySpec": "SYMMETRIC_DEFAULT",
+        "KeyUsage": "ENCRYPT_DECRYPT",
+        "MultiRegion": false,
+        "PendingWindowInDays": 30,
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "EnableAccountIAMAuthorization",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "OutputBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms",
+                "KMSMasterKeyID": {
+                  "Fn::GetAtt": [
+                    "OutputKey",
+                    "Arn"
+                  ]
+                }
+              },
+              "BucketKeyEnabled": false
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "IgnorePublicAcls": true,
+          "BlockPublicPolicy": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "TemporaryOnly",
+              "Status": "Enabled",
+              "Prefix": "",
+              "ExpirationInDays": 1,
+              "AbortIncompleteMultipartUpload": {
+                "DaysAfterInitiation": 1
+              }
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "OutputBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "OutputBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "RequireTLS",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:s3:::${OutputBucket}"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:s3:::${OutputBucket}/*"
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            },
+            {
+              "Sid": "DenyForeignEncryption",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:s3:::${OutputBucket}/*"
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption": "aws:kms"
+                }
+              }
+            },
+            {
+              "Sid": "DenyForeignKey",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:s3:::${OutputBucket}/*"
+              },
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption-aws-kms-key-id": {
+                    "Fn::GetAtt": [
+                      "OutputKey",
+                      "Arn"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "RuntimeRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "DoraRuntime",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "StartControlledOutput",
+                  "Effect": "Allow",
+                  "Action": "transcribe:StartTranscriptionJob",
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "eu-central-1",
+                      "transcribe:OutputBucketName": {
+                        "Fn::Sub": "${OutputBucket}"
+                      },
+                      "transcribe:OutputEncryptionKMSKeyId": {
+                        "Fn::Sub": "${OutputKey.Arn}"
+                      }
+                    },
+                    "StringLike": {
+                      "transcribe:OutputKey": "output/dora-*.json"
+                    }
+                  }
+                },
+                {
+                  "Sid": "ReadDeleteDoraJobs",
+                  "Effect": "Allow",
+                  "Action": [
+                    "transcribe:GetTranscriptionJob",
+                    "transcribe:DeleteTranscriptionJob"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:transcribe:eu-central-1:${AWS::AccountId}:transcription-job/dora-*"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "eu-central-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "transcribe:ListTranscriptionJobs",
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "eu-central-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:s3:::${InputBucket}/input/dora-*.wav"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:s3:::${OutputBucket}/output/dora-*.json"
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "s3:ResourceAccount": {
+                        "Fn::Sub": "${AWS::AccountId}"
+                      }
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:Encrypt",
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${InputKey.Arn}"
+                    },
+                    {
+                      "Fn::Sub": "${OutputKey.Arn}"
+                    }
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:ViaService": [
+                        "s3.eu-central-1.amazonaws.com",
+                        "transcribe.eu-central-1.amazonaws.com"
+                      ],
+                      "kms:CallerAccount": {
+                        "Fn::Sub": "${AWS::AccountId}"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "DoraAdmissionRead",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "organizations:DescribeEffectivePolicy"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetBucketLocation",
+                    "s3:GetBucketPublicAccessBlock",
+                    "s3:GetBucketPolicyStatus",
+                    "s3:GetBucketPolicy",
+                    "s3:GetBucketOwnershipControls",
+                    "s3:GetBucketVersioning",
+                    "s3:GetReplicationConfiguration",
+                    "s3:GetBucketObjectLockConfiguration",
+                    "s3:GetEncryptionConfiguration",
+                    "s3:GetLifecycleConfiguration"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:s3:::${InputBucket}"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:s3:::${OutputBucket}"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kms:DescribeKey",
+                    "kms:GetKeyRotationStatus"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "${InputKey.Arn}"
+                    },
+                    {
+                      "Fn::Sub": "${OutputKey.Arn}"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "AggregateHealthOnly",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "WriteHealth",
+                  "Effect": "Allow",
+                  "Action": "cloudwatch:PutMetricData",
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "cloudwatch:namespace": "DORA/Alpha",
+                      "aws:RequestedRegion": "eu-central-1"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "RuntimeProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "RuntimeRole"
+          }
+        ]
+      }
+    },
+    "HostFirewall": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Owner-only SSH and HTTPS; no backend public port",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": {
+              "Ref": "OwnerCidr"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": {
+              "Ref": "OwnerCidr"
+            }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "Host": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "InstanceType": "t3.micro",
+        "CreditSpecification": {
+          "CPUCredits": "standard"
+        },
+        "KeyName": {
+          "Ref": "SshKeyName"
+        },
+        "IamInstanceProfile": {
+          "Ref": "RuntimeProfile"
+        },
+        "SubnetId": {
+          "Ref": "SubnetId"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "HostFirewall"
+          }
+        ],
+        "MetadataOptions": {
+          "HttpEndpoint": "enabled",
+          "HttpTokens": "required",
+          "HttpPutResponseHopLimit": 1,
+          "InstanceMetadataTags": "disabled"
+        },
+        "DisableApiTermination": true,
+        "Monitoring": false,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "VolumeType": "gp3",
+              "VolumeSize": 12,
+              "Encrypted": true,
+              "KmsKeyId": "alias/aws/ebs",
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${AWS::StackName}-backend"
+            }
+          }
+        ]
+      }
+    },
+    "DataVolume": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::GetAtt": [
+            "Host",
+            "AvailabilityZone"
+          ]
+        },
+        "Size": 8,
+        "VolumeType": "gp3",
+        "Encrypted": true,
+        "KmsKeyId": "alias/aws/ebs",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${AWS::StackName}-custody"
+            }
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "DataAttachment": {
+      "Type": "AWS::EC2::VolumeAttachment",
+      "Properties": {
+        "Device": "/dev/sdf",
+        "InstanceId": {
+          "Ref": "Host"
+        },
+        "VolumeId": {
+          "Ref": "DataVolume"
+        }
+      }
+    },
+    "PublicAddress": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "AddressAttachment": {
+      "Type": "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "Host"
+        },
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "PublicAddress",
+            "AllocationId"
+          ]
+        }
+      }
+    },
+    "Alerts": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Protocol": "email",
+            "Endpoint": {
+              "Ref": "AlertEmail"
+            }
+          }
+        ]
+      }
+    },
+    "AlertPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "Alerts"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudwatch.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": {
+                "Ref": "Alerts"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "ArnEquals": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:aws:cloudwatch:eu-central-1:${AWS::AccountId}:alarm:${AWS::StackName}-cleanup"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CleanupHealthAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmName": {
+          "Fn::Sub": "${AWS::StackName}-cleanup"
+        },
+        "AlarmDescription": "Host/watchdog/disk/cleanup health failed or telemetry missing; stop admission and restore cleanup. No content.",
+        "Namespace": "DORA/Alpha",
+        "MetricName": "CleanupHealthy",
+        "Dimensions": [
+          {
+            "Name": "Stack",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          }
+        ],
+        "Statistic": "Minimum",
+        "Period": 60,
+        "EvaluationPeriods": 2,
+        "DatapointsToAlarm": 2,
+        "Threshold": 1,
+        "ComparisonOperator": "LessThanThreshold",
+        "TreatMissingData": "breaching",
+        "AlarmActions": [
+          {
+            "Ref": "Alerts"
+          }
+        ],
+        "OKActions": [
+          {
+            "Ref": "Alerts"
+          }
+        ]
+      }
+    },
+    "MonthlyBudget": {
+      "Type": "AWS::Budgets::Budget",
+      "Properties": {
+        "Budget": {
+          "BudgetName": {
+            "Fn::Sub": "${AWS::StackName}-account-cost"
+          },
+          "BudgetType": "COST",
+          "TimeUnit": "MONTHLY",
+          "BudgetLimit": {
+            "Amount": {
+              "Ref": "MonthlyBudgetUsd"
+            },
+            "Unit": "USD"
+          }
+        },
+        "NotificationsWithSubscribers": [
+          {
+            "Notification": {
+              "NotificationType": "ACTUAL",
+              "ComparisonOperator": "GREATER_THAN",
+              "Threshold": 50,
+              "ThresholdType": "PERCENTAGE"
+            },
+            "Subscribers": [
+              {
+                "SubscriptionType": "EMAIL",
+                "Address": {
+                  "Ref": "AlertEmail"
+                }
+              }
+            ]
+          },
+          {
+            "Notification": {
+              "NotificationType": "ACTUAL",
+              "ComparisonOperator": "GREATER_THAN",
+              "Threshold": 80,
+              "ThresholdType": "PERCENTAGE"
+            },
+            "Subscribers": [
+              {
+                "SubscriptionType": "EMAIL",
+                "Address": {
+                  "Ref": "AlertEmail"
+                }
+              }
+            ]
+          },
+          {
+            "Notification": {
+              "NotificationType": "ACTUAL",
+              "ComparisonOperator": "GREATER_THAN",
+              "Threshold": 100,
+              "ThresholdType": "PERCENTAGE"
+            },
+            "Subscribers": [
+              {
+                "SubscriptionType": "EMAIL",
+                "Address": {
+                  "Ref": "AlertEmail"
+                }
+              }
+            ]
+          },
+          {
+            "Notification": {
+              "NotificationType": "FORECASTED",
+              "ComparisonOperator": "GREATER_THAN",
+              "Threshold": 100,
+              "ThresholdType": "PERCENTAGE"
+            },
+            "Subscribers": [
+              {
+                "SubscriptionType": "EMAIL",
+                "Address": {
+                  "Ref": "AlertEmail"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "AccountId": {
+      "Value": {
+        "Ref": "AWS::AccountId"
+      }
+    },
+    "Region": {
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "InputBucket": {
+      "Value": {
+        "Ref": "InputBucket"
+      }
+    },
+    "OutputBucket": {
+      "Value": {
+        "Ref": "OutputBucket"
+      }
+    },
+    "InputKeyArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "InputKey",
+          "Arn"
+        ]
+      }
+    },
+    "OutputKeyArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "OutputKey",
+          "Arn"
+        ]
+      }
+    },
+    "RuntimeRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "RuntimeRole",
+          "Arn"
+        ]
+      }
+    },
+    "HostId": {
+      "Value": {
+        "Ref": "Host"
+      }
+    },
+    "DataVolumeId": {
+      "Value": {
+        "Ref": "DataVolume"
+      }
+    },
+    "PublicIp": {
+      "Value": {
+        "Ref": "PublicAddress"
+      }
+    },
+    "AlertsArn": {
+      "Value": {
+        "Ref": "Alerts"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Check DORA cleanup health every minute
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=dora-health.service
+
+[Install]
+WantedBy=timers.target

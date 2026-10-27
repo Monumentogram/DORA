@@ -1,0 +1,21 @@
+[Unit]
+Description=DORA aggregate cleanup health (no payload logs)
+After=network-online.target dora-watchdog.service
+RequiresMountsFor=/var/lib/dora
+
+[Service]
+Type=oneshot
+User=dora
+Group=dora
+WorkingDirectory=/opt/dora/backend
+EnvironmentFile=/etc/dora/health.env
+ExecStart=/opt/dora/backend/.venv/bin/python -m deployment.alpha.health --stack ${DORA_STACK}
+TimeoutStartSec=30
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/dora
+StandardOutput=null
+StandardError=null

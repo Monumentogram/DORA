@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-REPLACE"
+  },
+  {
+    "ParameterKey": "SubnetId",
+    "ParameterValue": "subnet-REPLACE"
+  },
+  {
+    "ParameterKey": "ImageId",
+    "ParameterValue": "ami-REPLACE"
+  },
+  {
+    "ParameterKey": "SshKeyName",
+    "ParameterValue": "REPLACE-existing-keypair"
+  },
+  {
+    "ParameterKey": "OwnerCidr",
+    "ParameterValue": "192.0.2.1/32"
+  },
+  {
+    "ParameterKey": "AlertEmail",
+    "ParameterValue": "owner@example.invalid"
+  },
+  {
+    "ParameterKey": "MonthlyBudgetUsd",
+    "ParameterValue": "20"
+  }
+]

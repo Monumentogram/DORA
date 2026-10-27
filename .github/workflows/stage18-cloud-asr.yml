@@ -27,6 +27,11 @@ jobs:
         run: .venv/bin/python -m unittest discover -s tests -v
       - name: Emulator runner safety and result parsing
         run: python3.12 -m unittest discover -s tools -p test_cloud18_integration.py -v
+      - name: Offline Alpha infrastructure validation (no AWS credentials)
+        run: |
+          python3.12 -m venv "$RUNNER_TEMP/dora-cfn"
+          "$RUNNER_TEMP/dora-cfn/bin/python" -m pip install -r backend/deployment/alpha/requirements-tools.txt
+          "$RUNNER_TEMP/dora-cfn/bin/cfn-lint" -t backend/deployment/alpha/stack.json -r eu-central-1
   software:
     runs-on: ubuntu-24.04
     timeout-minutes: 40

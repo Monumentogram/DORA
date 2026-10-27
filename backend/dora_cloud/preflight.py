@@ -12,6 +12,14 @@ def require(condition):
         raise ProviderError("LIVE_PREFLIGHT_FAILED")
 
 
+def whole_bucket(rule):
+    # S3 accepts modern empty Filter and legacy empty Prefix representations.
+    # Never infer whole-bucket coverage from missing or conflicting fields.
+    if "Filter" in rule:
+        return "Prefix" not in rule and rule["Filter"] in ({}, {"Prefix": ""})
+    return rule.get("Prefix") == ""
+
+
 def verify_live(config, sts, organizations, s3, kms):
     if not config.live_enabled:
         raise ProviderError("LIVE_DISABLED")
@@ -45,7 +53,7 @@ def verify_live(config, sts, organizations, s3, kms):
             rules = s3.get_bucket_encryption(**args)["ServerSideEncryptionConfiguration"]["Rules"]
             require(len(rules) == 1 and rules[0]["ApplyServerSideEncryptionByDefault"] == {"SSEAlgorithm": "aws:kms", "KMSMasterKeyID": key})
             rules = s3.get_bucket_lifecycle_configuration(**args)["Rules"]
-            require(any(r.get("Status") == "Enabled" and r.get("Filter") == {"Prefix": ""} and
+            require(any(r.get("Status") == "Enabled" and whole_bucket(r) and
                         r.get("Expiration") == {"Days": 1} and r.get("AbortIncompleteMultipartUpload") == {"DaysAfterInitiation": 1}
                         and not any(k in r for k in ("Transitions", "NoncurrentVersionTransitions")) for r in rules))
             require(not any(r.get("Status") == "Enabled" and (r.get("Transitions") or r.get("NoncurrentVersionTransitions")) for r in rules))

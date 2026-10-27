@@ -1567,3 +1567,14 @@ This Job-bound retained-regression successor remains pending immutable independe
 ## Parallel Owner Preview acceptance preparation — 2026-10-27
 
 Owner authorizes the temporary isolated `ownerPreview` variant from verified `9538792`; see [ADR-0024](adr/ADR-0024-parallel-owner-preview.md). Installed Pilot v2 remains untouched; direct v2→v4 update is NOT_QUALIFIED. Signed artifact/CI readiness is determined by the exact-head Draft PR report, not this source record. Required independent package/UID/data/Keystore tests and prospective [physical protocol](ARM82_PARALLEL_ALPHA_PHYSICAL_PROTOCOL.md) apply. `ARM82_DEVICE_RUNTIME = NOT_RUN`; Stage8.6 NOT_READY; no POCO commands, historical data access or merge authorized.
+
+
+## Stage18.1D.2 AWS infrastructure preparation — 2026-10-27
+
+Owner-authorized local IaC preparation preserves the Stage18.1C single-host contract:
+two private buckets, two CMKs, restricted EC2 workload identity, persistent SQLite
+and independent cleanup watchdog. See the [preparation report](../STAGE18_1D2_MINIMAL_AWS_INFRASTRUCTURE.md)
+and deployment runbook for parameters, cost and verification/rollback gates.
+This is AWS_INFRASTRUCTURE_PREPARED, not deployed or live-verified. AWS resources,
+paid jobs, audio upload, POCO and merge remain NOT_RUN and require separate scope.
+Stage8.6 NOT_READY and historical evidence remain unchanged.
