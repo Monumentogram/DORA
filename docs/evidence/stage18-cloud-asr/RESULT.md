@@ -1,19 +1,23 @@
-# Stage18.1C manual Amazon Cloud ASR вЂ” software verification
+# Stage18.1C manual Amazon Cloud ASR — software verification
 
 Date: 2026-10-27. Branch: `codex/stage18-1c-amazon-cloud-asr`.
 Accepted base: `98a975f3aff268db605573e1cd666dbc237f3123`.
-Implementation commit and Draft PR: publication pending. No merge is authorized.
+Qualified software source: `9575fe96947f855c557d863869dfa692b6bd0cb8`.
+Implementation commits: backend `db5906379815b8b08cfc5bb42bafee493a295954`,
+Android `1e3cfd5bb2aa1e30b32e7ab07af3f65c8bec1a82`.
+[Draft PR #116](https://github.com/Monumentogram/DORA/pull/116), based on Preview
+PR #114. No merge was performed. The successor commit changes CI binding and this
+closure evidence; Android/backend source is identical to the qualified source.
 
-`STAGE18_1C_SOFTWARE_STATUS = PASS_LOCAL / PENDING_CI`
+`PASS / STAGE18_1C_AMAZON_CLOUD_ASR_SOFTWARE_READY`
 
 `AWS_LIVE_RUNTIME = NOT_RUN`
 
 `CLOUD_ALPHA_PHYSICAL_ACCEPTED = NOT_RUN`
 
 This is an implementation receipt for the Stage18.1C implementation, not a replacement for
-historical Stage9/Preview or 6.2D evidence. The requested software-ready result may
-be recorded only after final code, automatic checks, independent P0/P1 review and
-exact-head CI are verified. No real AWS job or physical-device operation was run
+historical Stage9/Preview or 6.2D evidence. The software-ready result is supported by automatic checks, independent P0/P1
+review and exact-source CI; it is not a live deployment or physical acceptance. No real AWS job or physical-device operation was run
 by this evidence/CI task. Real AWS job count attributable to these synthetic
 checks is zero; no AWS usage or invoice amount is inferred from reserve estimates.
 
@@ -46,10 +50,10 @@ Implemented routes are `POST /v1/session`, `POST /v1/recordings`, `POST /v1/jobs
 | Android JVM/static/lint/build | PASS | 1,120 JVM tests, zero failures/errors/skips; spotless, detekt, app/core lint, Debug/Release and test APK builds |
 | API28 encrypted Cloud storage | PASS, 2 tests | Included in consolidated eight-test runner |
 | API28 full synthetic HTTPS/editor/restart/outbox | PASS, 8 tests | [Local receipt](local-api28.json); real client/proof/HTTPS/persistence, synthetic provider |
-| API36 full synthetic HTTPS/editor/restart/outbox | PENDING_CI | Local launch blocked by disk headroom; CI runs isolated API36 |
+| API36 full synthetic HTTPS/editor/restart/outbox | PASS, 8 tests | [CI receipt](ci-api36.json); isolated GitHub-hosted emulator |
 | Independent backend P0/P1 review | No P0/P1 found in reviewed snapshot | Namespace/deadline guard included; partial timing compatibility corrected in Android |
 | Independent Android P0/P1 review | PASS, no remaining actionable P0/P1 | Two independent reviewers rechecked original findings; repair regressions and final source inspected |
-| Exact-head CI | NOT_RUN | Workflow exists; no successful remote run is claimed here |
+| Exact-source CI | PASS, all 4 Stage18 jobs | [Run 40502526765](https://github.com/Monumentogram/DORA/actions/runs/40502526765), SHA `9575fe9`; permanent PIN-free check also PASS |
 | AWS live / current deployment preflight | NOT_RUN | No current authorized private deployment/configuration evidence |
 | Physical device / new JNI inference regression | NOT_RUN | Existing accepted Stage9 evidence is preserved, not relabeled as a test of new code |
 
@@ -100,7 +104,8 @@ provider/configuration change requires revalidation.
 No POCO commands, Android user switches, Pilot v2 update, LONG recording access or
 Stage8.6 endurance is part of this task. Stage8.6 remains NOT_READY.
 
-Next action: publish the Draft PR and verify its CI, including API36 integration. Current AWS account/opt-out/TLS/IAM/cost/retention/watchdog admission and any
+Next action: run read-only preflight against a separately authorized AWS environment.
+Current AWS account/opt-out/TLS/IAM/cost/retention/watchdog admission and any
 live synthetic smoke require their own verified authorization before execution.
 
 ## Local verification details
@@ -134,3 +139,26 @@ Cloud persistence methods (162 bulk methods total). Historical inventories, acce
 physical evidence and the existing long-test deferrals remain unchanged. The first
 clean governance check caught the missing entries; both were added without hiding
 any inherited test. The new workflow checks the exact requested head SHA.
+
+## Remote receipts and workflow correction
+
+The push run above passed backend, software, emulator API28 and emulator API36.
+The downloaded [API28 receipt](ci-api28.json) and [API36 receipt](ci-api36.json)
+both bind to clean source `9575fe96947f855c557d863869dfa692b6bd0cb8`, contain six
+completed checks / eight tests, and report `AWS_LIVE_RUNTIME = NOT_RUN`. Their ZIP
+SHA-256 digests matched the GitHub artifact metadata before extraction:
+
+- API28: `a06c514ea2ed940f32512dc363709625815ddff9e4c67b4f56107f20d3224d8e`.
+- API36: `120516a2c2343978d72e359eab85d4b7a66e1d89a0496af05b2821e14791129c`.
+
+The initial PR-event run passed Android compilation/tests but failed the later
+source gate because GitHub reserves its GITHUB_* variables and retained the PR
+merge SHA. The workflow now first asserts HEAD against the trusted event's selected
+source SHA, then passes that verified value only to the validator process. The
+source gate runs before the build. The validator and its cleanliness checks are
+unchanged; no gate is disabled. Final successor CI status is recorded in the PR.
+
+No blocker requiring current owner input remains for the software scope. Live
+service deployment still needs approved resources, installation invitation and
+passing current privacy/cost preflight. AWS job count and task-attributable live
+job cost are both zero.

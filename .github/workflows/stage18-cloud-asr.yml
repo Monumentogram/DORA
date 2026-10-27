@@ -33,6 +33,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {fetch-depth: 0, persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
+      - name: Verify exact selected source before building
+        env:
+          DORA_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$DORA_EXPECTED_SHA"
+          # GitHub reserves GITHUB_* workflow variables; bind this validator process
+          # only after checking the actual checkout against the trusted event SHA.
+          GITHUB_SHA="$DORA_EXPECTED_SHA" python3 tools/validate_stage00.py
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "17"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
@@ -49,10 +57,7 @@ jobs:
           :app:lintDebug :core:audio:lintDebug :app:assembleDebug :app:assembleRelease
           :app:assembleDebugAndroidTest :core:audio:assembleDebugAndroidTest
       - name: Existing local-mode and versioning contract guards
-        env:
-          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          python3 tools/validate_stage00.py
           python3 -m unittest discover -s tools -p test_owner_arm82.py
           python3 -m unittest discover -s tools -p test_pin_free_local_access.py
           python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
