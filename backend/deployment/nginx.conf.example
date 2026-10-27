@@ -1,0 +1,23 @@
+# Install only after replacing hostname/certificate paths. No HTTP fallback.
+limit_req_zone $binary_remote_addr zone=dora_limit:1m rate=5r/s;
+server {
+    listen 443 ssl;
+    server_name REPLACE_HOST;
+    ssl_certificate /etc/dora/tls/fullchain.pem;
+    ssl_certificate_key /etc/dora/tls/private.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 100k;
+    client_body_timeout 15s;
+    access_log off;
+    error_log /var/log/nginx/dora-error.log crit;
+    location /v1/ {
+        limit_req zone=dora_limit burst=20 nodelay;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host $host;
+        proxy_request_buffering off;
+        proxy_read_timeout 90s;
+        proxy_connect_timeout 3s;
+    }
+}

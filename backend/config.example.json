@@ -1,0 +1,15 @@
+{
+  "live_enabled": false,
+  "account_id": "000000000000",
+  "owner_id": "REPLACE_WITH_APPROVED_OWNER_ID",
+  "region": "eu-central-1",
+  "input_bucket": "replace-with-private-input-bucket",
+  "output_bucket": "replace-with-private-output-bucket",
+  "input_kms_arn": "arn:aws:kms:eu-central-1:000000000000:key/11111111-1111-4111-8111-111111111111",
+  "output_kms_arn": "arn:aws:kms:eu-central-1:000000000000:key/22222222-2222-4222-8222-222222222222",
+  "ledger_path": "/var/lib/dora/state.sqlite",
+  "custody_key_path": "/etc/dora/custody.key",
+  "daily_reserve_usd": "0.25",
+  "per_minute_reserve_usd": "0.03",
+  "ancillary_per_attempt_usd": "0.01"
+}

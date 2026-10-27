@@ -1,0 +1,8 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Effect": "Allow", "Action": ["organizations:DescribeEffectivePolicy"], "Resource": "*"},
+    {"Effect": "Allow", "Action": ["s3:GetBucketLocation", "s3:GetBucketPublicAccessBlock", "s3:GetBucketPolicyStatus", "s3:GetBucketPolicy", "s3:GetBucketOwnershipControls", "s3:GetBucketVersioning", "s3:GetReplicationConfiguration", "s3:GetBucketObjectLockConfiguration", "s3:GetEncryptionConfiguration", "s3:GetLifecycleConfiguration"], "Resource": ["arn:aws:s3:::INPUT_BUCKET", "arn:aws:s3:::OUTPUT_BUCKET"]},
+    {"Effect": "Allow", "Action": ["kms:DescribeKey", "kms:GetKeyRotationStatus"], "Resource": ["INPUT_CMK_ARN", "OUTPUT_CMK_ARN"]}
+  ]
+}
