@@ -13,18 +13,22 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 
 /** Versioned bounded binary payload, stored only inside the SQLCipher journal. */
+@Suppress(
+    "TooManyFunctions"
+) // Bounded format readers/writers share the same versioned wire contract.
 internal object TranscriptCodec {
     const val MAX_TEXT_BYTES = 262144
     private const val MAX_BYTES = 8388608
     private const val MAX_ENTRIES = 512
     private const val METADATA_RESERVE_BYTES = 1048576
     private const val MAGIC = 0x44545231
+    private const val CLOUD_MAGIC = 0x44545232
 
     fun encode(doc: TranscriptDocument): ByteArray {
         validate(doc)
         val bytes = ByteArrayOutputStream()
         DataOutputStream(bytes).use { out ->
-            out.writeInt(MAGIC)
+            out.writeInt(CLOUD_MAGIC)
             out.writeInt(doc.source.version)
             out.text(doc.source.identity.recordingId.value)
             out.text(doc.source.identity.assetId.value)
@@ -34,15 +38,7 @@ internal object TranscriptCodec {
             out.writeLong(doc.revision)
             out.text(doc.activeId ?: "")
             out.writeInt(doc.versions.size)
-            doc.versions.forEach {
-                out.text(it.id)
-                out.text(it.text)
-                out.writeLong(it.createdAt)
-                out.text(it.model)
-                out.text(it.engine)
-                out.text(it.timestampAvailability)
-                out.text(it.timestampQuality)
-            }
+            doc.versions.forEach { out.version(it) }
             out.writeInt(doc.edits.size)
             doc.edits.forEach {
                 out.text(it.id)
@@ -52,13 +48,7 @@ internal object TranscriptCodec {
                 out.writeLong(it.createdAt)
             }
             out.writeInt(doc.jobs.size)
-            doc.jobs.forEach {
-                out.text(it.id)
-                out.text(it.status)
-                out.text(it.language)
-                out.writeLong(it.generation)
-                out.writeLong(it.createdAt)
-            }
+            doc.jobs.forEach { out.job(it) }
             out.writeInt(doc.selections.size)
             doc.selections.forEach {
                 out.text(it.versionId)
@@ -74,21 +64,12 @@ internal object TranscriptCodec {
     fun decode(bytes: ByteArray): TranscriptDocument {
         require(bytes.size <= MAX_BYTES)
         return DataInputStream(ByteArrayInputStream(bytes)).use { input ->
-            require(input.readInt() == MAGIC)
+            val format = input.readInt()
+            require(format == MAGIC || format == CLOUD_MAGIC)
             val source = input.source()
             val revision = input.readLong()
             val active = input.text().ifEmpty { null }
-            val versions =
-                List(input.count()) {
-                    MachineTranscript(input.text(), input.text(), input.readLong(), input.text())
-                        .also {
-                            require(
-                                input.text() == it.engine &&
-                                    input.text() == it.timestampAvailability &&
-                                    input.text() == it.timestampQuality
-                            )
-                        }
-                }
+            val versions = List(input.count()) { input.version(format) }
             val edits =
                 List(input.count()) {
                     TranscriptEdit(
@@ -99,16 +80,7 @@ internal object TranscriptCodec {
                         input.readLong(),
                     )
                 }
-            val jobs =
-                List(input.count()) {
-                    TranscriptJob(
-                        input.text(),
-                        input.text(),
-                        input.text(),
-                        input.readLong(),
-                        input.readLong(),
-                    )
-                }
+            val jobs = List(input.count()) { input.job(format) }
             val selections =
                 List(input.count()) {
                     val id = input.text()
@@ -147,6 +119,11 @@ internal object TranscriptCodec {
         )
         require(
             doc.versions.sumOf { it.text.toByteArray(Charsets.UTF_8).size.toLong() } +
+                doc.versions.sumOf { version ->
+                    version.cloud?.segments?.sumOf { segment ->
+                        segment.text.toByteArray(Charsets.UTF_8).size.toLong()
+                    } ?: 0L
+                } +
                 doc.edits.sumOf {
                     it.before.toByteArray(Charsets.UTF_8).size.toLong() +
                         it.text.toByteArray(Charsets.UTF_8).size
@@ -162,6 +139,16 @@ internal object TranscriptCodec {
                     it.model.length <= TranscriptReducer.MAX_MODEL_NAME_LENGTH
             )
             require(doc.jobs.single { job -> job.id == it.id }.status == "SUCCEEDED")
+            val job = doc.jobs.single { job -> job.id == it.id }
+            require((it.cloud == null) == (job.consent == null))
+            it.cloud?.let { cloud ->
+                require(
+                    cloud.text == it.text &&
+                        cloud.model == it.model &&
+                        cloud.completedAt == it.createdAt
+                )
+                cloud.validate(doc, job.language)
+            }
         }
         require(
             doc.jobs.filter { it.status == "SUCCEEDED" }.map { it.id }.toSet() ==
@@ -173,8 +160,11 @@ internal object TranscriptCodec {
 
     private fun validateJobs(doc: TranscriptDocument) {
         require(doc.jobs.map { it.id }.distinct().size == doc.jobs.size)
+        require(doc.jobs.count { it.status in TranscriptReducer.activeStatuses } <= 1)
         doc.jobs.forEachIndexed { index, job ->
             TranscriptReducer.validId(job.id)
+            job.consent?.validate()
+            require(job.consent?.revoked != true || job.status in setOf("CANCELLED", "SUCCEEDED"))
             require(
                 job.generation == index + 1L &&
                     job.createdAt >= 0 &&
@@ -186,7 +176,11 @@ internal object TranscriptCodec {
                         TranscriptReducer.terminalStatuses +
                         "SUCCEEDED"
             )
-            require(job.status !in TranscriptReducer.activeStatuses || index == doc.jobs.lastIndex)
+            require(
+                job.status !in TranscriptReducer.activeStatuses ||
+                    job.consent != null ||
+                    index == doc.jobs.lastIndex
+            )
         }
     }
 
@@ -219,6 +213,103 @@ internal object TranscriptCodec {
         require(encoded.size <= MAX_TEXT_BYTES)
         writeInt(encoded.size)
         write(encoded)
+    }
+
+    private fun DataOutputStream.version(value: MachineTranscript) {
+        text(value.id)
+        text(value.text)
+        writeLong(value.createdAt)
+        text(value.model)
+        text(value.engine)
+        text(value.timestampAvailability)
+        text(value.timestampQuality)
+        writeBoolean(value.cloud != null)
+        value.cloud?.let { cloud(it) }
+    }
+
+    private fun DataInputStream.version(format: Int): MachineTranscript {
+        val raw = MachineTranscript(text(), text(), readLong(), text())
+        val engine = text()
+        val availability = text()
+        val quality = text()
+        val cloud = if (format == CLOUD_MAGIC && readBoolean()) cloud(raw) else null
+        return raw.copy(cloud = cloud).also {
+            require(
+                engine == it.engine &&
+                    availability == it.timestampAvailability &&
+                    quality == it.timestampQuality
+            )
+        }
+    }
+
+    private fun DataOutputStream.job(value: TranscriptJob) {
+        text(value.id)
+        text(value.status)
+        text(value.language)
+        writeLong(value.generation)
+        writeLong(value.createdAt)
+        writeBoolean(value.consent != null)
+        value.consent?.let {
+            text(it.version)
+            text(it.source)
+            writeLong(it.grantedAt)
+            writeBoolean(it.revoked)
+            text(it.destination)
+        }
+    }
+
+    private fun DataInputStream.job(format: Int) =
+        TranscriptJob(
+            text(),
+            text(),
+            text(),
+            readLong(),
+            readLong(),
+            if (format == CLOUD_MAGIC && readBoolean())
+                CloudConsent(text(), text(), readLong(), readBoolean(), text())
+            else null,
+        )
+
+    private fun DataOutputStream.cloud(value: CloudTranscriptResult) {
+        text(value.providerId)
+        text(value.providerJobId)
+        text(value.sourceDigest)
+        writeInt(value.sourceVersion)
+        writeInt(value.segments.size)
+        value.segments.forEach {
+            text(it.text)
+            writeLong(it.startMs ?: -1)
+            writeLong(it.endMs ?: -1)
+            writeBoolean(it.confidence != null)
+            it.confidence?.let(::writeDouble)
+        }
+    }
+
+    private fun DataInputStream.cloud(raw: MachineTranscript): CloudTranscriptResult {
+        val provider = text()
+        val job = text()
+        val digest = text()
+        val version = readInt()
+        val count = readInt().also { require(it in 0..CloudTranscriptResult.MAX_SEGMENTS) }
+        val segments =
+            List(count) {
+                CloudSegment(
+                    text(),
+                    readLong().let { if (it == -1L) null else it },
+                    readLong().let { if (it == -1L) null else it },
+                    if (readBoolean()) readDouble() else null,
+                )
+            }
+        return CloudTranscriptResult(
+            raw.text,
+            provider,
+            raw.model,
+            job,
+            digest,
+            version,
+            raw.createdAt,
+            segments,
+        )
     }
 
     private fun DataInputStream.count(): Int = readInt().also { require(it in 0..MAX_ENTRIES) }

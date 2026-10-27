@@ -22,6 +22,8 @@ import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
 import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
+import com.monumentogram.dora.audio.transcript.CloudConsent
+import com.monumentogram.dora.audio.transcript.CloudTranscriptResult
 import com.monumentogram.dora.audio.transcript.TranscriptPort
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -241,6 +243,28 @@ internal class AudioRuntimeCoordinator(
     ) : ProductAudioSession {
         override val transcripts: TranscriptPort =
             object : TranscriptPort {
+                override fun beginCloud(
+                    source: OriginalAudioReference,
+                    jobId: String,
+                    language: String,
+                    consent: CloudConsent,
+                    createdAt: Long,
+                ) = invoke { transcripts.beginCloud(source, jobId, language, consent, createdAt) }
+
+                override fun resumeCloud(identity: AudioIdentity, jobId: String) = invoke {
+                    transcripts.resumeCloud(identity, jobId)
+                }
+
+                override fun revokeCloud(identity: AudioIdentity, jobId: String) = invoke {
+                    transcripts.revokeCloud(identity, jobId)
+                }
+
+                override fun finishCloud(
+                    source: OriginalAudioReference,
+                    jobId: String,
+                    result: CloudTranscriptResult,
+                ) = invoke { transcripts.finishCloud(source, jobId, result) }
+
                 override fun load(identity: AudioIdentity) = invoke { transcripts.load(identity) }
 
                 override fun begin(

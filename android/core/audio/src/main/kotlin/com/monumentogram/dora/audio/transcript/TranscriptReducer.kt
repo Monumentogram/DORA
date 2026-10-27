@@ -4,10 +4,102 @@ import com.monumentogram.dora.audio.OriginalAudioReference
 import java.util.UUID
 
 /** Pure append-only transition rules. Persistence serializes these under an exact-source lease. */
+@Suppress("TooManyFunctions") // Related transitions share one source/history invariant checker.
 internal object TranscriptReducer {
     const val MAX_MODEL_NAME_LENGTH = 256
     val activeStatuses = setOf("QUEUED", "RUNNING")
     val terminalStatuses = setOf("CANCELLED", "FAILED", "INTERRUPTED")
+
+    @Suppress(
+        "LongParameterList"
+    ) // Original source, action, language, consent and time are independent bindings.
+    fun beginCloud(
+        old: TranscriptDocument?,
+        source: OriginalAudioReference,
+        id: String,
+        language: String,
+        consent: CloudConsent,
+        time: Long,
+    ): TranscriptDocument {
+        consent.validate()
+        require(!consent.revoked && consent.grantedAt == time)
+        old?.jobs
+            ?.find { it.id == id }
+            ?.let {
+                require(
+                    old.source == source &&
+                        it.consent == consent &&
+                        it.language == language &&
+                        it.createdAt == time
+                )
+                return old
+            }
+        val begun = begin(old, source, id, language, time)
+        return begun
+            .copy(jobs = begun.jobs.map { if (it.id == id) it.copy(consent = consent) else it })
+            .also(TranscriptCodec::validate)
+    }
+
+    fun resumeCloud(doc: TranscriptDocument, id: String): TranscriptDocument {
+        val job = doc.jobs.single { it.id == id }
+        require(job.consent != null && !job.consent.revoked)
+        require(doc.jobs.none { it.id != id && it.status in activeStatuses })
+        require(job.status in activeStatuses + setOf("FAILED", "INTERRUPTED"))
+        return if (job.status in activeStatuses) doc
+        else
+            advance(
+                doc.copy(
+                    jobs = doc.jobs.map { if (it.id == id) it.copy(status = "QUEUED") else it }
+                )
+            )
+    }
+
+    fun revokeCloud(doc: TranscriptDocument, id: String): TranscriptDocument {
+        val job = doc.jobs.single { it.id == id }
+        require(job.consent != null)
+        if (job.consent.revoked) return doc
+        return advance(
+            doc.copy(
+                jobs =
+                    doc.jobs.map {
+                        if (it.id == id)
+                            it.copy(
+                                status = if (it.status == "SUCCEEDED") it.status else "CANCELLED",
+                                consent = job.consent.copy(revoked = true),
+                            )
+                        else it
+                    }
+            )
+        )
+    }
+
+    fun finishCloud(
+        doc: TranscriptDocument,
+        id: String,
+        result: CloudTranscriptResult,
+    ): TranscriptDocument {
+        val job = doc.jobs.single { it.id == id }
+        require(job.consent != null && !job.consent.revoked)
+        result.validate(doc, job.language)
+        val output = MachineTranscript(id, result.text, result.completedAt, result.model, result)
+        doc.versions
+            .find { it.id == id }
+            ?.let {
+                require(it == output)
+                return doc
+            }
+        require(job.status in activeStatuses)
+        require(doc.jobs.none { it.id != id && it.status in activeStatuses })
+        return advance(
+            doc.copy(
+                versions = doc.versions + output,
+                jobs = doc.jobs.map { if (it.id == id) it.copy(status = "SUCCEEDED") else it },
+                activeId =
+                    if (doc.activeId == null && doc.edits.isEmpty() && doc.selections.isEmpty()) id
+                    else doc.activeId,
+            )
+        )
+    }
 
     fun begin(
         old: TranscriptDocument?,
@@ -71,6 +163,7 @@ internal object TranscriptReducer {
                 return doc
             }
         val job = doc.jobs.single { it.id == id }
+        require(job.consent == null)
         require(job.status in activeStatuses && job.generation == doc.jobs.last().generation)
         return advance(
             doc.copy(
@@ -131,13 +224,15 @@ internal object TranscriptReducer {
     }
 
     fun recover(doc: TranscriptDocument): TranscriptDocument =
-        if (doc.jobs.none { it.status in activeStatuses }) doc
+        if (doc.jobs.none { it.status in activeStatuses && it.consent == null }) doc
         else
             advance(
                 doc.copy(
                     jobs =
                         doc.jobs.map {
-                            if (it.status in activeStatuses) it.copy(status = "INTERRUPTED") else it
+                            if (it.status in activeStatuses && it.consent == null)
+                                it.copy(status = "INTERRUPTED")
+                            else it
                         }
                 )
             )
