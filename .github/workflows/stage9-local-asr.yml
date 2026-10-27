@@ -1,7 +1,7 @@
 name: Stage9 local ASR transcript software
 on:
   push:
-    branches: ["codex/arm82-owner-alpha", "codex/stage9-local-asr"]
+    branches: ["codex/parallel-alpha-preview", "codex/arm82-owner-alpha", "codex/stage9-local-asr"]
   workflow_dispatch:
 permissions:
   contents: read

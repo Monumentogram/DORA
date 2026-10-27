@@ -1272,3 +1272,8 @@ Decision record: 'docs/adr/ADR-0007-rec-i3-proven-valid-rollback-result.md'
 When a semantic VALID persistence attempt has both a framework-proven rollback and required reconciliation showing no intended outcome or range, the controller returns the existing 'Retry(JOURNAL, JOURNAL_OPERATIONAL, SQLITE)' mapping. It returns no receipt, attempted IDs, existing references, admitted endpoint, success claim or ACTIVE-range claim. Absence without rollback proof remains 'JOURNAL_COMMIT_STATE_UNRESOLVED'; exact committed readback/replay and proven rollback of semantic Rejected/Fatal remain unchanged.
 
 DEC-048 preserves the closed four variants, six stages, twenty classifications and four safe exception types. It changes no schema, identity, durable row, Gate Set/protocol predecessor, provider, scheduler, retry loop, source byte, quarantine rule or release authority. The mapping remains disabled until an independent focused review of this immutable governance amendment returns CLEAN.
+
+
+## Parallel Owner Preview decision — 2026-10-27
+
+Owner authorizes the temporary isolated `ownerPreview` variant from verified `9538792`; see [ADR-0024](adr/ADR-0024-parallel-owner-preview.md). Installed Pilot v2 remains untouched; direct v2→v4 update is NOT_QUALIFIED. Signed artifact/CI readiness is determined by the exact-head Draft PR report, not this source record. Required independent package/UID/data/Keystore tests and prospective [physical protocol](ARM82_PARALLEL_ALPHA_PHYSICAL_PROTOCOL.md) apply. `ARM82_DEVICE_RUNTIME = NOT_RUN`; Stage8.6 NOT_READY; no POCO commands, historical data access or merge authorized.

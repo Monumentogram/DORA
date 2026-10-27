@@ -11,6 +11,7 @@ import secrets
 import subprocess
 import time
 import xml.etree.ElementTree as ET
+import zipfile
 
 from isolated_alpha_preflight import require
 from run_isolated_alpha_device import emulator_fence, created_user, switch_complete, failure_caller_state
@@ -204,7 +205,16 @@ def admit_apk_inputs(app_badging, test_badging, test_manifest):
             'PILOT_TEST_TARGET_MISMATCH')
 
 
+def require_packaged_test_class(test_apk):
+    descriptor = ('L' + CLASS.replace('.', '/') + ';').encode() + b'\x00'
+    with zipfile.ZipFile(test_apk) as archive:
+        require(any(descriptor in archive.read(name) for name in archive.namelist()
+                    if re.fullmatch(r'classes(?:[2-9]|[1-9][0-9]+)?\.dex', name)),
+                'PILOT_TEST_CLASS_NOT_PACKAGED')
+
+
 def inspect_apk_inputs(sdk, apk, test_apk):
+    require_packaged_test_class(test_apk)
     suffix, batch = ('.exe', '.bat') if os.name == 'nt' else ('', '')
     aapt = Path(sdk) / ('build-tools/36.0.0/aapt' + suffix)
     analyzer = Path(sdk) / ('cmdline-tools/latest/bin/apkanalyzer' + batch)
@@ -305,7 +315,9 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
 
 
 def main():
+    global PACKAGE, RUNNER, check_badging
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--preview', action='store_true')
     parser.add_argument('--serial', required=True)
     parser.add_argument('--expected-api', type=int, choices=(28, 36), required=True)
     parser.add_argument('--apk', type=Path, required=True)
@@ -313,6 +325,12 @@ def main():
     parser.add_argument('--receipt', type=Path, required=True)
     parser.add_argument('--inventory', type=Path, default=Path('docs/contracts/owner-pilot-device-tests-v2.json'))
     args = parser.parse_args()
+    if args.preview:
+        from owner_preview_artifact import check_badging as preview_badging
+        PACKAGE = 'com.monumentogram.dora.alpha.preview'
+        RUNNER = PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner'
+        check_badging = preview_badging
+
     require(bool(re.fullmatch(r'emulator-\d+', args.serial)), 'EXPLICIT_EMULATOR_REQUIRED')
     source = source_binding(git_command, os.environ.get('GITHUB_SHA'))
     require(not args.receipt.exists(), 'RECEIPT_ALREADY_EXISTS')

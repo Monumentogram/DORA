@@ -145,11 +145,27 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
         }
+        create("ownerPreview") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".alpha.preview"
+            matchingFallbacks += "release"
+            if (
+                providers.gradleProperty("doraOwnerPreviewInstrumentationSigning").orNull == "true"
+            ) {
+                signingConfig = signingConfigs.getByName("debug")
+            }
+        }
     }
+
+    sourceSets
+        .getByName("androidTestOwnerPreview")
+        .kotlin
+        .directories
+        .add("src/androidTestOwnerPilot/kotlin")
 
     testBuildType =
         providers.gradleProperty("doraTestBuildType").orElse("debug").get().also {
-            check(it in setOf("debug", "alphaTest", "ownerPilot")) {
+            check(it in setOf("debug", "alphaTest", "ownerPilot", "ownerPreview")) {
                 "Unsupported instrumentation build type"
             }
         }
@@ -185,11 +201,18 @@ androidComponents {
         // Fail closed if split outputs ever acquire independent version identities.
         val output = variant.outputs.single()
         val ownerPilot = variant.buildType == "ownerPilot"
+        val ownerPreview = variant.buildType == "ownerPreview"
+        if (ownerPreview) {
+            output.versionCode.set(4)
+            output.versionName.set("0.1.0-owner-preview.4")
+        }
         if (ownerPilot) {
             output.versionCode.set(4)
             output.versionName.set("0.1.0-owner-alpha.4")
         }
-        val prefix = if (ownerPilot) "DORA Owner Alpha" else "DORA Alpha"
+        val prefix =
+            if (ownerPreview) "DORA Owner Preview"
+            else if (ownerPilot) "DORA Owner Alpha" else "DORA Alpha"
         variant.resValues.put(
             variant.makeResValueKey("string", "alpha_version_label"),
             output.versionName.zip(output.versionCode) { name, code ->
@@ -199,6 +222,10 @@ androidComponents {
                 )
             },
         )
+    }
+    beforeVariants(selector().withBuildType("ownerPreview")) {
+        it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =
+            true
     }
     beforeVariants(selector().withBuildType("ownerPilot")) {
         it.hostTests.getValue(com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE).enable =

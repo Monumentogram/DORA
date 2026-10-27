@@ -211,7 +211,10 @@ class OwnerPilotInstrumentedTest {
 
     @Test
     fun packageManifestAndReleaseOverridesAreClosed() {
-        assertEquals("com.monumentogram.dora.alpha.pilot", context.packageName)
+        assertTrue(
+            context.packageName in
+                setOf("com.monumentogram.dora.alpha.pilot", "com.monumentogram.dora.alpha.preview")
+        )
         val info =
             context.packageManager.getPackageInfo(
                 context.packageName,
@@ -223,7 +226,11 @@ class OwnerPilotInstrumentedTest {
                     PackageManager.GET_INSTRUMENTATION,
             )
         assertEquals(4L, info.longVersionCode)
-        assertEquals("0.1.0-owner-alpha.4", info.versionName)
+        assertEquals(
+            if (context.packageName.endsWith(".preview")) "0.1.0-owner-preview.4"
+            else "0.1.0-owner-alpha.4",
+            info.versionName,
+        )
         assertEquals(null, info.sharedUserId)
         assertEquals(Process.myUid(), context.applicationInfo.uid)
         assertEquals(0, context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE)
@@ -909,7 +916,10 @@ class OwnerPilotInstrumentedTest {
     @Test
     fun secondaryCannotReadOwnerSentinel() {
         assertTrue(processUser() > 0)
-        assertEquals("com.monumentogram.dora.alpha.pilot", context.packageName)
+        assertTrue(
+            context.packageName in
+                setOf("com.monumentogram.dora.alpha.pilot", "com.monumentogram.dora.alpha.preview")
+        )
         val owner = File("/data/user/0/${context.packageName}/no_backup/$SENTINEL")
         var denied = false
         try {

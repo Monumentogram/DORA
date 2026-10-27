@@ -14,6 +14,7 @@ IDENTITIES = {
     'release': ('com.monumentogram.dora', '5', '0.1.0-alpha.3'),
     'debug': ('com.monumentogram.dora.debug', '5', '0.1.0-alpha.3-debug'),
     'alphaTest': ('com.monumentogram.dora.alpha.test', '5', '0.1.0-alpha.3'),
+    'ownerPreview': ('com.monumentogram.dora.alpha.preview', '4', '0.1.0-owner-preview.4'),
     'ownerPilot': ('com.monumentogram.dora.alpha.pilot', '4', '0.1.0-owner-alpha.4'),
 }
 
@@ -22,7 +23,7 @@ def check_label(badging, resources, variant):
     identities = re.findall(r"^package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", badging, re.M)
     require(variant in IDENTITIES and identities == [IDENTITIES[variant]], 'VERSION_LABEL_APK_IDENTITY')
     package, code, name = identities[0]
-    prefix = 'DORA Owner Alpha' if variant == 'ownerPilot' else 'DORA Alpha'
+    prefix = 'DORA Owner Preview' if variant == 'ownerPreview' else ('DORA Owner Alpha' if variant == 'ownerPilot' else 'DORA Alpha')
     expected = f'{prefix} {name} ({code})'
     # Inspect each concrete resource entry, never a spec declaration or an unrelated string.
     # No translated/qualified alternative is admitted: identity is locale-independent.

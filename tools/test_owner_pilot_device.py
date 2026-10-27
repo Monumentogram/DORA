@@ -4,10 +4,24 @@ import json
 from pathlib import Path
 import unittest
 import tempfile
+import zipfile
 from unittest.mock import patch
 
 
 class PilotRunnerTests(unittest.TestCase):
+    def test_packaged_test_apk_must_contain_owner_ui_class(self):
+        with tempfile.TemporaryDirectory() as directory:
+            apk = Path(directory) / 'tests.apk'
+            descriptor = ('L' + self.runner.CLASS.replace('.', '/') + ';').encode()
+            with zipfile.ZipFile(apk, 'w') as archive:
+                archive.writestr('classes.dex', b'dex\n035\x00OtherTest;')
+                archive.writestr('assets/unused.txt', descriptor)
+            with self.assertRaisesRegex(ValueError, 'PILOT_TEST_CLASS_NOT_PACKAGED'):
+                self.runner.require_packaged_test_class(apk)
+            with zipfile.ZipFile(apk, 'a') as archive:
+                archive.writestr('classes2.dex', b'dex\n035\x00' + descriptor + b'\x00')
+            self.runner.require_packaged_test_class(apk)
+
     def setUp(self):
         source = Path(__file__).with_name('run_owner_pilot_device.py')
         self.assertTrue(source.is_file(), 'Pilot runner is required')
