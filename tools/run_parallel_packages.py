@@ -25,7 +25,7 @@ def seed_result(output, package):
                 'dir': r'/data/user/0/' + re.escape(package) + '/no_backup',
                 'sealed': r'[A-Za-z0-9+/]+={0,2}'}
     for key, pattern in patterns.items():
-        values = re.findall(r'^INSTRUMENTATION_STATUS: parallel_' + key + r'=(.*)$', output, re.M)
+        values = re.findall(r'^INSTRUMENTATION_RESULT: parallel_' + key + r'=(.*)$', output, re.M)
         require(len(values) == 1 and re.fullmatch(pattern, values[0]), 'INVALID_PARALLEL_SEED')
         result[key] = values[0]
     return result

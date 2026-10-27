@@ -59,13 +59,12 @@ class ParallelPackageIsolationTest {
         val sealed = cipher.iv + cipher.doFinal(marker)
         File(context.noBackupFilesDir, "parallel-synthetic-marker").writeBytes(marker)
         File(context.noBackupFilesDir, "parallel-synthetic-sealed").writeBytes(sealed)
-        instrumentation.sendStatus(
-            0,
+        instrumentation.addResults(
             Bundle().apply {
                 putString("parallel_uid", Process.myUid().toString())
                 putString("parallel_dir", context.noBackupFilesDir.absolutePath)
                 putString("parallel_sealed", Base64.encodeToString(sealed, Base64.NO_WRAP))
-            },
+            }
         )
     }
 
