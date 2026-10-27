@@ -2,6 +2,33 @@
 
 These rules apply to the entire repository and to every later Codex task.
 
+## Physical-device owner interaction
+
+`OWNER_INTERACTION_NOTIFICATION_REQUIRED` is mandatory for every DORA task that
+needs Yuri to look at the phone, confirm a permission, press a button, enter
+information, select a file or otherwise act on the device. Before planning or
+performing physical-device work, read and follow
+[`docs/OWNER_INTERACTION_PROTOCOL.md`](docs/OWNER_INTERACTION_PROTOCOL.md).
+
+- Prepare unattended work only within the current authorization. This rule does
+  not itself authorize device commands, installation or a retry after STOP.
+- Send a separate **🔔 ТРЕБУЕТСЯ УЧАСТИЕ ЮРИЯ** notice with the action, reason,
+  Android user, expected dialog, estimated duration and exact requested response.
+- Enter `WAITING_FOR_OWNER_ON_DEVICE`; send no phone commands while waiting.
+- A new installation after STOP requires **«РАЗРЕШАЮ ОДНУ УСТАНОВКУ. Я У ТЕЛЕФОНА».**
+  Presence alone, earlier approval and silence do not authorize a new attempt.
+- After explicit confirmation, announce **«НАЧИНАЮ СЕЙЧАС. СМОТРИ НА ЭКРАН POCO».**
+  Then perform only the agreed action. Notify and wait again for each additional
+  interaction. Unexpected user 0, security-settings or administrative prompts
+  require STOP; never bypass them or automatically retry.
+- Preview targets user 10 only. Do not switch users automatically, touch user 0
+  data/settings/apps, update Pilot, delete apps/data, run Recovery or access
+  LONG-01/LONG-02. Never change security restrictions to bypass an install failure.
+
+The protocol must accompany this instruction on future branches. A pending PR
+does not make it present in other checkouts; before device work, verify the
+checkout contains the rule and its linked protocol. Preserve historical evidence.
+
 ## Authoritative sources
 
 Read the relevant source completely before changing its area. Requirement precedence is:
