@@ -34,6 +34,7 @@ class TranscriptUiTest {
     @get:Rule val ui = createEmptyComposeRule()
 
     @Test
+    @Suppress("LongMethod") // End-to-end user sequence preserves one Activity/editor session.
     fun encryptedEditorSavesReopensAndMissingModelIsTruthful() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             lateinit var host: MainActivity
@@ -75,6 +76,19 @@ class TranscriptUiTest {
             }
             ui.onNodeWithText("Расшифровать / открыть текст").performClick()
             awaitText("Synthetic machine")
+            ui.onNodeWithText("Распознать в облаке").performScrollTo().performClick()
+            ui.onNodeWithText("Аудио покинет устройство").assertExists()
+            ui.onNodeWithText("English · EN").performClick()
+            ui.onNodeWithText("Русский · RU").assertExists()
+            ui.onNodeWithText("Не сейчас").performClick()
+            lateinit var current: ProductAudioSession
+            scenario.onActivity {
+                current =
+                    ((it.application as DoraApplication).audioRuntime.availability
+                            as AudioAvailability.Available)
+                        .session
+            }
+            org.junit.Assert.assertEquals(1, value(current.transcripts.load(identity))!!.jobs.size)
             ui.onNodeWithText("Текст расшифровки")
                 .performScrollTo()
                 .performTextReplacement("Synthetic correction")

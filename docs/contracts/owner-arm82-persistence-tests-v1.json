@@ -6,6 +6,8 @@
     "com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest#restartPreserves299SecondsAndCannotCapturePast300",
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization",
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
+    "com.monumentogram.dora.audio.persistence.CloudTranscriptPersistenceTest#cancelledCloudCannotUploadOrPublishAfterReopenAndAudioRemains",
+    "com.monumentogram.dora.audio.persistence.CloudTranscriptPersistenceTest#cloudConsentAndResultSurviveEncryptedReopenWithoutReplacingLocalEdits",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioProcessDeathTest#verifyProcessDeathRecovery",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#deletionAndReadWriteSerializeAndDurableFencePreventsResurrection",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#differentUnitAppendsSerializeAndRetryInOrder",

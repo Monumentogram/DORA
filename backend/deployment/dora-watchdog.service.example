@@ -1,0 +1,20 @@
+[Unit]
+Description=DORA durable cleanup watchdog
+After=network-online.target
+
+[Service]
+User=dora
+Group=dora
+WorkingDirectory=/opt/dora/backend
+ExecStart=/opt/dora/backend/.venv/bin/python -m dora_cloud --config /etc/dora/config.private.json watchdog
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/dora
+
+[Install]
+WantedBy=multi-user.target

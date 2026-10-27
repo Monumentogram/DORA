@@ -1,0 +1,21 @@
+[Unit]
+Description=DORA owner-only Cloud API
+After=network-online.target dora-watchdog.service
+Requires=dora-watchdog.service
+
+[Service]
+User=dora
+Group=dora
+WorkingDirectory=/opt/dora/backend
+ExecStart=/opt/dora/backend/.venv/bin/python -m dora_cloud --config /etc/dora/config.private.json serve
+Restart=always
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/dora
+
+[Install]
+WantedBy=multi-user.target

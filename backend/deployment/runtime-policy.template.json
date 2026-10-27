@@ -1,0 +1,9 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {"Effect": "Allow", "Action": ["transcribe:StartTranscriptionJob", "transcribe:GetTranscriptionJob", "transcribe:DeleteTranscriptionJob"], "Resource": "arn:aws:transcribe:eu-central-1:ACCOUNT_ID:transcription-job/dora-*"},
+    {"Effect": "Allow", "Action": "transcribe:ListTranscriptionJobs", "Resource": "*", "Condition": {"StringEquals": {"aws:RequestedRegion": "eu-central-1"}}},
+    {"Effect": "Allow", "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"], "Resource": ["arn:aws:s3:::INPUT_BUCKET/input/dora-*.wav", "arn:aws:s3:::OUTPUT_BUCKET/output/dora-*.json"], "Condition": {"StringEquals": {"s3:ResourceAccount": "ACCOUNT_ID"}}},
+    {"Effect": "Allow", "Action": ["kms:Encrypt", "kms:Decrypt", "kms:GenerateDataKey"], "Resource": ["INPUT_CMK_ARN", "OUTPUT_CMK_ARN"], "Condition": {"StringEquals": {"kms:ViaService": ["s3.eu-central-1.amazonaws.com", "transcribe.eu-central-1.amazonaws.com"]}}}
+  ]
+}

@@ -1,0 +1,123 @@
+name: Stage18 manual Cloud ASR software
+on:
+  pull_request:
+  push:
+    branches: ["codex/stage18-1c-amazon-cloud-asr"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stage18-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
+      - name: Isolated Python 3.12 dependencies
+        run: |
+          python3.12 -m venv backend/.venv
+          backend/.venv/bin/python -m pip install -r backend/requirements.lock.txt
+      - name: Backend proof, ownership, retry, cleanup and preflight tests (no AWS)
+        working-directory: backend
+        env:
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: .venv/bin/python -m unittest discover -s tests -v
+      - name: Emulator runner safety and result parsing
+        run: python3.12 -m unittest discover -s tools -p test_cloud18_integration.py -v
+  software:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {fetch-depth: 0, persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
+      - name: Verify exact selected source before building
+        env:
+          DORA_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$DORA_EXPECTED_SHA"
+          # GitHub reserves GITHUB_* workflow variables; bind this validator process
+          # only after checking the actual checkout against the trusted event SHA.
+          GITHUB_SHA="$DORA_EXPECTED_SHA" python3 tools/validate_stage00.py
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with: {distribution: temurin, java-version: "17"}
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with: {cache-provider: basic, validate-wrappers: true}
+      - run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - name: Static, JVM, lint and build regression checks
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --dependency-verification strict
+          spotlessCheck detekt :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
+          :app:testDebugUnitTest
+          :core:model:testDebugUnitTest :core:common:testDebugUnitTest
+          :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest :poc:recovery:testDebugUnitTest
+          :app:lintDebug :core:audio:lintDebug :app:assembleDebug :app:assembleRelease
+          :app:assembleDebugAndroidTest :core:audio:assembleDebugAndroidTest
+      - name: Existing local-mode and versioning contract guards
+        run: |
+          python3 -m unittest discover -s tools -p test_owner_arm82.py
+          python3 -m unittest discover -s tools -p test_pin_free_local_access.py
+          python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+          python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stage18-synthetic-test-apks
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/apk/androidTest/debug/*.apk
+            android/core/audio/build/outputs/apk/androidTest/debug/*.apk
+          retention-days: 7
+  emulator:
+    needs: [backend, software]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix: {api: [28, 36]}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with: {name: stage18-synthetic-test-apks, path: apks}
+      - name: Local synthetic HTTPS fixture dependencies
+        run: |
+          python3.12 -m venv backend/.venv
+          backend/.venv/bin/python -m pip install -r backend/requirements.lock.txt
+      - name: Create isolated emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/stage18-avd
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "emulator" "platform-tools" "system-images;android-${{ matrix.api }};google_apis;x86_64"
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd --name stage18 --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @stage18 -port 5554 -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            if ! kill -0 "${emulator_pid}" 2>/dev/null; then
+              tail -n 150 "${RUNNER_TEMP}/emulator.log"
+              exit 1
+            fi
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "$boot" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          tail -n 150 "${RUNNER_TEMP}/emulator.log"
+          exit 1
+      - name: Signed HTTPS round trip, real process restart, encrypted persistence and consent UI
+        env:
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: >-
+          python3.12 tools/cloud18_integration.py
+          --serial emulator-5554 --api ${{ matrix.api }} --apk-root apks
+          --python backend/.venv/bin/python
+          --receipt "${RUNNER_TEMP}/stage18-api${{ matrix.api }}.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: stage18-api${{ matrix.api }}-receipt
+          path: ${{ runner.temp }}/stage18-api${{ matrix.api }}.json
+          retention-days: 7

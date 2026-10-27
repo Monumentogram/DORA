@@ -1,0 +1,45 @@
+{
+  "scope": "synthetic-https-no-aws-no-physical-device",
+  "api": 28,
+  "AWS_LIVE_RUNTIME": "NOT_RUN",
+  "sha": "9575fe96947f855c557d863869dfa692b6bd0cb8",
+  "workingTreeDirty": false,
+  "apks": {
+    "app-debug.apk": "6564068998560247a2a7a2596013665374543bdce4aaa692e9bf327b9a6c3d32",
+    "app-debug-androidTest.apk": "88f3923607fb193d4f0f1458b49889361eb28624bda6dfa23585900de25e3220",
+    "audio-debug-androidTest.apk": "45830be0a272897bd1e2ab4feed416e00f1201a9cfbe5a38a55ee60eeb87d111"
+  },
+  "checks": [
+    {
+      "name": "prepare-installation",
+      "expectedTests": 1,
+      "passed": true
+    },
+    {
+      "name": "signed-cloud-only-and-edits",
+      "expectedTests": 1,
+      "passed": true
+    },
+    {
+      "name": "cloud-process-restart",
+      "expectedTests": 1,
+      "passed": true
+    },
+    {
+      "name": "cloud-encrypted-persistence",
+      "expectedTests": 2,
+      "passed": true
+    },
+    {
+      "name": "consent-and-transcript-editor",
+      "expectedTests": 1,
+      "passed": true
+    },
+    {
+      "name": "encrypted-cancellation-outbox",
+      "expectedTests": 2,
+      "passed": true
+    }
+  ],
+  "result": "PASS"
+}

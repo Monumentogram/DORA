@@ -31,6 +31,54 @@ import org.junit.Test
 
 class AudioRuntimeCoordinatorTest {
     @Test
+    fun cloudRuntimeHandleForwardsEveryOperationAndFencesRevocation() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        val source = OriginalAudioReference(1, identity, "a".repeat(64), 16000)
+        val id = "00000000-0000-0000-0000-000000000004"
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                val port = session.transcripts
+                val grant = com.monumentogram.dora.audio.transcript.CloudConsent(grantedAt = 1)
+                assertTrue(port.beginCloud(source, id, "ru", grant, 1) is AudioResult.Value)
+                assertTrue(port.resumeCloud(identity, id) is AudioResult.Value)
+                val output =
+                    com.monumentogram.dora.audio.transcript.CloudTranscriptResult(
+                        "cloud",
+                        "amazon-transcribe",
+                        "standard-batch:eu-central-1:ru-RU",
+                        "synthetic",
+                        source.digest,
+                        1,
+                        2,
+                    )
+                val finished = port.finishCloud(source, id, output) as AudioResult.Value
+                assertEquals("CLOUD", finished.value.versions.single().engine)
+                val revoked = port.revokeCloud(identity, id) as AudioResult.Value
+                assertTrue(revoked.value.jobs.single().consent!!.revoked)
+                lock.revoke()
+                runtime.revoke()
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    port.revokeCloud(identity, id),
+                )
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    port.resumeCloud(identity, id),
+                )
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    port.finishCloud(source, id, output),
+                )
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    port.beginCloud(source, id, "ru", grant, 1),
+                )
+            }
+    }
+
+    @Test
     fun transcriptDeliveryAndOldHandleRespectRevocation() {
         val lock = LocalAccessSession { true }
         val vault = FixtureVault()
@@ -354,6 +402,60 @@ class AudioRuntimeCoordinatorTest {
                     .audio
                     .transcript
                     .UnavailableTranscriptPort {
+                private var cloudDoc: com.monumentogram.dora.audio.transcript.TranscriptDocument? =
+                    null
+
+                override fun beginCloud(
+                    source: OriginalAudioReference,
+                    jobId: String,
+                    language: String,
+                    consent: com.monumentogram.dora.audio.transcript.CloudConsent,
+                    createdAt: Long,
+                ) =
+                    AudioResult.Value(
+                        com.monumentogram.dora.audio.transcript.TranscriptReducer.beginCloud(
+                                cloudDoc,
+                                source,
+                                jobId,
+                                language,
+                                consent,
+                                createdAt,
+                            )
+                            .also { cloudDoc = it }
+                    )
+
+                override fun resumeCloud(identity: AudioIdentity, jobId: String) =
+                    AudioResult.Value(
+                        com.monumentogram.dora.audio.transcript.TranscriptReducer.resumeCloud(
+                                checkNotNull(cloudDoc),
+                                jobId,
+                            )
+                            .also { cloudDoc = it }
+                    )
+
+                override fun revokeCloud(identity: AudioIdentity, jobId: String) =
+                    AudioResult.Value(
+                        com.monumentogram.dora.audio.transcript.TranscriptReducer.revokeCloud(
+                                checkNotNull(cloudDoc),
+                                jobId,
+                            )
+                            .also { cloudDoc = it }
+                    )
+
+                override fun finishCloud(
+                    source: OriginalAudioReference,
+                    jobId: String,
+                    result: com.monumentogram.dora.audio.transcript.CloudTranscriptResult,
+                ) =
+                    AudioResult.Value(
+                        com.monumentogram.dora.audio.transcript.TranscriptReducer.finishCloud(
+                                checkNotNull(cloudDoc),
+                                jobId,
+                                result,
+                            )
+                            .also { cloudDoc = it }
+                    )
+
                 override fun load(
                     identity: AudioIdentity
                 ): AudioResult<com.monumentogram.dora.audio.transcript.TranscriptDocument?> {

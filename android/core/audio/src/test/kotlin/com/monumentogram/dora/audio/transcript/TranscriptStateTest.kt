@@ -4,12 +4,24 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
+import java.util.Base64
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class TranscriptStateTest {
+    @Test
+    fun legacyV1LocalPayloadPreservesContentAndUpgradesWithoutCloudConsent() {
+        // Independent fixed v1 wire fixture, not emitted by the current encoder.
+        val fixture = checkNotNull(javaClass.getResource("/transcript-v1.b64")).readText().trim()
+        val decoded = TranscriptCodec.decode(Base64.getDecoder().decode(fixture))
+        assertEquals(complete(), decoded)
+        assertEquals(decoded, TranscriptCodec.decode(TranscriptCodec.encode(decoded)))
+        assertEquals(null, decoded.jobs.single().consent)
+        assertEquals(null, decoded.versions.single().cloud)
+    }
+
     private val source =
         OriginalAudioReference(
             1,

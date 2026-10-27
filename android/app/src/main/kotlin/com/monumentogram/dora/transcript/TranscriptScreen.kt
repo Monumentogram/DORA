@@ -1,6 +1,7 @@
 @file:Suppress(
     "LongMethod",
     "LongParameterList",
+    "CyclomaticComplexMethod",
 ) // Small complete Alpha editor with explicit decisions.
 
 package com.monumentogram.dora.transcript
@@ -105,7 +106,10 @@ private fun TranscriptDialog(activity: MainActivity, initial: AudioIdentity?, on
                 verticalArrangement = Arrangement.spacedBy(DoraDimensions.space2),
             ) {
                 Text("Расшифровка", style = MaterialTheme.typography.headlineMedium)
-                Text("Только на устройстве", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    "На устройстве · облако только по вашему запросу",
+                    style = MaterialTheme.typography.labelLarge,
+                )
                 Text(actions.message)
                 Text(activity.modelImportMessage)
                 TextButton(
@@ -158,6 +162,7 @@ private fun TranscriptDialog(activity: MainActivity, initial: AudioIdentity?, on
                     }
                     if (actions.busy)
                         TextButton(onClick = actions::cancel) { Text("Отменить обработку") }
+                    CloudControls(activity, selected, actions, language, !actions.busy && !dirty)
                     TextButton(
                         enabled = !actions.busy && !dirty && !activity.modelImportStatus.busy,
                         onClick = { activity.launchModelImport() },
@@ -224,10 +229,16 @@ private fun TranscriptEditor(
     Text("Сохранённые версии", style = MaterialTheme.typography.titleLarge)
     document.versions.forEachIndexed { index, item ->
         TextButton(enabled = !busy && !dirty, onClick = { preview = item.id }) {
-            Text("Версия ${index + 1}" + if (item.id == document.activeId) " · активная" else "")
+            Text(
+                "Версия ${index + 1} · ${if (item.engine == "CLOUD") "Облако" else "На устройстве"}" +
+                    if (item.id == document.activeId) " · активная" else ""
+            )
         }
     }
-    Text("Машинный текст · ${java.time.Instant.ofEpochMilli(version.createdAt)}")
+    Text(
+        "${if (version.engine == "CLOUD") "Облачная расшифровка" else "Машинный текст на устройстве"} · " +
+            "${java.time.Instant.ofEpochMilli(version.createdAt)}"
+    )
     SelectionContainer { Text(version.text, style = MaterialTheme.typography.bodyLarge) }
     Text(
         if (document.edits.any { it.versionId == version.id }) "Ваши сохранённые правки"

@@ -9,7 +9,9 @@ import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.audio.AudioAvailability
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
+import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.ProductAudioSession
+import com.monumentogram.dora.audio.transcript.CloudConsent
 import com.monumentogram.dora.audio.transcript.TranscriptDocument
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -23,6 +25,10 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
     private var generation = 0L
     private var closed = false
     private var attempt: RecognitionAttempt? = null
+    @Volatile private var cloudApi: CloudApi? = null
+    private var cloudIdentity: AudioIdentity? = null
+    private val cancellations = EncryptedCloudCancellations(activity.applicationContext)
+    private var cloudAction: Pair<String, String>? = null
     var busy by mutableStateOf(false)
         private set
 
@@ -37,7 +43,7 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
 
     fun clearVisible() {
         generation++
-        attempt?.cancel()
+        cancelAttempt()
         document = null
         history = emptyList()
         message = "Обработка прервана. Откройте расшифровку снова."
@@ -84,9 +90,122 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
     }
 
     fun cancel() {
-        message =
-            if (attempt?.cancel() == true) "Отменяем распознавание…"
+        message = cancelAttempt()
+    }
+
+    private fun cancelAttempt(): String =
+        try {
+            if (
+                attempt?.cancel {
+                    cloudAction?.let { (id, destination) -> cancellations.record(id, destination) }
+                } == true
+            )
+                "Отменяем распознавание…"
             else "Завершаем сохранение результата…"
+        } catch (_: Exception) {
+            cloudFailureMessage("CANCEL_STORAGE")
+        } finally {
+            cloudApi?.abortTransfer()
+        }
+
+    fun recognizeCloud(identity: AudioIdentity, language: String, retryId: String? = null) {
+        if (busy || closed) return
+        val installation = CloudIdentity(activity.applicationContext)
+        val endpoint =
+            if (retryId == null) installation.endpoint()
+            else
+                document
+                    ?.takeIf { it.source.identity == identity }
+                    ?.jobs
+                    ?.singleOrNull { it.id == retryId }
+                    ?.consent
+                    ?.destination
+        if (endpoint == null) {
+            message = cloudFailureMessage("SETUP")
+            return
+        }
+        val jobId = retryId ?: UUID.randomUUID().toString()
+        val owned = RecognitionAttempt()
+        attempt = owned
+        cloudIdentity = identity
+        // Capture before requestOpen: cancellation may happen while the vault is opening.
+        cloudAction = jobId to endpoint
+        val request = generation + 1
+        open { session ->
+            val api = CloudHttpClient(endpoint, installation.installationId, installation::sign)
+            cloudApi = api
+            if (owned.cancelled() || cancellations.blocked(jobId, endpoint))
+                throw CloudFailure("CANCELLED")
+            if (retryId == null) {
+                val source =
+                    (requireValue(session.originals.acquire(identity))
+                            as? OriginalAudioStatus.Available)
+                        ?.reference ?: throw CloudFailure("SOURCE_OR_STORAGE")
+                val time = System.currentTimeMillis()
+                requireValue(
+                    session.transcripts.beginCloud(
+                        source,
+                        jobId,
+                        language,
+                        CloudConsent(grantedAt = time, destination = endpoint),
+                        time,
+                    )
+                )
+            }
+            val result =
+                CloudRecognitionRun(api, cancellations).run(session, identity, jobId, owned) { state
+                    ->
+                    activity.runOnUiThread { if (current(request)) message = state }
+                }
+            documentResult(requireValue(result))
+        }
+    }
+
+    fun cancelCloud(identity: AudioIdentity, jobId: String) {
+        if (busy || closed) return
+        try {
+            val visible = requireNotNull(document)
+            require(visible.source.identity == identity)
+            val grant = requireNotNull(visible.jobs.single { it.id == jobId }.consent)
+            // Persist on the calling UI thread, before requestOpen can lose its foreground lease.
+            cancellations.record(jobId, grant.destination)
+        } catch (_: Exception) {
+            message = cloudFailureMessage("CANCEL_STORAGE")
+            return
+        }
+        open { session -> reconcileCancellation(session, identity, jobId) }
+    }
+
+    private fun reconcileCancellation(
+        session: ProductAudioSession,
+        identity: AudioIdentity,
+        jobId: String,
+    ): () -> Unit {
+        val doc = requireValue(session.transcripts.revokeCloud(identity, jobId))
+        val grant = requireNotNull(doc.jobs.single { it.id == jobId }.consent)
+        val installation = CloudIdentity(activity.applicationContext)
+        var remoteConfirmed = false
+        try {
+            if (installation.endpoint() == grant.destination) {
+                val api =
+                    CloudHttpClient(
+                        grant.destination,
+                        installation.installationId,
+                        installation::sign,
+                    )
+                val result = api.cancel(jobId)
+                remoteConfirmed = result.status == "CANCELLED" && !result.cleanupPending
+            }
+        } catch (_: Exception) {
+            /* Local revocation remains durable; server watchdog owns cleanup. */
+        }
+        val publish: () -> Unit = {
+            document = doc
+            message =
+                if (remoteConfirmed) "Отмена подтверждена. Исходное аудио сохранено."
+                else "Отправка запрещена. Удаление временных данных в облаке ещё не подтверждено."
+        }
+        return publish
     }
 
     fun edit(identity: AudioIdentity, version: String, revision: Long, text: String) =
@@ -145,12 +264,28 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
                         action(available.session)
                     } catch (error: Exception) {
                         val category = (error as? RecognitionFailure)?.category
-                        val failure: () -> Unit = { message = failureMessage(category) }
+                        val latest =
+                            if (cloudApi != null)
+                                cloudIdentity?.let { sessionIdentity ->
+                                    (available.session.transcripts.load(sessionIdentity)
+                                            as? com.monumentogram.dora.audio.AudioResult.Value)
+                                        ?.value
+                                }
+                            else null
+                        val failure: () -> Unit = {
+                            if (latest != null) document = latest
+                            message =
+                                (error as? CloudFailure)?.let { cloudFailureMessage(it.code) }
+                                    ?: failureMessage(category)
+                        }
                         failure
                     }
                 activity.runOnUiThread {
                     busy = false
                     attempt = null
+                    cloudApi = null
+                    cloudIdentity = null
+                    cloudAction = null
                     if (
                         current(request) &&
                             (runtime.availability as? AudioAvailability.Available)?.session ===

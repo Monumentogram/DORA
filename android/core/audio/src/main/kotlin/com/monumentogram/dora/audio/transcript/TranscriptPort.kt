@@ -5,7 +5,26 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.OriginalAudioReference
 
+@Suppress("TooManyFunctions") // One exact-source port covers local and Cloud transcript operations.
 interface TranscriptPort {
+    fun beginCloud(
+        source: OriginalAudioReference,
+        jobId: String,
+        language: String,
+        consent: CloudConsent,
+        createdAt: Long,
+    ): AudioResult<TranscriptDocument>
+
+    fun resumeCloud(identity: AudioIdentity, jobId: String): AudioResult<TranscriptDocument>
+
+    fun revokeCloud(identity: AudioIdentity, jobId: String): AudioResult<TranscriptDocument>
+
+    fun finishCloud(
+        source: OriginalAudioReference,
+        jobId: String,
+        result: CloudTranscriptResult,
+    ): AudioResult<TranscriptDocument>
+
     fun load(identity: AudioIdentity): AudioResult<TranscriptDocument?>
 
     fun begin(
@@ -52,8 +71,27 @@ interface TranscriptPort {
     fun history(): AudioResult<List<AudioIdentity>>
 }
 
+@Suppress("TooManyFunctions") // Explicit unavailable behavior implements every port operation.
 object UnavailableTranscriptPort : TranscriptPort {
     private fun unavailable() = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
+    override fun beginCloud(
+        source: OriginalAudioReference,
+        jobId: String,
+        language: String,
+        consent: CloudConsent,
+        createdAt: Long,
+    ) = unavailable()
+
+    override fun resumeCloud(identity: AudioIdentity, jobId: String) = unavailable()
+
+    override fun revokeCloud(identity: AudioIdentity, jobId: String) = unavailable()
+
+    override fun finishCloud(
+        source: OriginalAudioReference,
+        jobId: String,
+        result: CloudTranscriptResult,
+    ) = unavailable()
 
     override fun load(identity: AudioIdentity) = unavailable()
 
@@ -102,12 +140,14 @@ data class MachineTranscript(
     val text: String,
     val createdAt: Long,
     val model: String,
+    val cloud: CloudTranscriptResult? = null,
 ) {
     val engine: String
-        get() = "LOCAL"
+        get() = if (cloud == null) "LOCAL" else "CLOUD"
 
     val timestampAvailability: String
-        get() = "UNAVAILABLE"
+        get() =
+            if (cloud?.segments?.any { it.startMs != null } == true) "AVAILABLE" else "UNAVAILABLE"
 
     val timestampQuality: String
         get() = "NOT_EVALUABLE"
@@ -132,6 +172,7 @@ data class TranscriptJob(
     val language: String,
     val generation: Long,
     val createdAt: Long,
+    val consent: CloudConsent? = null,
 ) {
     override fun toString() = "TranscriptJob(redacted)"
 }
