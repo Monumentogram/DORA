@@ -1,4 +1,4 @@
-# Stage18.1C manual Amazon Cloud ASR — software verification
+# Stage18.1C manual Amazon Cloud ASR вЂ” software verification
 
 Date: 2026-10-27. Branch: `codex/stage18-1c-amazon-cloud-asr`.
 Accepted base: `98a975f3aff268db605573e1cd666dbc237f3123`.
@@ -48,7 +48,7 @@ Implemented routes are `POST /v1/session`, `POST /v1/recordings`, `POST /v1/jobs
 | API28 full synthetic HTTPS/editor/restart/outbox | PASS, 8 tests | [Local receipt](local-api28.json); real client/proof/HTTPS/persistence, synthetic provider |
 | API36 full synthetic HTTPS/editor/restart/outbox | PENDING_CI | Local launch blocked by disk headroom; CI runs isolated API36 |
 | Independent backend P0/P1 review | No P0/P1 found in reviewed snapshot | Namespace/deadline guard included; partial timing compatibility corrected in Android |
-| Independent Android P0/P1 review | App fixes verified; core final recheck pending | Runtime forwarding, full-upload replay and durable cancellation repaired with regressions; no remaining app P0/P1 |
+| Independent Android P0/P1 review | PASS, no remaining actionable P0/P1 | Two independent reviewers rechecked original findings; repair regressions and final source inspected |
 | Exact-head CI | NOT_RUN | Workflow exists; no successful remote run is claimed here |
 | AWS live / current deployment preflight | NOT_RUN | No current authorized private deployment/configuration evidence |
 | Physical device / new JNI inference regression | NOT_RUN | Existing accepted Stage9 evidence is preserved, not relabeled as a test of new code |
@@ -128,3 +128,9 @@ commit verification, and older Cloud retry after a successful Local fallback.
 The v1 binary transcript fixture remains readable; partial provider timing remains
 optional without fabricated counterpart values. Cancellation tombstones survive
 an actual app process stop and remain independent of the original-audio lease.
+
+The current successor device-test inventory now explicitly accounts for the two new
+Cloud persistence methods (162 bulk methods total). Historical inventories, accepted
+physical evidence and the existing long-test deferrals remain unchanged. The first
+clean governance check caught the missing entries; both were added without hiding
+any inherited test. The new workflow checks the exact requested head SHA.

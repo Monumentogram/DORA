@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {persist-credentials: false}
+        with: {persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
       - name: Isolated Python 3.12 dependencies
         run: |
           python3.12 -m venv backend/.venv
@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {fetch-depth: 0, persist-credentials: false}
+        with: {fetch-depth: 0, persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with: {distribution: temurin, java-version: "17"}
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
@@ -49,7 +49,11 @@ jobs:
           :app:lintDebug :core:audio:lintDebug :app:assembleDebug :app:assembleRelease
           :app:assembleDebugAndroidTest :core:audio:assembleDebugAndroidTest
       - name: Existing local-mode and versioning contract guards
+        env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
+          python3 tools/validate_stage00.py
+          python3 -m unittest discover -s tools -p test_owner_arm82.py
           python3 -m unittest discover -s tools -p test_pin_free_local_access.py
           python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
@@ -70,7 +74,7 @@ jobs:
       matrix: {api: [28, 36]}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {persist-credentials: false}
+        with: {persist-credentials: false, ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with: {name: stage18-synthetic-test-apks, path: apks}
       - name: Local synthetic HTTPS fixture dependencies
