@@ -18,7 +18,8 @@ class VersionLabelInstrumentedTest {
         @Suppress("DEPRECATION")
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
         val prefix =
-            if (context.packageName == "com.monumentogram.dora.alpha.pilot") "DORA Owner Alpha"
+            if (context.packageName == "com.monumentogram.dora.alpha.preview") "DORA Owner Preview"
+            else if (context.packageName == "com.monumentogram.dora.alpha.pilot") "DORA Owner Alpha"
             else "DORA Alpha"
         val expected = "$prefix ${info.versionName} (${info.longVersionCode})"
         assertEquals(expected, context.getString(R.string.alpha_version_label))

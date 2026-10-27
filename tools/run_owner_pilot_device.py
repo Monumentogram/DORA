@@ -305,7 +305,9 @@ def record_instrumentation_failure(receipt, output, api, phase, command, user):
 
 
 def main():
+    global PACKAGE, RUNNER, check_badging
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--preview', action='store_true')
     parser.add_argument('--serial', required=True)
     parser.add_argument('--expected-api', type=int, choices=(28, 36), required=True)
     parser.add_argument('--apk', type=Path, required=True)
@@ -313,6 +315,12 @@ def main():
     parser.add_argument('--receipt', type=Path, required=True)
     parser.add_argument('--inventory', type=Path, default=Path('docs/contracts/owner-pilot-device-tests-v2.json'))
     args = parser.parse_args()
+    if args.preview:
+        from owner_preview_artifact import check_badging as preview_badging
+        PACKAGE = 'com.monumentogram.dora.alpha.preview'
+        RUNNER = PACKAGE + '.test/androidx.test.runner.AndroidJUnitRunner'
+        check_badging = preview_badging
+
     require(bool(re.fullmatch(r'emulator-\d+', args.serial)), 'EXPLICIT_EMULATOR_REQUIRED')
     source = source_binding(git_command, os.environ.get('GITHUB_SHA'))
     require(not args.receipt.exists(), 'RECEIPT_ALREADY_EXISTS')

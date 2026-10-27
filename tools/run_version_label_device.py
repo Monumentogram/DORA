@@ -36,7 +36,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--serial', required=True)
     parser.add_argument('--expected-api', type=int, choices=(28, 36), required=True)
-    parser.add_argument('--variant', choices=('debug', 'alphaTest', 'ownerPilot'), required=True)
+    parser.add_argument('--variant', choices=('debug', 'alphaTest', 'ownerPilot', 'ownerPreview'), required=True)
     parser.add_argument('--apk', type=Path, required=True)
     parser.add_argument('--test-apk', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "package": "com.monumentogram.dora.alpha.preview",
+  "phases": {
+    "owner_initial": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#noSystemCredentialCanOpenEncryptedVault",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#packageManifestAndReleaseOverridesAreClosed",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#seedOwnerIsolationSentinel",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#seedRestartEncryptedRecording"
+    ],
+    "secondary": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#packageManifestAndReleaseOverridesAreClosed",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#secondaryCannotReadOwnerSentinel"
+    ],
+    "owner_final": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#verifyOwnerIsolationSentinelUnchanged"
+    ],
+    "secondary_no_pin": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#realSecondaryRuntimeAuthenticatedReadbackDeletionAndReopen",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#packageManifestAndReleaseOverridesAreClosed",
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#secondaryCannotReadOwnerSentinel"
+    ],
+    "owner_restart": [
+      "com.monumentogram.dora.ownerpilot.OwnerPilotInstrumentedTest#restartReadbackWithoutAutomaticCapture"
+    ]
+  }
+}
