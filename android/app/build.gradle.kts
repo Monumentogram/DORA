@@ -157,7 +157,11 @@ android {
         }
     }
 
-    sourceSets.getByName("androidTestOwnerPreview").java.srcDir("src/androidTestOwnerPilot/kotlin")
+    sourceSets
+        .getByName("androidTestOwnerPreview")
+        .kotlin
+        .directories
+        .add("src/androidTestOwnerPilot/kotlin")
 
     testBuildType =
         providers.gradleProperty("doraTestBuildType").orElse("debug").get().also {

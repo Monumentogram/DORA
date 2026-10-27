@@ -11,6 +11,7 @@ import secrets
 import subprocess
 import time
 import xml.etree.ElementTree as ET
+import zipfile
 
 from isolated_alpha_preflight import require
 from run_isolated_alpha_device import emulator_fence, created_user, switch_complete, failure_caller_state
@@ -204,7 +205,16 @@ def admit_apk_inputs(app_badging, test_badging, test_manifest):
             'PILOT_TEST_TARGET_MISMATCH')
 
 
+def require_packaged_test_class(test_apk):
+    descriptor = ('L' + CLASS.replace('.', '/') + ';').encode() + b'\x00'
+    with zipfile.ZipFile(test_apk) as archive:
+        require(any(descriptor in archive.read(name) for name in archive.namelist()
+                    if re.fullmatch(r'classes(?:[2-9]|[1-9][0-9]+)?\.dex', name)),
+                'PILOT_TEST_CLASS_NOT_PACKAGED')
+
+
 def inspect_apk_inputs(sdk, apk, test_apk):
+    require_packaged_test_class(test_apk)
     suffix, batch = ('.exe', '.bat') if os.name == 'nt' else ('', '')
     aapt = Path(sdk) / ('build-tools/36.0.0/aapt' + suffix)
     analyzer = Path(sdk) / ('cmdline-tools/latest/bin/apkanalyzer' + batch)
