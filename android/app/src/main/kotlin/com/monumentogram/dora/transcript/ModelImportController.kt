@@ -35,7 +35,7 @@ internal enum class ModelImportStatus(val message: String) {
     IMPORTING("Проверяем и устанавливаем пакет распознавания…"),
     INSTALLED("Пакет распознавания установлен."),
     CANCELLED("Выбор пакета отменён."),
-    REJECTED("Не удалось установить пакет. Проверьте выбранный файл и срок использования.");
+    REJECTED("Не удалось установить пакет. Проверьте выбранный файл и его целостность.");
 
     val busy: Boolean
         get() = this == SELECTING || this == IMPORTING

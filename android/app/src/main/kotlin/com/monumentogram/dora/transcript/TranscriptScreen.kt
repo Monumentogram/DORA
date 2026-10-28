@@ -165,7 +165,7 @@ private fun TranscriptDialog(activity: MainActivity, initial: AudioIdentity?, on
                         Text("Установить пакет распознавания")
                     }
                     Text(
-                        "Тестовый пакет действует до 2 ноября 2026 года включительно (МСК). " +
+                        "Модель импортируется вручную и не удаляется из-за календарной даты. " +
                             "Точность временной привязки не проверена."
                     )
                     actions.document?.let { document ->
