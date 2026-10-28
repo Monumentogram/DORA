@@ -64,6 +64,16 @@ class PinnedModelStoreTest {
     }
 
     @Test
+    fun ownerModelIsNeverDeletedAtOldCalendarDeadline() = withStore { store, _, setNow ->
+        assertTrue(store.install(ByteArrayInputStream(fixture)))
+        val installed = store.installed()!!
+        setNow(expiry.plusSeconds(1))
+        assertNotNull(store.installed())
+        assertTrue(installed.exists())
+        assertArrayEquals(fixture, installed.readBytes())
+    }
+
+    @Test
     fun oversizedStreamIsStoppedAtOneBytePastTheExpectedLength() = withStore { store, _, _ ->
         var read = 0
         val endless =
