@@ -7,17 +7,14 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
-import java.time.Instant
 
-/** Optional, owner-provided bounded-alpha artifact. Never downloaded or included in the APK. */
+/** Optional, owner-provided Alpha model. Never downloaded or included in the APK. */
 internal class LocalAsrModel(context: Context) {
     private val store =
         PinnedModelStore(
             File(context.noBackupFilesDir, "local-asr"),
             SIZE,
             DIGEST,
-            EXPIRES,
-            Instant::now,
         )
 
     fun installed(): File? = store.installed()
@@ -27,13 +24,9 @@ internal class LocalAsrModel(context: Context) {
     companion object {
         const val SIZE = 264_464_607L
         const val SHA256 = "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f"
-        val EXPIRES: Instant = Instant.parse("2026-11-02T21:00:00Z")
         private val DIGEST = SHA256.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
-        fun withinRetention(): Boolean = Instant.now().isBefore(EXPIRES)
-
-        fun verify(file: File): Boolean =
-            withinRetention() && PinnedModelStore.matches(file, SIZE, DIGEST) && withinRetention()
+        fun verify(file: File): Boolean = PinnedModelStore.matches(file, SIZE, DIGEST)
     }
 }
 
@@ -44,24 +37,16 @@ internal class PinnedModelStore(
     private val directory: File,
     private val expectedBytes: Long,
     private val expectedDigest: ByteArray,
-    private val expires: Instant,
-    private val now: () -> Instant,
 ) {
     private val model
         get() = File(directory, "ggml-small-q8_0.bin")
 
     @Synchronized
-    fun installed(): File? {
-        if (!now().isBefore(expires)) {
-            removeExpiredFiles()
-            return null
-        }
-        return model.takeIf {
+    fun installed(): File? =
+        model.takeIf {
             !Files.isSymbolicLink(directory.toPath()) &&
-                matches(it, expectedBytes, expectedDigest) &&
-                now().isBefore(expires)
+                matches(it, expectedBytes, expectedDigest)
         }
-    }
 
     @Synchronized
     @Suppress("TooGenericExceptionCaught", "ReturnCount")
@@ -69,16 +54,11 @@ internal class PinnedModelStore(
         var staging: File? = null
         return try {
             input.use { source ->
-                if (!now().isBefore(expires)) {
-                    removeExpiredFiles()
-                    return false
-                }
                 if (Files.isSymbolicLink(directory.toPath())) return false
                 if (!directory.isDirectory && !directory.mkdirs()) return false
                 staging = File.createTempFile("model-", ".pending", directory)
                 val temporary = checkNotNull(staging)
                 if (!copyVerified(source, temporary)) return false
-                if (!now().isBefore(expires)) return false
                 Files.move(
                     temporary.toPath(),
                     model.toPath(),
@@ -103,16 +83,6 @@ internal class PinnedModelStore(
             output.fd.sync()
             digest != null && MessageDigest.isEqual(expectedDigest, digest)
         }
-
-    private fun removeExpiredFiles() {
-        model.delete()
-        directory
-            .listFiles()
-            ?.filter {
-                it.isFile && it.name.startsWith("model-") && it.name.endsWith(".pending")
-            }
-            ?.forEach { it.delete() }
-    }
 
     companion object {
         private const val BUFFER_BYTES = 65_536

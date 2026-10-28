@@ -15,7 +15,7 @@ internal object WhisperNative {
         }
     }
 
-    fun available(): Boolean = loaded && nativeAvailable() && LocalAsrModel.withinRetention()
+    fun available(): Boolean = loaded && nativeAvailable()
 
     fun recognize(
         model: File,
@@ -33,7 +33,7 @@ internal object WhisperNative {
             "ASR_PCM_INVALID"
         }
         check(LocalAsrModel.verify(model)) { "ASR_MODEL_UNAVAILABLE" }
-        val probe = CancellationProbe { cancelled() || !LocalAsrModel.withinRetention() }
+        val probe = CancellationProbe { cancelled() }
         check(!probe.cancelled()) { "ASR_CANCELLED" }
         return nativeRecognize(model.absolutePath, pcm, language, probe).also {
             check(!probe.cancelled()) { "ASR_CANCELLED" }

@@ -1277,3 +1277,19 @@ DEC-048 preserves the closed four variants, six stages, twenty classifications a
 ## Parallel Owner Preview decision — 2026-10-27
 
 Owner authorizes the temporary isolated `ownerPreview` variant from verified `9538792`; see [ADR-0024](adr/ADR-0024-parallel-owner-preview.md). Installed Pilot v2 remains untouched; direct v2→v4 update is NOT_QUALIFIED. Signed artifact/CI readiness is determined by the exact-head Draft PR report, not this source record. Required independent package/UID/data/Keystore tests and prospective [physical protocol](ARM82_PARALLEL_ALPHA_PHYSICAL_PROTOCOL.md) apply. `ARM82_DEVICE_RUNTIME = NOT_RUN`; Stage8.6 NOT_READY; no POCO commands, historical data access or merge authorized.
+
+## DEC-049. Бессрочное локальное использование закреплённой модели Whisper
+
+Статус: Approved владельцем продукта в беседе 28 октября 2026 года.\
+Приоритет: P0.\
+Область: только уже допущенная владельцем модель SMALL q8, используемая в локальной Android Alpha.\
+Решение: исключить календарное истечение доступа и автоматическое удаление корректного файла модели 3 ноября 2026 года и в дальнейшем. Сохранить контроль точного SHA-256 и размера, безопасный импорт, отмену ASR пользователем и возможность ручного удаления.\
+Техническая запись: [ADR-0027](adr/ADR-0027-permanent-owner-local-whisper.md).
+
+DEC-049 заменяет только прежний ограниченный срок хранения **файла весов** в
+ADR-0022/Stage9. Она не продлевает хранение персональных аудиоданных, тестовых
+корпусов, облачных входов/результатов или внутренних копий Amazon; не разрешает
+включать веса в APK, Git или CI, менять Amazon-инфраструктуру либо публиковать
+модель для массовых пользователей. Действительность обновления на телефоне
+требует сборки, проверки и установки новой APK без удаления данных до старого
+дедлайна. Основная ветка и действующие AWS-ветки не изменяются этим решением.

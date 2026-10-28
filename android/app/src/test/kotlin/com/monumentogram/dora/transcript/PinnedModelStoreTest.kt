@@ -2,10 +2,10 @@ package com.monumentogram.dora.transcript
 
 import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
 import java.security.MessageDigest
-import java.time.Instant
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -15,26 +15,25 @@ import org.junit.Test
 
 class PinnedModelStoreTest {
     private val fixture = byteArrayOf(1, 2, 3, 4)
-    private val expiry = Instant.parse("2026-10-26T00:00:00Z")
 
-    private fun withStore(action: (PinnedModelStore, File, (Instant) -> Unit) -> Unit) {
+    private fun storeFor(directory: File): PinnedModelStore =
+        PinnedModelStore(
+            directory,
+            fixture.size.toLong(),
+            MessageDigest.getInstance("SHA-256").digest(fixture),
+        )
+
+    private fun withStore(action: (PinnedModelStore, File) -> Unit) {
         val directory = Files.createTempDirectory("model-admission").toFile()
-        var now = expiry.minusSeconds(1)
-        val digest = MessageDigest.getInstance("SHA-256").digest(fixture)
         try {
-            action(
-                PinnedModelStore(directory, fixture.size.toLong(), digest, expiry) { now },
-                directory,
-            ) {
-                now = it
-            }
+            action(storeFor(directory), directory)
         } finally {
             directory.deleteRecursively()
         }
     }
 
     @Test
-    fun exactModelIsInstalledAndMutationIsDetectedOnNextUse() = withStore { store, _, _ ->
+    fun exactModelIsInstalledAndMutationIsDetectedOnNextUse() = withStore { store, _ ->
         assertTrue(store.install(ByteArrayInputStream(fixture)))
         val installed = store.installed()
         assertNotNull(installed)
@@ -44,7 +43,7 @@ class PinnedModelStoreTest {
 
     @Test
     fun failedReplacementPreservesTheAdmittedModelAndRemovesStaging() =
-        withStore { store, directory, _ ->
+        withStore { store, directory ->
             assertTrue(store.install(ByteArrayInputStream(fixture)))
             assertFalse(store.install(ByteArrayInputStream(byteArrayOf(1, 2, 3))))
             assertFalse(store.install(ByteArrayInputStream(byteArrayOf(4, 3, 2, 1))))
@@ -54,27 +53,28 @@ class PinnedModelStoreTest {
         }
 
     @Test
-    fun deadlineRejectsInstallAndUseAndRemovesExpiredModel() = withStore { store, _, setNow ->
+    fun modelRemainsInstalledAfterReopeningItsStore() = withStore { store, directory ->
         assertTrue(store.install(ByteArrayInputStream(fixture)))
         val installed = store.installed()!!
-        setNow(expiry)
-        assertNull(store.installed())
-        assertFalse(installed.exists())
-        assertFalse(store.install(ByteArrayInputStream(fixture)))
+        val reopened = storeFor(directory)
+        assertNotNull(reopened.installed())
+        assertTrue(installed.exists())
+        assertArrayEquals(fixture, reopened.installed()!!.readBytes())
     }
 
     @Test
-    fun ownerModelIsNeverDeletedAtOldCalendarDeadline() = withStore { store, _, setNow ->
+    fun oldModelTimestampDoesNotExpireItsVerifiedBytes() = withStore { store, directory ->
         assertTrue(store.install(ByteArrayInputStream(fixture)))
         val installed = store.installed()!!
-        setNow(expiry.plusSeconds(1))
+        assertTrue(installed.setLastModified(0L))
         assertNotNull(store.installed())
+        assertNotNull(storeFor(directory).installed())
         assertTrue(installed.exists())
         assertArrayEquals(fixture, installed.readBytes())
     }
 
     @Test
-    fun oversizedStreamIsStoppedAtOneBytePastTheExpectedLength() = withStore { store, _, _ ->
+    fun oversizedStreamIsStoppedAtOneBytePastTheExpectedLength() = withStore { store, _ ->
         var read = 0
         val endless =
             object : InputStream() {
@@ -89,24 +89,25 @@ class PinnedModelStoreTest {
     }
 
     @Test
-    fun deadlineCrossedDuringImportCannotPromoteTheModel() = withStore { store, directory, setNow ->
+    fun failedImportReadPreservesPreviouslyVerifiedModel() = withStore { store, directory ->
+        assertTrue(store.install(ByteArrayInputStream(fixture)))
         val source =
             object : ByteArrayInputStream(fixture) {
                 override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
-                    setNow(expiry)
-                    return super.read(buffer, offset, length)
+                    throw IOException("Interrupted model import")
                 }
             }
         assertFalse(store.install(source))
-        assertTrue(directory.listFiles()!!.isEmpty())
+        assertArrayEquals(fixture, store.installed()!!.readBytes())
+        assertTrue(directory.listFiles()!!.none { it.name.endsWith(".pending") })
     }
 
     @Test
-    fun expiryAlsoRemovesInterruptedImportBytes() = withStore { store, directory, setNow ->
+    fun abandonedStagingDoesNotDeleteAdmittedModel() = withStore { store, directory ->
+        assertTrue(store.install(ByteArrayInputStream(fixture)))
         val abandoned = File(directory, "model-abandoned.pending")
         abandoned.writeBytes(fixture)
-        setNow(expiry)
-        assertNull(store.installed())
-        assertFalse(abandoned.exists())
+        assertArrayEquals(fixture, store.installed()!!.readBytes())
+        assertTrue(abandoned.exists())
     }
 }
