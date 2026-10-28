@@ -1,0 +1,157 @@
+{
+  "source_sha": "acfd8a7743d8a7f414eb8f1f5bdce77fcd492289",
+  "baseline_sha": "98a975f3aff268db605573e1cd666dbc237f3123",
+  "artifact": "dora-preview-permanent-whisper-vc4.apk",
+  "apk_sha256": "284db30f699c53500ea15d8cb2db7a15f45dd581ad20fece20114001d89e4095",
+  "size_bytes": 83735909,
+  "original_apk_sha256": "0370f1999fcdcdf04d116c58a07ddea212701fc1afc463b0e601daee3ea850a1",
+  "application_id": "com.monumentogram.dora.alpha.preview",
+  "version_code": 4,
+  "version_name": "0.1.0-owner-preview.4",
+  "certificate_sha256": "a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d",
+  "signature_match": "PASS",
+  "manifest_identical": true,
+  "native_payload_identical": true,
+  "runtime_assets_identical": true,
+  "whisper_model_packaged": false,
+  "zip_alignment_16k": "PASS",
+  "native_dependencies": {
+    "libandroidx.graphics.path.so": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libonnxruntime.so": [
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so"
+    ],
+    "libsherpa-onnx-jni.so": [
+      "libandroid.so",
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so",
+      "libonnxruntime.so"
+    ],
+    "libsqlcipher.so": [
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so"
+    ],
+    "libc++_shared.so": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libdora-whisper-jni.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libggml-base.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libggml-cpu.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libm.so"
+    ],
+    "libggml.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libm.so"
+    ],
+    "libwhisper.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libggml.so",
+      "libm.so"
+    ]
+  },
+  "changed_zip_entries": [
+    "META-INF/DORA-INT.RSA",
+    "META-INF/DORA-INT.SF",
+    "META-INF/MANIFEST.MF",
+    "assets/dexopt/baseline.prof",
+    "assets/dexopt/baseline.profm",
+    "classes3.dex"
+  ],
+  "installation": "NOT_PERFORMED",
+  "device_model": "NOT_VERIFIED",
+  "device_data": "NOT_VERIFIED",
+  "elf_alignment": {
+    "result": "PASS",
+    "elf_alignment": 16384,
+    "exact_native_entries": 10
+  },
+  "device_handoff_sha": "0c1c55133fcab74454ca691c1b6daffb6bd85e3d",
+  "pr_review_source_sha": "d691dc07447ba324656a34c30049c008f14132cc",
+  "signal_preparation_sha": "42423cf0070d607f7ad7911996bf64a2ef1e7301",
+  "device_status": "BLOCKED_OWNER_USER10_LOCKED_NO_INSTALL",
+  "tests": {
+    "permanent-whisper:app:Debug": {
+      "tests": 117,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "permanent-whisper:core/audio:Debug": {
+      "tests": 264,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "permanent-whisper:core/model:Debug": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "permanent-whisper-device:app:OwnerPreview": {
+      "tests": 108,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "permanent-whisper-device:core/audio:Release": {
+      "tests": 255,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "backend_tests": {
+    "tests": 55,
+    "failures": 0,
+    "errors": 0,
+    "live_aws": false
+  },
+  "calendar_negative_control": {
+    "base": "98a975f3aff268db605573e1cd666dbc237f3123",
+    "tests": 2,
+    "expected_assertion_failures": 2
+  },
+  "private_log_sha256": {
+    "unit-tests-corrected.log": "0a9c36f4854d661456505b60bde3ff9e245338daf68616a79cbe39331ee17aa2",
+    "calendar-old-code-red.log": "44637b9e0c920c92460720626d80eef9daed9da75c89038b53d5f2f4094e72c5",
+    "backend-tests-venv.log": "45019858c5fd21625438245935e82d2a9f300ed021ee37280ddf89f3a4bd6be1",
+    "pr-quality.log": "821dea130752fb117362fa9d349fb73a727848893dec081eacb0818f3fb0cea7",
+    "device-build.log": "a41bb3dc10ea181c67ba2e63e3cc0ce4de4462a6badb7119cedc175189a56b06",
+    "device-committed-build.log": "5734d2c282071059b59583baa978543ab42d841765d9d6024d0ccbf4e9de252d"
+  }
+}
