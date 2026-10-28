@@ -1568,9 +1568,9 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             patch.object(
                 stage00,
                 "read_text",
-                return_value=text + "\n## DEC-049. Unapproved implicit extension\n",
+                return_value=text + "\n## DEC-050. Unapproved implicit extension\n",
             ),
-            self.assertRaisesRegex(ValueError, "DEC-001 through DEC-048"),
+            self.assertRaisesRegex(ValueError, "DEC-001 through DEC-049"),
         ):
             stage00.validate_decisions()
 
