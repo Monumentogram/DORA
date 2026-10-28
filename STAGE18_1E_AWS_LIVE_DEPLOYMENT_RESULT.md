@@ -145,7 +145,10 @@ daily reserve/action/attempt bounds; no bulk campaign was run.
 - Independent review found narrowly scoped production changes sound. The opt-in
   harness now checks the configured destination, recovers the actual persisted UI
   action and handles an already stored Cloud result without dispatching a new job.
-- Draft PR publication pending. No branch or PR has been merged.
+- [Draft PR118](https://github.com/Monumentogram/DORA/pull/118), stacked on Draft
+  PR117, is OPEN/DRAFT. Implementation commit: `930bd7eb7b40cb35635d80dcf5021bc079678b72`.
+  Stage00 artifact validation passed on that clean committed source. The PR reports
+  publication-head CI independently. No branch or PR has been merged.
 
 No open P0/P1 was found in the scoped AWS/RU/EN deployment. The physical network
 blocker and older Stage8.6/diagnostic/release gates remain explicitly separate.
