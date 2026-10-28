@@ -1,3 +1,21 @@
+## 2026-10-28 — Stage18.1E live deployment result
+
+Owner-scoped AWS deployment and actual Android RU/EN Cloud recognition are complete:
+restricted temporary deployment/runtime access, one Frankfurt host, private encrypted
+custody, valid HTTPS, independent cleanup, reboot persistence and cost notifications.
+Local versions/edits remain intact. See the
+[live result](../STAGE18_1E_AWS_LIVE_DEPLOYMENT_RESULT.md).
+
+Physical synthetic acceptance passed through a temporary USB CONNECT relay, with
+one accepted RU job and preserved Cloud/Local data after restart. Remaining item:
+standalone POCO HTTPS connectivity still times out on its current network. Do not
+duplicate the completed job or reset the historical vault. No automatic expansion
+to multi-user/public Cloud, diarization, Stage8.6 endurance, historical migration
+or release work is authorized.
+Earlier backlog evidence below remains unchanged.
+
+---
+
 ## 2026-10-26 — ARM82 Owner Alpha preparation (ADR-0023)
 
 The release-derived isolated Pilot successor is code4 / `0.1.0-owner-alpha.4`,

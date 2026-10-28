@@ -78,6 +78,21 @@
           "kms:CallerAccount": "ACCOUNT_ID"
         }
       }
+    },
+    {
+      "Sid": "TranscribeOutputWriteProbe",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::OUTPUT_BUCKET/output/.write_access_check_file.temp",
+      "Condition": {
+        "StringEquals": {
+          "s3:ResourceAccount": "ACCOUNT_ID"
+        }
+      }
     }
   ]
 }

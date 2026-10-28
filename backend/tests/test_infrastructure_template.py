@@ -45,15 +45,48 @@ class InfrastructureTests(unittest.TestCase):
             self.assertEqual("Retain", self.resources[side + "Key"]["DeletionPolicy"])
             self.assertEqual("Retain", self.resources[side + "BucketPolicy"]["DeletionPolicy"])
 
+    def test_transcribe_write_probe_is_limited_to_one_non_audio_output_key(self):
+        template = json.loads((BASE / "runtime-policy.template.json").read_text())
+        bound = self.resources["RuntimeRole"]["Properties"]["Policies"][0]["PolicyDocument"]
+        for policy, resource in ((template, "arn:aws:s3:::OUTPUT_BUCKET/output/.write_access_check_file.temp"),
+                                 (bound, {"Fn::Sub": "arn:${AWS::Partition}:s3:::${OutputBucket}/output/.write_access_check_file.temp"})):
+            probe = [s for s in policy["Statement"] if s.get("Sid") == "TranscribeOutputWriteProbe"]
+            self.assertEqual(1, len(probe))
+            self.assertEqual(resource, probe[0]["Resource"])
+            self.assertEqual({"s3:PutObject", "s3:GetObject", "s3:DeleteObject"}, set(probe[0]["Action"]))
+            self.assertIn("s3:ResourceAccount", probe[0]["Condition"]["StringEquals"])
+
     def test_host_has_no_public_api_port_or_automatic_bootstrap_and_alarm_fails_closed(self):
         props = self.resources["Host"]["Properties"]
         self.assertNotIn("UserData", props)
         self.assertEqual("required", props["MetadataOptions"]["HttpTokens"])
         self.assertEqual("standard", props["CreditSpecification"]["CPUCredits"])
         self.assertTrue(props["DisableApiTermination"])
-        ingress = self.resources["HostFirewall"]["Properties"]["SecurityGroupIngress"]
+        rules = self.resources["HostFirewall"]["Properties"]["SecurityGroupIngress"]
+        ingress = [r for r in rules if "Fn::If" not in r]
         self.assertEqual({22, 443}, {r["ToPort"] for r in ingress})
         self.assertTrue(all(r["CidrIp"] == {"Ref": "OwnerCidr"} for r in ingress))
+        self.assertEqual("false", self.stack["Parameters"]["EnableAcmeHttpChallenge"]["Default"])
+        optional = [r["Fn::If"] for r in rules if "Fn::If" in r]
+        self.assertEqual(2, len(optional))
+        condition, challenge, disabled = next(r for r in optional if r[0] == "AcmeHttpChallengeEnabled")
+        self.assertEqual("AcmeHttpChallengeEnabled", condition)
+        self.assertEqual({"Fn::Equals": [{"Ref": "EnableAcmeHttpChallenge"}, "true"]}, self.stack["Conditions"][condition])
+        self.assertEqual((80, 80, "tcp", "0.0.0.0/0"),
+                         (challenge["FromPort"], challenge["ToPort"], challenge["IpProtocol"], challenge["CidrIp"]))
+        self.assertEqual({"Ref": "AWS::NoValue"}, disabled)
+        device = next(r for r in optional if r[0] == "OwnerDeviceEnabled")
+        self.assertEqual("", self.stack["Parameters"]["OwnerDeviceCidr"]["Default"])
+        pattern = self.stack["Parameters"]["OwnerDeviceCidr"]["AllowedPattern"]
+        import re
+        self.assertIsNotNone(re.fullmatch(pattern, "192.0.2.3/32"))
+        for value in ("0.0.0.0/0", "192.0.2.0/24", "::/0"):
+            self.assertIsNone(re.fullmatch(pattern, value))
+        self.assertEqual({"Fn::Not": [{"Fn::Equals": [{"Ref": "OwnerDeviceCidr"}, ""]}]},
+                         self.stack["Conditions"]["OwnerDeviceEnabled"])
+        self.assertEqual({"IpProtocol": "tcp", "FromPort": 443, "ToPort": 443,
+                          "CidrIp": {"Ref": "OwnerDeviceCidr"}}, device[1])
+        self.assertEqual({"Ref": "AWS::NoValue"}, device[2])
         self.assertTrue(self.resources["DataVolume"]["Properties"]["Encrypted"])
         self.assertEqual("Retain", self.resources["DataVolume"]["DeletionPolicy"])
         self.assertEqual("breaching", self.resources["CleanupHealthAlarm"]["Properties"]["TreatMissingData"])

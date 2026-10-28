@@ -70,7 +70,13 @@ class AmazonProvider:
         required = {"TranscriptionJobName": attempt["name"], "LanguageCode": job["creation"]["language"],
                     "MediaFormat": "wav", "MediaSampleRateHertz": 16000,
                     "Media": {"MediaFileUri": f"s3://{self.config.input_bucket}/{self._input(attempt)}"}}
-        forbidden = ("Settings", "ModelSettings", "JobExecutionSettings", "ContentRedaction", "IdentifyLanguage",
+        # GetTranscriptionJob materializes these disabled defaults for standard Batch.
+        # Accept only literal false; enabled features, extra settings and malformed values fail closed.
+        settings = observed.get("Settings", {})
+        if (not isinstance(settings, dict) or set(settings) - {"ChannelIdentification", "ShowAlternatives"}
+                or any(value is not False for value in settings.values())):
+            raise ProviderError("PROVIDER_IDENTITY_MISMATCH", uncertain=True)
+        forbidden = ("ModelSettings", "JobExecutionSettings", "ContentRedaction", "IdentifyLanguage",
                      "IdentifyMultipleLanguages", "LanguageOptions", "Subtitles", "LanguageIdSettings", "ToxicityDetection")
         if any(observed.get(k) != v for k, v in required.items()) or any(observed.get(k) for k in forbidden):
             raise ProviderError("PROVIDER_IDENTITY_MISMATCH", uncertain=True)

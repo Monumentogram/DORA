@@ -1,0 +1,7 @@
+[Unit]
+Description=Renew DORA public IP TLS certificate
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/dora/certbot/bin/certbot renew --quiet --deploy-hook "systemctl reload nginx"
