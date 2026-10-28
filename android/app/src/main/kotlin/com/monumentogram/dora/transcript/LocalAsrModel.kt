@@ -42,11 +42,9 @@ internal class PinnedModelStore(
         get() = File(directory, "ggml-small-q8_0.bin")
 
     @Synchronized
-    fun installed(): File? =
-        model.takeIf {
-            !Files.isSymbolicLink(directory.toPath()) &&
-                matches(it, expectedBytes, expectedDigest)
-        }
+    fun installed(): File? = model.takeIf {
+        !Files.isSymbolicLink(directory.toPath()) && matches(it, expectedBytes, expectedDigest)
+    }
 
     @Synchronized
     @Suppress("TooGenericExceptionCaught", "ReturnCount")
