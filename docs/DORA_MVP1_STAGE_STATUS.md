@@ -8,10 +8,12 @@ Independent watchdog, alarm/SNS, $20 budget and EC2 reboot/custody checks passed
 See [live result](../STAGE18_1E_AWS_LIVE_DEPLOYMENT_RESULT.md) and
 [ADR-0026](adr/ADR-0026-owner-alpha-live-deployment.md).
 
-POCO is separately **BLOCKED / HTTPS_NETWORK_TIMEOUT**, before any physical paid
-job; user 0 synthetic fixture remains in an isolated test installation. User 10,
-old recordings and historical diagnostic-vault protection were not reset.
-Next physical action is changing the phone network and resuming the existing action.
+POCO is **PASS / USB_TUNNEL_ASSISTED**: one real RU job, Cloud result and retained
+Local version/edit survived process restart in the isolated user 0 test installation.
+The temporary relay preserved normal TLS/signing and was removed after acceptance.
+Direct phone HTTPS remains blocked by a network timeout; independent everyday
+connectivity is not certified. User 10, old recordings and historical
+diagnostic-vault protection were not reset.
 Stage8.6 endurance, historical migration and release gates remain unchanged.
 This is an owner-only live admission, not a merge of PR116/117 or public release.
 Earlier entries below retain their historical meaning.

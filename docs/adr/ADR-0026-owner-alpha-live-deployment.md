@@ -46,6 +46,14 @@ and user 10 data remain outside the acceptance. An isolated local debug applicat
 ID can separate this test from the historical diagnostic installation; this does
 not constitute its migration or a production release.
 
+When the owner could not change the phone's failing network, a temporary USB
+CONNECT relay carried ciphertext through the computer's permitted egress. The
+proxy selection was confined to an opt-in instrumentation listener in the isolated
+test process; production code, certificate validation, request proofs, system
+network settings and user 10 remained unchanged. The relay admitted only the exact
+backend destination and was removed after acceptance. This proves physical
+Cloud/storage operation via USB, not standalone phone-network readiness.
+
 Private endpoint, account/resource/installation identifiers, raw receipts, keys,
 credentials and audio remain outside this public repository. The owner-local
 report contains the operational URL. No merge of this branch, PR116 or PR117 is

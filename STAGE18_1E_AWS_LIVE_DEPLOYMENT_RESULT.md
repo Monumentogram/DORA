@@ -82,11 +82,11 @@ grant fixed the rejection. A second issue rejected AWS's explicit false Settings
 defaults; adapter regression tests reproduced it, and the corrected watchdog
 ingested the already completed RU job without launching another job.
 
-For RU/EN every attempt reached a terminal state, temporary input/output and
-provider job deletion were confirmed, cleanupPending=false and ledger chunk
+For RU/EN and the physical POCO test every attempt reached a terminal state.
+Temporary input/output and provider job deletion were confirmed, cleanupPending=false and ledger chunk
 bytes=0. The zero-byte provider write-check object was removed after terminal
 reconciliation. Final operator List calls confirmed both buckets empty and zero
-multipart uploads; exact provider-name List calls confirmed all three attempts absent.
+multipart uploads; exact provider-name List calls confirmed all four attempts absent.
 
 ## Physical POCO and publication
 
@@ -95,20 +95,36 @@ No factory reset, clear-data or deletion of existing recordings was performed.
 The old debug package was updated in place; its historical protected diagnostic
 vault returned UNAVAILABLE. It was not reset or migrated. A separate local debug
 application ID was built for the new synthetic Cloud test. User 10 was not modified.
-**POCO_CLOUD_ACCEPTANCE = BLOCKED / HTTPS_NETWORK_TIMEOUT**. A new 16.495-second
-synthetic recording and its Local version/edit were created in the isolated
-installation; manual consent was exercised. No POCO job reached the backend or
-Amazon Transcribe, and no physical Cloud result/persistence PASS is claimed.
+**POCO_CLOUD_ACCEPTANCE = PASS / USB_TUNNEL_ASSISTED**. The new 16.495-second
+synthetic recording completed real Amazon Transcribe RU recognition with 28
+segments. Manual consent and the existing action's retry/result check were
+exercised. Cloud text/provider identity, Local raw version, active Local selection,
+saved correction and original audio availability survived application process
+restart. This is a synthetic stored-recording test, not a microphone/endurance test.
 
 The phone's HTTPS egress differed from the computer. A reviewed firewall-only
 change added that verified `/32` for HTTPS. TCP SYN/SYN-ACK/ACK then reached the
 host, but the phone's HTTPS POST still timed out while opening the output stream;
 no TLS payload arrived in the bounded packet-header observation. A GET probe
 returned 404 once. The same POST from the computer returned 401 in about 0.3s.
-Thus basic TCP admission works, but stable phone HTTPS remains unverified; the
-exact upstream cause is not established. Next action: switch POCO to another
-network or the computer's VPN and retry the **existing** recorded action.
-No TLS trust bypass or global HTTPS ingress was introduced. The unused invitation
+The owner could not change networks and requested another method. A temporary
+loopback-only CONNECT relay on the computer and ADB reverse transported encrypted
+TLS bytes for the exact backend destination. A private opt-in instrumentation
+listener selected that proxy only in the isolated test process; product code,
+endpoint, certificate trust, request signing and device-wide network settings were
+unchanged. Non-target relay destinations were rejected. One accepted POCO job was
+created; a transient response failure was reconciled through the existing UI action
+after the backend had completed, without another Start. The secured phone window
+refused the optional screenshot; the harness now tolerates that refusal. Read-only
+result reconciliation and process-restart assertions both passed. No screenshot
+is claimed as visual evidence. The relay and ADB mapping were removed afterward,
+and the temporary background-launch app-op was restored.
+
+Direct phone HTTPS remains **BLOCKED / HTTPS_NETWORK_TIMEOUT** with its exact
+upstream cause unknown. The successful physical result therefore demonstrates the
+USB-assisted path, not independent everyday phone connectivity. Future standalone
+use needs a working permitted network route. No TLS trust bypass or global HTTPS
+ingress was introduced. The unused invitation
 for the historical debug installation was revoked; the isolated invitation remains
 finite. Historical diagnostic-vault migration is not repaired or certified here.
 
@@ -116,11 +132,11 @@ finite. Historical diagnostic-vault migration is not repaired or certified here.
 
 AWS Budget reported **$0.00 actual account spend at the check**. Billing is delayed;
 this does not prove the deployment is free or provide an itemized test invoice.
-The live ledger reserved **$0.0545** for the three RU/EN attempts, including the
+The live ledger reserved **$0.0730** for four RU/EN/POCO attempts, including the
 pre-acceptance rejection. Reserves deliberately overestimate usage and are not bills.
 
 The current Frankfurt standard Batch price is $0.0001/second ($0.006/minute).
-The two accepted fixtures total about $0.0031 ASR before rounding, taxes, credits
+The three accepted fixtures total about $0.0048 ASR before rounding, taxes, credits
 and ancillary requests. Fixed resource forecast remains approximately
 **$17.16/month + usage**. One hundred Batch minutes add about $0.60 ASR.
 Sources: [AWS Transcribe pricing](https://aws.amazon.com/transcribe/pricing/) and
@@ -140,6 +156,8 @@ daily reserve/action/attempt bounds; no bulk campaign was run.
 - Android app/audio JVM checks, final Spotless/Detekt/lint and test APK build:
   **PASS**. Emulator reconciliation of an already stored real RU Cloud result:
   **PASS**, without dispatch or another paid job. Publication-SHA CI is separate.
+- Physical POCO: normal-trust HTTPS probe, completed-result reconciliation and
+  process-restart/version/edit assertions **PASS** through the scoped USB relay.
 - Base PR117 exact-source CI was successful before deployment. New-branch CI is
   independent and must not inherit that verdict.
 - Independent review found narrowly scoped production changes sound. The opt-in
@@ -150,8 +168,8 @@ daily reserve/action/attempt bounds; no bulk campaign was run.
   Stage00 artifact validation passed on that clean committed source. The PR reports
   publication-head CI independently. No branch or PR has been merged.
 
-No open P0/P1 was found in the scoped AWS/RU/EN deployment. The physical network
-blocker and older Stage8.6/diagnostic/release gates remain explicitly separate.
+No open P0/P1 was found in the scoped AWS/RU/EN deployment. Standalone physical
+network connectivity and older Stage8.6/diagnostic/release gates remain separate.
 
 Operational follow-up: retain the owner egress restriction, finite installation
 invitations, certificate renewal, watchdog and health/budget response. Do not stop

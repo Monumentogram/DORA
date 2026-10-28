@@ -427,11 +427,18 @@ class CloudLiveAcceptanceTest {
                 }
             document?.versions?.size == 2
         }
-        val screenshot = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-        context.filesDir.resolve("live-ui.png").outputStream().use {
-            screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+        // Secure physical-device windows can refuse screenshots; storage assertions are
+        // authoritative.
+        InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()?.let { screenshot
+            ->
+            try {
+                context.filesDir.resolve("live-ui.png").outputStream().use {
+                    screenshot.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+                }
+            } finally {
+                screenshot.recycle()
+            }
         }
-        screenshot.recycle()
         return checkNotNull(document)
     }
 
