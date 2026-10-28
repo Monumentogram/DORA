@@ -1,4 +1,58 @@
-# Owner-only Alpha deployment package — NOT APPLIED
+# Owner-only Alpha deployment package
+
+Stage18.1E applied this package under explicit owner authorization. See the
+[live result](../../../STAGE18_1E_AWS_LIVE_DEPLOYMENT_RESULT.md). The Stage18.1D.2
+sections below preserve their original preparation boundary; they do not describe
+the current live admission state. Repeat deployments still require their own scope.
+
+## Stage18.1E public IP certificate and live admission
+
+No domain was purchased. A trusted Let's Encrypt short-lived IP certificate serves
+the retained Elastic IP, with normal Android/platform certificate validation.
+`EnableAcmeHttpChallenge=true` admits TCP 80 solely for `acme-http.conf`: static HTTP-01
+challenge GETs; every other path returns 404. The default remains false. HTTPS and
+SSH retain the owner's exact IPv4 `/32`; the API binds only to loopback.
+
+If the owner's phone has a different verified egress, `OwnerDeviceCidr` optionally
+admits that one additional IPv4 `/32` to HTTPS only. Its default is empty; SSH never
+uses it. Verify the phone's actual egress before applying a reviewed firewall-only
+change set. Keep both values private, and update/remove the device entry when its
+network changes. Do not broaden either parameter to a shared subnet or `/0`.
+
+Install Certbot 5.8.0 in `/opt/dora/certbot` from the official Python distribution,
+create `/var/lib/letsencrypt`, install the challenge site, and run `nginx -t`. From the
+private operator shell, substitute the reviewed Elastic IP and notification email:
+
+```sh
+/opt/dora/certbot/bin/certbot certonly --webroot -w /var/lib/letsencrypt \
+  --preferred-profile shortlived --ip-address APPROVED_ELASTIC_IP \
+  --cert-name dora-ip --agree-tos --email PRIVATE_OWNER_EMAIL --non-interactive
+```
+
+Use `/etc/letsencrypt/live/dora-ip/fullchain.pem` and `privkey.pem` in the HTTPS
+site. Install `dora-cert-renew.service` and `.timer` into `/etc/systemd/system`,
+reload systemd, and enable the timer. Verify `certbot renew --dry-run
+--run-deploy-hooks`; confirm the nginx reload hook and next timer firing. The
+issued certificate lasts about 160 hours; keep the challenge listener reachable
+and inspect renewal failures. This is operational TLS maintenance, not an API on
+HTTP. The timer was verified again after a real EC2 reboot.
+
+The authorized operator then enables `live_enabled`, starts the single API
+process and enrolls only the owner's finite-lived installation public keys.
+Private config, invitations, account IDs, endpoint and receipts stay outside Git.
+`CloudLiveAcceptanceTest` is explicitly opt-in; ordinary CI skips it. Supply the
+private HTTPS endpoint and SHA-256-verified synthetic WAVs through the private
+test runner. Never delete its pre-dispatch receipt to retry an ambiguous job.
+
+The runtime output policy includes one exact additional S3 key,
+`.write_access_check_file.temp`. Transcribe validates output access there before
+accepting a batch job. Its Put/Get/Delete grant retains account, bucket and KMS
+constraints. Job output access remains restricted to `dora-*.json`; input/output
+encryption, TLS-only policy and public access blocks remain mandatory.
+
+AWS may return explicit false values for `ChannelIdentification` and
+`ShowAlternatives`. The adapter accepts only these literal false defaults; enabled,
+unknown and malformed settings still fail closed.
 
 See the [Stage18.1D.2 report](../../../STAGE18_1D2_MINIMAL_AWS_INFRASTRUCTURE.md)
 for the decision, costs, evidence and approval boundary. Every AWS write and every

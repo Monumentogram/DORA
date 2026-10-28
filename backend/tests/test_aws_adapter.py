@@ -75,6 +75,19 @@ class AdapterTests(unittest.TestCase):
             with self.assertRaisesRegex(ProviderError, "PROVIDER_IDENTITY_MISMATCH"):
                 self.provider.status(self.attempt, self.job)
 
+    def test_completed_batch_accepts_aws_explicit_disabled_defaults(self):
+        self.tstub.add_response("get_transcription_job", {"TranscriptionJob": self.observation(
+            status="COMPLETED", Settings={"ChannelIdentification": False, "ShowAlternatives": False})},
+            {"TranscriptionJobName": self.attempt["name"]})
+        self.assertEqual("COMPLETED", self.provider.status(self.attempt, self.job))
+
+    def test_default_settings_exception_does_not_admit_enabled_or_extra_processing(self):
+        for settings in ({"ChannelIdentification": True}, {"ShowAlternatives": True},
+                         {"ChannelIdentification": False, "VocabularyName": "other"},
+                         {"ShowSpeakerLabels": False}, {"ChannelIdentification": 0}, None):
+            with self.subTest(settings=settings), self.assertRaisesRegex(ProviderError, "PROVIDER_IDENTITY_MISMATCH"):
+                self.provider._observation({"TranscriptionJob": self.observation(Settings=settings)}, self.attempt, self.job)
+
     def test_safe_errors_and_unknown_start_effect(self):
         for code, status, expected in (("LimitExceededException", 429, "PROVIDER_RATE_LIMITED"),
                                        ("InternalFailureException", 500, "PROVIDER_UNAVAILABLE"),

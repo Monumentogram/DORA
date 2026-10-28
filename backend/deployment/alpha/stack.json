@@ -34,6 +34,43 @@
       "Default": 20,
       "MinValue": 1,
       "MaxValue": 50
+    },
+    "EnableAcmeHttpChallenge": {
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "false",
+        "true"
+      ],
+      "Description": "Allow public port 80 for ACME challenge files only. Never proxy the API on HTTP."
+    },
+    "OwnerDeviceCidr": {
+      "Type": "String",
+      "Default": "",
+      "AllowedPattern": "(|(\\d{1,3}\\.){3}\\d{1,3}/32)",
+      "Description": "Optional second verified owner device public IPv4 /32, HTTPS only. Empty disables."
+    }
+  },
+  "Conditions": {
+    "AcmeHttpChallengeEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnableAcmeHttpChallenge"
+        },
+        "true"
+      ]
+    },
+    "OwnerDeviceEnabled": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "OwnerDeviceCidr"
+            },
+            ""
+          ]
+        }
+      ]
     }
   },
   "Rules": {
@@ -460,6 +497,25 @@
                       }
                     }
                   }
+                },
+                {
+                  "Sid": "TranscribeOutputWriteProbe",
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:s3:::${OutputBucket}/output/.write_access_check_file.temp"
+                  },
+                  "Condition": {
+                    "StringEquals": {
+                      "s3:ResourceAccount": {
+                        "Ref": "AWS::AccountId"
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -559,6 +615,21 @@
         },
         "SecurityGroupIngress": [
           {
+            "Fn::If": [
+              "AcmeHttpChallengeEnabled",
+              {
+                "IpProtocol": "tcp",
+                "FromPort": 80,
+                "ToPort": 80,
+                "CidrIp": "0.0.0.0/0",
+                "Description": "ACME challenge only; HTTP API must return 404"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
             "IpProtocol": "tcp",
             "FromPort": 22,
             "ToPort": 22,
@@ -573,6 +644,22 @@
             "CidrIp": {
               "Ref": "OwnerCidr"
             }
+          },
+          {
+            "Fn::If": [
+              "OwnerDeviceEnabled",
+              {
+                "IpProtocol": "tcp",
+                "FromPort": 443,
+                "ToPort": 443,
+                "CidrIp": {
+                  "Ref": "OwnerDeviceCidr"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
           }
         ],
         "SecurityGroupEgress": [

@@ -1,3 +1,23 @@
+## 2026-10-28 — Stage18.1E owner-only AWS live Cloud ASR
+
+**PASS / STAGE18_1E_AWS_LIVE_CLOUD_ASR_READY**: the authorized Frankfurt stack is
+running, restricted SSO/workload access and valid HTTPS are verified. Actual Android
+RU/EN Amazon Transcribe jobs completed; immutable Cloud versions, Local edits and
+selection survived client restart. Temporary media/provider jobs were removed.
+Independent watchdog, alarm/SNS, $20 budget and EC2 reboot/custody checks passed.
+See [live result](../STAGE18_1E_AWS_LIVE_DEPLOYMENT_RESULT.md) and
+[ADR-0026](adr/ADR-0026-owner-alpha-live-deployment.md).
+
+POCO is separately **BLOCKED / HTTPS_NETWORK_TIMEOUT**, before any physical paid
+job; user 0 synthetic fixture remains in an isolated test installation. User 10,
+old recordings and historical diagnostic-vault protection were not reset.
+Next physical action is changing the phone network and resuming the existing action.
+Stage8.6 endurance, historical migration and release gates remain unchanged.
+This is an owner-only live admission, not a merge of PR116/117 or public release.
+Earlier entries below retain their historical meaning.
+
+---
+
 ## 2026-10-26 — ARM82 Owner Alpha preparation (ADR-0023)
 
 The release-derived isolated Pilot successor is code4 / `0.1.0-owner-alpha.4`,
