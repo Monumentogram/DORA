@@ -6,6 +6,7 @@ import android.util.Base64
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import com.monumentogram.dora.MainActivity
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.model.alpha.AudioAssetId
@@ -17,6 +18,7 @@ import java.security.spec.X509EncodedKeySpec
 import org.json.JSONObject
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -146,6 +148,17 @@ class AlphaUpgradeTest {
             assertArrayEquals(ByteArray(96000) { (it % 127).toByte() }, audio.toByteArray())
             if (preferences.getBoolean("model", false))
                 assertNotNull(LocalAsrModel(context).installed())
+            if (InstrumentationRegistry.getArguments().getString("expectOffline") == "true") {
+                assertFalse(cloudConnectionAvailable(context))
+                scenario.onActivity {
+                    val actions = TranscriptActions(it)
+                    actions.recognizeCloud(identity, "en")
+                    assertFalse(actions.busy)
+                    assertEquals(it.getString(R.string.stage11_cloud_offline), actions.message)
+                    actions.close()
+                }
+                assertEquals(doc, alphaValue(alphaSession(scenario).transcripts.load(identity)))
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ import java.io.IOException;
 /** Test APK process deliberately uses only platform classes, without target APK Kotlin runtime. */
 public final class FaultDocumentsProvider extends DocumentsProvider {
     private final HandlerThread thread = new HandlerThread("stage12-provider");
+    private final java.util.concurrent.atomic.AtomicInteger fullWrites = new java.util.concurrent.atomic.AtomicInteger();
     @Override public boolean onCreate() { thread.start(); return true; }
     @Override public Cursor queryRoots(String[] projection) {
         return new MatrixCursor(projection == null ? new String[0] : projection);
@@ -27,7 +28,10 @@ public final class FaultDocumentsProvider extends DocumentsProvider {
         String[] columns = projection == null ? new String[]{Document.COLUMN_DOCUMENT_ID} : projection;
         MatrixCursor cursor = new MatrixCursor(columns);
         MatrixCursor.RowBuilder row = cursor.newRow();
-        for (String column : columns) row.add(Document.COLUMN_DOCUMENT_ID.equals(column) ? id : null);
+        for (String column : columns) {
+            if ("enospc_writes".equals(column)) row.add(fullWrites.get());
+            else row.add(Document.COLUMN_DOCUMENT_ID.equals(column) ? id : null);
+        }
         return cursor;
     }
     @Override public Cursor queryChildDocuments(String parent, String[] projection, String sort) {
@@ -42,6 +46,7 @@ public final class FaultDocumentsProvider extends DocumentsProvider {
                     ParcelFileDescriptor.MODE_WRITE_ONLY, new ProxyFileDescriptorCallback() {
                         @Override public long onGetSize() { return 0L; }
                         @Override public int onWrite(long offset, int size, byte[] data) throws ErrnoException {
+                            fullWrites.incrementAndGet();
                             throw new ErrnoException("write", OsConstants.ENOSPC);
                         }
                         @Override public void onFsync() throws ErrnoException {

@@ -52,7 +52,7 @@ class TextExportProviderTest {
                     assertTrue(controller.beginSelection("Русский / English 😀\n"))
                     controller.completeSelection(
                         DocumentsContract.buildDocumentUri(
-                            "com.monumentogram.dora.stage12.test.documents",
+                            instrumentation.context.packageName + ".stage12.documents",
                             id,
                         )
                     )
@@ -72,12 +72,31 @@ class TextExportProviderTest {
                 checkNotNull(
                         instrumentation.targetContext.contentResolver.openInputStream(
                             DocumentsContract.buildDocumentUri(
-                                "com.monumentogram.dora.stage12.test.documents",
+                                instrumentation.context.packageName + ".stage12.documents",
                                 "success",
                             )
                         )
                     )
                     .use { it.readBytes() }
+            checkNotNull(
+                    instrumentation.targetContext.contentResolver.query(
+                        DocumentsContract.buildDocumentUri(
+                            instrumentation.context.packageName + ".stage12.documents",
+                            "full",
+                        ),
+                        arrayOf("enospc_writes"),
+                        null,
+                        null,
+                        null,
+                    )
+                )
+                .use {
+                    assertTrue(it.moveToFirst())
+                    assertTrue(
+                        "The provider must actually inject ENOSPC during write",
+                        it.getInt(0) > 0,
+                    )
+                }
             assertArrayEquals(
                 "Русский / English 😀\n".toByteArray(Charsets.UTF_8),
                 exported(),
