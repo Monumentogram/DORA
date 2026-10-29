@@ -1,0 +1,138 @@
+{
+  "source_commit": "5b9be24487b2ee8ee951ebc3d52c376d796d48c5",
+  "android_tree_sha": "39cb3dee9bdb3a207bd629c96b59a837bc722b35",
+  "tracked_source_clean": true,
+  "branch": "codex/stage11-privacy-offline-export",
+  "baseline_source": "bbff0211b29f0bda43d4319c14943ae501ad4263",
+  "artifact": "dora-stage11-owner-preview-vc6.apk",
+  "apk_sha256": "1920d88f9d1b99f45e5167f8957020af00d8a459359b37b0c80b9bc1e9155da9",
+  "size_bytes": 84096581,
+  "baseline_apk_sha256": "5f4edbccd4b58a0a519c79c5800886f20e289db5d537312f6cbd320fb1f0a177",
+  "application_id": "com.monumentogram.dora.alpha.preview",
+  "version_code": 6,
+  "version_name": "0.1.0-owner-preview.6",
+  "certificate_sha256": "a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d",
+  "signature_match": "PASS",
+  "manifest_identical": false,
+  "native_payload_identical": true,
+  "runtime_assets_identical": true,
+  "whisper_model_packaged": false,
+  "zip_alignment_16k": "PASS",
+  "native_dependencies": {
+    "libandroidx.graphics.path.so": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libonnxruntime.so": [
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so"
+    ],
+    "libsherpa-onnx-jni.so": [
+      "libandroid.so",
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so",
+      "libonnxruntime.so"
+    ],
+    "libsqlcipher.so": [
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so"
+    ],
+    "libc++_shared.so": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libdora-whisper-jni.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libggml-base.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libggml-cpu.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libm.so"
+    ],
+    "libggml.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libm.so"
+    ],
+    "libwhisper.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libggml.so",
+      "libm.so"
+    ]
+  },
+  "installation": "NOT_PERFORMED",
+  "device_validation": "DEVICE_VALIDATION_PENDING",
+  "artifact_audit": {
+    "version_label_parity": "PASS",
+    "components": [
+      {
+        "type": "service",
+        "name": "com.monumentogram.dora.recording.ProductRecordingService",
+        "exported": false
+      },
+      {
+        "type": "activity",
+        "name": "com.monumentogram.dora.MainActivity",
+        "exported": true
+      },
+      {
+        "type": "provider",
+        "name": "androidx.startup.InitializationProvider",
+        "exported": false
+      },
+      {
+        "type": "service",
+        "name": "androidx.room.MultiInstanceInvalidationService",
+        "exported": false
+      },
+      {
+        "type": "receiver",
+        "name": "androidx.profileinstaller.ProfileInstallReceiver",
+        "exported": true
+      }
+    ],
+    "dex_inventory": [
+      "classes.dex",
+      "classes2.dex",
+      "classes3.dex"
+    ],
+    "no_application_pin_or_biometric_prompt": "PASS",
+    "backup_policy_sha256": [
+      "4d7c79acb6045b86b7aa2c04ccb35663d3ed45154b2b2dea01ca69a477eb07ff",
+      "60fcfa7ac685d16e5a307e1107e68eeaaf6f56a61253470973191eea6e67b032"
+    ],
+    "zip_alignment_16k": "PASS"
+  },
+  "full_local_audit_sha256": "f42bc2ec0439652b7954444f96878fa7334470e3f14d26ba36ff39ccdc771e20",
+  "manifest_changes": [
+    "Preview versionCode 5 to 6",
+    "Preview versionName .5 to .6",
+    "ACCESS_NETWORK_STATE for explicit Cloud offline preflight"
+  ]
+}

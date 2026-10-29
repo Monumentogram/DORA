@@ -1952,3 +1952,16 @@ independent review and artifact identity. The 1000-row full scan takes several s
 there is no new persistent index. DEVICE_VALIDATION_PENDING; physical Preview v5 was
 not updated. Stage10.5C remains owner-closed, ROOT_CAUSE_NOT_PROVEN, outside this work.
 Stage11 privacy/offline/export may begin; no PR merge was performed or authorized.
+
+## Stage11 — Privacy, offline and text export (2026-10-29)
+
+PASS / STAGE11_PRIVACY_OFFLINE_EXPORT_ALPHA_READY for software in the requested
+Alpha scope. Whole-recording deletion/retry, offline local flows and explicit UTF-8
+SAF export of displayed saved text are implemented. Other recordings, manual edits,
+version history and the existing audio-only deletion contract are preserved.
+See [Stage 11 report](STAGE11_RESULT.md) for actual POCO user0 isolated tests, CI,
+independent re-review, signed Preview6 identity and evidence limitations.
+DEVICE_VALIDATION_PENDING applies to final product APK physical acceptance; no
+Preview/Pilot update or user10 source access occurred. Stage12 may proceed within
+its separately defined scope; overall Alpha admission and Cloud exit criteria remain
+separate. PR #124 depends on open Draft #123. No merge; no ASR investigation or Stage20 work.
