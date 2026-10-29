@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-29",
+  "verdict": "PASS / OWNER_DEVICE_PERMANENT_WHISPER_READY",
+  "apk_sha256": "284db30f699c53500ea15d8cb2db7a15f45dd581ad20fece20114001d89e4095",
+  "package": "com.monumentogram.dora.alpha.preview",
+  "android_user": 10,
+  "user0_installed": false,
+  "installation": "PASS, third attempt after separately authorized foreground profile switch; first two rejected",
+  "existing_recordings_preserved": 2,
+  "existing_transcript_documents_preserved": 2,
+  "existing_versions_preserved": 4,
+  "saved_manual_edits_preserved": true,
+  "old_originals_authenticated_before_after_and_after_restart": true,
+  "new_test_recordings": 2,
+  "test_frames": {
+    "ru": 489600,
+    "en": 660800
+  },
+  "ru_functional": "PASS",
+  "en_functional": "PASS",
+  "ru_known_phrase": "PASS exact prefix",
+  "ru_full_clip_quality": "BLOCKED: owner reports possible additional speech; complete ground truth unknown; not classified as hallucination",
+  "en_known_phrase_quality": "PASS exact trimmed text for this one clip; not a general benchmark",
+  "offline": "PASS app has no INTERNET permission; no radio or network settings changed; not an airplane-mode device test",
+  "cancellation": "PASS during Recognition; no third version published; earlier late request reached save boundary and correctly committed second test-only version",
+  "restart": "PASS original texts/edits, original audio, new RU/EN results readable",
+  "clock": "Physical clock unchanged; controlled-clock tests in earlier code evidence",
+  "cloud": "Unchanged; no upload or AWS operation",
+  "deleted_data": false
+}
