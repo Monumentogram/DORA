@@ -22,11 +22,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -50,10 +50,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -64,14 +64,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.recording.RecordingDurability
 import com.monumentogram.dora.audio.recording.RecordingPhase
-import com.monumentogram.dora.ui.DoraBootstrapApp
-import com.monumentogram.dora.ui.theme.DoraDesignTokens
+import com.monumentogram.dora.ui.signal.SignalShell
+import com.monumentogram.dora.ui.signal.uiCopy
 import com.monumentogram.dora.ui.theme.DoraDimensions
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlinx.coroutines.delay
 
@@ -137,16 +136,17 @@ internal fun ProductRecordingHost(activity: MainActivity, action: Triple<String?
                     modifier = Modifier.fillMaxWidth().heightIn(min = DoraDimensions.touchMinimum),
                 ) {
                     Text(
-                        (if (phase == RecordingPhase.PAUSED) "Пауза" else "Запись") +
+                        (if (phase == RecordingPhase.PAUSED) uiCopy("Пауза")
+                        else uiCopy("Запись")) +
                             " · " +
                             (if (authorized) capturedTime(snapshot.recording.frames) + " · "
                             else "") +
-                            "К записи"
+                            uiCopy("К записи")
                     )
                 }
             }
             Box(Modifier.weight(1f)) {
-                DoraBootstrapApp(onRecordingRequested = { showRecording = true })
+                SignalShell(activity, onRecord = { showRecording = true })
             }
         }
 }
@@ -161,7 +161,6 @@ internal fun RecordingScreen(
     val app = activity.application as DoraApplication
     val controller = app.recording
     val state = snapshot.recording
-    val palette = DoraDesignTokens.darkPalette
     val window = (activity as? MainActivity)?.presentationWindow ?: 0L
     val screen = remember(activity) { controller.latency.newPresentationEpoch() }
     val scroll = rememberScrollState()
@@ -182,31 +181,39 @@ internal fun RecordingScreen(
             )
     ) {
         Surface(
-            color = Color(palette.canvas.surfaceDeep),
-            contentColor = Color(palette.text.onDeep),
+            color = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
             RecordingPreflight(
                 activity,
                 controller,
                 onBack,
                 header = {
-                    Text("Запись", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        stringResource(R.string.signal_copy_1),
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
                     Text(
                         when (state.phase) {
                             RecordingPhase.SAVED ->
                                 if (state.alphaLimitReached)
-                                    "Достигнут лимит записи Alpha — 5 минут. Запись сохранена"
-                                else "Запись сохранена"
-                            RecordingPhase.EMPTY -> "Запись завершена без аудио"
-                            RecordingPhase.INTERRUPTED -> "Запись прервана"
-                            else -> "Перед началом записи"
+                                    uiCopy(
+                                        "Достигнут лимит записи Alpha — 5 минут. Запись сохранена"
+                                    )
+                                else uiCopy("Запись сохранена")
+                            RecordingPhase.EMPTY -> uiCopy("Запись завершена без аудио")
+                            RecordingPhase.INTERRUPTED -> uiCopy("Запись прервана")
+                            else -> uiCopy("Перед началом записи")
                         },
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     )
                     if (state.phase == RecordingPhase.SAVED && authorized) {
                         Text(capturedTime(state.frames))
-                        Text("Сохранено на устройстве: ${capturedTime(state.durableFrames)}")
+                        Text(
+                            uiCopy("Сохранено на устройстве") +
+                                ": ${capturedTime(state.durableFrames)}"
+                        )
                     }
                     if (state.phase == RecordingPhase.INTERRUPTED) {
                         Text(
@@ -214,7 +221,9 @@ internal fun RecordingScreen(
                                 ?: captureMessage(snapshot.failure)
                         )
                         Text(
-                            "Сохранённое аудио остаётся на устройстве. Проверьте его состояние ниже."
+                            uiCopy(
+                                "Сохранённое аудио остаётся на устройстве. Проверьте его состояние ниже."
+                            )
                         )
                     }
                 },
@@ -223,7 +232,10 @@ internal fun RecordingScreen(
         }
         return
     }
-    Surface(color = Color(palette.canvas.surfaceDeep), contentColor = Color(palette.text.onDeep)) {
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) {
         Column(
             Modifier.fillMaxSize()
                 .onGloballyPositioned { coordinates ->
@@ -247,25 +259,28 @@ internal fun RecordingScreen(
                     onClick = onBack,
                     modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
                 ) {
-                    Text("Назад")
+                    Text(stringResource(R.string.signal_copy_0))
                 }
-                Text("Запись", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    stringResource(R.string.signal_copy_1),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
             }
             val status =
                 when (state.phase) {
-                    RecordingPhase.PREFLIGHT -> "Перед началом записи"
-                    RecordingPhase.PREPARING -> "Подключаем микрофон…"
-                    RecordingPhase.RECORDING -> "Запись продолжается"
-                    RecordingPhase.PAUSED -> "Запись приостановлена"
-                    RecordingPhase.FINALIZING -> "Проверяем сохранение"
-                    RecordingPhase.SAVED -> "Запись сохранена"
-                    RecordingPhase.EMPTY -> "Запись завершена без аудио"
-                    RecordingPhase.INTERRUPTED -> "Запись прервана"
+                    RecordingPhase.PREFLIGHT -> uiCopy("Перед началом записи")
+                    RecordingPhase.PREPARING -> uiCopy("Подключаем микрофон…")
+                    RecordingPhase.RECORDING -> uiCopy("Запись продолжается")
+                    RecordingPhase.PAUSED -> uiCopy("Запись приостановлена")
+                    RecordingPhase.FINALIZING -> uiCopy("Проверяем сохранение")
+                    RecordingPhase.SAVED -> uiCopy("Запись сохранена")
+                    RecordingPhase.EMPTY -> uiCopy("Запись завершена без аудио")
+                    RecordingPhase.INTERRUPTED -> uiCopy("Запись прервана")
                 }
             Text(
                 when {
-                    snapshot.pausePending -> "Приостанавливаем…"
-                    snapshot.resumePending -> "Возобновляем запись…"
+                    snapshot.pausePending -> uiCopy("Приостанавливаем…")
+                    snapshot.resumePending -> uiCopy("Возобновляем запись…")
                     else -> status
                 },
                 style = MaterialTheme.typography.titleLarge,
@@ -319,27 +334,28 @@ internal fun RecordingScreen(
                             },
                     )
                     Text(snapshot.route)
-                    Text("Осталось в Alpha: ${capturedTime(state.remainingFrames)}")
+                    Text(uiCopy("Осталось в Alpha") + ": ${capturedTime(state.remainingFrames)}")
                     // Keep the control row stationary when asynchronous persistence catches up.
                     Text(
                         if (state.durability != RecordingDurability.PENDING) " "
                         else if (state.phase == RecordingPhase.PAUSED)
-                            "Сохраняем последние секунды…"
-                        else "Сохраняем…",
+                            uiCopy("Сохраняем последние секунды…")
+                        else uiCopy("Сохраняем…"),
                         minLines = 2,
                         maxLines = 2,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                     Text(
                         if (state.durableFrames > 0)
-                            "Сохранено на устройстве: ${capturedTime(state.durableFrames)}"
-                        else "Ожидаем подтверждения сохранения",
+                            uiCopy("Сохранено на устройстве") +
+                                ": ${capturedTime(state.durableFrames)}"
+                        else uiCopy("Ожидаем подтверждения сохранения"),
                         minLines = 2,
                         maxLines = 2,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 } else {
-                    Text("Откройте DORA для просмотра записи")
+                    Text(stringResource(R.string.signal_copy_12))
                 }
             }
             when (state.phase) {
@@ -347,7 +363,9 @@ internal fun RecordingScreen(
                 RecordingPhase.EMPTY,
                 RecordingPhase.SAVED -> Unit // Rendered in the bounded preflight surface above.
                 RecordingPhase.PREPARING ->
-                    TextButton(onClick = controller::requestStop) { Text("Отмена") }
+                    TextButton(onClick = controller::requestStop) {
+                        Text(stringResource(R.string.signal_copy_2))
+                    }
                 RecordingPhase.RECORDING,
                 RecordingPhase.PAUSED ->
                     Row(horizontalArrangement = Arrangement.spacedBy(DoraDimensions.space4)) {
@@ -361,38 +379,46 @@ internal fun RecordingScreen(
                             modifier = Modifier.heightIn(min = DoraDimensions.recordControl),
                         ) {
                             Text(
-                                if (state.phase == RecordingPhase.PAUSED) "Продолжить" else "Пауза"
+                                if (state.phase == RecordingPhase.PAUSED) uiCopy("Продолжить")
+                                else uiCopy("Пауза")
                             )
                         }
                         OutlinedButton(
                             onClick = controller::requestStop,
                             modifier = Modifier.heightIn(min = DoraDimensions.recordControl),
                         ) {
-                            Text("Стоп")
+                            Text(stringResource(R.string.signal_copy_13))
                         }
                     }
                 RecordingPhase.INTERRUPTED -> Unit
-                RecordingPhase.FINALIZING -> Text("Дождитесь подтверждения сохранения")
+                RecordingPhase.FINALIZING -> Text(stringResource(R.string.signal_copy_14))
             }
         }
     }
     if (state.stopConfirmation)
         AlertDialog(
             onDismissRequest = controller::cancelStop,
-            title = { Text("Завершить запись?") },
+            title = { Text(stringResource(R.string.signal_copy_15)) },
             text = {
                 Column {
-                    Text("Уже записанное будет защищено и останется на устройстве.")
+                    Text(stringResource(R.string.signal_copy_16))
                     Text(
-                        if (state.phase == RecordingPhase.PAUSED) "Запись приостановлена"
-                        else if (state.phase == RecordingPhase.RECORDING) "Запись продолжается"
-                        else "Подготовка записи"
+                        if (state.phase == RecordingPhase.PAUSED) uiCopy("Запись приостановлена")
+                        else if (state.phase == RecordingPhase.RECORDING)
+                            uiCopy("Запись продолжается")
+                        else uiCopy("Подготовка записи")
                     )
                 }
             },
-            confirmButton = { TextButton(onClick = controller::confirmStop) { Text("Завершить") } },
+            confirmButton = {
+                TextButton(onClick = controller::confirmStop) {
+                    Text(stringResource(R.string.signal_copy_17))
+                }
+            },
             dismissButton = {
-                TextButton(onClick = controller::cancelStop) { Text("Продолжить запись") }
+                TextButton(onClick = controller::cancelStop) {
+                    Text(stringResource(R.string.signal_copy_18))
+                }
             },
         )
 }
@@ -449,35 +475,48 @@ private fun RecordingPreflight(
                     onCheckedChange = { acknowledged = it },
                     modifier =
                         Modifier.semantics {
-                            contentDescription = "Я предупредил(а) участников о записи"
+                            contentDescription = uiCopy("Я предупредил(а) участников о записи")
                         },
                 )
-                Text("Я предупредил(а) участников о записи")
+                Text(stringResource(R.string.signal_copy_5))
             }
-            Text("Микрофон: ${if (microphone) "доступ разрешён" else "нужно разрешение"}")
-            Text("Активный маршрут микрофона будет определён при запуске")
+            Text(
+                uiCopy("Микрофон") +
+                    ": ${if (microphone) uiCopy("доступ разрешён") else uiCopy("нужно разрешение")}"
+            )
+            Text(stringResource(R.string.signal_copy_6))
             val available = storageBudget.availableBytes
             Text(
-                if (available == null) "Не удалось проверить свободное место"
-                else "Доступно на устройстве: ${available / BYTES_PER_MB} МБ"
+                if (available == null) uiCopy("Не удалось проверить свободное место")
+                else
+                    uiCopy("Доступно на устройстве") +
+                        ": ${available / BYTES_PER_MB} " +
+                        uiCopy("МБ")
             )
             Text(
-                "Alpha: до 5 минут аудио. Для начала записи требуется не менее 142 МБ свободного места."
+                uiCopy(
+                    "Alpha: до 5 минут аудио. Для начала записи требуется не менее 142 МБ свободного места."
+                )
             )
-            Text("Резерв учитывается при запуске; место заранее не выделяется.")
+            Text(stringResource(R.string.signal_copy_7))
             if (!storageBudget.canStart) {
-                Text("Освободите место и обновите проверку. Сохранённые записи останутся доступны.")
+                Text(
+                    uiCopy(
+                        "Освободите место и обновите проверку. Сохранённые записи останутся доступны."
+                    )
+                )
             }
             TextButton(onClick = { storageBudget = controller.storageBudget() }) {
-                Text("Обновить проверку места")
+                Text(stringResource(R.string.signal_copy_8))
             }
-            Text("Аудио записывается только на этом устройстве и сохраняется в зашифрованном виде.")
+            Text(stringResource(R.string.signal_copy_9))
             Text(
-                "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» " +
-                    "или не завершите запись. Запись продолжится при выключенном экране."
+                uiCopy(
+                    "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» "
+                ) + uiCopy("или не завершите запись. Запись продолжится при выключенном экране.")
             )
             if (denied) {
-                Text("Микрофон не разрешён. Запись не началась.")
+                Text(uiCopy("Микрофон не разрешён. Запись не началась."))
                 if (
                     !activity.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)
                 )
@@ -491,17 +530,19 @@ private fun RecordingPreflight(
                             )
                         }
                     ) {
-                        Text("Разрешить в настройках")
+                        Text(stringResource(R.string.signal_copy_10))
                     }
             }
             if (!notifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 Text(
-                    "Уведомления отключены. Android может показывать запись только в списке активных приложений."
+                    uiCopy(
+                        "Уведомления отключены. Android может показывать запись только в списке активных приложений."
+                    )
                 )
                 TextButton(
                     onClick = { notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS) }
                 ) {
-                    Text("Разрешить уведомления")
+                    Text(stringResource(R.string.signal_copy_11))
                 }
             }
             footer()
@@ -519,13 +560,13 @@ private fun RecordingPreflight(
             },
             modifier = Modifier.fillMaxWidth().heightIn(min = DoraDimensions.buttonPrimaryHeight),
         ) {
-            Text("Начать запись")
+            Text(stringResource(R.string.signal_copy_4))
         }
         TextButton(
             onClick = onCancel,
             modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
         ) {
-            Text("Отмена")
+            Text(stringResource(R.string.signal_copy_2))
         }
     }
 }
@@ -549,21 +590,21 @@ private fun DoraWave(level: Float, signalAtNanos: Long, active: Boolean, activit
             lastSample = signalAtNanos
         }
     }
-    val palette = DoraDesignTokens.darkPalette
-    val color = Color(if (active) palette.wave.active else palette.wave.paused)
-    Canvas(Modifier.size(WAVE_SIZE_DP.dp).clearAndSetSemantics {}) {
-        val radius = size.minDimension * WAVE_RADIUS
-        levels.forEachIndexed { index, amplitude ->
-            val angle = index * 2.0 * Math.PI / levels.size - Math.PI / 2
+    val color =
+        if (active) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.onSurfaceVariant
+    Canvas(Modifier.fillMaxWidth().height(WAVE_SIZE_DP.dp).clearAndSetSemantics {}) {
+        val step = size.width / levels.size
+        levels.asReversed().forEachIndexed { index, amplitude ->
             val length =
                 WAVE_STROKE_DP.dp.toPx() +
-                    sqrt(amplitude.coerceIn(0f, 1f)) * size.minDimension * WAVE_EXTENT
-            val direction = Offset(cos(angle).toFloat(), sin(angle).toFloat())
+                    sqrt(amplitude.coerceIn(0f, 1f)) * size.height * WAVE_EXTENT
+            val x = (index + BAR_CENTER_OFFSET) * step
             drawLine(
                 color,
-                center + direction * radius,
-                center + direction * (radius + length),
-                WAVE_STROKE_DP.dp.toPx(),
+                Offset(x, center.y - length),
+                Offset(x, center.y + length),
+                minOf(WAVE_STROKE_DP.dp.toPx(), step / 2),
                 StrokeCap.Round,
             )
         }
@@ -585,39 +626,39 @@ private fun persistenceMessage(failure: AudioFailure?): String? =
     when (failure) {
         null -> null
         AudioFailure.LOCKED,
-        AudioFailure.CANCELLED -> "Действие прервано. Повторите в открытом приложении"
-        AudioFailure.KEY_UNAVAILABLE -> "Ключ хранилища временно недоступен"
+        AudioFailure.CANCELLED -> uiCopy("Действие прервано. Повторите в открытом приложении")
+        AudioFailure.KEY_UNAVAILABLE -> uiCopy("Ключ хранилища временно недоступен")
         AudioFailure.KEY_INVALIDATED ->
-            "Ключ хранилища недоступен. Аудио сохранено в зашифрованном виде"
+            uiCopy("Ключ хранилища недоступен. Аудио сохранено в зашифрованном виде")
         AudioFailure.CORRUPT,
-        AudioFailure.AUTHENTICATION_FAILED -> "Проверка сохранённого аудио не пройдена"
-        AudioFailure.BUSY -> "Хранилище занято. Повторите после завершения операции"
+        AudioFailure.AUTHENTICATION_FAILED -> uiCopy("Проверка сохранённого аудио не пройдена")
+        AudioFailure.BUSY -> uiCopy("Хранилище занято. Повторите после завершения операции")
         AudioFailure.UNCERTAIN,
-        AudioFailure.INCOMPLETE -> "Сохранение требует проверки восстановления"
-        else -> "Не удалось подтвердить сохранение аудио"
+        AudioFailure.INCOMPLETE -> uiCopy("Сохранение требует проверки восстановления")
+        else -> uiCopy("Не удалось подтвердить сохранение аудио")
     }
 
 private fun captureMessage(failure: CaptureFailure?): String =
     when (failure) {
-        CaptureFailure.PERMISSION_DENIED -> "Доступ к микрофону отозван"
+        CaptureFailure.PERMISSION_DENIED -> uiCopy("Доступ к микрофону отозван")
         CaptureFailure.CONFIGURATION_UNAVAILABLE ->
-            "Микрофон не поддерживает необходимый формат 16 кГц, моно, PCM16"
-        CaptureFailure.INITIALIZATION_FAILED -> "Не удалось подготовить микрофон"
+            uiCopy("Микрофон не поддерживает необходимый формат 16 кГц, моно, PCM16")
+        CaptureFailure.INITIALIZATION_FAILED -> uiCopy("Не удалось подготовить микрофон")
         CaptureFailure.START_FAILED,
-        CaptureFailure.MICROPHONE_UNAVAILABLE -> "Микрофон недоступен"
-        CaptureFailure.DEAD_OBJECT -> "Соединение с микрофоном потеряно"
-        CaptureFailure.READ_ERROR -> "Ошибка чтения микрофона"
+        CaptureFailure.MICROPHONE_UNAVAILABLE -> uiCopy("Микрофон недоступен")
+        CaptureFailure.DEAD_OBJECT -> uiCopy("Соединение с микрофоном потеряно")
+        CaptureFailure.READ_ERROR -> uiCopy("Ошибка чтения микрофона")
         CaptureFailure.SERVICE_REJECTED ->
-            "Android не разрешил запуск записи. Откройте DORA и повторите"
-        CaptureFailure.STORAGE_FULL -> "Недостаточно свободного места"
-        CaptureFailure.PERSISTENCE_BACKPRESSURE -> "Хранилище не успевает сохранять аудио"
-        CaptureFailure.THREAD_TIMEOUT -> "Не удалось подтвердить остановку микрофона"
-        else -> "Запись остановлена. Необходимо проверить сохранённое аудио"
+            uiCopy("Android не разрешил запуск записи. Откройте DORA и повторите")
+        CaptureFailure.STORAGE_FULL -> uiCopy("Недостаточно свободного места")
+        CaptureFailure.PERSISTENCE_BACKPRESSURE -> uiCopy("Хранилище не успевает сохранять аудио")
+        CaptureFailure.THREAD_TIMEOUT -> uiCopy("Не удалось подтвердить остановку микрофона")
+        else -> uiCopy("Запись остановлена. Необходимо проверить сохранённое аудио")
     }
 
 private const val AUTH_REFRESH_MILLIS = 100L
 private const val WAVE_BARS = 72
-private const val WAVE_SIZE_DP = 248
+private const val WAVE_SIZE_DP = 120
 private const val WAVE_STROKE_DP = 3
 private const val BYTES_PER_MB = 1_000_000L
 private const val SAMPLE_RATE = 16_000
@@ -627,5 +668,6 @@ private const val NANOS_PER_MILLI = 1_000_000L
 private const val REDUCED_BARS = 12
 private const val WAVE_PERIOD_MILLIS = 50L
 private const val REDUCED_PERIOD_MILLIS = 250L
-private const val WAVE_RADIUS = 0.32f
-private const val WAVE_EXTENT = 0.15f
+private const val WAVE_EXTENT = 0.42f
+
+private const val BAR_CENTER_OFFSET = 0.5f

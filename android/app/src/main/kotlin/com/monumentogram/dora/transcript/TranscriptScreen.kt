@@ -38,7 +38,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -46,9 +48,13 @@ import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.monumentogram.dora.MainActivity
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.transcript.TranscriptDocument
+import com.monumentogram.dora.ui.signal.uiCopy
 import com.monumentogram.dora.ui.theme.DoraDimensions
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
 internal fun TranscriptLauncher(
@@ -58,13 +64,21 @@ internal fun TranscriptLauncher(
 ) {
     var visible by remember { mutableStateOf(false) }
     TextButton(enabled = enabled, onClick = { visible = true }) {
-        Text(if (identity == null) "История расшифровок" else "Расшифровать / открыть текст")
+        Text(
+            if (identity == null) uiCopy("История расшифровок")
+            else uiCopy("Расшифровать / открыть текст")
+        )
     }
     if (visible) TranscriptDialog(activity, identity) { visible = false }
 }
 
 @Composable
-private fun TranscriptDialog(activity: MainActivity, initial: AudioIdentity?, onClose: () -> Unit) {
+internal fun TranscriptDialog(
+    activity: MainActivity,
+    initial: AudioIdentity?,
+    initialFrames: Long = 0,
+    onClose: () -> Unit,
+) {
     val actions = remember(activity) { TranscriptActions(activity) }
     var identity by remember { mutableStateOf(initial) }
     var pendingExit by remember { mutableStateOf(false) }
@@ -101,47 +115,82 @@ private fun TranscriptDialog(activity: MainActivity, initial: AudioIdentity?, on
                 Modifier.fillMaxSize()
                     .safeDrawingPadding()
                     .imePadding()
-                    .padding(DoraDimensions.space4)
+                    .padding(horizontal = DoraDimensions.space6, vertical = DoraDimensions.space4)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(DoraDimensions.space2),
+                verticalArrangement = Arrangement.spacedBy(DoraDimensions.space4),
             ) {
-                Text("Расшифровка", style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    "На устройстве · облако только по вашему запросу",
+                    stringResource(R.string.signal_copy_19),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    stringResource(R.string.signal_copy_20),
                     style = MaterialTheme.typography.labelLarge,
                 )
-                Text(actions.message)
-                Text(activity.modelImportMessage)
+                if (actions.busy)
+                    androidx.compose.material3.LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text(
+                    uiCopy(actions.message),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                if (activity.modelImportMessage.isNotBlank())
+                    Text(uiCopy(activity.modelImportMessage))
                 TextButton(
                     onClick = ::close,
                     modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
                 ) {
-                    Text("Закрыть")
+                    Text(stringResource(R.string.signal_copy_3))
                 }
                 if (identity == null) {
                     TextButton(enabled = !actions.busy, onClick = actions::library) {
-                        Text("Обновить историю")
+                        Text(stringResource(R.string.signal_copy_21))
                     }
                     actions.history.forEachIndexed { index, item ->
                         Button(onClick = { identity = item }) {
-                            Text("Открыть расшифровку ${index + 1}")
+                            Text(uiCopy("Открыть расшифровку") + " ${index + 1}")
                         }
                     }
                 } else {
                     val selected = checkNotNull(identity)
+                    RecordingHeading(selected, actions.document)
+                    OriginalAudioControls(
+                        activity,
+                        selected,
+                        actions.document?.source?.frames ?: initialFrames,
+                        canPlay = { !actions.busy },
+                    )
                     TextButton(
                         enabled = !actions.busy && !dirty,
                         onClick = { actions.load(selected) },
                     ) {
-                        Text("Открыть снова / обновить")
+                        Text(stringResource(R.string.signal_copy_22))
                     }
+                    actions.document?.let { document ->
+                        TranscriptEditor(
+                            document,
+                            actions.busy,
+                            { dirty = it },
+                            { version, text ->
+                                actions.edit(selected, version, document.revision, text)
+                            },
+                            { version, edits ->
+                                actions.select(selected, version, document.revision, edits)
+                            },
+                        )
+                    }
+                    androidx.compose.material3.HorizontalDivider()
+                    Text(
+                        stringResource(R.string.signal_copy_23),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
                     var language by remember { mutableStateOf("ru") }
                     Row(horizontalArrangement = Arrangement.spacedBy(DoraDimensions.space2)) {
                         FilterChip(
                             selected = language == "ru",
                             enabled = !actions.busy,
                             onClick = { language = "ru" },
-                            label = { Text("Русский") },
+                            label = { Text(stringResource(R.string.signal_copy_24)) },
                         )
                         FilterChip(
                             selected = language == "en",
@@ -156,49 +205,41 @@ private fun TranscriptDialog(activity: MainActivity, initial: AudioIdentity?, on
                     ) {
                         Text(
                             if (actions.document?.versions?.isNotEmpty() == true)
-                                "Распознать заново"
-                            else "Расшифровать"
+                                uiCopy("Распознать заново")
+                            else uiCopy("Расшифровать")
                         )
                     }
                     if (actions.busy)
-                        TextButton(onClick = actions::cancel) { Text("Отменить обработку") }
+                        TextButton(onClick = actions::cancel) {
+                            Text(stringResource(R.string.signal_copy_25))
+                        }
                     CloudControls(activity, selected, actions, language, !actions.busy && !dirty)
                     TextButton(
                         enabled = !actions.busy && !dirty && !activity.modelImportStatus.busy,
                         onClick = { activity.launchModelImport() },
                     ) {
-                        Text("Установить пакет распознавания")
+                        Text(stringResource(R.string.signal_copy_26))
                     }
                     Text(
-                        "Модель импортируется вручную и не удаляется из-за календарной даты. " +
-                            "Точность временной привязки не проверена."
+                        uiCopy(
+                            "Модель импортируется вручную и не удаляется из-за календарной даты. "
+                        ) + uiCopy("Точность временной привязки не проверена.")
                     )
-                    actions.document?.let { document ->
-                        TranscriptEditor(
-                            document,
-                            actions.busy,
-                            { dirty = it },
-                            { version, text ->
-                                actions.edit(selected, version, document.revision, text)
-                            },
-                            { version, edits ->
-                                actions.select(selected, version, document.revision, edits)
-                            },
-                        )
-                    }
                 }
             }
         }
         if (pendingExit)
             AlertDialog(
                 onDismissRequest = { pendingExit = false },
-                title = { Text("Есть несохранённые изменения") },
-                text = { Text("Закрыть без сохранения введённого текста?") },
+                title = { Text(stringResource(R.string.signal_copy_27)) },
+                text = { Text(stringResource(R.string.signal_copy_28)) },
                 confirmButton = {
-                    TextButton(onClick = onClose) { Text("Закрыть без сохранения") }
+                    TextButton(onClick = onClose) { Text(stringResource(R.string.signal_copy_29)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { pendingExit = false }) { Text("Вернуться") }
+                    TextButton(onClick = { pendingExit = false }) {
+                        Text(stringResource(R.string.signal_copy_30))
+                    }
                 },
             )
     }
@@ -226,48 +267,76 @@ private fun TranscriptEditor(
     val dirty = draft != rendered
     LaunchedEffect(dirty) { onDirty(dirty) }
     val clipboard = LocalClipboardManager.current
-    Text("Сохранённые версии", style = MaterialTheme.typography.titleLarge)
+    Text(stringResource(R.string.signal_copy_31), style = MaterialTheme.typography.titleLarge)
     document.versions.forEachIndexed { index, item ->
         TextButton(enabled = !busy && !dirty, onClick = { preview = item.id }) {
             Text(
-                "Версия ${index + 1} · ${if (item.engine == "CLOUD") "Облако" else "На устройстве"}" +
-                    if (item.id == document.activeId) " · активная" else ""
+                uiCopy("Версия") +
+                    " ${index + 1} · ${if (item.engine == "CLOUD") uiCopy("Облако") else uiCopy("На устройстве")}" +
+                    if (item.id == document.activeId) uiCopy(" · активная") else ""
+            )
+        }
+    }
+    val engineLabel =
+        if (version.engine == "CLOUD") uiCopy("Облачная расшифровка")
+        else uiCopy("Машинный текст на устройстве")
+    Text(
+        engineLabel +
+            " · " +
+            java.text.DateFormat.getDateTimeInstance(
+                    java.text.DateFormat.MEDIUM,
+                    java.text.DateFormat.SHORT,
+                )
+                .format(java.util.Date(version.createdAt))
+    )
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        SelectionContainer {
+            Text(
+                version.text,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(20.dp).fillMaxWidth(),
             )
         }
     }
     Text(
-        "${if (version.engine == "CLOUD") "Облачная расшифровка" else "Машинный текст на устройстве"} · " +
-            "${java.time.Instant.ofEpochMilli(version.createdAt)}"
-    )
-    SelectionContainer { Text(version.text, style = MaterialTheme.typography.bodyLarge) }
-    Text(
-        if (document.edits.any { it.versionId == version.id }) "Ваши сохранённые правки"
-        else "Редактирование текста",
+        if (document.edits.any { it.versionId == version.id }) uiCopy("Ваши сохранённые правки")
+        else uiCopy("Редактирование текста"),
         style = MaterialTheme.typography.titleMedium,
     )
     OutlinedTextField(
         value = draft,
         onValueChange = { if (it.length <= MAX_EDIT_CHARS) draft = it },
         enabled = !busy,
-        label = { Text("Текст расшифровки") },
+        label = { Text(stringResource(R.string.signal_copy_32)) },
         modifier = Modifier.fillMaxWidth().widthIn(max = 720.dp),
-        minLines = 5,
+        minLines = 8,
+        shape = MaterialTheme.shapes.large,
     )
     Button(enabled = !busy && dirty, onClick = { save(version.id, draft) }) {
-        Text("Сохранить изменения")
+        Text(stringResource(R.string.signal_copy_33))
     }
-    TextButton(onClick = { clipboard.setText(AnnotatedString(draft)) }) { Text("Копировать текст") }
+    TextButton(onClick = { clipboard.setText(AnnotatedString(draft)) }) {
+        Text(stringResource(R.string.signal_copy_34))
+    }
     if (version.id != document.activeId)
         TextButton(enabled = !busy && !dirty, onClick = { choosing = true }) {
-            Text("Сделать активной")
+            Text(stringResource(R.string.signal_copy_35))
         }
     if (choosing) {
         val conflicts = document.conflicts(version.id)
         Text(
-            "Выбор версии сохраняет всю историю. Решите, какие правки оставить только в прежних версиях."
+            uiCopy(
+                "Выбор версии сохраняет всю историю. Решите, какие правки оставить только в прежних версиях."
+            )
         )
         conflicts.forEachIndexed { index, edit ->
-            Text("Правка ${index + 1}: ${edit.text}", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                uiCopy("Правка") + " ${index + 1}: ${edit.text}",
+                style = MaterialTheme.typography.bodyLarge,
+            )
             Row {
                 Checkbox(
                     checked = edit.id in resolved,
@@ -275,7 +344,7 @@ private fun TranscriptEditor(
                         resolved = if (checked) resolved + edit.id else resolved - edit.id
                     },
                 )
-                Text("Выбрать текст этой версии; сохранить правку в истории")
+                Text(stringResource(R.string.signal_copy_37))
             }
         }
         Button(
@@ -285,10 +354,40 @@ private fun TranscriptEditor(
                 choosing = false
             },
         ) {
-            Text("Подтвердить выбор версии")
+            Text(stringResource(R.string.signal_copy_38))
         }
-        TextButton(onClick = { choosing = false }) { Text("Отмена") }
+        TextButton(onClick = { choosing = false }) { Text(stringResource(R.string.signal_copy_2)) }
     }
 }
 
+@Composable
+private fun RecordingHeading(identity: AudioIdentity, document: TranscriptDocument?) {
+    val active =
+        document?.versions?.find { it.id == document.activeId } ?: document?.versions?.lastOrNull()
+    val title =
+        active?.let { document?.rendered(it.id) }?.lineSequence()?.firstOrNull { it.isNotBlank() }
+            ?: stringResource(
+                R.string.signal_recording_name,
+                identity.recordingId.value.take(TITLE_ID_LENGTH),
+            )
+    Text(
+        title,
+        style = MaterialTheme.typography.titleLarge,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+    )
+    active?.let {
+        Text(
+            stringResource(
+                R.string.signal_transcript_date,
+                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                    .format(Date(it.createdAt)),
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private const val TITLE_ID_LENGTH = 8
 private const val MAX_EDIT_CHARS = 32_000

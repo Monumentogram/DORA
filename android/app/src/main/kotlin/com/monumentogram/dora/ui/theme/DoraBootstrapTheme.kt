@@ -1,5 +1,6 @@
 package com.monumentogram.dora.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -9,11 +10,14 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 
 /**
  * Sole Android mapping for the semantic handoff in `docs/design/DORA_MVP1_DESIGN_TOKENS.json`
@@ -273,6 +277,17 @@ internal fun DoraBootstrapTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            (view.context as? Activity)?.let { activity ->
+                WindowCompat.getInsetsController(activity.window, view).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
+        }
+    }
     val mode = if (darkTheme) DoraThemeMode.DARK else DoraThemeMode.LIGHT
     val palette = DoraDesignTokens.paletteFor(mode)
     MaterialTheme(
@@ -295,6 +310,10 @@ private fun DoraPalette.toMaterialColorScheme(mode: DoraThemeMode) =
         DoraThemeMode.LIGHT ->
             lightColorScheme(
                 primary = Color(action.primary),
+                secondary = Color(action.primary),
+                onSecondary = Color(action.onPrimary),
+                secondaryContainer = Color(action.primaryContainer),
+                onSecondaryContainer = Color(action.onPrimaryContainer),
                 onPrimary = Color(action.onPrimary),
                 primaryContainer = Color(action.primaryContainer),
                 onPrimaryContainer = Color(action.onPrimaryContainer),
@@ -303,6 +322,10 @@ private fun DoraPalette.toMaterialColorScheme(mode: DoraThemeMode) =
                 surface = Color(canvas.surface),
                 onSurface = Color(text.primary),
                 surfaceVariant = Color(canvas.surfaceAlt),
+                surfaceContainer = Color(canvas.surface),
+                surfaceContainerHigh = Color(canvas.surfaceAlt),
+                surfaceContainerLow = Color(canvas.background),
+                outlineVariant = Color(boundary.outline),
                 onSurfaceVariant = Color(text.secondary),
                 outline = Color(boundary.outline),
                 error = Color(feedback.error.foreground),
@@ -314,6 +337,10 @@ private fun DoraPalette.toMaterialColorScheme(mode: DoraThemeMode) =
         DoraThemeMode.DARK ->
             darkColorScheme(
                 primary = Color(action.primary),
+                secondary = Color(action.primary),
+                onSecondary = Color(action.onPrimary),
+                secondaryContainer = Color(action.primaryContainer),
+                onSecondaryContainer = Color(action.onPrimaryContainer),
                 onPrimary = Color(action.onPrimary),
                 primaryContainer = Color(action.primaryContainer),
                 onPrimaryContainer = Color(action.onPrimaryContainer),
@@ -322,6 +349,10 @@ private fun DoraPalette.toMaterialColorScheme(mode: DoraThemeMode) =
                 surface = Color(canvas.surface),
                 onSurface = Color(text.primary),
                 surfaceVariant = Color(canvas.surfaceAlt),
+                surfaceContainer = Color(canvas.surface),
+                surfaceContainerHigh = Color(canvas.surfaceAlt),
+                surfaceContainerLow = Color(canvas.background),
+                outlineVariant = Color(boundary.outline),
                 onSurfaceVariant = Color(text.secondary),
                 outline = Color(boundary.outline),
                 error = Color(feedback.error.foreground),
@@ -335,7 +366,7 @@ private fun DoraPalette.toMaterialColorScheme(mode: DoraThemeMode) =
 private fun argb(value: Long): Int = value.toInt()
 
 private object LightColorValues {
-    const val BACKGROUND = 0xFFF5F8FCL
+    const val BACKGROUND = 0xFFF7F8FAL
     const val SURFACE = 0xFFFFFFFFL
     const val SURFACE_ALT = 0xFFE9EFF6L
     const val SURFACE_ELEVATED = 0xFFFFFFFFL
@@ -344,11 +375,11 @@ private object LightColorValues {
     const val TEXT_SECONDARY = 0xFF536176L
     const val TEXT_DISABLED = 0xFF8895A7L
     const val TEXT_ON_DEEP = 0xFFF7FBFFL
-    const val OUTLINE = 0xFFC7D1DEL
+    const val OUTLINE = 0xFFDCE1E9L
     const val OUTLINE_STRONG = 0xFF8796A9L
-    const val PRIMARY = 0xFF0C5193L
+    const val PRIMARY = 0xFF2859C5L
     const val ON_PRIMARY = 0xFFFFFFFFL
-    const val PRIMARY_CONTAINER = 0xFFD8F1FCL
+    const val PRIMARY_CONTAINER = 0xFFE4ECFFL
     const val ON_PRIMARY_CONTAINER = 0xFF031126L
     const val SUCCESS = 0xFF2E7D5BL
     const val SUCCESS_CONTAINER = 0xFFDDF3E8L
@@ -358,7 +389,7 @@ private object LightColorValues {
     const val ERROR_CONTAINER = 0xFFF9DEDCL
     const val REVIEW = 0xFF6E56CFL
     const val REVIEW_CONTAINER = 0xFFEEE8FFL
-    const val WAVE_ACTIVE = 0xFF66C6F0L
+    const val WAVE_ACTIVE = 0xFFADC6FFL
     const val WAVE_QUIET = 0xFF2C709DL
     const val WAVE_PAUSED = 0xFF7F91A9L
     const val RECORD_INDICATOR = 0xFFE45C54L
@@ -366,21 +397,21 @@ private object LightColorValues {
 }
 
 private object DarkColorValues {
-    const val BACKGROUND = 0xFF020A15L
-    const val SURFACE = 0xFF071426L
-    const val SURFACE_ALT = 0xFF0E2037L
-    const val SURFACE_ELEVATED = 0xFF122A47L
+    const val BACKGROUND = 0xFF101318L
+    const val SURFACE = 0xFF191D24L
+    const val SURFACE_ALT = 0xFF252B35L
+    const val SURFACE_ELEVATED = 0xFF2B323EL
     const val SURFACE_DEEP = 0xFF061A35L
     const val TEXT_PRIMARY = 0xFFF2F6FBL
     const val TEXT_SECONDARY = 0xFFA8B6C9L
     const val TEXT_DISABLED = 0xFF6F8198L
     const val TEXT_ON_DEEP = 0xFFF7FBFFL
-    const val OUTLINE = 0xFF2F425CL
+    const val OUTLINE = 0xFF414854L
     const val OUTLINE_STRONG = 0xFF7890ADL
-    const val PRIMARY = 0xFF66C6F0L
+    const val PRIMARY = 0xFFADC6FFL
     const val ON_PRIMARY = 0xFF031126L
-    const val PRIMARY_CONTAINER = 0xFF0B3B6FL
-    const val ON_PRIMARY_CONTAINER = 0xFFD8F1FCL
+    const val PRIMARY_CONTAINER = 0xFF203C70L
+    const val ON_PRIMARY_CONTAINER = 0xFFE4ECFFL
     const val SUCCESS = 0xFF7BE0ADL
     const val SUCCESS_CONTAINER = 0xFF123B2BL
     const val WARNING = 0xFFFFC56BL
@@ -389,7 +420,7 @@ private object DarkColorValues {
     const val ERROR_CONTAINER = 0xFF601410L
     const val REVIEW = 0xFFC9B8FFL
     const val REVIEW_CONTAINER = 0xFF30265DL
-    const val WAVE_ACTIVE = 0xFF66C6F0L
+    const val WAVE_ACTIVE = 0xFFADC6FFL
     const val WAVE_QUIET = 0xFF2C709DL
     const val WAVE_PAUSED = 0xFF7F91A9L
     const val RECORD_INDICATOR = 0xFFFF8A82L

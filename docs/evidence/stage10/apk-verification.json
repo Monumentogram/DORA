@@ -1,0 +1,88 @@
+{
+  "branch": "codex/stage10-signal-ui",
+  "baseline_source": "a6130cfcb4c95cbc101c1d35f019419aa479a653",
+  "artifact": "dora-signal-owner-preview-vc5.apk",
+  "apk_sha256": "d4408fa8d386f2101d7d19eb0558d951274042110e07b23798df98a08f4ad4e5",
+  "size_bytes": 84014493,
+  "baseline_apk_sha256": "5f4edbccd4b58a0a519c79c5800886f20e289db5d537312f6cbd320fb1f0a177",
+  "application_id": "com.monumentogram.dora.alpha.preview",
+  "version_code": 5,
+  "version_name": "0.1.0-owner-preview.5",
+  "certificate_sha256": "a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d",
+  "signature_match": "PASS",
+  "manifest_identical": true,
+  "native_payload_identical": true,
+  "runtime_assets_identical": true,
+  "whisper_model_packaged": false,
+  "zip_alignment_16k": "PASS",
+  "native_dependencies": {
+    "libandroidx.graphics.path.so": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libonnxruntime.so": [
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so"
+    ],
+    "libsherpa-onnx-jni.so": [
+      "libandroid.so",
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so",
+      "libonnxruntime.so"
+    ],
+    "libsqlcipher.so": [
+      "libc.so",
+      "libdl.so",
+      "liblog.so",
+      "libm.so"
+    ],
+    "libc++_shared.so": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libdora-whisper-jni.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libggml-base.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "libggml-cpu.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libm.so"
+    ],
+    "libggml.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libm.so"
+    ],
+    "libwhisper.so": [
+      "libc++_shared.so",
+      "libc.so",
+      "libdl.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libggml.so",
+      "libm.so"
+    ]
+  },
+  "installation": "NOT_PERFORMED",
+  "device_validation": "DEVICE_VALIDATION_PENDING"
+}

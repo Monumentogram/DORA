@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ActivityScenario
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioAvailability
 import com.monumentogram.dora.audio.AudioFormat
 import com.monumentogram.dora.audio.AudioIdentity
@@ -37,6 +38,9 @@ class TranscriptUiTest {
     @Suppress("LongMethod") // End-to-end user sequence preserves one Activity/editor session.
     fun encryptedEditorSavesReopensAndMissingModelIsTruthful() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            // This fixture owns the vault session; dispose the home library's automatic open first.
+            scenario.onActivity { it.setContent {} }
+            ui.waitForIdle()
             lateinit var host: MainActivity
             val opened = CountDownLatch(1)
             var session: ProductAudioSession? = null
@@ -76,11 +80,11 @@ class TranscriptUiTest {
             }
             ui.onNodeWithText("Расшифровать / открыть текст").performClick()
             awaitText("Synthetic machine")
-            ui.onNodeWithText("Распознать в облаке").performScrollTo().performClick()
-            ui.onNodeWithText("Аудио покинет устройство").assertExists()
+            ui.onNodeWithText(label(R.string.signal_copy_39)).performScrollTo().performClick()
+            ui.onNodeWithText(label(R.string.signal_copy_42)).assertExists()
             ui.onNodeWithText("English · EN").performClick()
-            ui.onNodeWithText("Русский · RU").assertExists()
-            ui.onNodeWithText("Не сейчас").performClick()
+            ui.onNodeWithText(label(R.string.signal_copy_43)).assertExists()
+            ui.onNodeWithText(label(R.string.signal_copy_44)).performClick()
             lateinit var current: ProductAudioSession
             scenario.onActivity {
                 current =
@@ -89,22 +93,34 @@ class TranscriptUiTest {
                         .session
             }
             org.junit.Assert.assertEquals(1, value(current.transcripts.load(identity))!!.jobs.size)
-            ui.onNodeWithText("Текст расшифровки")
+            ui.onNodeWithText(label(R.string.signal_copy_32))
                 .performScrollTo()
                 .performTextReplacement("Synthetic correction")
-            ui.onNodeWithText("Сохранить изменения").performScrollTo().performClick()
+            ui.onNodeWithText(label(R.string.signal_copy_3), useUnmergedTree = true)
+                .performScrollTo()
+                .performClick()
+            ui.onNodeWithText(label(R.string.signal_copy_27)).assertExists()
+            ui.onNodeWithText(label(R.string.signal_copy_30)).performClick()
+            ui.onNodeWithText(label(R.string.signal_copy_33)).performScrollTo().performClick()
             awaitText("Ваши сохранённые правки")
-            ui.onNodeWithText("Закрыть", useUnmergedTree = true).performScrollTo().performClick()
+            ui.onNodeWithText(label(R.string.signal_copy_3), useUnmergedTree = true)
+                .performScrollTo()
+                .performClick()
             ui.onNodeWithText("Расшифровать / открыть текст").performClick()
             awaitText("Synthetic correction")
             ui.onNodeWithText("Распознать заново").performScrollTo().performClick()
             awaitText(
                 "Установите пакет распознавания без интернета. Запись аудио доступна без него."
             )
-            ui.onNodeWithText("Synthetic machine").assertExists()
-            ui.onNodeWithText("Synthetic correction").assertExists()
+            awaitText("Synthetic machine")
+            awaitText("Synthetic correction")
         }
     }
+
+    private fun label(id: Int) =
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .getString(id)
 
     private fun awaitText(text: String) {
         ui.waitUntil(30_000) { ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }

@@ -2,6 +2,7 @@ package com.monumentogram.dora.transcript
 
 import android.system.Os
 import android.system.OsConstants
+import androidx.activity.compose.setContent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -74,6 +75,9 @@ class NativeAsrIntegrationTest {
         val pcm = readPublicFixture(File(context.noBackupFilesDir, PUBLIC_PCM_PATH), expectedDigest)
         try {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                // This integration scenario owns the vault; the home library opens one separately.
+                scenario.onActivity { it.setContent {} }
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync()
                 val session = open(scenario, reopen = false)
                 val identity = saveProtectedRecording(session, pcm)
                 // Only the encrypted original is used by both actual inference attempts below.

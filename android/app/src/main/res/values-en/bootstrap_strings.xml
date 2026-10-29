@@ -1,0 +1,16 @@
+<resources>
+    <string name="bootstrap_title">DORA Alpha — app foundation</string>
+    <string name="bootstrap_body">This is the original application shell. Product functionality is introduced through separate decisions, proofs of concept and stages.</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_destination_description">%1$s section</string>
+    <string name="placeholder_home">The approved Dora home screen will appear here. This shell currently demonstrates navigation, themes and adaptive layout.</string>
+    <string name="placeholder_history">Conversation history is not implemented in this Alpha shell. This screen does not read or create user data.</string>
+    <string name="placeholder_tasks">Tasks are not implemented in this Alpha shell. This screen has no database, extraction or synchronization.</string>
+    <string name="placeholder_settings">Product settings are not implemented in this Alpha shell. Cloud processing and production configuration are absent.</string>
+    <string name="record_action_label">Record</string>
+    <string name="record_action_description">Open recording screen</string>
+    <string name="record_action_state">Starting a recording requires confirmation</string>
+    <string name="record_unavailable_message">Recording is unavailable in this shell: DORA Alpha does not request microphone access.</string>
+</resources>
