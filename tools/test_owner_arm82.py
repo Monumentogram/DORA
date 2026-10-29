@@ -34,11 +34,21 @@ class OwnerArm82Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.audit.check_needed(name, deps)
 
-    def test_private_model_is_external_exact_and_expiry_is_exclusive(self):
+    def test_private_model_is_external_exact_on_future_dates(self):
         from datetime import datetime, timezone
-        self.audit.check_custody_time(datetime(2026, 11, 2, 20, 59, 59, tzinfo=timezone.utc))
-        with self.assertRaises(ValueError):
-            self.audit.check_custody_time(datetime(2026, 11, 2, 21, 0, tzinfo=timezone.utc))
+        from unittest.mock import patch
+        import hashlib
+        # Patch the clock source used by the old release gate without changing OS time.
+        for date in ('2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05',
+                     '2027-01-01', '2030-01-01', '2100-01-01'):
+            with self.subTest(date=date), tempfile.TemporaryDirectory() as temporary:
+                model = Path(temporary) / 'model.bin'
+                model.write_bytes(b'synthetic model')
+                with patch.object(self.audit, 'datetime', create=True) as clock, \
+                     patch.object(self.audit, 'MODEL_BYTES', model.stat().st_size), \
+                     patch.object(self.audit, 'MODEL_SHA', hashlib.sha256(model.read_bytes()).hexdigest()):
+                    clock.now.return_value = datetime.fromisoformat(date).replace(tzinfo=timezone.utc)
+                    self.audit.check_model(model)
         with tempfile.TemporaryDirectory() as temporary:
             model = Path(temporary) / 'model.bin'
             model.write_bytes(b'wrong model')

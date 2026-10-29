@@ -59,6 +59,12 @@ class Store:
                 CREATE TABLE IF NOT EXISTS custody(singleton INTEGER PRIMARY KEY CHECK(singleton=1), ciphertext BLOB NOT NULL);
                 CREATE TABLE IF NOT EXISTS namespace(singleton INTEGER PRIMARY KEY CHECK(singleton=1), binding TEXT NOT NULL);
             """)
+            # Additive migration: legacy finite invitations are never implicitly trusted.
+            columns = {row[1] for row in self.db.execute("PRAGMA table_info(installations)")}
+            if "trusted_at" not in columns:
+                self.db.execute("ALTER TABLE installations ADD COLUMN trusted_at INTEGER")
+            if "revoked_at" not in columns:
+                self.db.execute("ALTER TABLE installations ADD COLUMN revoked_at INTEGER")
             existing = self.db.execute("SELECT ciphertext FROM custody WHERE singleton=1").fetchone()
             if existing:
                 try:

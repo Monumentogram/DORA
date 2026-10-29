@@ -45,6 +45,9 @@ def main(argv=None):
     invite = commands.add_parser("invite")
     invite.add_argument("--invitation", required=True, help="public Android invitation export JSON")
     invite.add_argument("--expires-at", required=True, type=int, help="finite epoch seconds")
+    trust = commands.add_parser("trust", help="confirm permanent trust for an existing exact owner/public key")
+    trust.add_argument("--invitation", required=True, help="independently verified Android public invitation JSON")
+    trust.add_argument("--recover-expired", action="store_true", help="owner explicitly reconfirmed an expired, non-revoked key")
     revoke = commands.add_parser("revoke")
     revoke.add_argument("--installation", required=True)
     commands.add_parser("preflight")
@@ -68,18 +71,22 @@ def main(argv=None):
                 os.fsync(output.fileno())
             print("CUSTODY_KEY_CREATED")
             return 0
-        if args.command in ("invite", "revoke"):
+        if args.command in ("invite", "trust", "revoke"):
             store = Store(config.ledger_path, custody_key(config))
             store.bind_namespace(config.namespace())
             auth = Auth(store)
-            if args.command == "invite":
+            if args.command in ("invite", "trust"):
                 invitation = json.loads(Path(args.invitation).read_text(encoding="utf-8"))
                 if set(invitation) != {"installation_id", "public_key_spki_base64"}:
                     raise ValueError("invitation fields")
                 key = serialization.load_der_public_key(base64.b64decode(invitation["public_key_spki_base64"], validate=True))
                 public = key.public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
-                auth.invite(invitation["installation_id"], config.owner_id, public, args.expires_at)
-                print("INSTALLATION_INVITED")
+                if args.command == "invite":
+                    auth.invite(invitation["installation_id"], config.owner_id, public, args.expires_at)
+                    print("INSTALLATION_INVITED")
+                else:
+                    auth.trust(invitation["installation_id"], config.owner_id, public, args.recover_expired)
+                    print("INSTALLATION_TRUSTED")
             else:
                 auth.revoke(args.installation)
                 print("INSTALLATION_REVOKED")

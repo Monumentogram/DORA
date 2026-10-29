@@ -1,5 +1,4 @@
 """Closed Pilot v4 native inventory. Host-only; never accesses an Android device."""
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -15,7 +14,6 @@ from isolated_alpha_apk import sha
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_SHA = '49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f'
 MODEL_BYTES = 264464607
-EXPIRY = datetime(2026, 11, 2, 21, tzinfo=timezone.utc)
 STATIC_RECEIPT = ROOT / 'docs/evidence/stage9-asr/arm64-static-build.json'
 # Unchanged ARM64 payload from the independently audited Pilot v3 at 4ee27ef.
 PILOT_V3_NATIVE = {
@@ -71,12 +69,7 @@ def check_private_runtime(directory):
     check_sources()
 
 
-def check_custody_time(now=None):
-    require((now or datetime.now(timezone.utc)) < EXPIRY, 'MODEL_CUSTODY_EXPIRED')
-
-
 def check_model(model):
-    check_custody_time()
     model = Path(model).resolve()
     require(not model.is_relative_to(ROOT) and not any((p / '.git').exists() for p in model.parents),
             'MODEL_MUST_BE_OUTSIDE_GIT')

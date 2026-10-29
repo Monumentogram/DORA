@@ -37,12 +37,18 @@ class OperatorTests(unittest.TestCase):
             invited = run("invite", "--invitation", str(invitation), "--expires-at", str(expiry))
             self.assertEqual(0, invited.returncode, invited.stderr)
             self.assertNotEqual(0, run("invite", "--invitation", str(invitation), "--expires-at", str(expiry)).returncode)
+            trusted = run("trust", "--invitation", str(invitation))
+            self.assertEqual(0, trusted.returncode, trusted.stderr)
+            self.assertEqual("INSTALLATION_TRUSTED", trusted.stdout.strip())
+            self.assertEqual(0, run("trust", "--invitation", str(invitation)).returncode)
             revoked = run("revoke", "--installation", identity)
             self.assertEqual(0, revoked.returncode, revoked.stderr)
+            self.assertNotEqual(0, run("trust", "--invitation", str(invitation), "--recover-expired").returncode)
             store = Store(cfg.ledger_path, Path(cfg.custody_key_path).read_bytes())
             row = store.db.execute("SELECT * FROM installations WHERE id=?", (identity,)).fetchone()
             self.assertEqual("owner-a", row["owner"])
             self.assertEqual(1, row["revoked"])
+            self.assertIsNotNone(row["trusted_at"])
             store.close()
 
     def test_disabled_serve_and_preflight_fail_before_aws_credentials_lookup(self):

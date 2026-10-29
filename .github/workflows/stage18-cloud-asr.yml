@@ -65,6 +65,7 @@ jobs:
       - name: Existing local-mode and versioning contract guards
         run: |
           python3 -m unittest discover -s tools -p test_owner_arm82.py
+          python3 -m unittest discover -s tools -p test_permanent_access_contract.py
           python3 -m unittest discover -s tools -p test_pin_free_local_access.py
           python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
           python3 -m unittest discover -s tools -p test_owner_preview_artifact.py

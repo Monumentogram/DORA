@@ -1608,3 +1608,11 @@ and the [acceptance report](../STAGE9_2R_HTTPS_ROOT_CAUSE_AND_REPAIR_RESULT.md).
 routes; direct EC2 transport root cause remains unresolved. No new APK, public
 distribution, universal network qualification, Stage8.6 admission, Signal work or
 merge follows. Historical status records above remain unchanged.
+
+## Stage9.3 — Permanent Local/Cloud access (2026-10-29)
+
+Implement ADR-0029 on Stage9.2R baseline: additive trusted registration, operator
+migration/recovery, unchanged short request/session protections, retirement-aware
+source retention, release-script cutoff removal and future-date tests. Runtime
+and CI evidence is recorded in STAGE9_3_PERMANENT_ACCESS_RESULT.md. Stage10 Signal
+may proceed only after that report confirms acceptance; no PR merge is authorized.

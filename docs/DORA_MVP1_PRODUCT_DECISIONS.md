@@ -1293,3 +1293,12 @@ ADR-0022/Stage9. Она не продлевает хранение персон�
 модель для массовых пользователей. Действительность обновления на телефоне
 требует сборки, проверки и установки новой APK без удаления данных до старого
 дедлайна. Основная ветка и действующие AWS-ветки не изменяются этим решением.
+
+## DEC-050 — Permanent owner Local/Cloud access (2026-10-29)
+
+The Stage9.3 owner request removes calendar shutdown of trusted installations and
+owner-local model verification in release scripts. Existing P-256 Keystore proof,
+900-second sessions, manual consent and explicit revocation remain mandatory.
+Only exact owner/public-key-confirmed registrations become permanent; expired
+legacy invitations require explicit owner recovery. See ADR-0029. This does not
+extend personal-audio/corpus retention, permit mass distribution or merge a PR.

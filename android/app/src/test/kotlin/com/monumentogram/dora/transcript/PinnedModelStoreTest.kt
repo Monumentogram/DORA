@@ -6,6 +6,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
 import java.security.MessageDigest
+import java.time.Instant
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -71,6 +72,26 @@ class PinnedModelStoreTest {
         assertNotNull(storeFor(directory).installed())
         assertTrue(installed.exists())
         assertArrayEquals(fixture, installed.readBytes())
+    }
+
+    @Test
+    fun futureCalendarMetadataNeverExpiresLocalModel() = withStore { store, directory ->
+        assertTrue(store.install(ByteArrayInputStream(fixture)))
+        val dates =
+            listOf(
+                "2026-11-02",
+                "2026-11-03",
+                "2026-11-04",
+                "2026-11-05",
+                "2027-01-01",
+                "2030-01-01",
+                "2100-01-01",
+            )
+        for (date in dates) {
+            val installed = store.installed()!!
+            assertTrue(installed.setLastModified(Instant.parse("${date}T00:00:00Z").toEpochMilli()))
+            assertArrayEquals(fixture, storeFor(directory).installed()!!.readBytes())
+        }
     }
 
     @Test

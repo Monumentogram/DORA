@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 from build_internal_alpha import signing_material, ALIAS
-from owner_arm82 import check_private_runtime, check_model, check_custody_time, MODEL_SHA as ASR_MODEL_SHA
+from owner_arm82 import check_private_runtime, check_model, MODEL_SHA as ASR_MODEL_SHA
 from isolated_alpha_apk import AAR_SHA, MODEL_SHA, sha
 from owner_alpha_pilot_artifact import (
     ROOT, PRODUCTION_CERTIFICATE, OWNER_CERTIFICATE, EXCLUDED_CERTIFICATES, exact_source, require, check_reproducible,
@@ -90,7 +90,6 @@ def main():
         exact_source(args.source_sha, 'owner-local')
         private_inputs(args.private_vad_dir)
         check_private_runtime(args.private_asr_dir)
-        check_custody_time()
         destination = output / f'build{index}'
         destination.mkdir()
         print(f'Start ownerPilot clean strict build {index}', flush=True)

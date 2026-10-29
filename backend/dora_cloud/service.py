@@ -80,7 +80,8 @@ class Service:
 
     def _grant_valid(self, job):
         row = self.store.db.execute("SELECT * FROM installations WHERE id=?", (job["installation"],)).fetchone()
-        return bool(row and not row["revoked"] and row["expires"] > self.clock() and row["owner"] == job["owner"])
+        return bool(row and not row["revoked"] and row["owner"] == job["owner"] and
+                    (row["trusted_at"] is not None or row["expires"] > self.clock()))
 
     def _consent(self, job):
         if job["revoked"] or not self._grant_valid(job):
@@ -346,13 +347,18 @@ class Service:
             # Source bindings are authority records: preserve while any owning
             # installation remains active, then keep only bounded nonsecret history.
             for row in self.store.db.execute("SELECT * FROM recordings").fetchall():
-                last = self.store.db.execute("SELECT max(expires) FROM installations WHERE owner=?", (row["owner"],)).fetchone()[0]
+                if self.store.db.execute("SELECT 1 FROM installations WHERE owner=? AND trusted_at IS NOT NULL AND revoked=0",
+                                         (row["owner"],)).fetchone():
+                    continue
+                last = self.store.db.execute("""SELECT max(CASE WHEN trusted_at IS NOT NULL
+                    THEN coalesce(revoked_at, expires) ELSE expires END)
+                    FROM installations WHERE owner=?""", (row["owner"],)).fetchone()[0]
                 if now >= max(last or row["created"], row["created"])+90*86400 and not self.store.db.execute(
                         "SELECT 1 FROM jobs WHERE owner=?", (row["owner"],)).fetchone():
                     with self.store.transaction():
                         self.store.db.execute("INSERT OR IGNORE INTO tombstones VALUES(?,?)", (row["id"], now))
                         self.store.db.execute("DELETE FROM recordings WHERE id=?", (row["id"],))
-            for row in self.store.db.execute("SELECT * FROM installations WHERE expires<?", (now-90*86400,)).fetchall():
+            for row in self.store.db.execute("SELECT * FROM installations WHERE trusted_at IS NULL AND expires<?", (now-90*86400,)).fetchall():
                 if not self.store.db.execute("SELECT 1 FROM jobs WHERE owner=?", (row["owner"],)).fetchone():
                     with self.store.transaction():
                         self.store.db.execute("INSERT OR IGNORE INTO tombstones VALUES(?,?)", (row["id"], now))

@@ -37,9 +37,28 @@ class Auth:
             self.store.db.execute("INSERT INTO installations(id,owner,public_key,expires) VALUES(?,?,?,?)",
                                   (installation, owner, public_key, expires))
 
+    def trust(self, installation, owner, public_key, recover_expired=False):
+        """Operator-confirmed migration of an exact existing key; never rebind/revive."""
+        key = serialization.load_pem_public_key(public_key)
+        canonical = key.public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo)
+        with self.store.serialized(), self.store.transaction():
+            row = self.store.db.execute("SELECT * FROM installations WHERE id=?", (installation,)).fetchone()
+            if (not row or row["revoked"] or row["owner"] != owner or
+                    self.store.db.execute("SELECT 1 FROM tombstones WHERE id=?", (installation,)).fetchone()):
+                raise ValueError("installation not eligible for trust")
+            existing = serialization.load_pem_public_key(row["public_key"])
+            if existing.public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo) != canonical:
+                raise ValueError("installation key mismatch")
+            if row["trusted_at"] is not None:
+                return
+            if row["expires"] <= self.clock() and not recover_expired:
+                raise ValueError("expired invitation requires explicit owner recovery")
+            self.store.db.execute("UPDATE installations SET trusted_at=? WHERE id=?", (int(self.clock()), installation))
+
     def revoke(self, installation):
         with self.store.serialized(), self.store.transaction():
-            self.store.db.execute("UPDATE installations SET revoked=1 WHERE id=?", (installation,))
+            self.store.db.execute("UPDATE installations SET revoked=1, revoked_at=coalesce(revoked_at,?) WHERE id=?",
+                                  (int(self.clock()), installation))
             self.store.db.execute("DELETE FROM sessions WHERE installation=?", (installation,))
 
     def verify(self, method, path, body, headers, session_required=True):
@@ -51,7 +70,7 @@ class Auth:
             if not canonical_uuid(install) or not canonical_uuid(nonce) or str(int(stamp)) != stamp or abs(int(stamp)-now) > 60:
                 raise ValueError()
             row = self.store.db.execute("SELECT * FROM installations WHERE id=?", (install,)).fetchone()
-            if not row or row["revoked"] or row["expires"] <= now:
+            if not row or row["revoked"] or (row["trusted_at"] is None and row["expires"] <= now):
                 raise ValueError()
             key = serialization.load_pem_public_key(row["public_key"])
             signature = base64.b64decode(headers.get("x-dora-signature", ""), validate=True)
@@ -73,7 +92,9 @@ class Auth:
         return dict(row)
 
     def session(self, principal):
-        expires = min(int(self.clock()) + 900, principal["expires"])
+        expires = int(self.clock()) + 900
+        if principal["trusted_at"] is None:
+            expires = min(expires, principal["expires"])
         token = secrets.token_urlsafe(32)
         with self.store.transaction():
             self.store.db.execute("DELETE FROM sessions WHERE installation=?", (principal["id"],))

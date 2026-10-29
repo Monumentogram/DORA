@@ -18,8 +18,10 @@ DORA-ASR-V1\nMETHOD\nPATH\nTIME\nNONCE\nSHA256_HEX_BODY
 There is no trailing LF. METHOD is uppercase; PATH is the exact allowlisted
 path, UUIDs lowercase; hash the actual body bytes (GET uses empty body). Timestamp
 tolerance is 60 seconds. Nonces are durably single-use across paths. Public keys
-are admitted only by an operator invitation command, with finite grant expiry and
-server-owned owner binding. All paths except session also require Authorization:
+are admitted only by an operator invitation command with server-owned owner binding.
+An operator then confirms permanent trust for the exact existing key with `trust`.
+Unmigrated invitations remain finite; trusted registrations last until explicit
+revocation and do not inherit the invitation deadline. All paths except session also require Authorization:
 Bearer access_token. A token cannot be used with another installation's proof.
 
 | Method/path | Request | Response |
@@ -61,7 +63,8 @@ existing exact actions retain the original grant and immutable deadline. Cancel
 revokes that action and fences future bytes, dispatch and result publication.
 Cancellation requires authentication and ownership, independently of ASR consent.
 
-Access sessions last at most 15 minutes and never outlive the invitation. Obtain a
+Access sessions last at most 15 minutes (also bounded by invitation expiry for
+unmigrated finite grants). Obtain a
 new session by fresh key proof; there is no stored reusable refresh credential.
 The current installation grant is checked on each operation.
 
