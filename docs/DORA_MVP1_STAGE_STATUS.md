@@ -1942,3 +1942,13 @@ artifact; see STAGE10_RESULT.md and ADR-SIGNAL-002. Existing storage, native pay
 model and Cloud registration paths are preserved. DEVICE_VALIDATION_PENDING: no new
 APK was installed on POCO. Live Cloud from the new APK and published-branch CI are
 separate from local PASS. The implementation is proposed through a Draft PR; no merge.
+
+## Stage10.3C — Local current-text search (2026-10-29)
+
+PASS / STAGE10_SEARCH_ALPHA_READY for local software, tests and signed Preview APK.
+Search uses the existing encrypted library and only the current edited/selected text.
+See STAGE10_3C_SEARCH_RESULT.md for test history, 10/100/1000 timings, screenshots,
+independent review and artifact identity. The 1000-row full scan takes several seconds;
+there is no new persistent index. DEVICE_VALIDATION_PENDING; physical Preview v5 was
+not updated. Stage10.5C remains owner-closed, ROOT_CAUSE_NOT_PROVEN, outside this work.
+Stage11 privacy/offline/export may begin; no PR merge was performed or authorized.

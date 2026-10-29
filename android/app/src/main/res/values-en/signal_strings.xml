@@ -1,4 +1,11 @@
 <resources>
+    <string name="signal_search">Search recordings</string>
+    <string name="signal_search_hint">Title or transcript</string>
+    <string name="signal_search_clear">Clear query</string>
+    <string name="signal_search_close">Close search</string>
+    <string name="signal_search_empty_title">No recordings found</string>
+    <string name="signal_search_empty_body">Try another word or part of a word.</string>
+    <string name="signal_no_transcript">No transcript yet</string>
     <string name="nav_settings">Settings</string>
     <string name="signal_refresh">Refresh recordings</string>
     <string name="signal_recordings">Recordings</string>

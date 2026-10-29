@@ -46,6 +46,7 @@ import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.recording.RecordingCompletionState
+import com.monumentogram.dora.audio.recording.RecordingSearchRow
 import com.monumentogram.dora.recording.capturedTime
 import com.monumentogram.dora.transcript.TranscriptDialog
 import com.monumentogram.dora.ui.theme.DoraDimensions
@@ -59,9 +60,10 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
     var settings by rememberSaveable { mutableStateOf(false) }
     var selected by remember { mutableStateOf<AudioIdentity?>(null) }
     var history by remember { mutableStateOf(false) }
+    var selectedFrames by remember { mutableStateOf(0L) }
     DisposableEffect(activity) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) library.load()
+            if (event == Lifecycle.Event.ON_RESUME && selected == null && !history) library.load()
             if (event == Lifecycle.Event.ON_PAUSE) library.clear()
         }
         activity.lifecycle.addObserver(observer)
@@ -72,25 +74,35 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
         }
     }
     BackHandler(settings) { settings = false }
+    BackHandler(library.searching && selected == null && !history) { library.closeSearch() }
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        if (settings) stringResource(R.string.nav_settings) else "DORA",
-                        style = MaterialTheme.typography.headlineMedium,
-                    )
-                },
-                actions = {
-                    if (!settings)
-                        IconButton(onClick = { library.load() }, enabled = !library.busy) {
-                            Icon(
-                                painterResource(R.drawable.ic_signal_refresh),
-                                stringResource(R.string.signal_refresh),
-                            )
+            if (!settings && library.searching) LibrarySearchBar(library)
+            else
+                TopAppBar(
+                    title = {
+                        Text(
+                            if (settings) stringResource(R.string.nav_settings) else "DORA",
+                            style = MaterialTheme.typography.headlineMedium,
+                        )
+                    },
+                    actions = {
+                        if (!settings) {
+                            IconButton(onClick = { library.openSearch() }) {
+                                Icon(
+                                    painterResource(R.drawable.ic_signal_search),
+                                    stringResource(R.string.signal_search),
+                                )
+                            }
+                            IconButton(onClick = { library.load() }, enabled = !library.busy) {
+                                Icon(
+                                    painterResource(R.drawable.ic_signal_refresh),
+                                    stringResource(R.string.signal_refresh),
+                                )
+                            }
                         }
-                },
-            )
+                    },
+                )
         },
         bottomBar = {
             NavigationBar {
@@ -102,7 +114,10 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
                 )
                 NavigationBarItem(
                     selected = settings,
-                    onClick = { settings = true },
+                    onClick = {
+                        library.closeSearch()
+                        settings = true
+                    },
                     icon = { Icon(painterResource(R.drawable.ic_bootstrap_settings), null) },
                     label = { Text(stringResource(R.string.nav_settings)) },
                 )
@@ -172,17 +187,29 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
                                 )
                             }
                             Text(
-                                stringResource(R.string.signal_empty_title),
+                                stringResource(
+                                    if (library.query.isNotBlank())
+                                        R.string.signal_search_empty_title
+                                    else R.string.signal_empty_title
+                                ),
                                 style = MaterialTheme.typography.headlineSmall,
                             )
                             Text(
-                                stringResource(R.string.signal_empty_body),
+                                stringResource(
+                                    if (library.query.isNotBlank())
+                                        R.string.signal_search_empty_body
+                                    else R.string.signal_empty_body
+                                ),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                         }
                     }
                 items(library.entries, key = { it.recording.cursor }) { entry ->
-                    RecordingRow(entry) { selected = entry.recording.identity }
+                    RecordingRow(entry, library.query.trim()) {
+                        selectedFrames = entry.recording.recoveredFrames
+                        selected = entry.recording.identity
+                        library.invalidate()
+                    }
                 }
                 if (library.more)
                     item {
@@ -191,7 +218,13 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
                         }
                     }
                 item {
-                    TextButton(onClick = { history = true }, modifier = Modifier.padding(16.dp)) {
+                    TextButton(
+                        onClick = {
+                            library.invalidate()
+                            history = true
+                        },
+                        modifier = Modifier.padding(16.dp),
+                    ) {
                         Text(stringResource(R.string.signal_transcript_history))
                     }
                 }
@@ -201,8 +234,7 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
         TranscriptDialog(
             activity,
             selected,
-            library.entries.find { it.recording.identity == selected }?.recording?.recoveredFrames
-                ?: 0,
+            selectedFrames,
         ) {
             selected = null
             history = false
@@ -211,18 +243,11 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
 }
 
 @Composable
-private fun RecordingRow(entry: LibraryEntry, onClick: () -> Unit) {
-    val document = entry.document
-    val active =
-        document?.versions?.find { it.id == document.activeId } ?: document?.versions?.lastOrNull()
-    val text = active?.let { document?.rendered(it.id) }.orEmpty()
+private fun RecordingRow(entry: RecordingSearchRow, query: String, onClick: () -> Unit) {
+    val preview = entry.preview
+    val text = preview.snippet
     val identity = entry.recording.identity
-    val title =
-        text.lineSequence().firstOrNull { it.isNotBlank() }
-            ?: stringResource(
-                R.string.signal_recording_name,
-                identity?.recordingId?.value?.take(SHORT_ID_LENGTH).orEmpty(),
-            )
+    val title = preview.title
     Surface(
         onClick = onClick,
         enabled = identity != null,
@@ -243,7 +268,7 @@ private fun RecordingRow(entry: LibraryEntry, onClick: () -> Unit) {
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    title,
+                    highlighted(title, query),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -259,9 +284,8 @@ private fun RecordingRow(entry: LibraryEntry, onClick: () -> Unit) {
                                 entry.recording.completionState !=
                                     RecordingCompletionState.FINALIZED ->
                                     R.string.signal_recovery_needed
-                                document?.jobs?.lastOrNull()?.status in
-                                    setOf("QUEUED", "RUNNING") -> R.string.signal_processing
-                                active != null -> R.string.signal_transcript_ready
+                                preview.processing -> R.string.signal_processing
+                                preview.transcriptDate != null -> R.string.signal_transcript_ready
                                 else -> R.string.signal_audio_saved
                             }
                         ),
@@ -270,13 +294,18 @@ private fun RecordingRow(entry: LibraryEntry, onClick: () -> Unit) {
                 )
                 if (text.isNotBlank())
                     Text(
-                        text,
+                        highlighted(text, query),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                active?.let {
+                if (preview.transcriptDate == null && !preview.processing)
+                    Text(
+                        stringResource(R.string.signal_no_transcript),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                preview.transcriptDate?.let {
                     Text(
                         stringResource(
                             R.string.signal_transcript_date,
@@ -284,7 +313,7 @@ private fun RecordingRow(entry: LibraryEntry, onClick: () -> Unit) {
                                     DateFormat.MEDIUM,
                                     DateFormat.SHORT,
                                 )
-                                .format(Date(it.createdAt)),
+                                .format(Date(it)),
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -298,5 +327,3 @@ private fun RecordingRow(entry: LibraryEntry, onClick: () -> Unit) {
         color = MaterialTheme.colorScheme.outlineVariant,
     )
 }
-
-private const val SHORT_ID_LENGTH = 8

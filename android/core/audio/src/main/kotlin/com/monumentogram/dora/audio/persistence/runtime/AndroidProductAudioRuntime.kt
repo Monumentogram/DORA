@@ -57,6 +57,51 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
 
     fun isRecordingUiAuthorized(): Boolean = localAccess.isForeground
 
+    @Suppress(
+        "LongParameterList"
+    ) // Keep query, cursor, authority cancellation and delivery explicit.
+    fun requestRecordingSearch(
+        activity: Activity,
+        query: String,
+        nameFormat: String,
+        after: String,
+        cancelled: () -> Boolean,
+        completion:
+            (AudioResult<com.monumentogram.dora.audio.recording.RecordingSearchPage>) -> Unit,
+    ) {
+        requireMain()
+        requestOpen(activity, AudioOpenMode.OPEN_EXISTING) { available ->
+            if (cancelled()) return@requestOpen
+            if (available !is AudioAvailability.Available) {
+                completion(
+                    AudioResult.Failed(
+                        (available as? AudioAvailability.Failed)?.reason ?: AudioFailure.LOCKED
+                    )
+                )
+            } else
+                coordinator.recordingSearchPage(
+                    available.session,
+                    query,
+                    nameFormat,
+                    after,
+                    cancelled,
+                ) { result ->
+                    main.post {
+                        if (!cancelled()) {
+                            val checked =
+                                try {
+                                    coordinator.requireCurrent(available.session)
+                                    result
+                                } catch (_: LocalAccessDeniedException) {
+                                    AudioResult.Failed(AudioFailure.LOCKED)
+                                }
+                            completion(checked)
+                        }
+                    }
+                }
+        }
+    }
+
     fun requestRecordingRecovery(
         activity: Activity,
         after: String = "",

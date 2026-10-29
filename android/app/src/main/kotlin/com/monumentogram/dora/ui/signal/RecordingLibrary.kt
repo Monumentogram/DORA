@@ -1,30 +1,34 @@
 package com.monumentogram.dora.ui.signal
 
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
-import com.monumentogram.dora.audio.AudioAvailability
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
-import com.monumentogram.dora.audio.recording.RecordingRecovery
-import com.monumentogram.dora.audio.transcript.TranscriptDocument
-import java.util.concurrent.Executors
+import com.monumentogram.dora.audio.recording.RecordingSearchRow
+import java.util.concurrent.atomic.AtomicLong
 
-internal data class LibraryEntry(
-    val recording: RecordingRecovery,
-    val document: TranscriptDocument?,
-)
-
-/** Activity-owned presentation data; never stored in saved instance state or plaintext files. */
+/** Foreground-only presentation. Query and snippets never enter saved state or plaintext files. */
 internal class RecordingLibrary(private val activity: MainActivity) : AutoCloseable {
     private val runtime = (activity.application as DoraApplication).audioRuntime
-    private val worker = Executors.newSingleThreadExecutor()
-    private var generation = 0L
+    private val main = Handler(Looper.getMainLooper())
+    private val generation = AtomicLong()
+    private var pending: Runnable? = null
     private var closed = false
-    var entries by mutableStateOf<List<LibraryEntry>>(emptyList())
+    private var after: String? = null
+    var entries by mutableStateOf<List<RecordingSearchRow>>(emptyList())
+        private set
+
+    var query by mutableStateOf("")
+        private set
+
+    var searching by mutableStateOf(false)
         private set
 
     var busy by mutableStateOf(false)
@@ -36,55 +40,78 @@ internal class RecordingLibrary(private val activity: MainActivity) : AutoClosea
     var more by mutableStateOf(false)
         private set
 
-    fun clear() {
-        generation++
+    fun openSearch() {
+        searching = true
+    }
+
+    fun closeSearch() {
+        searching = false
+        query = ""
+        load()
+    }
+
+    fun search(value: String) {
+        val changed = value.trim() != query.trim()
+        query = value
+        if (!changed) return
+        invalidate()
+        busy = true
+        val action = Runnable {
+            pending = null
+            load()
+        }
+        pending = action
+        main.postDelayed(action, DEBOUNCE_MS)
+    }
+
+    /** Also used before opening the editor so a pending search cannot revoke its session. */
+    fun invalidate() {
+        generation.incrementAndGet()
+        pending?.let(main::removeCallbacks)
+        pending = null
         entries = emptyList()
+        after = null
         busy = false
         failed = false
         more = false
     }
 
+    fun clear() {
+        invalidate()
+        searching = false
+        query = ""
+    }
+
+    @Suppress("ReturnCount") // Reject closed/invalid paging and empty-vault cases before dispatch.
     fun load(next: Boolean = false) {
-        if (busy || closed) return
-        if (runtime.recordingOpenMode() == AudioOpenMode.CREATE_NEW) {
-            clear()
-            return
-        }
-        val request = ++generation
-        val after = if (next) entries.lastOrNull()?.recording?.cursor.orEmpty() else ""
+        if (closed) return
+        if (next && (busy || !more)) return
+        val cursor = if (next) after.orEmpty() else ""
+        if (!next) invalidate()
+        if (runtime.recordingOpenMode() == AudioOpenMode.CREATE_NEW) return
+        val request = generation.incrementAndGet()
         busy = true
         failed = false
-        runtime.requestRecordingRecovery(activity, after) { result ->
-            if (!current(request)) return@requestRecordingRecovery
-            val session = (runtime.availability as? AudioAvailability.Available)?.session
-            if (result !is AudioResult.Value || session == null) {
+        runtime.requestRecordingSearch(
+            activity,
+            query.trim(),
+            activity.getString(R.string.signal_recording_name),
+            cursor,
+            { generation.get() != request },
+        ) { result ->
+            if (current(request)) {
                 busy = false
-                failed = true
-                return@requestRecordingRecovery
-            }
-            worker.execute {
-                val rows =
-                    result.value.map { entry ->
-                        val document =
-                            entry.identity?.let {
-                                (session.transcripts.load(it) as? AudioResult.Value)?.value
-                            }
-                        LibraryEntry(entry, document)
-                    }
-                activity.runOnUiThread {
-                    if (current(request)) {
-                        busy = false
-                        if (
-                            (runtime.availability as? AudioAvailability.Available)?.session ===
-                                session
-                        ) {
-                            entries =
-                                (if (next) entries + rows else rows).distinctBy {
-                                    it.recording.cursor
-                                }
-                            more = rows.size == PAGE_SIZE
-                        } else failed = true
-                    }
+                if (result is AudioResult.Value) {
+                    entries =
+                        (if (next) entries + result.value.rows else result.value.rows).distinctBy {
+                            it.recording.cursor
+                        }
+                    after = result.value.nextCursor
+                    more = after != null
+                } else {
+                    entries = emptyList()
+                    more = false
+                    failed = true
                 }
             }
         }
@@ -92,7 +119,7 @@ internal class RecordingLibrary(private val activity: MainActivity) : AutoClosea
 
     private fun current(request: Long) =
         !closed &&
-            generation == request &&
+            generation.get() == request &&
             !activity.isFinishing &&
             !activity.isDestroyed &&
             activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
@@ -100,10 +127,9 @@ internal class RecordingLibrary(private val activity: MainActivity) : AutoClosea
     override fun close() {
         clear()
         closed = true
-        worker.shutdown()
     }
 
     private companion object {
-        const val PAGE_SIZE = 20
+        const val DEBOUNCE_MS = 200L
     }
 }

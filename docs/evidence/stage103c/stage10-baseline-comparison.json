@@ -1,0 +1,8 @@
+{
+  "baseline_source": "c20b6ce0d15174f4ad1fb8e78f5cfac834e823b7",
+  "baseline_apk_sha256": "d4408fa8d386f2101d7d19eb0558d951274042110e07b23798df98a08f4ad4e5",
+  "candidate_apk_sha256": "81b1d1ee2454545706b59c40ad2278368c3d21288e7cc49fc486ab328a423e79",
+  "manifest_identical": true,
+  "native_payload_identical": true,
+  "runtime_assets_identical": true
+}

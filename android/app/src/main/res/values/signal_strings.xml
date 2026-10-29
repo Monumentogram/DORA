@@ -1,4 +1,11 @@
 <resources>
+    <string name="signal_search">Поиск записей</string>
+    <string name="signal_search_hint">Название или текст</string>
+    <string name="signal_search_clear">Очистить запрос</string>
+    <string name="signal_search_close">Закрыть поиск</string>
+    <string name="signal_search_empty_title">Ничего не найдено</string>
+    <string name="signal_search_empty_body">Попробуйте другое слово или часть слова.</string>
+    <string name="signal_no_transcript">Расшифровки пока нет</string>
     <string name="signal_refresh">Обновить записи</string>
     <string name="signal_recordings">Записи</string>
     <string name="signal_new_recording">Новая запись</string>

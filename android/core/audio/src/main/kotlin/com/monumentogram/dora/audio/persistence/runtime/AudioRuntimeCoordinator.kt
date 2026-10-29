@@ -55,6 +55,15 @@ internal interface RuntimeVault : AutoCloseable {
         AudioResult.Failed(AudioFailure.UNAVAILABLE)
 
     val originals: OriginalAudioPort
+
+    fun recordingSearchPage(
+        query: String,
+        nameFormat: String,
+        after: String,
+        cancelled: () -> Boolean,
+    ): AudioResult<com.monumentogram.dora.audio.recording.RecordingSearchPage> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val writer: ProductAudioWriterPort
     val reader: ProductAudioReaderPort
     val protection: VaultKeyProtection
@@ -197,6 +206,26 @@ internal class AudioRuntimeCoordinator(
 
     fun isCurrent(session: ProductAudioSession): Boolean =
         synchronized(monitor) { current === session }
+
+    @Suppress("LongParameterList") // Serialized search with explicit authority and cancellation.
+    fun recordingSearchPage(
+        session: ProductAudioSession,
+        query: String,
+        nameFormat: String,
+        after: String,
+        cancelled: () -> Boolean,
+        completion:
+            (AudioResult<com.monumentogram.dora.audio.recording.RecordingSearchPage>) -> Unit,
+    ) {
+        val handle = session as? Handle
+        if (handle == null || !isCurrent(handle)) {
+            completion(AudioResult.Failed(AudioFailure.LOCKED))
+            return
+        }
+        worker.execute {
+            completion(handle.perform { recordingSearchPage(query, nameFormat, after, cancelled) })
+        }
+    }
 
     fun requireCurrent(session: ProductAudioSession) {
         val handle = session as? Handle ?: throw LocalAccessDeniedException()
