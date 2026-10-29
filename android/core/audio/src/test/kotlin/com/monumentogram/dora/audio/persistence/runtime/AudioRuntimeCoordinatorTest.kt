@@ -248,6 +248,10 @@ class AudioRuntimeCoordinatorTest {
                 }
                 main = true
                 assertEquals(AudioResult.Failed(AudioFailure.BUSY), session.writer.create(identity))
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.BUSY),
+                    session.deleteRecordingConfirmed(identity),
+                )
                 assertEquals(0, vault.writes)
             }
     }

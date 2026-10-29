@@ -367,12 +367,19 @@ private constructor(
 
     override fun deleteConfirmed(identity: AudioIdentity) = deleteAudio(identity)
 
+    override fun deleteRecordingConfirmed(identity: AudioIdentity) =
+        delete(identity, true, eraseTranscript = true)
+
     override fun retryDeletion(identity: AudioIdentity): AudioResult<Unit> = delete(identity, false)
 
     @Suppress(
         "CyclomaticComplexMethod"
     ) // Keep durable inventory and ordered destructive steps together.
-    private fun delete(identity: AudioIdentity, allowNew: Boolean): AudioResult<Unit> = operation {
+    private fun delete(
+        identity: AudioIdentity,
+        allowNew: Boolean,
+        eraseTranscript: Boolean = false,
+    ): AudioResult<Unit> = operation {
         journal.requireMutableSource(identity)
         val lease =
             journal.catalog.tryAcquire(identity)
@@ -387,7 +394,7 @@ private constructor(
                 return@operation AudioResult.Failed(AudioFailure.INVALID_INPUT)
             cancelTranscriptBeforeDeletion(identity)
             val snapshot =
-                if (allowNew) journal.beginDeletion(identity, emptyList())
+                if (allowNew) journal.beginDeletion(identity, emptyList(), eraseTranscript)
                 else checkNotNull(journal.loadDeletion(identity))
             if (snapshot.state == "USER_DELETED") return@operation AudioResult.Value(Unit)
             deletionStep("TOMBSTONE")

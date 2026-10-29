@@ -1112,11 +1112,13 @@ private constructor(
     fun beginDeletion(
         identity: AudioIdentity,
         discovered: List<AudioDeletionTarget>,
+        eraseTranscript: Boolean = false,
     ): AudioDeletionSnapshot {
         requireOperation(identity)
         requireMutable()
         checkNotNull(exactAsset(identity))
         loadDeletion(identity)?.let {
+            if (eraseTranscript) eraseRecordingText(identity)
             return it
         }
         val asset = identity.assetId.value
@@ -1227,10 +1229,27 @@ private constructor(
         commits.commit({
             dao.insert(tombstone)
             rows.forEach { dao.insert(it) }
+            if (eraseTranscript) {
+                dao.removeTranscript(asset)
+                dao.removeSegmentation(asset)
+            }
         }) {
-            dao.tombstone(asset) == tombstone && dao.deletionTargets(asset).toSet() == rows.toSet()
+            dao.tombstone(asset) == tombstone &&
+                dao.deletionTargets(asset).toSet() == rows.toSet() &&
+                (!eraseTranscript || dao.transcript(asset) == null)
         }
         return checkNotNull(loadDeletion(identity))
+    }
+
+    private fun eraseRecordingText(identity: AudioIdentity) {
+        lease.requireHeld(identity.assetId.value)
+        val asset = identity.assetId.value
+        commits.commit({
+            dao.removeTranscript(asset)
+            dao.removeSegmentation(asset)
+        }) {
+            dao.transcript(asset) == null && dao.segmentationPage(asset, "").isEmpty()
+        }
     }
 
     fun loadDeletion(identity: AudioIdentity): AudioDeletionSnapshot? {
