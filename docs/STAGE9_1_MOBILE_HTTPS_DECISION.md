@@ -58,3 +58,27 @@ Do not stop watchdog cleanup, revoke unrelated installations, change TLS trust,
 reset reservations or remove retained custody data as part of this rollback.
 Private endpoints, egress values, installation identifiers, keys and receipts
 remain outside public Git.
+
+## Sequential request diagnosis
+
+After mobile reachability was restored, the existing Preview could authenticate
+and register the authorized synthetic recording, but a later request timed out
+before any Transcribe job existed. A matched Android default-trust probe without
+credentials or audio reproduced the boundary: the first response returned 401,
+29 bytes and EOF in 460 ms; the second request timed out at responseCode after 20 s,
+before body reading. Reading until EOF was therefore not the demonstrated defect.
+Changing only the probe's request header to `Connection: close` made both requests
+complete with the expected 401, 29 bytes and EOF in 370 ms and 321 ms.
+
+The minimal mitigation is `keepalive_requests 1;` in the existing nginx HTTPS
+server block, as reflected in the deployment example. This closes downstream
+connections after each request without changing Android code, HTTP upstream
+configuration, TLS trust, authorization, body handling or timeouts. It trades
+additional TLS handshakes per request/chunk for reliable operation on the observed
+route. A particular carrier, Android or nginx defect has not been established.
+
+Apply only the reviewed two-line site delta, retaining a private exact preimage;
+validate with `nginx -t` before reload. Restore the preimage, validate and reload
+to undo it. Acceptance requires the original Android probe without a client
+connection override, followed by real app operations. A probe alone is not Cloud
+ASR acceptance; actual execution evidence is recorded in the Stage9.1 result.

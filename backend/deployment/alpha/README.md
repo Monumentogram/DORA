@@ -216,6 +216,11 @@ be ALARM until setup completes: missing telemetry deliberately is not healthy.
    API at 127.0.0.1:8080. Use the updated nginx example: TLS1.2+, request/response
    disk buffering disabled, 100-KiB body limit, no access logs. Keep error logs
    content-free, rotate daily with 1-day retention, never collect request bodies.
+   Retain `keepalive_requests 1` for the owner mobile route: sequential Android
+   requests stalled on reused connections, while separate connections passed.
+   This costs an additional TLS handshake per request; it does not change proofs,
+   consent, TLS validation or limits. Verify at least two sequential Android
+   requests without a client-side connection override after applying the site.
    Run `nginx -t`; validate certificate chain/hostname and renewal. No self-signed
    production exception, public S3 access or exposed 8080.
 6. Confirm SNS email subscription and budget recipients. Verify an alarm reaches
