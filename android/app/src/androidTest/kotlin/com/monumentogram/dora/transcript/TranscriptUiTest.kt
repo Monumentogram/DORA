@@ -20,6 +20,7 @@ import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
+import com.monumentogram.dora.ui.signal.uiCopy
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
@@ -78,7 +79,7 @@ class TranscriptUiTest {
             scenario.onActivity {
                 it.setContent { DoraBootstrapTheme { TranscriptLauncher(host, identity) } }
             }
-            ui.onNodeWithText("Расшифровать / открыть текст").performClick()
+            ui.onNodeWithText(uiCopy("Расшифровать / открыть текст")).performClick()
             awaitText("Synthetic machine")
             ui.onNodeWithText(label(R.string.signal_copy_39)).performScrollTo().performClick()
             ui.onNodeWithText(label(R.string.signal_copy_42)).assertExists()
@@ -102,15 +103,17 @@ class TranscriptUiTest {
             ui.onNodeWithText(label(R.string.signal_copy_27)).assertExists()
             ui.onNodeWithText(label(R.string.signal_copy_30)).performClick()
             ui.onNodeWithText(label(R.string.signal_copy_33)).performScrollTo().performClick()
-            awaitText("Ваши сохранённые правки")
+            awaitText(uiCopy("Ваши сохранённые правки"))
             ui.onNodeWithText(label(R.string.signal_copy_3), useUnmergedTree = true)
                 .performScrollTo()
                 .performClick()
-            ui.onNodeWithText("Расшифровать / открыть текст").performClick()
+            ui.onNodeWithText(uiCopy("Расшифровать / открыть текст")).performClick()
             awaitText("Synthetic correction")
-            ui.onNodeWithText("Распознать заново").performScrollTo().performClick()
+            ui.onNodeWithText(uiCopy("Распознать заново")).performScrollTo().performClick()
             awaitText(
-                "Установите пакет распознавания без интернета. Запись аудио доступна без него."
+                uiCopy(
+                    "Установите пакет распознавания без интернета. Запись аудио доступна без него."
+                )
             )
             awaitText("Synthetic machine")
             awaitText("Synthetic correction")
