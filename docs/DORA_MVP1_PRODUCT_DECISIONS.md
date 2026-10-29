@@ -1320,3 +1320,24 @@ retain edits/history and existing title/date semantics. No schema migration, sep
 index, Cloud query, model change or physical Preview update is authorized. The bounded
 scan and cancellation decision is recorded in ADR-SIGNAL-003. Performance at 1000
 records remains a measured Alpha limitation, distinct from UI responsiveness.
+
+## Stage 11 Alpha scope — explicit owner request, 2026-10-29
+
+Whole-recording deletion is separate from DEC-011 audio-only erasure. The existing encrypted
+transaction records the deletion inventory and removes the transcript aggregate (versions,
+edits, selections and job payloads) together; audio/key cleanup uses the accepted resumable
+mechanism. Pending deletion stays visible for retry. Content-free Recovery ownership evidence
+is retained. Shared keys and other recordings are not deletion targets. Cloud cancellation IDs
+are retained encrypted to prevent replay; local success does not assert AWS deletion.
+
+The owner's Stage 11 request narrows DEC-017 Alpha delivery to the explicitly displayed saved
+transcript version, UTF-8 TXT and ACTION_CREATE_DOCUMENT. Save edits before export. A different
+preview version exports that displayed version, without silently selecting it. No additional
+format, auto-share, plaintext staging, date invention or broad storage permission is introduced.
+The one requested snapshot lives only in memory through the picker/rotation and is wiped after
+write/cancel. Process death cannot restore it or invent success. A local-only picker hint avoids
+advertising network destinations; external copies remain outside DORA deletion/backup controls.
+
+Cloud without a validated connection is rejected before identity access or job creation. Local
+flows do not consult this check and retain no-account/no-GMS/offline independence. Later transport
+loss uses existing timeout/retry/consent contracts; no new persistent upload queue is claimed.

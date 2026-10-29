@@ -83,6 +83,7 @@ internal fun TranscriptDialog(
     var identity by remember { mutableStateOf(initial) }
     var pendingExit by remember { mutableStateOf(false) }
     var dirty by remember { mutableStateOf(false) }
+    var deleting by remember { mutableStateOf(false) }
     fun close() {
         if (dirty) pendingExit = true else onClose()
     }
@@ -92,7 +93,9 @@ internal fun TranscriptDialog(
                 actions.clearVisible()
                 dirty = false
                 pendingExit = false
+                deleting = false
             }
+            if (event == Lifecycle.Event.ON_RESUME) identity?.let(actions::load)
         }
         activity.lifecycle.addObserver(observer)
         onDispose {
@@ -136,6 +139,7 @@ internal fun TranscriptDialog(
                 )
                 if (activity.modelImportMessage.isNotBlank())
                     Text(uiCopy(activity.modelImportMessage))
+                TextExportFeedback(activity.textExportStatus)
                 TextButton(
                     onClick = ::close,
                     modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
@@ -154,6 +158,12 @@ internal fun TranscriptDialog(
                 } else {
                     val selected = checkNotNull(identity)
                     RecordingHeading(selected, actions.document)
+                    TextButton(
+                        enabled = !actions.busy,
+                        onClick = { deleting = true },
+                    ) {
+                        Text(stringResource(R.string.stage11_delete_recording))
+                    }
                     OriginalAudioControls(
                         activity,
                         selected,
@@ -177,6 +187,8 @@ internal fun TranscriptDialog(
                             { version, edits ->
                                 actions.select(selected, version, document.revision, edits)
                             },
+                            exportEnabled = !activity.textExportStatus.busy,
+                            export = activity::launchTextExport,
                         )
                     }
                     androidx.compose.material3.HorizontalDivider()
@@ -242,6 +254,27 @@ internal fun TranscriptDialog(
                     }
                 },
             )
+        if (deleting)
+            AlertDialog(
+                onDismissRequest = { deleting = false },
+                title = { Text(stringResource(R.string.stage11_delete_recording)) },
+                text = { Text(stringResource(R.string.stage11_delete_scope)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            deleting = false
+                            identity?.let { actions.deleteRecording(it, onClose) }
+                        }
+                    ) {
+                        Text(stringResource(R.string.stage11_delete_confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { deleting = false }) {
+                        Text(stringResource(R.string.signal_copy_2))
+                    }
+                },
+            )
     }
 }
 
@@ -253,6 +286,8 @@ private fun TranscriptEditor(
     onDirty: (Boolean) -> Unit,
     save: (String, String) -> Unit,
     select: (String, Set<String>) -> Unit,
+    exportEnabled: Boolean,
+    export: (String) -> Unit,
 ) {
     var preview by remember(document.source) { mutableStateOf<String?>(null) }
     val version =
@@ -321,6 +356,10 @@ private fun TranscriptEditor(
     TextButton(onClick = { clipboard.setText(AnnotatedString(draft)) }) {
         Text(stringResource(R.string.signal_copy_34))
     }
+    TextButton(enabled = !busy && !dirty && exportEnabled, onClick = { export(draft) }) {
+        Text(stringResource(R.string.stage11_export_text))
+    }
+    if (dirty) Text(stringResource(R.string.stage11_export_save_first))
     if (version.id != document.activeId)
         TextButton(enabled = !busy && !dirty, onClick = { choosing = true }) {
             Text(stringResource(R.string.signal_copy_35))

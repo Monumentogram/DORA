@@ -5,6 +5,7 @@ package com.monumentogram.dora
 import android.graphics.Bitmap
 import android.view.WindowManager
 import androidx.activity.compose.setContent
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsFocused
@@ -131,10 +132,13 @@ class RecordingSearchUiTest {
             ui.onNodeWithContentDescription(label(R.string.signal_search_clear)).performClick()
             ui.onNodeWithTag("library-search")
                 .assert(
-                    SemanticsMatcher.expectValue(
-                        androidx.compose.ui.semantics.SemanticsProperties.EditableText,
-                        androidx.compose.ui.text.AnnotatedString(""),
-                    )
+                    SemanticsMatcher("Search text is empty after clear") {
+                        it.config
+                            .getOrNull(
+                                androidx.compose.ui.semantics.SemanticsProperties.EditableText
+                            )
+                            ?.text == ""
+                    }
                 )
             query(marker)
             await(title)

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stage11_cloud_offline">Нет подключения к интернету. Обработка в облаке не начата. Аудио и правки сохранены. Можно распознать запись на устройстве, если модель установлена.</string>
+    <string name="stage11_export_text">Экспортировать текст</string>
+    <string name="stage11_export_save_first">Сохраните правки перед экспортом.</string>
+    <string name="stage11_export_selecting">Выберите место для файла TXT.</string>
+    <string name="stage11_export_writing">Сохраняем текст…</string>
+    <string name="stage11_export_saved">Текст сохранён в выбранный файл.</string>
+    <string name="stage11_export_cancelled">Экспорт отменён. Текст записи сохранён.</string>
+    <string name="stage11_export_failed">Не удалось записать файл. Текст записи сохранён. В выбранном месте может остаться неполный файл; проверьте его и повторите экспорт.</string>
+    <string name="stage11_delete_recording">Удалить запись</string>
+    <string name="stage11_delete_confirm">Удалить</string>
+    <string name="stage11_delete_scope">Удалить с устройства исходное аудио, все версии текста и правки этой записи? Отменить это действие нельзя. Другие записи сохранятся. Внешние экспортированные копии не удаляются. Удаление данных в облаке этим действием не подтверждается.</string>
+    <string name="stage11_delete_incomplete">Удаление не завершено. Часть данных уже может быть удалена. Нажмите «Удалить запись» ещё раз, чтобы завершить операцию. Другие записи сохранены.</string>
+    <string name="stage11_deletion_pending">Удаление не завершено — откройте запись для повтора</string>
+</resources>

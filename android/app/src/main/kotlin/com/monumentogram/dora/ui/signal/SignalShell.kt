@@ -76,6 +76,12 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
     BackHandler(settings) { settings = false }
     BackHandler(library.searching && selected == null && !history) { library.closeSearch() }
     Scaffold(
+        snackbarHost = {
+            if (selected == null && !history)
+                Surface(Modifier.padding(16.dp), shape = MaterialTheme.shapes.medium) {
+                    com.monumentogram.dora.transcript.TextExportFeedback(activity.textExportStatus)
+                }
+        },
         topBar = {
             if (!settings && library.searching) LibrarySearchBar(library)
             else
@@ -278,6 +284,9 @@ private fun RecordingRow(entry: RecordingSearchRow, query: String, onClick: () -
                         " · " +
                         stringResource(
                             when {
+                                entry.recording.completionState ==
+                                    RecordingCompletionState.DELETION_PENDING ->
+                                    R.string.stage11_deletion_pending
                                 entry.recording.completionState ==
                                     RecordingCompletionState.DELETED ->
                                     R.string.signal_audio_deleted
