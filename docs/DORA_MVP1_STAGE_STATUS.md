@@ -1927,3 +1927,10 @@ and the [acceptance report](../STAGE9_2R_HTTPS_ROOT_CAUSE_AND_REPAIR_RESULT.md).
 routes; direct EC2 transport root cause remains unresolved. No new APK, public
 distribution, universal network qualification, Stage8.6 admission, Signal work or
 merge follows. Historical status records above remain unchanged.
+
+## Stage9.3 — Permanent access implementation (2026-10-29)
+
+ADR-0029 separates permanent owner device trust from finite onboarding. Backend
+regressions through 2100 and Local model/release guards are included. Final runtime,
+data-preservation and CI status are reported in STAGE9_3_PERMANENT_ACCESS_RESULT.md;
+this implementation entry alone does not assert the Stage9.3 PASS gate. No merge.

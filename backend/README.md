@@ -57,6 +57,15 @@ authentication against a deployed service. Never deploy or package `tests/`.
    Independently confirm its provenance with the approved owner; public-key upload
    is not invitation proof. Enroll with an explicit finite epoch-seconds expiry:
    `python -m dora_cloud --config PRIVATE_CONFIG invite --invitation PUBLIC_JSON --expires-at EPOCH_SECONDS`.
+   Complete permanent owner registration, or migrate an existing active invitation,
+   with `python -m dora_cloud --config PRIVATE_CONFIG trust --invitation PUBLIC_JSON`.
+   This pins the existing owner and public key without replacing the installation,
+   changing its historical expiry, or issuing a permanent token. Repeating it is safe.
+   Subsequent sessions use fresh Keystore proof and last at most 15 minutes, with no
+   calendar limit on the trusted registration. No APK change or manual renewal is needed.
+   If the legacy invitation already expired, independently reconfirm the same key
+   with the owner and explicitly add `--recover-expired`. Unknown, retired, revoked,
+   mismatched-key and mismatched-owner installations are never recovered by this command.
    The server supplies owner_id from its private config. A used/retired installation
    ID cannot be rebound to another key or owner. Reinstall/identity transfer is not
    implemented. Revoke with the `revoke --installation UUID` subcommand; the watchdog
@@ -141,7 +150,9 @@ controls. A service/network outage can delay deletion; no exact physical-erasure
 SLA is claimed. Alert on a pending/overdue outbox and restore cleanup promptly.
 Ordinary job/result/reservation data expires at 30 days; consent history is encrypted
 and kept for 90 days after retirement. Immutable source/installation authorization
-bindings survive while finite authority is active, then expire after 90 days.
+bindings survive while authority is active, including permanent trusted authority,
+then expire under the existing 90-day retention rule. Permanent installation identity
+and revocation records remain to prevent rebinding; sessions/nonces still expire.
 Opaque identity-only tombstones remain to prohibit reassignment; they have no
 automatic retirement because unresolved inventories/callbacks must never resurrect
 an ID. A broader erasure/restore workflow requires the ADR-0012 120-day minimum and
