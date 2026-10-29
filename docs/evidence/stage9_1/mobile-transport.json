@@ -1,0 +1,242 @@
+{
+  "scope": "Transport diagnostics only; not Cloud ASR acceptance. No audio/auth credentials in these probes.",
+  "receipts": {
+    "android-https-public-owner-mobile-sanitized": {
+      "transport": "Android HttpsURLConnection default trust; shell UID app_process; direct phone TCP",
+      "backend": {
+        "status": 401,
+        "cipher_suite": "TLS_AES_256_GCM_SHA384",
+        "body": "{\"error_code\":\"AUTH_INVALID\"}",
+        "phase": "complete",
+        "elapsed_ms": 337
+      },
+      "checkip": {
+        "status": 200,
+        "cipher_suite": "TLS_AES_128_GCM_SHA256",
+        "phase": "complete",
+        "elapsed_ms": 400
+      },
+      "observed_at_utc": "2026-10-29T07:29:39Z",
+      "network": {
+        "connected_wifi_agents": 0,
+        "connected_cellular_agents": 1,
+        "connected_vpn_agents": 0
+      },
+      "egress_matches_retained_device_cidr": false,
+      "egress_matches_latest_mobile_measurement": false,
+      "public_https_enabled": true,
+      "default_android_tls_no_proxy": true
+    },
+    "android-https-readloop-sanitized": {
+      "transport": "Android default trust shell UID; two sequential unauthenticated POSTs; read until EOF",
+      "samples": [
+        {
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "keep-alive",
+          "stream_class": "com.android.okhttp.okio.RealBufferedSource$1",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 460
+        },
+        {
+          "error_type": "SocketTimeoutException",
+          "phase": "response",
+          "bytes_read": 0,
+          "read_calls": 0,
+          "elapsed_ms": 20005
+        }
+      ],
+      "observed_at_utc": "2026-10-29T07:49:09Z"
+    },
+    "android-https-connection-close-sanitized": {
+      "transport": "Android default trust shell UID; two sequential unauthenticated POSTs; Connection close; read until EOF",
+      "samples": [
+        {
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "close",
+          "stream_class": "com.android.okhttp.okio.RealBufferedSource$1",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 370
+        },
+        {
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "close",
+          "stream_class": "com.android.okhttp.okio.RealBufferedSource$1",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 321
+        }
+      ],
+      "observed_at_utc": "2026-10-29T07:51:49Z"
+    },
+    "nginx-keepalive-applied-sanitized": {
+      "before_hash_matched": true,
+      "nginx_t_pass": true,
+      "reload_pass": true,
+      "after_hash_matches": true,
+      "all_services_active": true,
+      "root_root_0644": true,
+      "all_other_site_bytes_unchanged": true,
+      "observed_at_utc": "2026-10-29T07:56:16Z"
+    },
+    "android-https-readloop-after-nginx-sanitized": {
+      "transport": "Android default trust shell UID; three sequential unauthenticated POSTs; read until EOF",
+      "samples": [
+        {
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "close",
+          "stream_class": "com.android.okhttp.okio.RealBufferedSource$1",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 491
+        },
+        {
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "close",
+          "stream_class": "com.android.okhttp.okio.RealBufferedSource$1",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 302
+        },
+        {
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "close",
+          "stream_class": "com.android.okhttp.okio.RealBufferedSource$1",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 299
+        }
+      ],
+      "observed_at_utc": "2026-10-29T07:56:50Z",
+      "client_connection_override": false,
+      "all_three_pass": true
+    },
+    "android-https-body-size-sanitized": {
+      "transport": "Android default trust; no auth or client connection override; 4096-byte writes; read until EOF",
+      "samples": [
+        {
+          "synthetic_body_bytes": 2,
+          "status": 401,
+          "content_length": 29,
+          "connection_header": "close",
+          "eof_observed": true,
+          "phase": "complete",
+          "bytes_written": 2,
+          "bytes_read": 29,
+          "read_calls": 2,
+          "elapsed_ms": 481
+        },
+        {
+          "synthetic_body_bytes": 87427,
+          "error_type": "SocketTimeoutException",
+          "phase": "response_code",
+          "bytes_written": 87427,
+          "bytes_read": 0,
+          "read_calls": 0,
+          "elapsed_ms": 20141
+        }
+      ],
+      "observed_at_utc": "2026-10-29T08:03:51Z"
+    },
+    "android-https-fresh-size-summary-sanitized": [
+      {
+        "transport": "Fresh app_process default TLS context; no auth or client connection override; 4096-byte writes; read until EOF",
+        "samples": [
+          {
+            "synthetic_body_bytes": 2048,
+            "status": 422,
+            "content_length": 32,
+            "connection_header": "close",
+            "error_type": "SocketTimeoutException",
+            "phase": "read_until_eof",
+            "bytes_written": 2048,
+            "bytes_read": 0,
+            "read_calls": 1,
+            "elapsed_ms": 20339
+          }
+        ],
+        "observed_at_utc": "2026-10-29T08:08:09Z"
+      },
+      {
+        "transport": "Fresh app_process default TLS context; no auth or client connection override; 4096-byte writes; read until EOF",
+        "samples": [
+          {
+            "synthetic_body_bytes": 8192,
+            "error_type": "SocketTimeoutException",
+            "phase": "response_code",
+            "bytes_written": 8192,
+            "bytes_read": 0,
+            "read_calls": 0,
+            "elapsed_ms": 20199
+          }
+        ],
+        "observed_at_utc": "2026-10-29T08:08:30Z"
+      },
+      {
+        "transport": "Fresh app_process default TLS context; no auth or client connection override; 4096-byte writes; read until EOF",
+        "samples": [
+          {
+            "synthetic_body_bytes": 16384,
+            "error_type": "SocketTimeoutException",
+            "phase": "response_code",
+            "bytes_written": 16384,
+            "bytes_read": 0,
+            "read_calls": 0,
+            "elapsed_ms": 20209
+          }
+        ],
+        "observed_at_utc": "2026-10-29T08:08:52Z"
+      }
+    ],
+    "android-https-wifi-comparison-sanitized": {
+      "large_skipped_after_small_failure": true,
+      "transport": "Android default trust; no auth or client connection override; 4096-byte writes; read until EOF",
+      "samples": [
+        {
+          "synthetic_body_bytes": 2,
+          "error_type": "SocketTimeoutException",
+          "phase": "output_stream",
+          "bytes_written": 0,
+          "bytes_read": 0,
+          "read_calls": 0,
+          "elapsed_ms": 20201
+        }
+      ],
+      "observed_at_utc": "2026-10-29T08:15:23Z",
+      "network": {
+        "default_transport_wifi": true,
+        "default_validated": true,
+        "default_not_vpn": true
+      }
+    }
+  },
+  "current_status": "BLOCKED: mobile sustained request/response delivery and Wi-Fi initial TLS delivery fail. No size-only or resumption-only fix established.",
+  "cloud_scope": {
+    "preview_jobs": 1,
+    "status": "UPLOADING",
+    "uploaded_bytes": 0,
+    "chunks": 0,
+    "provider_attempts": 0,
+    "reservations": 0,
+    "observed_at_utc": "2026-10-29T08:10:39Z"
+  }
+}

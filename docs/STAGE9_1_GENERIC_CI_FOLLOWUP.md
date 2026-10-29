@@ -133,3 +133,7 @@ The diagnosis used bounded CI reads and read-only Python/source checks. No test
 was disabled, no security guard weakened, and no source, device, AWS resource,
 Git history or CI run was mutated. Generic CI remains **FAIL** until new exact-head
 evidence establishes otherwise; historical targeted PASS remains separately scoped.
+
+## Subsequent Stage9.1 verification
+
+The earlier pending row above describes the diagnosis-time boundary. Targeted Stage18 and PIN-free checks subsequently passed at final code/configuration source `985a1609cea2a212926c5fd9c46ea91c4a8f6a29`: [Stage18 40838811236](https://github.com/Monumentogram/DORA/actions/runs/40838811236) and [PIN-free 40838811241](https://github.com/Monumentogram/DORA/actions/runs/40838811241). This does not change the inherited generic FAIL or historical diagnostic-vault admission. Actual owner upgrade/Local acceptance and the separate direct-network blocker are recorded in [the result report](../STAGE9_1_UNIFIED_ALPHA_RESULT.md).

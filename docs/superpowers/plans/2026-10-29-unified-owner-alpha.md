@@ -43,33 +43,33 @@ Consumes Task1 evidence and existing private native/VAD inputs. Produces OwnerPr
 
 - [x] First update identity/permission tests to require code5, reject old4, admit INTERNET and still reject unrelated permissions; observe failures.
 - [x] Bump only OwnerPreview, retain OwnerPilot/shared Alpha identity, bind owner-local audit to this branch and ancestor, update its SBOM version through existing constants.
-- [ ] Run format/Detekt/unit/Lint, OwnerPreview build and targeted backend contracts; sign with the existing private key. Verify package, signer, native payload, no weights and no diagnostic release hooks.
+- [x] Run format/Detekt/unit/Lint, OwnerPreview build and targeted backend contracts; sign with the existing private key. Verify package, signer, native payload, no weights and no diagnostic release hooks.
 
 ## Task 3 — scoped CI diagnosis
 
 Files: `docs/STAGE9_1_GENERIC_CI_FOLLOWUP.md` and proven narrow validator fix only if it preserves historical source-bound contracts.
 
 - [x] Record reproduced stale identity/SBOM coupling and source-proven v3 diagnostic versus v4 fixture conflict.
-- [ ] Reproduce only the named protected test if needed for a precise error; no full Recovery campaign.
+- [x] Complete scoped source/log diagnosis; exact historical diagnostic-test reproduction remains in the documented follow-up, with no broad Recovery campaign.
 - [x] Preserve ADR0022 historical v3 requirements. If successor qualification exceeds the unified production path, document exact follow-up and keep Generic CI FAIL.
 
 ## Task 4 — existing direct HTTPS and owner enrollment
 
 Files: existing `backend/deployment/alpha/` source only if a proven configuration fix is required; private operator receipts outside Git.
 
-- [ ] Refresh existing AWS SSO if needed, inspect current SG/device egress/routing, then DNS/TLS/IPv4/IPv6 and Android behavior using bounded probes.
-- [ ] Apply only demonstrated necessary existing-network rule change; retain owner authorization, TLS, API limits, cleanup and budget controls. No public SSH.
-- [ ] Configure Preview HTTPS through its UI and enroll its own public installation invitation. Do not reuse another package/user's private key.
+- [x] Refresh existing AWS SSO if needed, inspect current SG/device egress/routing, then DNS/TLS/IPv4/IPv6 and Android behavior using bounded probes.
+- [x] Apply only demonstrated necessary existing-network rule change; retain owner authorization, TLS, API limits, cleanup and budget controls. No public SSH.
+- [x] Configure Preview HTTPS through its UI and enroll its own public installation invitation. Do not reuse another package/user's private key.
 
 ## Task 5 — owner acceptance and publication
 
 Files: `STAGE9_1_UNIFIED_ALPHA_RESULT.md`, sanitized evidence, one Draft PR stacked on PR119.
 
-- [ ] Publish reviewed source/targeted checks and exact signed APK; obtain separate install confirmation after migration evidence.
-- [ ] Capture current four records/seven versions baseline, update only user10, verify signer/package/model/data.
+- [x] Publish reviewed source/targeted checks and exact signed APK; obtain separate install confirmation after migration evidence.
+- [x] Capture current four records/seven versions baseline, update only user10, verify signer/package/model/data.
 - [ ] Use short authorized test records for actual Local RU/EN, local offline/cancel, manual Cloud RU/EN over direct HTTPS, independent edits/selection, reopen after restart. Do not upload historical owner audio.
 - [ ] Verify temporary AWS cleanup; test without USB transport and available network channels, mark unavailable channels/network BLOCKED precisely.
-- [ ] Record actual statuses, CI limitations and SHA; attach Draft PR; no merge.
+- [x] Record actual statuses, CI limitations and SHA; attach Draft PR; no merge.
 
 ## Execution rulings
 
@@ -85,3 +85,19 @@ Files: `STAGE9_1_UNIFIED_ALPHA_RESULT.md`, sanitized evidence, one Draft PR stac
 - Review caught stale shared instrumentation identity/INTERNET expectations; corrected for Preview5 while retaining Pilot4 and cross-user denials. Narrow test passed; reviewer confirmed resolution.
 - Owner native build, formatting, Detekt and Preview/core Lint passed. Signing, fresh CI and physical unified acceptance still pending.
 - Generic CI follow-up is docs/STAGE9_1_GENERIC_CI_FOLLOWUP.md; do not run broad Recovery acceptance for this release.
+
+## Physical verification update (2026-10-29, 07:50 UTC)
+
+- Exact signed APK5 installed with separate owner approval; user0 remains uninstalled. Original four documents/seven versions and four authenticated originals preserved.
+- Two newly authorized synthetic clips passed actual offline Local RU/EN. Cancellation added no version; RU Local edit and both results survived process restart.
+- Reviewed opt-in public HTTPS applied to existing stack, retaining all other rules/resources; direct mobile TLS passes after repeated carrier IP changes. Preview own invitation enrolled.
+- Both targeted workflows at2e6d38e passed, including API28/API36.
+- Actual Cloud acceptance is still blocked: signed session/registration can succeed, but sequential HTTPS calls stall before a job exists. A no-auth/no-audio Android two-request probe reproduces first-success/second-timeout. Diagnose connection reuse before further paid-operation retries.
+
+## Final session boundary (2026-10-29)
+
+- Final code/configuration source985a160: targeted Stage18 40838811236 and PIN-free40838811241 passed. Live nginx validation/reload and backend56 also passed.
+- Server single-request connections improved the bounded control sequence, but actual RU remains UPLOADING with0 accepted audio bytes/chunks/provider attempts/reservations. Synthetic body and fresh-process probes reproduced sustained transport failures. Current default Wi-Fi also failed before a small request body; large probe skipped.
+- Local upgrade, old data, original audio, RU/EN offline, cancellation and Local edit/restart passed. Actual Cloud RU/EN, independent device Cloud edits/selection/restart, provider cleanup and physical USB-disconnected acceptance remain BLOCKED.
+- All phone probes stopped; temporary diagnostic files removed. No additional TLS/domain/infrastructure workaround or Signal implementation. Continue on a network that passes complete trusted HTTPS delivery, then retry the same authorized pending action.
+- See STAGE9_1_UNIFIED_ALPHA_RESULT.md and sanitized docs/evidence/stage9_1/mobile-transport.json. No unified-ready PASS or background continuation is promised.

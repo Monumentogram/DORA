@@ -73,12 +73,28 @@ complete with the expected 401, 29 bytes and EOF in 370 ms and 321 ms.
 The minimal mitigation is `keepalive_requests 1;` in the existing nginx HTTPS
 server block, as reflected in the deployment example. This closes downstream
 connections after each request without changing Android code, HTTP upstream
-configuration, TLS trust, authorization, body handling or timeouts. It trades
-additional TLS handshakes per request/chunk for reliable operation on the observed
-route. A particular carrier, Android or nginx defect has not been established.
+configuration, TLS trust, authorization, body handling or timeouts. It adds
+TLS handshakes per request/chunk and passed the bounded sequential-control probe.
+A particular carrier, Android or nginx defect has not been established.
 
 Apply only the reviewed two-line site delta, retaining a private exact preimage;
 validate with `nginx -t` before reload. Restore the preimage, validate and reload
 to undo it. Acceptance requires the original Android probe without a client
 connection override, followed by real app operations. A probe alone is not Cloud
 ASR acceptance; actual execution evidence is recorded in the Stage9.1 result.
+
+## Final transport boundary
+
+The reviewed site delta was applied and the original no-override Android probe
+completed three requests. The existing APK then created its RU operation, but
+audio delivery still failed before any chunk or provider attempt was accepted.
+Matched no-auth probes reproduced failure with 87,427-byte requests and with
+fresh-process 2/8/16-KB requests. The 2-KB case received HTTP422 headers and then
+timed out reading its response body. This rules out treating body size or TLS
+resumption alone as the established cause. The current Wi-Fi comparison also
+failed before a small request body was written; the larger probe was skipped.
+
+Therefore sustained direct HTTPS and physical Cloud acceptance remain BLOCKED.
+Keep the successful control-probe evidence separate from this later failure;
+do not describe the configuration changes as a complete network repair. No
+timeout, chunk-size, TLS-trust or additional infrastructure workaround was applied.
