@@ -114,6 +114,10 @@ def main(argv=None):
 
         app = "com.monumentogram.dora.debug"
         test_package = app + ".test"
+        instrument("cloud-failure-recovery", test_package,
+                   "com.monumentogram.dora.transcript.CloudFailureRecoveryTest", 3)
+        instrument("export-provider-faults", test_package,
+                   "com.monumentogram.dora.transcript.TextExportProviderTest", 1)
         cloud_class = "com.monumentogram.dora.transcript.CloudHttpIntegrationTest"
         command("shell", "am", "force-stop", app)
         fixture_args = ("-e", "cloudFixtureEnabled", "true")

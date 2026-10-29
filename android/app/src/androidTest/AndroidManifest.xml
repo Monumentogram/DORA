@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider android:name="com.monumentogram.dora.transcript.FaultDocumentsProvider"
+            android:authorities="com.monumentogram.dora.stage12.test.documents"
+            android:exported="true" android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS" />
+        <receiver android:name="com.monumentogram.dora.transcript.GrantExportReceiver"
+            android:exported="true" />
+    </application>
+</manifest>

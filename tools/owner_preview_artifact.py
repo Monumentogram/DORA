@@ -21,14 +21,14 @@ from version_label import check_label
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.monumentogram.dora.alpha.preview'
 NAMESPACE = 'com.monumentogram.dora'
-VERSION_CODE = 6
-VERSION_NAME = '0.1.0-owner-preview.6'
+VERSION_CODE = 7
+VERSION_NAME = '0.1.0-owner-preview.7'
 OWNER_CERTIFICATE = 'a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d'
 EXCLUDED_CERTIFICATES = {
     'diagnostic': '2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8',
     'debug': 'a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72',
 }
-BASE = 'e967fa4d10f66a318b066a3fe185a1c50f879708'
+BASE = '5957acb6e54f733ae5224c27b73a4b55eea4360e'
 ANDROID = '{http://schemas.android.com/apk/res/android}'
 MODES = ('owner-local', 'ci-unsigned', 'ci-test-signed')
 PERMISSIONS = {'android.permission.' + name for name in (
@@ -51,7 +51,7 @@ def exact_source(source, mode):
     run(['git', 'merge-base', '--is-ancestor', BASE, source])
     if mode == 'owner-local':
         require(os.environ.get('GITHUB_ACTIONS') != 'true', 'OWNER_LOCAL_ONLY')
-        require(run(['git', 'branch', '--show-current']).strip() == 'stage/9.1-unified-owner-alpha', 'UNADMITTED_BRANCH')
+        require(run(['git', 'branch', '--show-current']).strip() == 'codex/stage12-alpha-ready', 'UNADMITTED_BRANCH')
 
 
 def check_badging(text):

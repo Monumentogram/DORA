@@ -1,0 +1,61 @@
+name: Stage12 Samsung Alpha software
+
+on:
+  push:
+    branches: ["codex/stage12-alpha-ready"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage12-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  software:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+      - run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - name: Applicable public software checks
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --dependency-verification strict
+          spotlessCheck detekt :core:audio:testReleaseUnitTest :core:model:testDebugUnitTest
+          :app:testOwnerPreviewUnitTest :app:lintOwnerPreview
+          :core:audio:assembleDebugAndroidTest :app:assembleDebugAndroidTest
+          :app:assembleOwnerPreview
+      - name: Privacy, version, inventory and existing Cloud contracts
+        run: |
+          python3 -m unittest discover -s tools -p test_owner_arm82.py
+          python3 -m unittest discover -s tools -p test_owner_preview_artifact.py
+          python3 -m unittest discover -s tools -p test_version_label.py
+          python3 -m unittest discover -s tools -p test_pin_free_local_access.py
+          python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+          python3 -m unittest discover -s tools -p test_cloud_asr_provider_contract.py
+          python3 -m unittest discover -s tools -p test_cloud_identity_auth_contract.py
+      - name: Synthetic test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stage12-software
+          path: |
+            android/app/build/test-results/testOwnerPreviewUnitTest/*.xml
+            android/core/audio/build/test-results/testReleaseUnitTest/*.xml
+            android/core/model/build/test-results/testDebugUnitTest/*.xml
+            android/app/build/reports/lint-results-ownerPreview.xml
+          retention-days: 7
+          if-no-files-found: error
