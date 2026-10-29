@@ -101,7 +101,8 @@ Only explicit manual actions carry a per-recording grant. No local transcript is
 sent as input. The server holds source identity separately from verified WAV hash.
 Canonical 16-kHz mono PCM16 WAV must be complete, 0.5–300 seconds, and match exact
 frame/byte counts before S3 or paid dispatch. Upload chunks are <=64 KiB decoded
-and encrypted at rest; no more than 100 KiB enters a request buffer.
+and encrypted at rest. Audio JSON is bounded to 192 KiB to accommodate Android's
+slash-escaped Base64; all other routes retain a 100 KiB request-buffer bound.
 
 One active action per owner, ten new actions per UTC day, two attempts per action
 and a configured daily reserve cap are separate checks. The default per-minute

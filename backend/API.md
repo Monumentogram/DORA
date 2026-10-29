@@ -42,7 +42,11 @@ source_digest, source_version, completed_at (stable epoch milliseconds),
 segments [{text, start_ms nullable integer, end_ms nullable integer,
 confidence nullable number}]. Missing provider evidence remains null.
 
-Requests are limited to 100 KiB including the encoded upload. Upload is a canonical
+Stage9.2R envelope correction: audio-route requests are limited to 192 KiB,
+including JSON escaping, while all other routes retain the 100 KiB limit.
+The decoded audio chunk limit remains 65536 bytes. Android JSONObject escapes
+Base64 slashes, so a valid chunk can need 174808 JSON bytes at offset zero.
+Proofs still cover the exact transmitted bytes. Upload is a canonical
 44-byte WAV header followed by mono PCM16LE at 16000 Hz, exact frames*2+44 bytes.
 Registration permits 1..4800000 frames; provider dispatch additionally rejects
 fewer than 8000 frames (the accepted 6.2D minimum is 0.5 seconds). No bytes reach

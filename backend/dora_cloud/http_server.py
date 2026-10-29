@@ -79,9 +79,13 @@ def create_app(service, auth):
             for key in (b"x-dora-installation", b"x-dora-time", b"x-dora-nonce", b"x-dora-signature", b"authorization"):
                 if sum(1 for k, _ in request.scope["headers"] if k == key) > 1:
                     raise ServiceError("AUTH_INVALID", 401)
+            # JSONObject on Android escapes Base64 '/': a valid 64 KiB chunk can
+            # occupy almost 175 KiB of JSON. Keep metadata routes at 100 KiB and
+            # the decoded audio bound at 65536 bytes in Service.audio.
+            body_limit = 192 * 1024 if operation == "audio" else 100 * 1024
             raw = bytearray()
             async for chunk in request.stream():
-                if len(raw) + len(chunk) > 102400:
+                if len(raw) + len(chunk) > body_limit:
                     raise ServiceError("BODY_TOO_LARGE", 413)
                 raw.extend(chunk)
             if model is None:

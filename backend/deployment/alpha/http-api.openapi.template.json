@@ -1,0 +1,168 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "dora-owner-alpha-https",
+    "version": "stage9.2r"
+  },
+  "paths": {
+    "/v1/session": {
+      "post": {
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "POST",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/session",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    },
+    "/v1/recordings": {
+      "post": {
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "POST",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/recordings",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    },
+    "/v1/jobs": {
+      "post": {
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "POST",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/jobs",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    },
+    "/v1/jobs/{jobId}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "GET",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/jobs/{jobId}",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/audio": {
+      "post": {
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "POST",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/jobs/{jobId}/audio",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/retry": {
+      "post": {
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "POST",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/jobs/{jobId}/retry",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    },
+    "/v1/jobs/{jobId}/cancel": {
+      "post": {
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Unmodified DORA backend response; owner proof and session enforced at origin."
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http_proxy",
+          "httpMethod": "POST",
+          "uri": "https://REPLACE_ORIGIN_HOST/v1/jobs/{jobId}/cancel",
+          "payloadFormatVersion": "1.0",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 25000
+        }
+      }
+    }
+  }
+}
