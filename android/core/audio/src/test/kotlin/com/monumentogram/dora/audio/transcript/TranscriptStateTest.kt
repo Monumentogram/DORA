@@ -5,6 +5,7 @@ import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.util.Base64
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -21,6 +22,101 @@ class TranscriptStateTest {
         assertEquals(null, decoded.jobs.single().consent)
         assertEquals(null, decoded.versions.single().cloud)
     }
+
+    @Test
+    fun richLegacyV1PreservesEveryFieldThroughDtr2Upgrade() {
+        val decoded = richLegacy()
+        assertEquals(expectedRichLegacy(), decoded)
+        assertEquals(decoded, TranscriptReducer.recover(decoded))
+        val upgraded = TranscriptCodec.encode(decoded)
+        assertArrayEquals("DTR2".toByteArray(Charsets.US_ASCII), upgraded.copyOf(4))
+        assertEquals(decoded, TranscriptCodec.decode(upgraded))
+        assertArrayEquals(upgraded, TranscriptCodec.encode(TranscriptCodec.decode(upgraded)))
+        assertEquals("исправленный первый", decoded.rendered(id(4)))
+        assertEquals("corrected second", decoded.rendered(id(5)))
+        assertThrows(IllegalArgumentException::class.java) {
+            TranscriptReducer.finish(decoded, id(6), "late cancelled output", "small-q8", 10)
+        }
+    }
+
+    @Test
+    fun localAndCloudAppendPreserveRichLegacyHistoryAndOlderSelection() {
+        val legacy = richLegacy()
+        val local =
+            TranscriptReducer.finish(
+                TranscriptReducer.begin(legacy, source, id(9), "en", 10),
+                id(9),
+                "new local",
+                "small-q8",
+                11,
+            )
+        val pending =
+            TranscriptReducer.beginCloud(
+                TranscriptCodec.decode(TranscriptCodec.encode(local)),
+                source,
+                id(10),
+                "en",
+                CloudConsent(grantedAt = 12),
+                12,
+            )
+        val result =
+            CloudTranscriptResult(
+                "new cloud",
+                "amazon-transcribe",
+                "standard-batch:eu-central-1:en-US",
+                "synthetic-legacy-append",
+                source.digest,
+                1,
+                13,
+            )
+        val completed = TranscriptReducer.finishCloud(pending, id(10), result)
+        val reopened = TranscriptCodec.decode(TranscriptCodec.encode(completed))
+        assertEquals(completed, reopened)
+        assertEquals(legacy.source, reopened.source)
+        assertEquals(legacy.activeId, reopened.activeId)
+        assertEquals(legacy.versions, reopened.versions.take(2))
+        assertEquals(legacy.jobs, reopened.jobs.take(3))
+        assertEquals(legacy.edits, reopened.edits)
+        assertEquals(legacy.selections, reopened.selections)
+        assertEquals(listOf(1L, 2L, 3L, 4L, 5L), reopened.jobs.map { it.generation })
+        assertEquals("new local", reopened.rendered(id(9)))
+        assertEquals(result, reopened.versions.last().cloud)
+        assertEquals("исправленный первый", reopened.rendered(id(4)))
+        assertEquals("corrected second", reopened.rendered(id(5)))
+    }
+
+    private fun richLegacy(): TranscriptDocument {
+        // See generate_transcript_v1_rich.py: independently serialized from the old DTR1 layout.
+        val fixture =
+            checkNotNull(javaClass.getResource("/transcript-v1-rich.b64")).readText().trim()
+        val bytes = Base64.getDecoder().decode(fixture)
+        assertArrayEquals("DTR1".toByteArray(Charsets.US_ASCII), bytes.copyOf(4))
+        return TranscriptCodec.decode(bytes)
+    }
+
+    private fun expectedRichLegacy() =
+        TranscriptDocument(
+            source,
+            revision = 9,
+            activeId = id(4),
+            versions =
+                listOf(
+                    MachineTranscript(id(4), "первый оригинал", 2, "small-q8"),
+                    MachineTranscript(id(5), "second original", 5, "small-q8"),
+                ),
+            edits =
+                listOf(
+                    TranscriptEdit(id(7), id(4), "первый оригинал", "исправленный первый", 3),
+                    TranscriptEdit(id(8), id(5), "second original", "corrected second", 6),
+                ),
+            jobs =
+                listOf(
+                    TranscriptJob(id(4), "SUCCEEDED", "ru", 1, 1),
+                    TranscriptJob(id(5), "SUCCEEDED", "en", 2, 4),
+                    TranscriptJob(id(6), "CANCELLED", "ru", 3, 8),
+                ),
+            selections = listOf(TranscriptSelection(id(4), 6, setOf(id(8)), 7)),
+        )
 
     private val source =
         OriginalAudioReference(

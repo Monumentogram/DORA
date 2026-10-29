@@ -56,16 +56,19 @@ jobs:
         run: >-
           ./gradlew --no-daemon --dependency-verification strict
           spotlessCheck detekt :core:audio:testDebugUnitTest :core:audio:testReleaseUnitTest
-          :app:testDebugUnitTest
+          :app:testDebugUnitTest :app:testOwnerPreviewUnitTest
           :core:model:testDebugUnitTest :core:common:testDebugUnitTest
           :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest :poc:recovery:testDebugUnitTest
-          :app:lintDebug :core:audio:lintDebug :app:assembleDebug :app:assembleRelease
+          :app:lintDebug :app:lintOwnerPreview :core:audio:lintDebug
+          :app:assembleDebug :app:assembleRelease :app:assembleOwnerPreview
           :app:assembleDebugAndroidTest :core:audio:assembleDebugAndroidTest
       - name: Existing local-mode and versioning contract guards
         run: |
           python3 -m unittest discover -s tools -p test_owner_arm82.py
           python3 -m unittest discover -s tools -p test_pin_free_local_access.py
           python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+          python3 -m unittest discover -s tools -p test_owner_preview_artifact.py
+          python3 -m unittest discover -s tools -p test_version_label.py
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk --allowlist android/product-native-libs-allowlist.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:

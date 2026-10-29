@@ -225,10 +225,10 @@ class OwnerPilotInstrumentedTest {
                     PackageManager.GET_PERMISSIONS or
                     PackageManager.GET_INSTRUMENTATION,
             )
-        assertEquals(4L, info.longVersionCode)
+        val preview = context.packageName.endsWith(".preview")
+        assertEquals(if (preview) 5L else 4L, info.longVersionCode)
         assertEquals(
-            if (context.packageName.endsWith(".preview")) "0.1.0-owner-preview.4"
-            else "0.1.0-owner-alpha.4",
+            if (preview) "0.1.0-owner-preview.5" else "0.1.0-owner-alpha.4",
             info.versionName,
         )
         assertEquals(null, info.sharedUserId)
@@ -256,10 +256,10 @@ class OwnerPilotInstrumentedTest {
                         "android.permission.INTERACT_ACROSS_USERS",
                         "android.permission.INTERACT_ACROSS_USERS_FULL",
                         "android.permission.MANAGE_USERS",
-                        "android.permission.INTERNET",
                     )
             }
         )
+        assertEquals(preview, Manifest.permission.INTERNET in info.requestedPermissions.orEmpty())
         for (forbidden in
             listOf(
                 "com.monumentogram.dora.operator.IsolatedAlphaOperatorActivity",
