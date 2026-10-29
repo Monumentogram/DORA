@@ -38,7 +38,7 @@ No migration, persistent index, dependencies, network, query logging or saved-st
   edits, selection, tombstones, long text and rapid input. Capture synthetic screenshots.
 - [x] 4. Run relevant units, formatting, static analysis and lint; independent review;
   build/sign with existing Preview identity, compare native/assets/signature, hash APK.
-- [ ] 5. Append decision/status/evidence, commit, push Draft PR123 without merge;
+- [x] 5. Append decision/status/evidence, commit, push Draft PR123 without merge;
   report exact results and remaining physical acceptance separately.
 
 ## Ledger
@@ -56,3 +56,4 @@ No migration, persistent index, dependencies, network, query logging or saved-st
   the existing 262144-byte text limit; storage limits are unchanged.
 
 - Final verification: 397 unit, 3 host, 5 applicable UI, 2 encrypted persistence tests PASS; static/lint/build/signing PASS. Full 1000-row scan median 4005 ms, max 5900 ms; documented limitation. Legacy ASR absent-model assertion timeout retained separately and not investigated.
+- Published e2ac6a8. First remote software gate failed on missing inventory entries for the two new persistence tests. Added them and updated the exact count 162 to 164; inventory guard 7/7 PASS. No runtime/APK change.
