@@ -1,0 +1,183 @@
+{
+  "status": "PASS / STAGE9_2R_DIRECT_CLOUD_ALPHA_READY",
+  "date": "2026-10-29",
+  "phone_networks": {
+    "mobile": [
+      {
+        "synthetic_request_bytes": 2048,
+        "status": 200,
+        "response_eof": true,
+        "full_exchange_pass": true,
+        "response_bytes_read": 2320,
+        "elapsed_ms": 881
+      },
+      {
+        "synthetic_request_bytes": 16384,
+        "status": 200,
+        "response_eof": true,
+        "full_exchange_pass": true,
+        "response_bytes_read": 2321,
+        "elapsed_ms": 174
+      },
+      {
+        "synthetic_request_bytes": 87427,
+        "status": 200,
+        "response_eof": true,
+        "full_exchange_pass": true,
+        "response_bytes_read": 2321,
+        "elapsed_ms": 283
+      }
+    ],
+    "wifi": [
+      {
+        "synthetic_request_bytes": 2048,
+        "status": 200,
+        "response_eof": true,
+        "full_exchange_pass": true,
+        "response_bytes_read": 2320,
+        "elapsed_ms": 272
+      },
+      {
+        "synthetic_request_bytes": 16384,
+        "status": 200,
+        "response_eof": true,
+        "full_exchange_pass": true,
+        "response_bytes_read": 2321,
+        "elapsed_ms": 136
+      },
+      {
+        "synthetic_request_bytes": 87427,
+        "status": 200,
+        "response_eof": true,
+        "full_exchange_pass": true,
+        "response_bytes_read": 2321,
+        "elapsed_ms": 199
+      }
+    ]
+  },
+  "proof_header_contract": {
+    "Authorization": true,
+    "X-Dora-Installation": true,
+    "X-Dora-Time": true,
+    "X-Dora-Nonce": true,
+    "X-Dora-Signature": true,
+    "Content-Type": true
+  },
+  "json_envelope": {
+    "previous_limit": 102400,
+    "observed_real_request": 121771,
+    "android_slash_heavy_fixture": 174808,
+    "audio_limit": 196608,
+    "decoded_chunk_limit": 65536,
+    "metadata_limit": 102400,
+    "regression_red_status": 413,
+    "backend_suite_passed": 58
+  },
+  "final_negative_controls": [
+    {
+      "case": "escaped_audio_unsigned",
+      "bytes": 174808,
+      "status": 401,
+      "pass": true
+    },
+    {
+      "case": "audio_overflow",
+      "bytes": 196609,
+      "status": 413,
+      "pass": true
+    },
+    {
+      "case": "metadata_overflow",
+      "bytes": 102401,
+      "status": 413,
+      "pass": true
+    }
+  ],
+  "jobs": [
+    {
+      "language": "ru-RU",
+      "status": "CANCELLED",
+      "uploaded_bytes": 0,
+      "attempt_count": 0,
+      "validated": false,
+      "chunk_count": 0,
+      "encrypted_chunk_bytes": 0,
+      "result_row_exists": false,
+      "reservation_count": 0,
+      "reserved_micro_usd": 0
+    },
+    {
+      "language": "ru-RU",
+      "status": "COMPLETED",
+      "uploaded_bytes": 353644,
+      "attempt_count": 1,
+      "validated": true,
+      "chunk_count": 6,
+      "encrypted_chunk_bytes": 0,
+      "result_row_exists": true,
+      "reservation_count": 1,
+      "reserved_micro_usd": 17500
+    },
+    {
+      "language": "en-US",
+      "status": "COMPLETED",
+      "uploaded_bytes": 353644,
+      "attempt_count": 1,
+      "validated": true,
+      "chunk_count": 6,
+      "encrypted_chunk_bytes": 0,
+      "result_row_exists": true,
+      "reservation_count": 1,
+      "reserved_micro_usd": 17500
+    }
+  ],
+  "persistence": {
+    "historical_documents_exact": 4,
+    "historical_versions_exact": 7,
+    "all_prior_local_versions_exact": 9,
+    "documents_after": 6,
+    "versions_after": 11,
+    "cloud_edits_survived_restart": 2,
+    "ru_active": "Cloud",
+    "en_active": "Local",
+    "process_restart": true,
+    "original_apk_unchanged": true
+  },
+  "cleanup": {
+    "observed_at_utc": "2026-10-29T10:59:21.589539+00:00",
+    "buckets": {
+      "InputBucket": {
+        "objects": 0,
+        "multipart": 0,
+        "truncated": false
+      },
+      "OutputBucket": {
+        "objects": 0,
+        "multipart": 0,
+        "truncated": false
+      }
+    },
+    "host": {
+      "services": {
+        "nginx": "active",
+        "dora-api": "active",
+        "dora-watchdog": "active",
+        "dora-cert-renew.timer": "active",
+        "dora-health.timer": "active"
+      },
+      "nginx_sha256": "c44e6a9e482452de8e31723aba71376c2164450a6a0ebb92a292d1bae07015de",
+      "temporary_unit_absent": true,
+      "temporary_helper_absent": true,
+      "metadata_log_absent": true
+    }
+  },
+  "transcribe_exact_name_absent": true,
+  "empty_service_canary_removed": true,
+  "temporary_phone_jars_removed": 3,
+  "adb_reverse_empty": true,
+  "global_proxy_absent": true,
+  "usb_role": "UI/diagnostic control only; no payload relay",
+  "physical_unplug_run": "not separately performed",
+  "new_apk": false,
+  "direct_transport_cause": "payload/ACK progress lost; exact component unresolved"
+}

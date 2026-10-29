@@ -7,6 +7,19 @@ the current live admission state. Repeat deployments still require their own sco
 
 ## Stage9.1 owner mobile HTTPS option
 
+Stage9.2R adds an owner-approved managed ingress and corrects the audio JSON
+envelope to192KiB (metadata100KiB, decoded audio64KiB). See
+[ADR-0028](../../../docs/adr/ADR-0028-owner-alpha-managed-https-ingress.md).
+The historical100-KiB deployment boundary below describes Stage9.1.
+
+For the existing approved API, substitute only the trusted origin hostname in
+`http-api.openapi.template.json`, reimport with warnings treated as errors, and
+manually deploy to `$default`. Keep automatic deployment off, access logging off,
+and stage throttle2/s burst10. Export the deployed stage with extensions and retain
+it privately. The template does not create or configure a stage, spending cap or
+certificate; these are separate verified operator settings. Do not enable this
+paid ingress for another account or deployment without its own owner scope.
+
 The owner's Stage9.1 authorization permits public HTTPS for the existing closed
 Alpha when changing carrier egress makes device `/32` rules impractical. The
 [scoped decision](../../../docs/STAGE9_1_MOBILE_HTTPS_DECISION.md) supersedes only

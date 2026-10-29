@@ -347,6 +347,38 @@ class ServiceTests(unittest.TestCase):
             self.assertEqual(400, client.post("/v1/session", content=b"{}",
                                              headers=self.proof("POST", "/v1/session", b"{}")).status_code)
 
+    def test_android_slash_escaped_audio_keeps_exact_bytes_and_signature(self):
+        self.binding["frames"] = 40000
+        self.create()
+        path = f"/v1/jobs/{self.action}/audio"
+        chunk = b"\xff" * 65536
+        # Android JSONObject escapes '/', including the slash-heavy Base64 of PCM.
+        raw = json.dumps({"offset": 0, "data_base64": base64.b64encode(chunk).decode(),
+                          "final": False}, separators=(",", ":")).replace("/", "\\/").encode()
+        self.assertGreater(len(raw), 170000)
+        response = self.client.post(path, content=raw, headers=self.proof("POST", path, raw))
+        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(65536, response.json()["uploaded_bytes"])
+        self.assertEqual(chunk, self.service._audio(self.store.job(self.action)))
+        self.assertEqual(0, self.store.job(self.action)["attempt_count"])
+        self.assertEqual(401, self.client.post(path, content=raw).status_code)
+        headers = self.proof("POST", path, raw)
+        self.assertEqual(401, self.client.post(path, content=raw + b" ", headers=headers).status_code)
+
+    def test_audio_json_envelope_and_decoded_chunk_remain_bounded(self):
+        self.binding["frames"] = 40000
+        self.create()
+        path = f"/v1/jobs/{self.action}/audio"
+        raw = b" " * 196609
+        response = self.client.post(path, content=raw, headers=self.proof("POST", path, raw))
+        self.assertEqual(413, response.status_code)
+        self.assertEqual("BODY_TOO_LARGE", response.json()["error_code"])
+        response = self.upload(b"\xff" * 65537, final=False)
+        self.assertEqual(413, response.status_code)
+        self.assertEqual("CHUNK_SIZE", response.json()["error_code"])
+        self.assertEqual(0, self.store.job(self.action)["uploaded_bytes"])
+        self.assertEqual([], self.store.chunks(self.action))
+
     def test_restart_after_final_chunk_commit_can_finalize_same_attempt(self):
         self.create()
         original = self.service._validate_audio

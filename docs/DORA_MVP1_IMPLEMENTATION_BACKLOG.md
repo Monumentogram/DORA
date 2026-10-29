@@ -1596,3 +1596,15 @@ and deployment runbook for parameters, cost and verification/rollback gates.
 This is AWS_INFRASTRUCTURE_PREPARED, not deployed or live-verified. AWS resources,
 paid jobs, audio upload, POCO and merge remain NOT_RUN and require separate scope.
 Stage8.6 NOT_READY and historical evidence remain unchanged.
+
+
+## Stage9.2R owner Cloud transport closure — 2026-10-29
+
+Owner-authorized managed HTTPS ingress and bounded Android JSON-envelope repair
+completed actual POCO Preview5 RU/EN Cloud ASR, independent edits/selection,
+restart/history preservation and AWS cleanup. See [ADR-0028](adr/ADR-0028-owner-alpha-managed-https-ingress.md)
+and the [acceptance report](../STAGE9_2R_HTTPS_ROOT_CAUSE_AND_REPAIR_RESULT.md).
+`PASS / STAGE9_2R_DIRECT_CLOUD_ALPHA_READY` is limited to the sole owner and tested
+routes; direct EC2 transport root cause remains unresolved. No new APK, public
+distribution, universal network qualification, Stage8.6 admission, Signal work or
+merge follows. Historical status records above remain unchanged.
