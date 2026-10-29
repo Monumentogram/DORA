@@ -1302,3 +1302,21 @@ owner-local model verification in release scripts. Existing P-256 Keystore proof
 Only exact owner/public-key-confirmed registrations become permanent; expired
 legacy invitations require explicit owner recovery. See ADR-0029. This does not
 extend personal-audio/corpus retention, permit mass distribution or merge a PR.
+
+## DEC-051 — Signal-inspired owner Alpha UI (2026-10-29)
+
+The owner's Stage 10 request authorizes a working blue-accent light/dark Compose UI
+on the unified OwnerPreview baseline: actual recording library, recording controls,
+original player, transcript editing/history and grouped Local/Cloud settings.
+ADR-SIGNAL-002 records schema limitations, lifecycle rules and the replacement of the
+older mint direction. No storage, device identity, model, backend or signer migration
+is authorized. Physical installation and acceptance remain separate owner actions.
+
+## DEC-052 — Current-text local library search (2026-10-29)
+
+The owner's Stage10.3C request authorizes offline literal substring search in Signal UI
+on PR123 c20b6ce. Reuse encrypted candidate paging and active transcript rendering;
+retain edits/history and existing title/date semantics. No schema migration, separate
+index, Cloud query, model change or physical Preview update is authorized. The bounded
+scan and cancellation decision is recorded in ADR-SIGNAL-003. Performance at 1000
+records remains a measured Alpha limitation, distinct from UI responsiveness.

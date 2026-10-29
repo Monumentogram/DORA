@@ -1,0 +1,130 @@
+{
+  "baseline": "c20b6ce0d15174f4ad1fb8e78f5cfac834e823b7",
+  "unit_tests": [
+    {
+      "module": "app",
+      "variant": "testOwnerPreviewUnitTest",
+      "tests": 118,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "core/audio",
+      "variant": "testReleaseUnitTest",
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "core/model",
+      "variant": "testDebugUnitTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "pin_free_host_tests": {
+    "tests": 3,
+    "failures": 0
+  },
+  "static_checks": [
+    "spotlessCheck PASS",
+    "detekt PASS",
+    "lintOwnerPreview: 0 errors, 18 warnings, 4 hints"
+  ],
+  "encrypted_persistence_tests": {
+    "tests": 2,
+    "failures": 0,
+    "duration_seconds": 820.251,
+    "includes_fixture_creation": true
+  },
+  "performance": {
+    "environment": "Android emulator x86_64 API36, not POCO",
+    "synthetic": true,
+    "worker_execution_includes_matching_audio_recovery": true,
+    "excludes_ui_debounce_ms": 200,
+    "excludes_initial_vault_open_and_fixture_creation": true,
+    "measurements": [
+      {
+        "recordings": 10,
+        "query_kind": "no-match",
+        "samples": 3,
+        "median_ms": 52.46,
+        "max_ms": 59.61
+      },
+      {
+        "recordings": 10,
+        "query_kind": "first-page",
+        "samples": 3,
+        "median_ms": 1157.7,
+        "max_ms": 1273.39
+      },
+      {
+        "recordings": 10,
+        "query_kind": "tail-match",
+        "samples": 3,
+        "median_ms": 142.73,
+        "max_ms": 154.62
+      },
+      {
+        "recordings": 100,
+        "query_kind": "no-match",
+        "samples": 3,
+        "median_ms": 357.29,
+        "max_ms": 357.68
+      },
+      {
+        "recordings": 100,
+        "query_kind": "first-page",
+        "samples": 3,
+        "median_ms": 1774.89,
+        "max_ms": 1813.85
+      },
+      {
+        "recordings": 100,
+        "query_kind": "tail-match",
+        "samples": 3,
+        "median_ms": 440.69,
+        "max_ms": 451.79
+      },
+      {
+        "recordings": 1000,
+        "query_kind": "no-match",
+        "samples": 3,
+        "median_ms": 4005.32,
+        "max_ms": 5899.84
+      },
+      {
+        "recordings": 1000,
+        "query_kind": "first-page",
+        "samples": 3,
+        "median_ms": 1950.82,
+        "max_ms": 2097.86
+      },
+      {
+        "recordings": 1000,
+        "query_kind": "tail-match",
+        "samples": 3,
+        "median_ms": 3798.96,
+        "max_ms": 3923.26
+      }
+    ]
+  },
+  "process_restart_offline": "PASS: force-stop/relaunch, persisted edited synthetic title found; airplane_mode_on=1",
+  "device_validation": "DEVICE_VALIDATION_PENDING",
+  "ui_applicable_final": {
+    "tests": 5,
+    "failures": 0,
+    "duration_seconds": 65.699,
+    "airplane_mode_on": 1
+  },
+  "earlier_out_of_scope_asr_assertion": {
+    "test": "TranscriptUiTest line 113",
+    "result": "TIMEOUT awaiting absent ASR package message",
+    "not_counted_as_search_pass": true,
+    "not_investigated_per_scope": true
+  }
+}

@@ -1934,3 +1934,21 @@ ADR-0029 separates permanent owner device trust from finite onboarding. Backend
 regressions through 2100 and Local model/release guards are included. Final runtime,
 data-preservation and CI status are reported in STAGE9_3_PERMANENT_ACCESS_RESULT.md;
 this implementation entry alone does not assert the Stage9.3 PASS gate. No merge.
+
+## Stage10 — Signal-inspired Android UI (2026-10-29)
+
+SIGNAL_UI_ALPHA_READY for the implemented UI, local verification and signed Preview5
+artifact; see STAGE10_RESULT.md and ADR-SIGNAL-002. Existing storage, native payload,
+model and Cloud registration paths are preserved. DEVICE_VALIDATION_PENDING: no new
+APK was installed on POCO. Live Cloud from the new APK and published-branch CI are
+separate from local PASS. The implementation is proposed through a Draft PR; no merge.
+
+## Stage10.3C — Local current-text search (2026-10-29)
+
+PASS / STAGE10_SEARCH_ALPHA_READY for local software, tests and signed Preview APK.
+Search uses the existing encrypted library and only the current edited/selected text.
+See STAGE10_3C_SEARCH_RESULT.md for test history, 10/100/1000 timings, screenshots,
+independent review and artifact identity. The 1000-row full scan takes several seconds;
+there is no new persistent index. DEVICE_VALIDATION_PENDING; physical Preview v5 was
+not updated. Stage10.5C remains owner-closed, ROOT_CAUSE_NOT_PROVEN, outside this work.
+Stage11 privacy/offline/export may begin; no PR merge was performed or authorized.

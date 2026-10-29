@@ -83,7 +83,7 @@ class OwnerArm82Tests(unittest.TestCase):
         contract = json.loads((root / 'docs/contracts/owner-arm82-persistence-tests-v1.json').read_text())
         legacy = json.loads((root / 'docs/contracts/pin-free-local-access-device-tests-v1.json').read_text())
         validate_accounting(contract, discovered, set(legacy['tests']), set(legacy['deferred_tests']))
-        self.assertEqual(162, len(contract['tests']))
+        self.assertEqual(164, len(contract['tests']))
         for field in ('tests', 'historical_not_qualified', 'separate_process_tests', 'deferred_tests'):
             broken = copy.deepcopy(contract)
             broken[field].pop()

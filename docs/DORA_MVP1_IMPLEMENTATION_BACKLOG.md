@@ -1616,3 +1616,21 @@ migration/recovery, unchanged short request/session protections, retirement-awar
 source retention, release-script cutoff removal and future-date tests. Runtime
 and CI evidence is recorded in STAGE9_3_PERMANENT_ACCESS_RESULT.md. Stage10 Signal
 may proceed only after that report confirms acceptance; no PR merge is authorized.
+
+## Stage10 — Signal UI implementation (2026-10-29)
+
+Completed the actual recording library, blue light/dark theme, recording presentation,
+original player, transcript/editor/history and grouped Local/Cloud settings on the
+accepted owner-local Stage9.3 baseline. Local evidence and APK identity checks are in
+STAGE10_RESULT.md. Remaining: owner-authorized POCO upgrade/validation, a live Cloud
+round trip from the new APK and review of published CI. No merge is authorized.
+
+## Stage10.3C — Search completion (2026-10-29)
+
+Completed: Signal search controls; RU/EN/Unicode substring search over displayed title
+and full active edited transcript; current-version/deletion freshness; cancellable
+worker scans and retained paging; empty/error/no-transcript states; synthetic tests,
+10/100/1000 measurements, independent review and existing-signer Preview APK.
+Evidence and limitations: STAGE10_3C_SEARCH_RESULT.md. Physical POCO validation remains
+pending separately. Stage11 privacy/offline/export is the recommended next scope;
+ASR diagnostics and model replacement remain excluded. No merge.

@@ -83,6 +83,8 @@
     "com.monumentogram.dora.audio.persistence.ProtectedReadOnlyVaultTest#changedOrMissingCopiedCiphertextIsRejectedWithoutSourceMutation",
     "com.monumentogram.dora.audio.persistence.ProtectedReadOnlyVaultTest#missingPinnedPolicyDeniesEntryBeforeCreatingCopy",
     "com.monumentogram.dora.audio.persistence.ProtectedReadOnlyVaultTest#missingRunKeyFailsWithoutGeneratingReplacementOrChangingFiles",
+    "com.monumentogram.dora.audio.persistence.RecordingSearchPersistenceTest#activeEditsSelectionDeletionAndReopenUseEncryptedSource",
+    "com.monumentogram.dora.audio.persistence.RecordingSearchPersistenceTest#syntheticEncryptedLibraries10_100_1000",
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#historicalRecordingHasNoInventedSegmentation",
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#interruptedOpenSourceDoesNotInventSemanticCloseAfterRecovery",
     "com.monumentogram.dora.audio.persistence.SegmentationPersistenceTest#metadataIsImmutableIdempotentAndCannotReferToFutureFrames",

@@ -11,10 +11,10 @@ class DoraDesignTokensTest {
         val light = DoraDesignTokens.paletteFor(DoraThemeMode.LIGHT)
         val dark = DoraDesignTokens.paletteFor(DoraThemeMode.DARK)
 
-        assertEquals(0xFFF5F8FC.toInt(), light.canvas.background)
-        assertEquals(0xFF0C5193.toInt(), light.action.primary)
-        assertEquals(0xFF020A15.toInt(), dark.canvas.background)
-        assertEquals(0xFF66C6F0.toInt(), dark.action.primary)
+        assertEquals(0xFFF7F8FA.toInt(), light.canvas.background)
+        assertEquals(0xFF2859C5.toInt(), light.action.primary)
+        assertEquals(0xFF101318.toInt(), dark.canvas.background)
+        assertEquals(0xFFADC6FF.toInt(), dark.action.primary)
         assertNotEquals(light.canvas.background, dark.canvas.background)
     }
 

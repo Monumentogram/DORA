@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DORA Alpha</string>
+    <string name="app_name" translatable="false">DORA Alpha</string>
     <string name="bootstrap_title">DORA Alpha — основа приложения</string>
     <string name="bootstrap_body">Это только исходная оболочка приложения. Продуктовая функциональность появится после соответствующих решений, PoC и отдельных этапов.</string>
     <string name="nav_home">Главная</string>

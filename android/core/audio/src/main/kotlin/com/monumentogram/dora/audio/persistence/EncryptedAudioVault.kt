@@ -319,6 +319,24 @@ private constructor(
             AudioResult.Value(entries)
         }
 
+    override fun recordingSearchPage(
+        query: String,
+        nameFormat: String,
+        after: String,
+        cancelled: () -> Boolean,
+    ): AudioResult<com.monumentogram.dora.audio.recording.RecordingSearchPage> = operation {
+        com.monumentogram.dora.audio.recording
+            .RecordingSearch(
+                journal::recordingCandidatePage,
+                transcripts::load,
+                ::recordingRecovery,
+            )
+            .page(query, nameFormat, after) {
+                requireActive()
+                cancelled()
+            }
+    }
+
     fun recordingRecovery(identity: AudioIdentity): AudioResult<RecordingRecovery> = operation {
         if (journal.isProtected(identity))
             return@operation AudioResult.Value(
