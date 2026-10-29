@@ -1647,3 +1647,20 @@ DEVICE_VALIDATION_PENDING applies to final product APK physical acceptance; no
 Preview/Pilot update or user10 source access occurred. Stage12 may proceed within
 its separately defined scope; overall Alpha admission and Cloud exit criteria remain
 separate. PR #124 depends on open Draft #123. No merge; no ASR investigation or Stage20 work.
+
+## Stage12 security / Samsung Alpha release-track — 2026-10-30
+
+Stage12 remains PARTIAL: the Technical Plan security scope and ADR-0010 integrated
+exit criteria are not renamed or waived. The overlapping daily-use work adds Cloud
+failure/retry and real DocumentsProvider ENOSPC coverage, synthetic v6-to-v7 encrypted
+upgrade/reboot/offline evidence, and signed Preview7 qualification. Runtime/schema
+and native payload remain unchanged. See [release report](STAGE12_ALPHA_RELEASE.md)
+and its evidence ledger for exact checks and inherited-versus-fresh ASR boundaries.
+
+Draft [PR126](https://github.com/Monumentogram/DORA/pull/126) depends on open Draft124,
+then Draft123. Final publication is gated on independent review and mandatory CI;
+the linked owner prerelease carries the final distribution receipt. Samsung physical
+Android16 acceptance and owner-signed update are SAMSUNG_DEVICE_VALIDATION_PENDING;
+POCO user10 preservation is PENDING. No personal-phone installation, data clear,
+profile reset, AWS mutation or merge occurred. Current end-to-end AWS deletion and
+credential-loss cleanup are a before-public-release gate in Issue125.

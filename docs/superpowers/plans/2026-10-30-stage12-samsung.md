@@ -26,19 +26,19 @@
 
 ## Task 1: Failure regression coverage
 
-- [ ] Add `CloudFailureRecoveryTest.kt` using real encrypted Android session and a bounded transport fault fixture. Assert failure/retry, same action, one Cloud version, preserved edits/audio and reopen.
-- [ ] Add test-only `FaultDocumentsProvider.kt` and `TextExportProviderTest.kt`; exercise ContentResolver open refusal/ENOSPC, success UTF-8, cancellation and retry.
-- [ ] Run targeted instrumentation; reproduce any product defect with a failing test before fixing it.
+- [x] Add `CloudFailureRecoveryTest.kt` using real encrypted Android session and a bounded transport fault fixture. Assert failure/retry, same action, one Cloud version, preserved edits/audio and reopen.
+- [x] Add test-only `FaultDocumentsProvider.java` and `TextExportProviderTest.kt`; exercise ContentResolver open refusal/ENOSPC, success UTF-8, cancellation and retry.
+- [x] Run targeted instrumentation; no production runtime defect reproduced. Test harness defects repaired and verified.
 
 ## Task 2: Upgrade and package qualification
 
-- [ ] Add `AlphaUpgradeTest.kt` prepare/verify phases: synthetic audio, Local/Cloud versions, edits/selections, settings and optional pinned model. Baseline app -> candidate install -r -> restart/reboot/offline verification; no clear/uninstall.
-- [ ] Advance Preview identity and artifact/version-label guards to v7. Keep schema/native/signing identity unchanged.
-- [ ] Run unit/host/static gates, signed APK audit and bounded API36 instrumentation. Record exact fixture/build differences.
+- [x] Add `AlphaUpgradeTest.kt` prepare/verify phases: synthetic audio, Local/Cloud versions, edits/selections, settings and optional pinned model. Baseline app -> candidate install -r -> restart/reboot/offline verification; no clear/uninstall.
+- [x] Advance Preview identity and artifact/version-label guards to v7. Keep schema/native/signing identity unchanged.
+- [x] Run unit/host/static gates, signed APK audit and bounded API36 instrumentation. Record exact fixture/build differences.
 
 ## Task 3: Release evidence and publication
 
-- [ ] Document Stage 12 scope mismatch, compatibility, privacy/deletion/incident/upgrade runbooks and remaining gates. Register AWS deletion follow-up if live erasure remains unverified.
+- [x] Document Stage 12 scope mismatch, compatibility, privacy/deletion/incident/upgrade runbooks and remaining gates. AWS deletion follow-up: Issue125.
 - [ ] Independent whole-branch review; repair findings; publish Draft PR based on #124 and wait for mandatory CI.
 - [ ] Publish approved owner Alpha APK/checksum to the existing GitHub prerelease channel after artifact audit. Provide phone-only installation instructions and explicit Samsung pending status.
 

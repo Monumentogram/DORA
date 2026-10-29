@@ -1,0 +1,156 @@
+{
+  "source_sha": "425e4192ae1db341dfb7b8856f5fc3f614719394",
+  "base": "5957acb6e54f733ae5224c27b73a4b55eea4360e",
+  "stage12": "PARTIAL: security/integrated acceptance remains separate",
+  "release_gate": "Publication only after final branch CI and independent review; see PR126 and release receipt for final gate state",
+  "pr": "https://github.com/Monumentogram/DORA/pull/126",
+  "environment": {
+    "device": "Android emulator x86_64",
+    "android": 16,
+    "api": 36,
+    "page_size": 4096,
+    "synthetic_only": true,
+    "personal_phone_installed": false,
+    "samsung": "SAMSUNG_DEVICE_VALIDATION_PENDING",
+    "poco_user10_upgrade": "PENDING"
+  },
+  "unit": [
+    {
+      "suite": "android/app/build/test-results/testOwnerPreviewUnitTest",
+      "skipped": 0,
+      "tests": 123,
+      "errors": 0,
+      "failures": 0
+    },
+    {
+      "suite": "android/core/audio/build/test-results/testReleaseUnitTest",
+      "skipped": 0,
+      "tests": 274,
+      "errors": 0,
+      "failures": 0
+    },
+    {
+      "suite": "android/core/model/build/test-results/testDebugUnitTest",
+      "skipped": 0,
+      "tests": 5,
+      "errors": 0,
+      "failures": 0
+    }
+  ],
+  "host_pass_count": 183,
+  "backend_pass_count": 64,
+  "instrumentation": {
+    "regression_methods": 8,
+    "upgrade_methods": 2,
+    "regression_result": "PASS",
+    "upgrade_prepare": "PASS",
+    "upgrade_verify": "PASS",
+    "verify_after_reboot_airplane": "PASS",
+    "verify_offline_cloud_refusal": "PASS",
+    "skips": 0,
+    "covers": [
+      "Cloud failure before registration",
+      "lost final upload acknowledgement",
+      "polling failure and reopen/retry same action",
+      "one Cloud version; Local/audio/edits preserved",
+      "real ContentResolver refusal",
+      "real proxy DocumentsProvider ENOSPC with write counter",
+      "UTF-8 RU/EN/emoji selected saved text",
+      "cancel/retry export",
+      "export feedback lifecycle",
+      "Local/Cloud version editor UI",
+      "recording search",
+      "delete/cancel and preserve other recordings"
+    ]
+  },
+  "upgrade": {
+    "from_version_code": 6,
+    "baseline_source": "5957acb6e54f733ae5224c27b73a4b55eea4360e",
+    "to_version_code": 7,
+    "package": "com.monumentogram.dora.alpha.preview",
+    "method": "adb install -r -t, no uninstall/clear; emulator reboot then offline verification",
+    "variant": "ownerPreview with explicit instrumentation signing and public runtime, not final private ARM64 artifact",
+    "signer": "disposable debug test signer shared by baseline and candidate",
+    "preserved": [
+      "encrypted audio bytes",
+      "Local and Cloud transcript versions",
+      "edits on both versions",
+      "explicit active selection",
+      "installation ID",
+      "endpoint preference",
+      "existing Keystore proof key via signature verified with prior public key",
+      "imported pinned Whisper model"
+    ],
+    "model_distribution": "temporary test APK only; not release APK or Git",
+    "final_owner_signed_physical_update": "PENDING"
+  },
+  "apk": {
+    "sha256": "f3be7bfce2c491436d54238b6424b664d99c95babe5f64959dd2b3a864aa3001",
+    "bytes": 84096581,
+    "byte_identical_clean_builds": 2,
+    "same_owner_certificate_as_v6": true,
+    "native_assets_equal_v6": true,
+    "native_asset_entries": 32,
+    "min_sdk": 28,
+    "target_sdk": 36,
+    "abis": [
+      "arm64-v8a"
+    ],
+    "elf_and_zip_16kb": "PASS",
+    "whisper_model_weights_packaged": false,
+    "accepted_vad_model_packaged": true,
+    "test_components_packaged": false,
+    "schema_change": false,
+    "runtime_source_change": false
+  },
+  "offline_native_asr": {
+    "status": "PASS_INHERITED_UNCHANGED",
+    "fresh_native_execution": false,
+    "evidence": "stage11-verification.json native_functional",
+    "languages": [
+      "ru",
+      "en"
+    ],
+    "scope": "accepted POCO isolated native proof; current native/assets exact match; no Samsung runtime claim"
+  },
+  "cloud_asr": {
+    "fresh_failure_recovery": "PASS",
+    "fresh_backend_tests": "PASS",
+    "https_fixture": "final PR CI API28/API36",
+    "live_direct_https": "PASS_INHERITED_STAGE9_2R",
+    "live_v7_request": "NOT_RUN",
+    "historical_evidence": "STAGE9_2R_HTTPS_ROOT_CAUSE_AND_REPAIR_RESULT.md",
+    "aws_mutations_this_task": false,
+    "aws_erasure_current": "UNVERIFIED",
+    "followup": "https://github.com/Monumentogram/DORA/issues/125"
+  },
+  "initial_failures": "Test-only provider process could not load Kotlin runtime; switched isolated components to Java. Provider grant, async cancellation, real-key preferences, reopen, ENOSPC observation and variant coverage repaired after independent review. Initial backend environment lacked FastAPI; rerun in isolated locked venv passed. No production runtime defect reproduced.",
+  "logs_sha256": {
+    "verify.log": "3bee66d0a52f9a030e9a8c241d5d36ef335b5af21c51b6dcad626e3a2c53fc12",
+    "backend-final.log": "74ea7109cc39794b914cd379f88bc5cff65b4b72ae6ab3a45721b0d9db5c1255",
+    "preview-offline-regressions.log": "06973c8feae9170340bf0daacccea4f07ed64ff33e62f3abad1ea6cdf688f102",
+    "upgrade-prepare.log": "4e5d9f2902f58ec76e0cbd4e14a3e833011da75ec0c17be01173a5cde77eb8a5",
+    "upgrade-verify.log": "21ce392ca1b751cd7aabc61a8d294706895c788824efde9771de9d72ba7ccb8a",
+    "upgrade-reboot-offline.log": "a280b009d267e4fdfad5b827fa60e335c92372b27f391b587be1d9931fe8b37b",
+    "upgrade-offline-final.log": "9f1efde12bf9f3a4aadb7507aba40939dd0d1bdf6dbe6fec8d48919bc80250a3",
+    "upgrade-final-tests-build.log": "950a2a198a75e580977e0e1a3583ca29d3ff08d15e18702abb50a44e67a285f4",
+    "release-build.log": "7c3dee67e901ebf2b996363cd9943eced5411aa44646e44935a544a58aba1c21",
+    "test_cloud18_integration.py.log": "354c3d828acda6a2a7353175af6f47b9a6ade35a84756ca5433e46f76b8d8b55",
+    "test_cloud_asr_provider_contract.py.log": "2746506bd2c93daf34c047f93f14a6663bb38ad2043b45afd707fbff3b24c853",
+    "test_cloud_identity_auth_contract.py.log": "aaafc18d2e3e53e555bdb047d4e10f9e8ba6f7487d533d043dde1ff76a232547",
+    "test_owner_arm82.py.log": "b253337965f4b1740a22b9fd471c5e05d444b1c2547f1ac9855423be1a56d5f7",
+    "test_owner_preview_artifact.py.log": "c3ada428ee8d6b635241e0596acfd209f40d82308284c01d0acb1c82f1e52a90",
+    "test_pin_free_local_access.py.log": "271865779e1ea78c7fdb95dd6a9046bbc69a32dbfbf9f832a73660ce07472766",
+    "test_transcript_versioning_contract.py.log": "1a92cc22d847ed948cce462d1b87abf010153514e1a0630846ceea86e391c10c",
+    "test_version_label.py.log": "638d287c0b0a39696192d173099f90dfd19c0b1b2df974802576f431e7c9eb0b"
+  },
+  "limitations": [
+    "Full Stage12 security/integrated gates remain open",
+    "Samsung physical Android16 and owner-signed upgrade pending",
+    "POCO user10 preservation pending",
+    "Live Cloud v7 and current AWS erasure not measured",
+    "16KB static alignment passed; runtime emulator uses4KB",
+    "300-second capture cap retained",
+    "Model must already be installed or imported separately"
+  ]
+}
