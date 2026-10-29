@@ -25,6 +25,26 @@ import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 
 class MainActivity : ComponentActivity() {
+    private val textExports by lazy {
+        ViewModelProvider(this)[com.monumentogram.dora.transcript.TextExportController::class.java]
+    }
+    private val textExportPicker =
+        com.monumentogram.dora.transcript.registerTextExportPicker(activityResultRegistry, this) {
+            textExports.completeSelection(it)
+        }
+    internal val textExportStatus
+        get() = textExports.status
+
+    internal fun launchTextExport(text: String) {
+        if (textExports.beginSelection(text)) {
+            try {
+                textExportPicker.launch("DORA.txt")
+            } catch (_: RuntimeException) {
+                textExports.selectionFailed()
+            }
+        }
+    }
+
     private val modelImports by lazy {
         ViewModelProvider(this)[ModelImportController::class.java]
     }

@@ -1634,3 +1634,16 @@ worker scans and retained paging; empty/error/no-transcript states; synthetic te
 Evidence and limitations: STAGE10_3C_SEARCH_RESULT.md. Physical POCO validation remains
 pending separately. Stage11 privacy/offline/export is the recommended next scope;
 ASR diagnostics and model replacement remain excluded. No merge.
+
+## Stage11 — Privacy, offline and text export (2026-10-29)
+
+PASS / STAGE11_PRIVACY_OFFLINE_EXPORT_ALPHA_READY for software in the requested
+Alpha scope. Whole-recording deletion/retry, offline local flows and explicit UTF-8
+SAF export of displayed saved text are implemented. Other recordings, manual edits,
+version history and the existing audio-only deletion contract are preserved.
+See [Stage 11 report](STAGE11_RESULT.md) for actual POCO user0 isolated tests, CI,
+independent re-review, signed Preview6 identity and evidence limitations.
+DEVICE_VALIDATION_PENDING applies to final product APK physical acceptance; no
+Preview/Pilot update or user10 source access occurred. Stage12 may proceed within
+its separately defined scope; overall Alpha admission and Cloud exit criteria remain
+separate. PR #124 depends on open Draft #123. No merge; no ASR investigation or Stage20 work.

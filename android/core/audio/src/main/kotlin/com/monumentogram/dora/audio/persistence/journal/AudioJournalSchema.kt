@@ -419,6 +419,11 @@ internal interface AudioJournalDao {
     @Query("SELECT * FROM transcript_state WHERE assetId=:asset")
     fun transcript(asset: String): TranscriptEntity?
 
+    @Query("DELETE FROM transcript_state WHERE assetId=:asset") fun removeTranscript(asset: String)
+
+    @Query("DELETE FROM audio_segmentation WHERE assetId=:asset")
+    fun removeSegmentation(asset: String)
+
     @Insert fun insert(value: TranscriptEntity)
 
     @Query(
@@ -445,7 +450,8 @@ internal interface AudioJournalDao {
 
     @Query(
         "SELECT * FROM audio_asset WHERE ownerId=:owner AND vaultId=:vault AND assetId>:after " +
-            "AND assetId NOT IN (SELECT assetId FROM deletion_tombstone) ORDER BY assetId LIMIT 20"
+            "AND assetId NOT IN (SELECT assetId FROM deletion_tombstone WHERE state='USER_DELETED') " +
+            "ORDER BY assetId LIMIT 20"
     )
     fun recordingCandidates(owner: String, vault: String, after: String): List<AssetEntity>
 

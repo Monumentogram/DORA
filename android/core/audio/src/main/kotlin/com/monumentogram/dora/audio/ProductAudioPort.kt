@@ -180,6 +180,10 @@ enum class AudioDeletionCategory {
  * failed extraction invalidates the whole attempt, including earlier callbacks.
  */
 interface ProductAudioSession {
+    /** Explicit whole-recording confirmation only; audio-only deletion is a separate contract. */
+    fun deleteRecordingConfirmed(identity: AudioIdentity): AudioResult<Unit> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val transcripts: com.monumentogram.dora.audio.transcript.TranscriptPort
         get() = com.monumentogram.dora.audio.transcript.UnavailableTranscriptPort
 

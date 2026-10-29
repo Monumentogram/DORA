@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioAvailability
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
@@ -51,6 +52,21 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
 
     fun load(identity: AudioIdentity) = open { session ->
         documentResult(requireValue(session.transcripts.recover(identity)))
+    }
+
+    fun deleteRecording(identity: AudioIdentity, onDeleted: () -> Unit) = open { session ->
+        // Revoke every retained Cloud action before erasing its transcript/job metadata.
+        // This is local revocation; the UI never claims a remote deletion receipt.
+        requireValue(session.transcripts.load(identity))?.jobs?.forEach { job ->
+            job.consent?.let { cancellations.record(job.id, it.destination) }
+        }
+        val result = session.deleteRecordingConfirmed(identity)
+        val publish: () -> Unit = {
+            document = null
+            if (result is com.monumentogram.dora.audio.AudioResult.Value) onDeleted()
+            else message = activity.getString(R.string.stage11_delete_incomplete)
+        }
+        publish
     }
 
     fun library() = open { session ->
@@ -108,8 +124,13 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
             cloudApi?.abortTransfer()
         }
 
+    @Suppress("ReturnCount") // Explicit preconditions before identity or job creation.
     fun recognizeCloud(identity: AudioIdentity, language: String, retryId: String? = null) {
         if (busy || closed) return
+        if (!cloudConnectionAvailable(activity)) {
+            message = activity.getString(R.string.stage11_cloud_offline)
+            return
+        }
         val installation = CloudIdentity(activity.applicationContext)
         val endpoint =
             if (retryId == null) installation.endpoint()

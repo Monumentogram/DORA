@@ -77,10 +77,22 @@ class SignalAcceptanceTest {
             scenario.onActivity { blocked.value = false }
             ui.onNodeWithText(label(R.string.signal_forward_ten)).performClick()
             ui.onNodeWithText("00:00:03 / 00:00:03").assertExists()
-            ui.onNodeWithText(label(R.string.signal_play)).performClick()
-            await(label(R.string.signal_pause))
-            scenario.moveToState(Lifecycle.State.CREATED)
-            scenario.moveToState(Lifecycle.State.RESUMED)
+            // Playback updates every 20 ms. Automatic idle synchronization can skip
+            // the entire three-second state on a physical device; inspect each frame.
+            ui.mainClock.autoAdvance = false
+            try {
+                ui.onNodeWithText(label(R.string.signal_play)).performClick()
+                ui.waitUntil(30000) {
+                    ui.mainClock.advanceTimeByFrame()
+                    ui.onAllNodesWithText(label(R.string.signal_pause))
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                }
+                scenario.moveToState(Lifecycle.State.CREATED)
+                scenario.moveToState(Lifecycle.State.RESUMED)
+            } finally {
+                ui.mainClock.autoAdvance = true
+            }
             ui.onNodeWithText(label(R.string.signal_play)).assertExists()
             ui.onNodeWithText("00:00:00 / 00:00:00").assertExists()
         }

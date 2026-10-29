@@ -203,8 +203,8 @@ androidComponents {
         val ownerPilot = variant.buildType == "ownerPilot"
         val ownerPreview = variant.buildType == "ownerPreview"
         if (ownerPreview) {
-            output.versionCode.set(5)
-            output.versionName.set("0.1.0-owner-preview.5")
+            output.versionCode.set(6)
+            output.versionName.set("0.1.0-owner-preview.6")
         }
         if (ownerPilot) {
             output.versionCode.set(4)

@@ -29,7 +29,7 @@ class VersionLabelTests(unittest.TestCase):
             ('release', 'com.monumentogram.dora', '5', '0.1.0-alpha.3', 'DORA Alpha'),
             ('debug', 'com.monumentogram.dora.debug', '5', '0.1.0-alpha.3-debug', 'DORA Alpha'),
             ('alphaTest', 'com.monumentogram.dora.alpha.test', '5', '0.1.0-alpha.3', 'DORA Alpha'),
-            ('ownerPreview', 'com.monumentogram.dora.alpha.preview', '5', '0.1.0-owner-preview.5', 'DORA Owner Preview'),
+            ('ownerPreview', 'com.monumentogram.dora.alpha.preview', '6', '0.1.0-owner-preview.6', 'DORA Owner Preview'),
             ('ownerPilot', 'com.monumentogram.dora.alpha.pilot', '4', '0.1.0-owner-alpha.4', 'DORA Owner Alpha'),
         ):
             label = f'{prefix} {name} ({code})'

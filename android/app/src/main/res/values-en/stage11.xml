@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stage11_cloud_offline">No internet connection. Cloud processing has not started. Audio and edits are preserved. You can transcribe on this device if the model is installed.</string>
+    <string name="stage11_export_text">Export text</string>
+    <string name="stage11_export_save_first">Save your edits before exporting.</string>
+    <string name="stage11_export_selecting">Choose a location for the TXT file.</string>
+    <string name="stage11_export_writing">Saving text…</string>
+    <string name="stage11_export_saved">Text saved to the selected file.</string>
+    <string name="stage11_export_cancelled">Export cancelled. Recording text is preserved.</string>
+    <string name="stage11_export_failed">Could not write the file. Recording text is preserved. An incomplete file may remain at the selected location; check it and try exporting again.</string>
+    <string name="stage11_delete_recording">Delete recording</string>
+    <string name="stage11_delete_confirm">Delete</string>
+    <string name="stage11_delete_scope">Delete this recording’s original audio, all transcript versions and edits from this device? This cannot be undone. Other recordings remain. External exported copies are not deleted. This action does not confirm deletion of cloud data.</string>
+    <string name="stage11_delete_incomplete">Deletion is incomplete. Some data may already be deleted. Tap Delete recording again to finish. Other recordings are preserved.</string>
+    <string name="stage11_deletion_pending">Deletion incomplete — open recording to retry</string>
+</resources>

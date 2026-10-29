@@ -21,8 +21,8 @@ from version_label import check_label
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.monumentogram.dora.alpha.preview'
 NAMESPACE = 'com.monumentogram.dora'
-VERSION_CODE = 5
-VERSION_NAME = '0.1.0-owner-preview.5'
+VERSION_CODE = 6
+VERSION_NAME = '0.1.0-owner-preview.6'
 OWNER_CERTIFICATE = 'a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d'
 EXCLUDED_CERTIFICATES = {
     'diagnostic': '2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8',
@@ -33,7 +33,7 @@ ANDROID = '{http://schemas.android.com/apk/res/android}'
 MODES = ('owner-local', 'ci-unsigned', 'ci-test-signed')
 PERMISSIONS = {'android.permission.' + name for name in (
     'RECORD_AUDIO', 'FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE',
-    'POST_NOTIFICATIONS', 'WAKE_LOCK', 'INTERNET')}
+    'POST_NOTIFICATIONS', 'WAKE_LOCK', 'INTERNET', 'ACCESS_NETWORK_STATE')}
 PERMISSIONS.add(PACKAGE + '.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION')
 
 

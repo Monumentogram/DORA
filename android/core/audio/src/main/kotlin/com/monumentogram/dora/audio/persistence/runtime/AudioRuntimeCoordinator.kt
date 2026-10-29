@@ -31,6 +31,9 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 internal interface RuntimeVault : AutoCloseable {
+    fun deleteRecordingConfirmed(identity: AudioIdentity): AudioResult<Unit> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val transcripts: com.monumentogram.dora.audio.transcript.TranscriptPort
         get() = com.monumentogram.dora.audio.transcript.UnavailableTranscriptPort
 
@@ -270,6 +273,10 @@ internal class AudioRuntimeCoordinator(
         val vault: RuntimeVault,
         val authorization: LocalAccessSession.Authorization,
     ) : ProductAudioSession {
+        override fun deleteRecordingConfirmed(identity: AudioIdentity) = invoke {
+            deleteRecordingConfirmed(identity)
+        }
+
         override val transcripts: TranscriptPort =
             object : TranscriptPort {
                 override fun beginCloud(

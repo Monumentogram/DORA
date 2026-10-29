@@ -1,0 +1,129 @@
+{
+  "base": "bbff0211b29f0bda43d4319c14943ae501ad4263",
+  "environment": {
+    "device": "POCO M5",
+    "android": 14,
+    "api": 34,
+    "user": 0,
+    "isolated_app": "com.monumentogram.dora.stage11",
+    "isolated_storage_tests": "com.monumentogram.dora.audio.test",
+    "internet_permission": "absent in diagnostic app",
+    "preview_installed": false,
+    "pilot_modified": false,
+    "user10_access": false
+  },
+  "unit": {
+    "app": {
+      "tests": 123,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core/audio": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core/model": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "host_pass_count": 181,
+  "logs": {
+    "poco-deletion.log": "2e833ed32082430290c95f599489fcfd00f015e48718b88b9350d559e18ec08b",
+    "poco-ui-offline.log": "956d4dcebf8737d87ab089c1103d6d2e915b131fb14b015c1cb533cd151f47f5",
+    "poco-native-offline.log": "c7fb12c8a5641d96c01c9256e86045704c9412a0f41a3a9f599b1c68ce991bb2",
+    "poco-playback-recheck.log": "fd113cfbdb5704faf32bc910d90539c6fa23dc15a0924ec79d8650129ceeaf21",
+    "poco-ui-final.log": "e504f65674b28792f0cbb892c83d4508979032932c9afb0915b06cae63993e2c",
+    "poco-export-final.log": "992e417f263254a65518171154ea00437cfc0d175bfb41755a4e77960a949976",
+    "poco-export-final2.log": "1533392019030ed4cb1fd07f1611c3cd59b9b52ec2de3e4381c8fef3bc9266dc",
+    "verification4.log": "33e49eb5e9a7e6f0a626391be82ce0494edacc722c4f1ecc01ffff5c27505da2",
+    "verification5.log": "289d5f07ccccdacb2061c0561a03fdc2e5d2db80f4b05a9f75777abfa6ab7d6b",
+    "verification6.log": "2e64f620d3fb6d20f94bfcbb20052b2f7fdcc973ff16d952bcabb8d55bf6b028",
+    "inventory-fixed.log": "e671d31b0b6e5200fd6a6e5985be90e7aee612157b5be2fa655f8cd88544c9d6",
+    "preview-host.log": "94c59f06e61407ae873bf3bb00fed546b36e2d09b69b68ddb6b0602de36a4e96",
+    "test_version_label.py.log": "351f929ed84aacafade91b6fd67dc7be9217ffaea2ca9d1c9d59bd385ba30fb6",
+    "test_pin_free_local_access.py.log": "83cad0bae98058818d00cfaa0a17a339b09bb51988201ca216975a5782b4dd38",
+    "test_transcript_versioning_contract.py.log": "52fbd473d202a148f3467f05e3f7d8b45f5d9b135aab122340096902c63b7341",
+    "test_cloud_asr_provider_contract.py.log": "0e3c1d714d2f60227e70198b88179cffb66252de84756c71849a1b56483ef4dc",
+    "test_cloud_identity_auth_contract.py.log": "f1113a706ffc0b46d543129a6dea33533d377fe4431e2b239d6868728ff123c6",
+    "poco-export-final3.log": "815b6f4868e18a3b0c715533f43a9069c39c2e277336ce971145bbba78bfd612",
+    "verification7.log": "c73400713f485f0efa9a8d48ac08192395ed866aa76f3ae0e4375a72d90d2e4d",
+    "final-preview-build.log": "4ddb1f49f04e8fdc93ce50f0677e0b0e0adb33960792f1ffd34965e0e898b18a"
+  },
+  "real_saf": {
+    "device": "POCO M5 Android14 API34",
+    "user": 0,
+    "package": "com.monumentogram.dora.stage11",
+    "picker": "com.google.android.documentsui",
+    "route": "ACTION_CREATE_DOCUMENT text/plain EXTRA_LOCAL_ONLY",
+    "destination": "Download/DORA-stage11-synthetic.txt",
+    "bytes": 31,
+    "sha256": "aa71601ba06b40687c3df1e54e401e1671dbd2b50162079ac7823b65751e849d",
+    "exact_saved_edit": "PASS",
+    "machine_text_not_substituted": "PASS",
+    "success_feedback": "observed",
+    "cancel_feedback": "observed",
+    "cancel_existing_file_unchanged": "PASS",
+    "provider_fault_injection": "NOT_RUN; output failures covered by unit tests"
+  },
+  "native_functional": {
+    "languages": [
+      "ru",
+      "en"
+    ],
+    "tests": 1,
+    "status": "PASS",
+    "seconds": 104.21,
+    "uid_tx_counter_unchanged": true,
+    "accuracy_claim": false
+  },
+  "initial_failures": "Search annotation equality, short playback Compose synchronization, and export fixture asynchronous session/document reload were repaired; each affected final test passed. No player or search product behavior changed.",
+  "version_export_ui": {
+    "status": "PASS",
+    "seconds": 30.218,
+    "covers": [
+      "local",
+      "cloud",
+      "saved edits",
+      "inactive preview",
+      "active selection",
+      "reprocessing preserves edits",
+      "cancel"
+    ],
+    "picker_result": "synthetic; real DocumentsUI independently covered"
+  },
+  "device_distinct_pass_counts": {
+    "encrypted_storage": 7,
+    "app_ui_native": 10
+  },
+  "synthetic_pcm_staging": "removed from app no_backup and shell tmp after native verification; optional model retained in isolated test app",
+  "fresh_process_manual_search": {
+    "status": "PASS",
+    "force_stop_scope": "com.monumentogram.dora.stage11 user0 only",
+    "deleted_title_query": "Synthetic deletion note",
+    "deleted_result": "No results",
+    "preserved_edit_query": "Synthetic offline correction en",
+    "preserved_result": "Visible recording row with saved correction",
+    "network": "same no-INTERNET diagnostic app"
+  },
+  "ci": {
+    "source_sha": "5b9be24487b2ee8ee951ebc3d52c376d796d48c5",
+    "stage11_run": 40949506510,
+    "existing_pr_run": 40949550068,
+    "checks": {
+      "stage11_software": "success",
+      "existing_software": "success",
+      "backend": "success",
+      "emulator_api28": "success",
+      "emulator_api36": "success",
+      "pin_free_push_and_pr": "success"
+    }
+  },
+  "stage_status": "PASS / STAGE11_PRIVACY_OFFLINE_EXPORT_ALPHA_READY",
+  "final_product_device_validation": "DEVICE_VALIDATION_PENDING"
+}
