@@ -56,6 +56,47 @@ class InfrastructureTests(unittest.TestCase):
             self.assertEqual({"s3:PutObject", "s3:GetObject", "s3:DeleteObject"}, set(probe[0]["Action"]))
             self.assertIn("s3:ResourceAccount", probe[0]["Condition"]["StringEquals"])
 
+    def test_public_owner_https_is_opt_in_and_cannot_broaden_ssh_or_egress(self):
+        parameter = self.stack["Parameters"].get("EnablePublicOwnerHttps")
+        self.assertIsNotNone(parameter, "Public owner HTTPS must have an explicit opt-in")
+        self.assertEqual("false", parameter["Default"])
+        self.assertEqual({"false", "true"}, set(parameter["AllowedValues"]))
+        firewall = self.resources["HostFirewall"]["Properties"]
+        for enabled in ("false", "true"):
+            for device in ("", "192.0.2.2/32"):
+                with self.subTest(enabled=enabled, device=device):
+                    values = {"OwnerCidr": "192.0.2.1/32", "OwnerDeviceCidr": device,
+                              "EnableAcmeHttpChallenge": "false", "EnablePublicOwnerHttps": enabled,
+                              "AWS::NoValue": None}
+
+                    def resolve(value):
+                        if isinstance(value, list):
+                            return [resolved for item in value if (resolved := resolve(item)) is not None]
+                        if not isinstance(value, dict):
+                            return value
+                        if "Ref" in value:
+                            return values[value["Ref"]]
+                        if "Fn::Equals" in value:
+                            left, right = value["Fn::Equals"]
+                            return resolve(left) == resolve(right)
+                        if "Fn::Not" in value:
+                            return not resolve(value["Fn::Not"][0])
+                        if "Fn::If" in value:
+                            condition, yes, no = value["Fn::If"]
+                            return resolve(yes if resolve(self.stack["Conditions"][condition]) else no)
+                        return {key: resolve(item) for key, item in value.items()}
+
+                    actual = {(r["IpProtocol"], r["FromPort"], r["ToPort"], r["CidrIp"])
+                              for r in resolve(firewall["SecurityGroupIngress"])}
+                    expected = {("tcp", 22, 22, "192.0.2.1/32"), ("tcp", 443, 443, "192.0.2.1/32")}
+                    if device:
+                        expected.add(("tcp", 443, 443, "192.0.2.2/32"))
+                    if enabled == "true":
+                        expected.add(("tcp", 443, 443, "0.0.0.0/0"))
+                    self.assertEqual(expected, actual)
+                    self.assertEqual([{"IpProtocol": "tcp", "FromPort": 443, "ToPort": 443,
+                                       "CidrIp": "0.0.0.0/0"}], resolve(firewall["SecurityGroupEgress"]))
+
     def test_host_has_no_public_api_port_or_automatic_bootstrap_and_alarm_fails_closed(self):
         props = self.resources["Host"]["Properties"]
         self.assertNotIn("UserData", props)
@@ -68,7 +109,7 @@ class InfrastructureTests(unittest.TestCase):
         self.assertTrue(all(r["CidrIp"] == {"Ref": "OwnerCidr"} for r in ingress))
         self.assertEqual("false", self.stack["Parameters"]["EnableAcmeHttpChallenge"]["Default"])
         optional = [r["Fn::If"] for r in rules if "Fn::If" in r]
-        self.assertEqual(2, len(optional))
+        self.assertEqual(3, len(optional))
         condition, challenge, disabled = next(r for r in optional if r[0] == "AcmeHttpChallengeEnabled")
         self.assertEqual("AcmeHttpChallengeEnabled", condition)
         self.assertEqual({"Fn::Equals": [{"Ref": "EnableAcmeHttpChallenge"}, "true"]}, self.stack["Conditions"][condition])

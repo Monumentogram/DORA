@@ -5,6 +5,36 @@ Stage18.1E applied this package under explicit owner authorization. See the
 sections below preserve their original preparation boundary; they do not describe
 the current live admission state. Repeat deployments still require their own scope.
 
+## Stage9.1 owner mobile HTTPS option
+
+The owner's Stage9.1 authorization permits public HTTPS for the existing closed
+Alpha when changing carrier egress makes device `/32` rules impractical. The
+[scoped decision](../../../docs/STAGE9_1_MOBILE_HTTPS_DECISION.md) supersedes only
+the historical HTTPS `/32` requirement below. It does not authorize public
+enrollment or distribution.
+
+`EnablePublicOwnerHttps` defaults to `false`. Explicit `true` adds only IPv4 TCP
+443 ingress. `OwnerCidr` and optional `OwnerDeviceCidr` retain their `/32`
+validation; SSH still uses only `OwnerCidr`. HTTP-01, outbound rules, loopback API,
+TLS, IAM, custody, watchdog and budget configuration are unchanged.
+
+Before enabling it, verify the deployed nginx TLS and per-IP request limits,
+100-KiB body limit, finite invitation-key authentication, backend concurrency and
+action/reservation bounds, live privacy preflight, renewal timer and health/budget
+alerts. Do not disable a failed control to obtain connectivity. Prepare a template
+update with this one new parameter `true` and every existing parameter set to
+`UsePreviousValue`. Review must show only `HostFirewall` Modify, replacement
+`False`, without new or deleted resources. Execute only the reviewed change set
+within the existing owner authorization; retain private before/after receipts.
+
+Verify normal Android TLS and unauthenticated `401 AUTH_INVALID` on the direct
+phone route before any separately authorized manual Cloud action. An invitation
+still requires operator enrollment of the installation's own public key; the
+network option grants no account, content or recognition authority. Roll back by
+setting `EnablePublicOwnerHttps=false`, preserving the prior `/32` rules and all
+cleanup services. This adds no resource or fixed infrastructure charge, but public
+traffic can incur variable costs; budget alerts are not a hard spending cap.
+
 ## Stage18.1E public IP certificate and live admission
 
 No domain was purchased. A trusted Let's Encrypt short-lived IP certificate serves
