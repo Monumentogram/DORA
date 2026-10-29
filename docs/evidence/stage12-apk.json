@@ -1,0 +1,774 @@
+{
+  "schema_version": 1,
+  "mode": "owner-local",
+  "source_sha": "425e4192ae1db341dfb7b8856f5fc3f614719394",
+  "source_clean": true,
+  "application_id": "com.monumentogram.dora.alpha.preview",
+  "version_code": 7,
+  "version_name": "0.1.0-owner-preview.7",
+  "variant": "ownerPreview",
+  "builds": [
+    {
+      "apk_sha256": "f3be7bfce2c491436d54238b6424b664d99c95babe5f64959dd2b3a864aa3001",
+      "size_bytes": 84096581,
+      "payload": {
+        "AndroidManifest.xml": "526879d78ea41e95ca88a3898cbf50acd3a27140a9156c81973e236945c7a763",
+        "DebugProbesKt.bin": "4d13bd92f86a0b1415062b8ed57655c0738ccfbdf0786c1d730d988b27fd4400",
+        "META-INF/DORA-INT.RSA": "116701fc72691bed87ce4928d81ed3fd267d43594d0ac13470a8b1ed51ecf0f7",
+        "META-INF/DORA-INT.SF": "3ab178a7c01cd5605d0922027b70dec383d021ccbc94d80c8db64c6c55bdaca5",
+        "META-INF/MANIFEST.MF": "7e0afaf0a064116e888691eb40b443a029875b0ce6a4959bf00bdbb195ff8d5f",
+        "META-INF/androidx.activity_activity-compose.version": "b4a9545a385e9701482be56a0efee678d467d9c586ec476f2c5986cfaa24e96c",
+        "META-INF/androidx.activity_activity-ktx.version": "b4a9545a385e9701482be56a0efee678d467d9c586ec476f2c5986cfaa24e96c",
+        "META-INF/androidx.activity_activity.version": "b4a9545a385e9701482be56a0efee678d467d9c586ec476f2c5986cfaa24e96c",
+        "META-INF/androidx.annotation_annotation-experimental.version": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+        "META-INF/androidx.arch.core_core-runtime.version": "1b7c606370188534dac5561fba2b2988093829697fce9e6e8832e9291d24ed00",
+        "META-INF/androidx.autofill_autofill.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.compose.animation_animation-core.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.animation_animation.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.foundation_foundation-layout.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.foundation_foundation.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.material3_material3.version": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+        "META-INF/androidx.compose.material_material-ripple.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime-annotation.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime-retain.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime-saveable.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-geometry.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-graphics.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-text.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-tooling-preview.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-unit.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-util.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.core_core-ktx.version": "04d659518a1793d5396007fcabdc9211a8c1db8406bf4e0fa8069171fdb06518",
+        "META-INF/androidx.core_core-viewtree.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.core_core.version": "04d659518a1793d5396007fcabdc9211a8c1db8406bf4e0fa8069171fdb06518",
+        "META-INF/androidx.customview_customview-poolingcontainer.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.documentfile_documentfile.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.dynamicanimation_dynamicanimation.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.emoji2_emoji2.version": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+        "META-INF/androidx.graphics_graphics-path.version": "44e161e4495cac2cf7858043e9e6418e9579f0ddcfae826f9a372622968ce066",
+        "META-INF/androidx.interpolator_interpolator.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.legacy_legacy-support-core-utils.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.lifecycle_lifecycle-livedata-core-ktx.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-livedata-core.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-livedata.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-process.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-runtime-compose.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-runtime-ktx.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-runtime.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-viewmodel-ktx.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-viewmodel-savedstate.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-viewmodel.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.loader_loader.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.navigationevent_navigationevent-compose.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.navigationevent_navigationevent.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.print_print.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.profileinstaller_profileinstaller.version": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+        "META-INF/androidx.room_room-runtime.version": "4b27eec369475e0403454478c25a1777503a969827259a25f597a903e91bd8d4",
+        "META-INF/androidx.savedstate_savedstate-compose.version": "33158972a53877b421cfe2598b8d93cab169963a4964b45ee889e85349979018",
+        "META-INF/androidx.savedstate_savedstate-ktx.version": "33158972a53877b421cfe2598b8d93cab169963a4964b45ee889e85349979018",
+        "META-INF/androidx.savedstate_savedstate.version": "33158972a53877b421cfe2598b8d93cab169963a4964b45ee889e85349979018",
+        "META-INF/androidx.sqlite_sqlite-framework.version": "8fde0552368c64879b3f23c72df5308bcee45ab7c4226ad2d18efd12d1f2e960",
+        "META-INF/androidx.sqlite_sqlite.version": "8fde0552368c64879b3f23c72df5308bcee45ab7c4226ad2d18efd12d1f2e960",
+        "META-INF/androidx.startup_startup-runtime.version": "cc52f678848b814373757b460383bf61960e4943c203735adde0a350b3e50989",
+        "META-INF/androidx.tracing_tracing.version": "1e5b51cde515396a9fa762909cf8ca6584ccc564b325d2eebeea76175fe95c4d",
+        "META-INF/androidx.transition_transition.version": "cb1d9a30bc4ab8a397f39b7d786bb82aca0b816077eefc35d7c822017d75f6a5",
+        "META-INF/androidx.versionedparcelable_versionedparcelable.version": "cc52f678848b814373757b460383bf61960e4943c203735adde0a350b3e50989",
+        "META-INF/androidx.window_window-core.version": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+        "META-INF/androidx.window_window.version": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+        "META-INF/androidx/annotation/annotation/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/collection/collection-ktx/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/collection/collection/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/lifecycle/lifecycle-common-java8/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/lifecycle/lifecycle-common/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/room/room-common/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/com/android/build/gradle/app-metadata.properties": "34660643e5877cd3cd51ca2d3250b4e43598dcc16e533540b103666a20ea2866",
+        "META-INF/kotlinx_coroutines_android.version": "7717cbf90c63a3b096008763a02066239916fa9916f98254d1aa3b2470830fcd",
+        "META-INF/kotlinx_coroutines_core.version": "7717cbf90c63a3b096008763a02066239916fa9916f98254d1aa3b2470830fcd",
+        "META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler": "3129b8edf6db07de6f8ff47695e2177c8bba4eed2962d3085c719e5acbb58a33",
+        "META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory": "a1ea77ea8f93f419256b6e66f29713f950d8d6e90442b608d880a48003b5eb72",
+        "META-INF/version-control-info.textproto": "38d377afa76b6364e5bf551cf4ffec1a881a46102a0047f523fbf148e0df6928",
+        "assets/dexopt/baseline.prof": "c0cbbbae4274bfe9a34bc841169dc397c329e67735325da87a542a6c9f8b673c",
+        "assets/dexopt/baseline.profm": "2334092aefc148b687beb489512f447423d5026faf0f95036380a0ef8761d57f",
+        "assets/dora-asr-notices/NDK-NOTICE-toolchain.txt": "789714a9076571c580cf531bdcebec776a4d889c12c3c1108adafc6e4338710a",
+        "assets/dora-asr-notices/NDK-NOTICE.txt": "faf0dc52cf6ce9ab09a04b0c074a378dd2565ee1ed9bc1179d83793bcdba012e",
+        "assets/dora-asr-notices/OpenAI-MIT.txt": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+        "assets/dora-asr-notices/model-attribution.md": "470b715576d3ee03d3cb8e97eb5eff9238743b372eaca885a3ee595b63d3a8d3",
+        "assets/dora-asr-notices/whisper-MIT.txt": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+        "assets/dora-vad/Sherpa-NOTICE.txt": "0caaabf2b9d78f600fd7b3392163753dd50603eee89069341ec5416fd9e4141c",
+        "assets/dora-vad/Silero-MIT.txt": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b",
+        "assets/dora-vad/identity.properties": "14b1787cc2c4fb9c29b1fdb97c46c78178de4f17710f2a4bb25ce06610d944a0",
+        "assets/dora-vad/silero.onnx": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+        "assets/third_party/persistence/AndroidX-Apache-2.0.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "assets/third_party/persistence/Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "assets/third_party/persistence/NOTICE.txt": "f405285d30929bdf2c678ed1c799952dd23c919e8a5fc4ac28fd4098df4a3d83",
+        "assets/third_party/persistence/Protobuf-BSD-3-Clause.txt": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "assets/third_party/sqlcipher/Android-NDK-NOTICE.txt": "faf0dc52cf6ce9ab09a04b0c074a378dd2565ee1ed9bc1179d83793bcdba012e",
+        "assets/third_party/sqlcipher/LLVM-NOTICE.txt": "f96f763beb66a7ba7a667647fc64c0226ace875e590c831fdd9579ec1c1d91e1",
+        "assets/third_party/sqlcipher/LibTomCrypt.txt": "16d005198879b19cfba4487d5f0eccf2b124b10ace6f3d15fc1ee37bcde2c105",
+        "assets/third_party/sqlcipher/NOTICE.txt": "3717ee015f2906ba5fecb0ed4d592f1747d6a73ac4ac9a3f7949d3d8c222d953",
+        "assets/third_party/sqlcipher/SQLCipher-Android.txt": "39374ff8293df8bda2da95c53b6cd86a0a6e1a47c6cbfb7bed8de5aeed8e166c",
+        "assets/third_party/sqlcipher/SQLCipher.txt": "ef735eefda29371ae0795160bb7f58ff7725aceaa3ab5e7fdb27ed68db98890c",
+        "assets/third_party/sqlcipher/SQLite.txt": "39d158a1ee8063b0a7f87a952cc84b689bfb0a85722572ec0c770bd7fa174afb",
+        "classes.dex": "7c84ebad848d1244cbf47339ccff233224b4bf7dc6a8caa980bd7b5bee77eb46",
+        "classes2.dex": "961c83ad4b0adbd846ff76e066a2538e13828a2ea118676f1b0d997518c2fb2f",
+        "classes3.dex": "c026240d866dff64058d5385f27c1c3a6951abc14245335c3bd0e08849c98225",
+        "kotlin/annotation/annotation.kotlin_builtins": "5f75d4352e432664b2a235c472b991cf88365c73f5fcb5e1f9cc2cbe4b410abe",
+        "kotlin/collections/collections.kotlin_builtins": "0e654e03a38e119de0f4d11633711bd57e1e8b1a876eda74a90100a2a6e7daa4",
+        "kotlin/concurrent/atomics/atomics.kotlin_builtins": "955035527393d165a22da4cb9d992f42b4a30b6f070918f3e2b1f2678f83cc9d",
+        "kotlin/coroutines/coroutines.kotlin_builtins": "98ab3a3c18fcb237528dd63fa489815c583e1d6c13debd2a27ac6d74ccf8717b",
+        "kotlin/internal/internal.kotlin_builtins": "64712f94840e6b3f8123f522f32d08c46f083d87c312a74901f7c00224de775e",
+        "kotlin/kotlin.kotlin_builtins": "c4240215bc20e71b01cc62b43edebd02749b3249d7daa8e7f1dc1514f064c274",
+        "kotlin/ranges/ranges.kotlin_builtins": "f9d35b836ccb5380803aab5e6c76d708b1536fc6c82f27185e8cff5913824e1c",
+        "kotlin/reflect/reflect.kotlin_builtins": "23ecbc7cbb354f31ba37a1be1793d3bb53c00c92cdcf3867759d09d938a1d7c3",
+        "lib/arm64-v8a/libandroidx.graphics.path.so": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6",
+        "lib/arm64-v8a/libc++_shared.so": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2",
+        "lib/arm64-v8a/libdora-whisper-jni.so": "0564a0e9d7d413c5b4c533aa44397588c246187be8f43a70dbbf237df9306ba8",
+        "lib/arm64-v8a/libggml-base.so": "ef2fab9ca78cb998feed953755c394d46cd5182b355909032415e79ad522e049",
+        "lib/arm64-v8a/libggml-cpu.so": "ab61e958ed28b6ec9ef1c92bd141f99149bb02e6147c1d710824565bdb2c7a14",
+        "lib/arm64-v8a/libggml.so": "032f86f3f42ba9dedeac0f7f0b69c818917c6ddab6da98b677f2cef6dbea4f97",
+        "lib/arm64-v8a/libonnxruntime.so": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+        "lib/arm64-v8a/libsherpa-onnx-jni.so": "2e7412da436e02b705cea92d6fe6e3d2f2bf97a483b12d9ae2cc65ad6b723cc7",
+        "lib/arm64-v8a/libsqlcipher.so": "52e2f692a1d59ab6222ab86b516885f930479de7c6ea2b07c4bb48d745ac3ae9",
+        "lib/arm64-v8a/libwhisper.so": "b67a219f3610f9085a75fe4dd7c2c11a18edea60068e63c2f4b63c330d5f96e3",
+        "res/0A.xml": "49538ae60344da33ec2154a1ab369f63d32b3ca250644afbc8215c2ca46db7aa",
+        "res/2K.9.png": "42aee0b03883e94df5e543348a397d1302c1b8221895871a83b81899f5a9647b",
+        "res/3X.xml": "1e89a532acc056490ee086469845d615c93d12c0405fd0f13d4c18e8470884c7",
+        "res/4j.xml": "757f2049fb0d70af338a3e505fca6fa81f3f5bf62bf313ca34d75a64b7a3cd1e",
+        "res/4z.xml": "72f7cf4712776c8f2b814d281c96d5ad8f8eddbc2c73fff2beb52d92b5530d64",
+        "res/5c.png": "b44eeda34d7a529c2fe55719eb098fa29707caa91d18de06a7a775d6e6bcf973",
+        "res/6f.xml": "5b4fd378c2f360e28105d199dbf1e03edd90a5f7d628685aa14ac0e951cb99e1",
+        "res/9m.xml": "0fc752192d49b157cba8b9578844e810bb89f9b29128c991941002b39346e967",
+        "res/C_.9.png": "a8676a1793ac8310ffb12986232df66df092d29c242aeedc2b73556c010d38dc",
+        "res/Ce.xml": "8f9acacabaf2dfb4bb53dab7ce7bec9c1451ce0a0219ffaa41760ea82da3d2d6",
+        "res/GQ.xml": "cfd17df369e698585389a670a7ace7d494eb69b56da71c5dc535ed795a1412ec",
+        "res/JN.xml": "18e4f2edf095d2f19bb74bcf12a1b5aebeaf4fc6871ced80d7fdca942b2be579",
+        "res/Ma.9.png": "d27af435101ca4cbec0c840bd30687918cd39eb83aab1487420855623a45998b",
+        "res/N3.xml": "4a959580080ebb1d822a2459a4234d2abf0dd0b65d9c28bda8c258dafc888c51",
+        "res/Qq.xml": "d2ac6b2f126c458972890126770453c0ccf720257f73f13d74273b2603564b63",
+        "res/SN.xml": "4e046a162878e2f8796c6380f0c5a9a7b40f1ffb251478ecfcbbe3b434bd1178",
+        "res/U-.9.png": "e17761ed280edd93d7141bd504b70f9e9e15a8652288d9e6333bf4ce964ef844",
+        "res/W3.xml": "2f768c089cefa18cf7f1fde7f602410bf38998de5f9073a15ea83106c25e3c30",
+        "res/WU.xml": "e5d8029b22d3bcd3496b387bd4c775fe3ca0de342981ebf95b54a1f7ec09c462",
+        "res/Xk.xml": "c8321364802409baf4d76e2a84e303871585bdc95b0395040c5ecea0e2051105",
+        "res/Xs.xml": "0bddd56e612da01f82ee1d468009e08f8b5629fb60457c750d7be0d22ae8cd88",
+        "res/Zc.xml": "f37fb839cb97325df2cfd331c0165c353112731bf94175144a71abeaca03c294",
+        "res/_b.xml": "88edab44b23f72ef14f9f4aacece7a19eb1702420a4e55c3984ccd4d75e83277",
+        "res/_y.xml": "15a429bc538499cf95de5406b8c52cf2238cfd3a494af3d51b611b96c22a49c0",
+        "res/bX.xml": "161406bf79846bcd45f13f7f9ac46bf835db983d086c43a754f15b8a574cf831",
+        "res/c6.xml": "b143ee7fcbba209f17607a720502d755f085ec75380ad6fbd6f99de6583f0a40",
+        "res/cV.xml": "2a837750d082a385ab7fe4528b54ff23aa3ecb56abf62e358f596ce2a7bedf3d",
+        "res/color/vector_tint_color.xml": "4bbb4ef3e0e3db260a05d794047a1765e420d699ee5673e90b57ff682a2fe34e",
+        "res/color/vector_tint_theme_color.xml": "cf34dc5bdb4a6d1568143e115ac4e34448383ac772862ef0fdbb7fe8936c6dd3",
+        "res/cr.xml": "37ff040591f96786bfaf9d3d937fedf2f2f97e218c06beb3e7fe8a2442a181a8",
+        "res/df.xml": "0f80bf834c4cb285536885eec57a43cab98bcefbd5db16ca4e973fc918d61b26",
+        "res/eG.xml": "a9657e68fd0c10ced5011b67b9e37a5ebe262957ef15fa3679a9a1f8784fee21",
+        "res/fY.xml": "e8f75112a03eba4daaf7b6c4b1a9c71fb9cdf87cc5ba622bb8fbe7a0a284899a",
+        "res/gK.9.png": "2f7fbda0ba6e53e9a47e2fc0e24e32c447c613a5808c2d6285dc651e83a07ad7",
+        "res/je.9.png": "21f0b55280be10b187ceff8edef4a5a7047683e6e9fcf47de410aa3839f41094",
+        "res/lR.xml": "29d4e9a572366c72f1486484bafe9c8cd971664acf6e3d376ef9797e2803f472",
+        "res/nz.xml": "32a76791385649dd729d149c819118515f3751b1bb71605cf80f53c8a6596814",
+        "res/o_.9.png": "20343222f9f79dd565c3a2248494d452e70820ac1c437173c38badd45f962afd",
+        "res/pY.png": "8430ec003e003f3f2ba2f78d48fd150e25407667e530e82e87a7d4841c0fd676",
+        "res/pu.png": "aa00088d0d9fd97bd92ed9ffd29b54bb69a48a984aa73448ce553fb9d812be41",
+        "res/rJ.xml": "757dc8a55b938c5982c6d445435d4676f94b1248a1ba71a401220775b6dcd070",
+        "res/s4.png": "0d773e62c756422313262846c787e58f67e0ee87e45e1ae9942002e816c4cb9e",
+        "res/sA.9.png": "0c6328c7b2420570a7ec38b3beb3bac9a29d895ac1ab7239315aba7266418593",
+        "res/um.xml": "d9e97bf7ea2628411b5624d8ab776cef1dc10f60bda1ace305eae4057b9b51df",
+        "res/vL.9.png": "99c14d6855b8be296d58017d3751b8dc849c47b6d1d80ab614ff9075080e461b",
+        "res/wN.9.png": "18b328d8017e677d5aad3dbd66bae356b5cac978c6f0670938ea648e51d0eb66",
+        "res/x4.xml": "9869baa89df07463c9905927155f79b63b38f70933b475de6d01aa14d22bc6df",
+        "res/xa.9.png": "3e09afa21c45372c035598c017c8fb405a6d678e6cb84dc857581cb3b40e482d",
+        "res/z-.9.png": "559bf783d765c02338e97952bdc9c6689c7ff99090b8c9813369118da8b080f0",
+        "resources.arsc": "2319bde3330e9b4386a61e3b6ddeb9183e45f7025bf3aecafa4b846f2514e7dd"
+      },
+      "compiled_version_label": "DORA Owner Preview 0.1.0-owner-preview.7 (7)",
+      "version_label_parity": "PASS",
+      "components": [
+        {
+          "type": "service",
+          "name": "com.monumentogram.dora.recording.ProductRecordingService",
+          "exported": false
+        },
+        {
+          "type": "activity",
+          "name": "com.monumentogram.dora.MainActivity",
+          "exported": true
+        },
+        {
+          "type": "provider",
+          "name": "androidx.startup.InitializationProvider",
+          "exported": false
+        },
+        {
+          "type": "service",
+          "name": "androidx.room.MultiInstanceInvalidationService",
+          "exported": false
+        },
+        {
+          "type": "receiver",
+          "name": "androidx.profileinstaller.ProfileInstallReceiver",
+          "exported": true
+        }
+      ],
+      "dex_inventory": [
+        "classes.dex",
+        "classes2.dex",
+        "classes3.dex"
+      ],
+      "no_application_pin_or_biometric_prompt": "PASS",
+      "diagnostic_false_dex_sha256": "6acf02ef019aa7e50bed0845588e1f1f7d216b5e71b9fbd425394e895e99a13b",
+      "backup_policy_sha256": [
+        "4d7c79acb6045b86b7aa2c04ccb35663d3ed45154b2b2dea01ca69a477eb07ff",
+        "60fcfa7ac685d16e5a307e1107e68eeaaf6f56a61253470973191eea6e67b032"
+      ],
+      "manifest_sha256": "039f876a545d61d44d780c81692d735fbf099eb72229da2078466d3b63fdc72e",
+      "native_elf": {
+        "lib/arm64-v8a/libandroidx.graphics.path.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libc++_shared.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libdora-whisper-jni.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libggml-base.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libggml-cpu.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libggml.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libonnxruntime.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libsherpa-onnx-jni.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libsqlcipher.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libwhisper.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        }
+      },
+      "zip_alignment_16k": "PASS",
+      "arm82_dependencies": {
+        "libandroidx.graphics.path.so": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libonnxruntime.so": [
+          "libc.so",
+          "libdl.so",
+          "liblog.so",
+          "libm.so"
+        ],
+        "libsherpa-onnx-jni.so": [
+          "libandroid.so",
+          "libc.so",
+          "libdl.so",
+          "liblog.so",
+          "libm.so",
+          "libonnxruntime.so"
+        ],
+        "libsqlcipher.so": [
+          "libc.so",
+          "libdl.so",
+          "liblog.so",
+          "libm.so"
+        ],
+        "libc++_shared.so": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libdora-whisper-jni.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libggml-base.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libggml-cpu.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libggml-base.so",
+          "libm.so"
+        ],
+        "libggml.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libggml-base.so",
+          "libggml-cpu.so",
+          "libm.so"
+        ],
+        "libwhisper.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libggml-base.so",
+          "libggml-cpu.so",
+          "libggml.so",
+          "libm.so"
+        ]
+      },
+      "build_receipt_sha256": "13bad17df7a74913f9e98df26e928ddade36692690edc96dd67efe02f4a05c64"
+    },
+    {
+      "apk_sha256": "f3be7bfce2c491436d54238b6424b664d99c95babe5f64959dd2b3a864aa3001",
+      "size_bytes": 84096581,
+      "payload": {
+        "AndroidManifest.xml": "526879d78ea41e95ca88a3898cbf50acd3a27140a9156c81973e236945c7a763",
+        "DebugProbesKt.bin": "4d13bd92f86a0b1415062b8ed57655c0738ccfbdf0786c1d730d988b27fd4400",
+        "META-INF/DORA-INT.RSA": "116701fc72691bed87ce4928d81ed3fd267d43594d0ac13470a8b1ed51ecf0f7",
+        "META-INF/DORA-INT.SF": "3ab178a7c01cd5605d0922027b70dec383d021ccbc94d80c8db64c6c55bdaca5",
+        "META-INF/MANIFEST.MF": "7e0afaf0a064116e888691eb40b443a029875b0ce6a4959bf00bdbb195ff8d5f",
+        "META-INF/androidx.activity_activity-compose.version": "b4a9545a385e9701482be56a0efee678d467d9c586ec476f2c5986cfaa24e96c",
+        "META-INF/androidx.activity_activity-ktx.version": "b4a9545a385e9701482be56a0efee678d467d9c586ec476f2c5986cfaa24e96c",
+        "META-INF/androidx.activity_activity.version": "b4a9545a385e9701482be56a0efee678d467d9c586ec476f2c5986cfaa24e96c",
+        "META-INF/androidx.annotation_annotation-experimental.version": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+        "META-INF/androidx.arch.core_core-runtime.version": "1b7c606370188534dac5561fba2b2988093829697fce9e6e8832e9291d24ed00",
+        "META-INF/androidx.autofill_autofill.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.compose.animation_animation-core.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.animation_animation.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.foundation_foundation-layout.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.foundation_foundation.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.material3_material3.version": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+        "META-INF/androidx.compose.material_material-ripple.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime-annotation.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime-retain.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime-saveable.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.runtime_runtime.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-geometry.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-graphics.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-text.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-tooling-preview.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-unit.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui-util.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.compose.ui_ui.version": "1e24e431af456dda7519865b7226e9db1f0e6f90f1c32dd767a5a8687b0471f7",
+        "META-INF/androidx.core_core-ktx.version": "04d659518a1793d5396007fcabdc9211a8c1db8406bf4e0fa8069171fdb06518",
+        "META-INF/androidx.core_core-viewtree.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.core_core.version": "04d659518a1793d5396007fcabdc9211a8c1db8406bf4e0fa8069171fdb06518",
+        "META-INF/androidx.customview_customview-poolingcontainer.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.documentfile_documentfile.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.dynamicanimation_dynamicanimation.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.emoji2_emoji2.version": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+        "META-INF/androidx.graphics_graphics-path.version": "44e161e4495cac2cf7858043e9e6418e9579f0ddcfae826f9a372622968ce066",
+        "META-INF/androidx.interpolator_interpolator.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.legacy_legacy-support-core-utils.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.lifecycle_lifecycle-livedata-core-ktx.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-livedata-core.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-livedata.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-process.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-runtime-compose.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-runtime-ktx.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-runtime.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-viewmodel-ktx.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-viewmodel-savedstate.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.lifecycle_lifecycle-viewmodel.version": "01a5e9fea8b161cb6a13b869c4b927459b3639c401bdef3a69036206683bbe24",
+        "META-INF/androidx.loader_loader.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.navigationevent_navigationevent-compose.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.navigationevent_navigationevent.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.print_print.version": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03",
+        "META-INF/androidx.profileinstaller_profileinstaller.version": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+        "META-INF/androidx.room_room-runtime.version": "4b27eec369475e0403454478c25a1777503a969827259a25f597a903e91bd8d4",
+        "META-INF/androidx.savedstate_savedstate-compose.version": "33158972a53877b421cfe2598b8d93cab169963a4964b45ee889e85349979018",
+        "META-INF/androidx.savedstate_savedstate-ktx.version": "33158972a53877b421cfe2598b8d93cab169963a4964b45ee889e85349979018",
+        "META-INF/androidx.savedstate_savedstate.version": "33158972a53877b421cfe2598b8d93cab169963a4964b45ee889e85349979018",
+        "META-INF/androidx.sqlite_sqlite-framework.version": "8fde0552368c64879b3f23c72df5308bcee45ab7c4226ad2d18efd12d1f2e960",
+        "META-INF/androidx.sqlite_sqlite.version": "8fde0552368c64879b3f23c72df5308bcee45ab7c4226ad2d18efd12d1f2e960",
+        "META-INF/androidx.startup_startup-runtime.version": "cc52f678848b814373757b460383bf61960e4943c203735adde0a350b3e50989",
+        "META-INF/androidx.tracing_tracing.version": "1e5b51cde515396a9fa762909cf8ca6584ccc564b325d2eebeea76175fe95c4d",
+        "META-INF/androidx.transition_transition.version": "cb1d9a30bc4ab8a397f39b7d786bb82aca0b816077eefc35d7c822017d75f6a5",
+        "META-INF/androidx.versionedparcelable_versionedparcelable.version": "cc52f678848b814373757b460383bf61960e4943c203735adde0a350b3e50989",
+        "META-INF/androidx.window_window-core.version": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+        "META-INF/androidx.window_window.version": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+        "META-INF/androidx/annotation/annotation/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/collection/collection-ktx/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/collection/collection/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/lifecycle/lifecycle-common-java8/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/lifecycle/lifecycle-common/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/androidx/room/room-common/LICENSE.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "META-INF/com/android/build/gradle/app-metadata.properties": "34660643e5877cd3cd51ca2d3250b4e43598dcc16e533540b103666a20ea2866",
+        "META-INF/kotlinx_coroutines_android.version": "7717cbf90c63a3b096008763a02066239916fa9916f98254d1aa3b2470830fcd",
+        "META-INF/kotlinx_coroutines_core.version": "7717cbf90c63a3b096008763a02066239916fa9916f98254d1aa3b2470830fcd",
+        "META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler": "3129b8edf6db07de6f8ff47695e2177c8bba4eed2962d3085c719e5acbb58a33",
+        "META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory": "a1ea77ea8f93f419256b6e66f29713f950d8d6e90442b608d880a48003b5eb72",
+        "META-INF/version-control-info.textproto": "38d377afa76b6364e5bf551cf4ffec1a881a46102a0047f523fbf148e0df6928",
+        "assets/dexopt/baseline.prof": "c0cbbbae4274bfe9a34bc841169dc397c329e67735325da87a542a6c9f8b673c",
+        "assets/dexopt/baseline.profm": "2334092aefc148b687beb489512f447423d5026faf0f95036380a0ef8761d57f",
+        "assets/dora-asr-notices/NDK-NOTICE-toolchain.txt": "789714a9076571c580cf531bdcebec776a4d889c12c3c1108adafc6e4338710a",
+        "assets/dora-asr-notices/NDK-NOTICE.txt": "faf0dc52cf6ce9ab09a04b0c074a378dd2565ee1ed9bc1179d83793bcdba012e",
+        "assets/dora-asr-notices/OpenAI-MIT.txt": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+        "assets/dora-asr-notices/model-attribution.md": "470b715576d3ee03d3cb8e97eb5eff9238743b372eaca885a3ee595b63d3a8d3",
+        "assets/dora-asr-notices/whisper-MIT.txt": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+        "assets/dora-vad/Sherpa-NOTICE.txt": "0caaabf2b9d78f600fd7b3392163753dd50603eee89069341ec5416fd9e4141c",
+        "assets/dora-vad/Silero-MIT.txt": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b",
+        "assets/dora-vad/identity.properties": "14b1787cc2c4fb9c29b1fdb97c46c78178de4f17710f2a4bb25ce06610d944a0",
+        "assets/dora-vad/silero.onnx": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+        "assets/third_party/persistence/AndroidX-Apache-2.0.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "assets/third_party/persistence/Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "assets/third_party/persistence/NOTICE.txt": "f405285d30929bdf2c678ed1c799952dd23c919e8a5fc4ac28fd4098df4a3d83",
+        "assets/third_party/persistence/Protobuf-BSD-3-Clause.txt": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "assets/third_party/sqlcipher/Android-NDK-NOTICE.txt": "faf0dc52cf6ce9ab09a04b0c074a378dd2565ee1ed9bc1179d83793bcdba012e",
+        "assets/third_party/sqlcipher/LLVM-NOTICE.txt": "f96f763beb66a7ba7a667647fc64c0226ace875e590c831fdd9579ec1c1d91e1",
+        "assets/third_party/sqlcipher/LibTomCrypt.txt": "16d005198879b19cfba4487d5f0eccf2b124b10ace6f3d15fc1ee37bcde2c105",
+        "assets/third_party/sqlcipher/NOTICE.txt": "3717ee015f2906ba5fecb0ed4d592f1747d6a73ac4ac9a3f7949d3d8c222d953",
+        "assets/third_party/sqlcipher/SQLCipher-Android.txt": "39374ff8293df8bda2da95c53b6cd86a0a6e1a47c6cbfb7bed8de5aeed8e166c",
+        "assets/third_party/sqlcipher/SQLCipher.txt": "ef735eefda29371ae0795160bb7f58ff7725aceaa3ab5e7fdb27ed68db98890c",
+        "assets/third_party/sqlcipher/SQLite.txt": "39d158a1ee8063b0a7f87a952cc84b689bfb0a85722572ec0c770bd7fa174afb",
+        "classes.dex": "7c84ebad848d1244cbf47339ccff233224b4bf7dc6a8caa980bd7b5bee77eb46",
+        "classes2.dex": "961c83ad4b0adbd846ff76e066a2538e13828a2ea118676f1b0d997518c2fb2f",
+        "classes3.dex": "c026240d866dff64058d5385f27c1c3a6951abc14245335c3bd0e08849c98225",
+        "kotlin/annotation/annotation.kotlin_builtins": "5f75d4352e432664b2a235c472b991cf88365c73f5fcb5e1f9cc2cbe4b410abe",
+        "kotlin/collections/collections.kotlin_builtins": "0e654e03a38e119de0f4d11633711bd57e1e8b1a876eda74a90100a2a6e7daa4",
+        "kotlin/concurrent/atomics/atomics.kotlin_builtins": "955035527393d165a22da4cb9d992f42b4a30b6f070918f3e2b1f2678f83cc9d",
+        "kotlin/coroutines/coroutines.kotlin_builtins": "98ab3a3c18fcb237528dd63fa489815c583e1d6c13debd2a27ac6d74ccf8717b",
+        "kotlin/internal/internal.kotlin_builtins": "64712f94840e6b3f8123f522f32d08c46f083d87c312a74901f7c00224de775e",
+        "kotlin/kotlin.kotlin_builtins": "c4240215bc20e71b01cc62b43edebd02749b3249d7daa8e7f1dc1514f064c274",
+        "kotlin/ranges/ranges.kotlin_builtins": "f9d35b836ccb5380803aab5e6c76d708b1536fc6c82f27185e8cff5913824e1c",
+        "kotlin/reflect/reflect.kotlin_builtins": "23ecbc7cbb354f31ba37a1be1793d3bb53c00c92cdcf3867759d09d938a1d7c3",
+        "lib/arm64-v8a/libandroidx.graphics.path.so": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6",
+        "lib/arm64-v8a/libc++_shared.so": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2",
+        "lib/arm64-v8a/libdora-whisper-jni.so": "0564a0e9d7d413c5b4c533aa44397588c246187be8f43a70dbbf237df9306ba8",
+        "lib/arm64-v8a/libggml-base.so": "ef2fab9ca78cb998feed953755c394d46cd5182b355909032415e79ad522e049",
+        "lib/arm64-v8a/libggml-cpu.so": "ab61e958ed28b6ec9ef1c92bd141f99149bb02e6147c1d710824565bdb2c7a14",
+        "lib/arm64-v8a/libggml.so": "032f86f3f42ba9dedeac0f7f0b69c818917c6ddab6da98b677f2cef6dbea4f97",
+        "lib/arm64-v8a/libonnxruntime.so": "33847ad43bffe204699fd4a27f7f3603452a8cdaf2f9a44983a0bc31ffcf2da1",
+        "lib/arm64-v8a/libsherpa-onnx-jni.so": "2e7412da436e02b705cea92d6fe6e3d2f2bf97a483b12d9ae2cc65ad6b723cc7",
+        "lib/arm64-v8a/libsqlcipher.so": "52e2f692a1d59ab6222ab86b516885f930479de7c6ea2b07c4bb48d745ac3ae9",
+        "lib/arm64-v8a/libwhisper.so": "b67a219f3610f9085a75fe4dd7c2c11a18edea60068e63c2f4b63c330d5f96e3",
+        "res/0A.xml": "49538ae60344da33ec2154a1ab369f63d32b3ca250644afbc8215c2ca46db7aa",
+        "res/2K.9.png": "42aee0b03883e94df5e543348a397d1302c1b8221895871a83b81899f5a9647b",
+        "res/3X.xml": "1e89a532acc056490ee086469845d615c93d12c0405fd0f13d4c18e8470884c7",
+        "res/4j.xml": "757f2049fb0d70af338a3e505fca6fa81f3f5bf62bf313ca34d75a64b7a3cd1e",
+        "res/4z.xml": "72f7cf4712776c8f2b814d281c96d5ad8f8eddbc2c73fff2beb52d92b5530d64",
+        "res/5c.png": "b44eeda34d7a529c2fe55719eb098fa29707caa91d18de06a7a775d6e6bcf973",
+        "res/6f.xml": "5b4fd378c2f360e28105d199dbf1e03edd90a5f7d628685aa14ac0e951cb99e1",
+        "res/9m.xml": "0fc752192d49b157cba8b9578844e810bb89f9b29128c991941002b39346e967",
+        "res/C_.9.png": "a8676a1793ac8310ffb12986232df66df092d29c242aeedc2b73556c010d38dc",
+        "res/Ce.xml": "8f9acacabaf2dfb4bb53dab7ce7bec9c1451ce0a0219ffaa41760ea82da3d2d6",
+        "res/GQ.xml": "cfd17df369e698585389a670a7ace7d494eb69b56da71c5dc535ed795a1412ec",
+        "res/JN.xml": "18e4f2edf095d2f19bb74bcf12a1b5aebeaf4fc6871ced80d7fdca942b2be579",
+        "res/Ma.9.png": "d27af435101ca4cbec0c840bd30687918cd39eb83aab1487420855623a45998b",
+        "res/N3.xml": "4a959580080ebb1d822a2459a4234d2abf0dd0b65d9c28bda8c258dafc888c51",
+        "res/Qq.xml": "d2ac6b2f126c458972890126770453c0ccf720257f73f13d74273b2603564b63",
+        "res/SN.xml": "4e046a162878e2f8796c6380f0c5a9a7b40f1ffb251478ecfcbbe3b434bd1178",
+        "res/U-.9.png": "e17761ed280edd93d7141bd504b70f9e9e15a8652288d9e6333bf4ce964ef844",
+        "res/W3.xml": "2f768c089cefa18cf7f1fde7f602410bf38998de5f9073a15ea83106c25e3c30",
+        "res/WU.xml": "e5d8029b22d3bcd3496b387bd4c775fe3ca0de342981ebf95b54a1f7ec09c462",
+        "res/Xk.xml": "c8321364802409baf4d76e2a84e303871585bdc95b0395040c5ecea0e2051105",
+        "res/Xs.xml": "0bddd56e612da01f82ee1d468009e08f8b5629fb60457c750d7be0d22ae8cd88",
+        "res/Zc.xml": "f37fb839cb97325df2cfd331c0165c353112731bf94175144a71abeaca03c294",
+        "res/_b.xml": "88edab44b23f72ef14f9f4aacece7a19eb1702420a4e55c3984ccd4d75e83277",
+        "res/_y.xml": "15a429bc538499cf95de5406b8c52cf2238cfd3a494af3d51b611b96c22a49c0",
+        "res/bX.xml": "161406bf79846bcd45f13f7f9ac46bf835db983d086c43a754f15b8a574cf831",
+        "res/c6.xml": "b143ee7fcbba209f17607a720502d755f085ec75380ad6fbd6f99de6583f0a40",
+        "res/cV.xml": "2a837750d082a385ab7fe4528b54ff23aa3ecb56abf62e358f596ce2a7bedf3d",
+        "res/color/vector_tint_color.xml": "4bbb4ef3e0e3db260a05d794047a1765e420d699ee5673e90b57ff682a2fe34e",
+        "res/color/vector_tint_theme_color.xml": "cf34dc5bdb4a6d1568143e115ac4e34448383ac772862ef0fdbb7fe8936c6dd3",
+        "res/cr.xml": "37ff040591f96786bfaf9d3d937fedf2f2f97e218c06beb3e7fe8a2442a181a8",
+        "res/df.xml": "0f80bf834c4cb285536885eec57a43cab98bcefbd5db16ca4e973fc918d61b26",
+        "res/eG.xml": "a9657e68fd0c10ced5011b67b9e37a5ebe262957ef15fa3679a9a1f8784fee21",
+        "res/fY.xml": "e8f75112a03eba4daaf7b6c4b1a9c71fb9cdf87cc5ba622bb8fbe7a0a284899a",
+        "res/gK.9.png": "2f7fbda0ba6e53e9a47e2fc0e24e32c447c613a5808c2d6285dc651e83a07ad7",
+        "res/je.9.png": "21f0b55280be10b187ceff8edef4a5a7047683e6e9fcf47de410aa3839f41094",
+        "res/lR.xml": "29d4e9a572366c72f1486484bafe9c8cd971664acf6e3d376ef9797e2803f472",
+        "res/nz.xml": "32a76791385649dd729d149c819118515f3751b1bb71605cf80f53c8a6596814",
+        "res/o_.9.png": "20343222f9f79dd565c3a2248494d452e70820ac1c437173c38badd45f962afd",
+        "res/pY.png": "8430ec003e003f3f2ba2f78d48fd150e25407667e530e82e87a7d4841c0fd676",
+        "res/pu.png": "aa00088d0d9fd97bd92ed9ffd29b54bb69a48a984aa73448ce553fb9d812be41",
+        "res/rJ.xml": "757dc8a55b938c5982c6d445435d4676f94b1248a1ba71a401220775b6dcd070",
+        "res/s4.png": "0d773e62c756422313262846c787e58f67e0ee87e45e1ae9942002e816c4cb9e",
+        "res/sA.9.png": "0c6328c7b2420570a7ec38b3beb3bac9a29d895ac1ab7239315aba7266418593",
+        "res/um.xml": "d9e97bf7ea2628411b5624d8ab776cef1dc10f60bda1ace305eae4057b9b51df",
+        "res/vL.9.png": "99c14d6855b8be296d58017d3751b8dc849c47b6d1d80ab614ff9075080e461b",
+        "res/wN.9.png": "18b328d8017e677d5aad3dbd66bae356b5cac978c6f0670938ea648e51d0eb66",
+        "res/x4.xml": "9869baa89df07463c9905927155f79b63b38f70933b475de6d01aa14d22bc6df",
+        "res/xa.9.png": "3e09afa21c45372c035598c017c8fb405a6d678e6cb84dc857581cb3b40e482d",
+        "res/z-.9.png": "559bf783d765c02338e97952bdc9c6689c7ff99090b8c9813369118da8b080f0",
+        "resources.arsc": "2319bde3330e9b4386a61e3b6ddeb9183e45f7025bf3aecafa4b846f2514e7dd"
+      },
+      "compiled_version_label": "DORA Owner Preview 0.1.0-owner-preview.7 (7)",
+      "version_label_parity": "PASS",
+      "components": [
+        {
+          "type": "service",
+          "name": "com.monumentogram.dora.recording.ProductRecordingService",
+          "exported": false
+        },
+        {
+          "type": "activity",
+          "name": "com.monumentogram.dora.MainActivity",
+          "exported": true
+        },
+        {
+          "type": "provider",
+          "name": "androidx.startup.InitializationProvider",
+          "exported": false
+        },
+        {
+          "type": "service",
+          "name": "androidx.room.MultiInstanceInvalidationService",
+          "exported": false
+        },
+        {
+          "type": "receiver",
+          "name": "androidx.profileinstaller.ProfileInstallReceiver",
+          "exported": true
+        }
+      ],
+      "dex_inventory": [
+        "classes.dex",
+        "classes2.dex",
+        "classes3.dex"
+      ],
+      "no_application_pin_or_biometric_prompt": "PASS",
+      "diagnostic_false_dex_sha256": "6acf02ef019aa7e50bed0845588e1f1f7d216b5e71b9fbd425394e895e99a13b",
+      "backup_policy_sha256": [
+        "4d7c79acb6045b86b7aa2c04ccb35663d3ed45154b2b2dea01ca69a477eb07ff",
+        "60fcfa7ac685d16e5a307e1107e68eeaaf6f56a61253470973191eea6e67b032"
+      ],
+      "manifest_sha256": "039f876a545d61d44d780c81692d735fbf099eb72229da2078466d3b63fdc72e",
+      "native_elf": {
+        "lib/arm64-v8a/libandroidx.graphics.path.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libc++_shared.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libdora-whisper-jni.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libggml-base.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libggml-cpu.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libggml.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libonnxruntime.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libsherpa-onnx-jni.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libsqlcipher.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        },
+        "lib/arm64-v8a/libwhisper.so": {
+          "bits": 64,
+          "load_alignment": [
+            16384,
+            16384,
+            16384
+          ]
+        }
+      },
+      "zip_alignment_16k": "PASS",
+      "arm82_dependencies": {
+        "libandroidx.graphics.path.so": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libonnxruntime.so": [
+          "libc.so",
+          "libdl.so",
+          "liblog.so",
+          "libm.so"
+        ],
+        "libsherpa-onnx-jni.so": [
+          "libandroid.so",
+          "libc.so",
+          "libdl.so",
+          "liblog.so",
+          "libm.so",
+          "libonnxruntime.so"
+        ],
+        "libsqlcipher.so": [
+          "libc.so",
+          "libdl.so",
+          "liblog.so",
+          "libm.so"
+        ],
+        "libc++_shared.so": [
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libdora-whisper-jni.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libggml-base.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libm.so"
+        ],
+        "libggml-cpu.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libggml-base.so",
+          "libm.so"
+        ],
+        "libggml.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libggml-base.so",
+          "libggml-cpu.so",
+          "libm.so"
+        ],
+        "libwhisper.so": [
+          "libc++_shared.so",
+          "libc.so",
+          "libdl.so",
+          "libggml-base.so",
+          "libggml-cpu.so",
+          "libggml.so",
+          "libm.so"
+        ]
+      },
+      "build_receipt_sha256": "d7a44bbfc62d1cd63cca8fd9da14061f141fd6abfc9a81457c6d4b0d5345d5b7"
+    }
+  ],
+  "certificate_sha256": "a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d",
+  "signing_claim": "OWNER_LOCAL_SEPARATE_SIGNER",
+  "known_excluded_signers": {
+    "production": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "diagnostic": "2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8",
+    "debug": "a526f525ec8594bc40fc7f0c9ddc6b8ad034d4c3ecd47f650ef81c7b56f74e72"
+  },
+  "aar_sha256": "64969d0fbf5d3936a127879684bc2f14014b99817ca3c9b2e16298c1372208db",
+  "model_sha256": "1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3",
+  "arm82_device_runtime": "NOT_RUN",
+  "asr_runtime_packaged": true,
+  "byte_identical": true,
+  "sbom_sha256": "e5df1a105db2561193a2d20877823cdcc591c90eed3586f95c9c8af686a241a6",
+  "graph_sha256": "48e180d7baaf63663dc09df1300f0122e250863528ac2bb76533afbce9dfeb66",
+  "software_readiness": "NOT_DETERMINED_BY_ARTIFACT_AUDIT",
+  "physical_installed": false,
+  "distribution": "BLOCKED",
+  "provenance": "LOCAL_RECEIPT_NOT_REMOTE_ATTESTATION"
+}
