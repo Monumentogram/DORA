@@ -1992,3 +1992,30 @@ Android16 acceptance and owner-signed update are SAMSUNG_DEVICE_VALIDATION_PENDI
 POCO user10 preservation is PENDING. No personal-phone installation, data clear,
 profile reset, AWS mutation or merge occurred. Current end-to-end AWS deletion and
 credential-loss cleanup are a before-public-release gate in Issue125.
+
+## Alpha v9 24-hour successor preparation — 2026-10-30
+
+`IN_PROGRESS / QUALIFICATION_PENDING`. The owner's 24-hour supplement supersedes the
+intermediate 30-minute scope prospectively. See
+[DEC-053](DORA_MVP1_PRODUCT_DECISIONS.md#dec-053--alpha-v9-twenty-four-hour-recording-and-resumable-transcription-2026-10-30),
+[ADR-0031](adr/ADR-0031-twenty-four-hour-recording.md),
+[design and qualification scope](ALPHA_V9_24H_DESIGN.md) and
+[ALPHA-V9-24H backlog](DORA_MVP1_IMPLEMENTATION_BACKLOG.md#alpha-v9-24h--recording-and-resumable-transcription-successor-2026-10-30).
+The implementation branch is `codex/alpha-v9-recording-stabilization`, based on
+`23ae744867e7ab41f5f75bc5afb4f15e0a365b28`; this source entry is not a final artifact receipt.
+
+Preview code9 / `0.1.0-owner-preview.9` identity and current artifact/label checks are
+prepared with the existing package and owner signer. Independent Preview, Stage9,
+Stage12 and version-label CI retain their existing inventories and public-input limits.
+No current exact-head CI success, signed v9 reproducibility/upgrade, physical 24-hour
+capture, full Local native processing or live long Cloud capability is asserted here.
+Actual measured limits and pending trials must be reported separately from the
+implemented maximum and synthetic encrypted-storage evidence.
+
+Long Cloud remains capability-gated and production-disabled with unchanged cost limits;
+aggregate-budget rejection does not imply a paid long run completed. Samsung physical
+acceptance, POCO preservation/upgrade and full endurance remain separately scoped and
+qualified. Stage12 remains PARTIAL; Issue125 and privacy/control approval are open
+independent gates. Historical releases, Stage8.6 NOT_READY and prior evidence retain
+their original meanings. No AWS mutation, personal-phone installation, release or merge
+is authorized by this preparation entry.

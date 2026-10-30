@@ -202,6 +202,7 @@ class RecordingController(
             "queueHighWater=${capture.maximumQueuedBlocks} maxAppendNanos=$maximumAppendNanos " +
             "frames=${state.value.recording.frames} durableFrames=${state.value.recording.durableFrames} " +
             "shortReads=${capture.shortReads} readErrors=${capture.readErrors} healthy=${capture.healthy}\n" +
+            "writer=${session?.persistenceProgress} pendingWriterUnits=${session?.pendingWriterUnits ?: 0}\n" +
             latency.dump() +
             "\nappend_stages " +
             lastAppendStages.entries.joinToString(" ") { "${it.key}=${it.value}" } +
@@ -333,9 +334,7 @@ class RecordingController(
                         selected.identity,
                         selected.writer,
                         timing = latency::appendEvent,
-                        appendTiming =
-                            if (latency.enabled) ({ stages -> lastAppendStages = stages })
-                            else null,
+                        appendTiming = { stages -> lastAppendStages = stages },
                         persistence = persistence,
                         completion = worker,
                         changed = { if (access === selected) persistenceChanged() },

@@ -77,7 +77,7 @@ class CloudFailureRecoveryTest {
         override val endpoint = "https://dora.invalid"
         val actions = mutableSetOf<String>()
         private var injected = false
-        private var uploaded = 0
+        private var uploaded = 0L
         private var phase = "UPLOADING"
 
         private fun fail(at: String) {
@@ -115,7 +115,7 @@ class CloudFailureRecoveryTest {
 
         override fun upload(
             id: String,
-            offset: Int,
+            offset: Long,
             bytes: ByteArray,
             final: Boolean,
             cancelled: () -> Boolean,

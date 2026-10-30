@@ -139,6 +139,9 @@ class Store:
     def chunks(self, job_id):
         return self.db.execute("SELECT * FROM chunks WHERE job=? AND length(ciphertext)>0 ORDER BY offset", (job_id,)).fetchall()
 
+    def iter_chunks(self, job_id):
+        return self.db.execute("SELECT * FROM chunks WHERE job=? AND length(ciphertext)>0 ORDER BY offset", (job_id,))
+
     def erase_audio(self, job_id):
         # Keep bounded nonsecret receipts for duplicate upload acknowledgments.
         self.db.execute("UPDATE chunks SET ciphertext=X'' WHERE job=?", (job_id,))

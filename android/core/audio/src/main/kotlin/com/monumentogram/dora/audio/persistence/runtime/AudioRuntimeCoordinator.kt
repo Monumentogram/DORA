@@ -279,6 +279,105 @@ internal class AudioRuntimeCoordinator(
 
         override val transcripts: TranscriptPort =
             object : TranscriptPort {
+                override val paged: com.monumentogram.dora.audio.transcript.PagedTranscriptPort =
+                    object : com.monumentogram.dora.audio.transcript.PagedTranscriptPort {
+                        override fun begin(
+                            spec: com.monumentogram.dora.audio.transcript.PagedTranscriptSpec
+                        ) = invoke { transcripts.paged.begin(spec) }
+
+                        override fun resume(identity: AudioIdentity, jobId: String) = invoke {
+                            transcripts.paged.resume(identity, jobId)
+                        }
+
+                        override fun progress(identity: AudioIdentity, jobId: String) = invoke {
+                            transcripts.paged.progress(identity, jobId)
+                        }
+
+                        override fun part(identity: AudioIdentity, jobId: String, index: Int) =
+                            invoke {
+                                transcripts.paged.part(identity, jobId, index)
+                            }
+
+                        override fun commitPart(
+                            source: OriginalAudioReference,
+                            jobId: String,
+                            attempt: Long,
+                            index: Int,
+                            text: String,
+                            provenance:
+                                com.monumentogram.dora.audio.transcript.TranscriptPartProvenance?,
+                        ) = invoke {
+                            transcripts.paged.commitPart(
+                                source,
+                                jobId,
+                                attempt,
+                                index,
+                                text,
+                                provenance,
+                            )
+                        }
+
+                        override fun reusePart(
+                            source: OriginalAudioReference,
+                            jobId: String,
+                            attempt: Long,
+                            fromJobId: String,
+                            index: Int,
+                        ) = invoke {
+                            transcripts.paged.reusePart(source, jobId, attempt, fromJobId, index)
+                        }
+
+                        override fun stop(
+                            identity: AudioIdentity,
+                            jobId: String,
+                            attempt: Long,
+                            status: String,
+                        ) = invoke { transcripts.paged.stop(identity, jobId, attempt, status) }
+
+                        override fun finish(
+                            source: OriginalAudioReference,
+                            jobId: String,
+                            attempt: Long,
+                            completedAt: Long,
+                        ) = invoke { transcripts.paged.finish(source, jobId, attempt, completedAt) }
+
+                        override fun page(
+                            identity: AudioIdentity,
+                            versionId: String,
+                            after: com.monumentogram.dora.audio.transcript.TranscriptPageCursor?,
+                            revision: Long?,
+                            allowPartial: Boolean,
+                        ) = invoke {
+                            transcripts.paged.page(
+                                identity,
+                                versionId,
+                                after,
+                                revision,
+                                allowPartial,
+                            )
+                        }
+
+                        override fun editPage(
+                            identity: AudioIdentity,
+                            versionId: String,
+                            cursor: com.monumentogram.dora.audio.transcript.TranscriptPageCursor,
+                            expectedRevision: Long,
+                            beforeDigest: String,
+                            text: String,
+                            createdAt: Long,
+                        ) = invoke {
+                            transcripts.paged.editPage(
+                                identity,
+                                versionId,
+                                cursor,
+                                expectedRevision,
+                                beforeDigest,
+                                text,
+                                createdAt,
+                            )
+                        }
+                    }
+
                 override fun beginCloud(
                     source: OriginalAudioReference,
                     jobId: String,
@@ -374,6 +473,60 @@ internal class AudioRuntimeCoordinator(
             }
         override val originals =
             object : OriginalAudioPort {
+                override fun openAuthenticated(
+                    identity: AudioIdentity
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> = invoke {
+                    wrap(originals.openAuthenticated(identity))
+                }
+
+                override fun openAuthenticated(
+                    reference: OriginalAudioReference
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> = invoke {
+                    wrap(originals.openAuthenticated(reference))
+                }
+
+                private fun wrap(
+                    opened: AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource>
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> =
+                    when (opened) {
+                        is AudioResult.Failed -> opened
+                        is AudioResult.Value -> {
+                            val source = opened.value
+                            AudioResult.Value(
+                                object : com.monumentogram.dora.audio.AuthenticatedAudioSource {
+                                    override val reference = source.reference
+
+                                    override fun checkAvailable() =
+                                        this@Handle.invoke { source.checkAvailable() }
+
+                                    override fun extractRange(
+                                        firstFrame: Long,
+                                        frameCount: Long,
+                                        consume: (Long, ByteArray) -> Unit,
+                                    ) =
+                                        this@Handle.invoke {
+                                            source.extractRange(firstFrame, frameCount) {
+                                                frame,
+                                                bytes ->
+                                                authorization.withPlaintextDelivery {
+                                                    consume(frame, bytes)
+                                                }
+                                            }
+                                        }
+
+                                    override fun close() {
+                                        val retired =
+                                            this@Handle.invoke {
+                                                source.close()
+                                                AudioResult.Value(Unit)
+                                            }
+                                        if (retired is AudioResult.Failed) source.close()
+                                    }
+                                }
+                            )
+                        }
+                    }
+
                 override fun acquire(identity: AudioIdentity) = invoke {
                     originals.acquire(identity)
                 }

@@ -22,7 +22,12 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertTrue
 
-internal fun <T> alphaValue(result: AudioResult<T>): T = (result as AudioResult.Value).value
+internal fun <T> alphaValue(result: AudioResult<T>): T {
+    check(result is AudioResult.Value) {
+        "Audio operation failed: ${(result as? AudioResult.Failed)?.reason}"
+    }
+    return result.value
+}
 
 internal fun alphaSession(scenario: ActivityScenario<MainActivity>): ProductAudioSession {
     var session: ProductAudioSession? = null

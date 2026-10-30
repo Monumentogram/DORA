@@ -2,7 +2,7 @@ name: Owner Preview parallel Alpha software
 
 on:
   push:
-    branches: ["codex/parallel-alpha-preview"]
+    branches: ["codex/parallel-alpha-preview", "codex/alpha-v9-recording-stabilization"]
   workflow_dispatch:
 
 permissions:
@@ -46,6 +46,7 @@ jobs:
           python3 -m unittest discover -s tools -p 'test_pin_free_local_access.py'
           python3 -m unittest discover -s tools -p 'test_version_label.py'
           python3 -m unittest discover -s tools -p 'test_encrypted_persistence_device.py'
+          python3 -m unittest discover -s tools -p 'test_recording_library_projection_contract.py'
           python3 tools/validate_pin_free_local_access.py
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/ownerPreview/app-ownerPreview.apk --allowlist android/product-native-libs-allowlist.txt
       - name: Audit actual pilot Manifest, DEX, release denials and disposable signing
@@ -171,7 +172,7 @@ jobs:
           python3 tools/run_encrypted_persistence_device.py
           --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
           --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/owner-arm82-persistence-tests-v1.json --exact-inventory
+          --inventory docs/contracts/alpha-v9-persistence-tests-v1.json --exact-inventory
           --receipt "${RUNNER_TEMP}/owner-preview/persistence.json"
       - name: Publish content-free synthetic receipt
         if: always()

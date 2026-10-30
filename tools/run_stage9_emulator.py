@@ -78,6 +78,11 @@ def main():
             instrument("process-" + phase.lower(), "com.monumentogram.dora.audio.test",
                        prefix + "TranscriptProcessRestartTest#" + method, 1,
                        ("-e", "transcriptProcessPhase", phase, "-e", "transcriptProcessRun", run))
+        for phase, method in (("SEED", "seed"), ("READ", "resumeAfterProcessRestart")):
+            command("shell", "am", "force-stop", "com.monumentogram.dora.audio.test")
+            instrument("paged-process-" + phase.lower(), "com.monumentogram.dora.audio.test",
+                       prefix + "PagedTranscriptProcessRestartTest#" + method, 1,
+                       ("-e", "pagedTranscriptProcessPhase", phase, "-e", "pagedTranscriptProcessRun", run))
         instrument("transcript-editor", "com.monumentogram.dora.debug.test",
                    "com.monumentogram.dora.transcript.TranscriptUiTest,"
                    "com.monumentogram.dora.transcript.ModelPickerLifecycleTest,"

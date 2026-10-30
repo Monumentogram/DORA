@@ -33,8 +33,16 @@ class PcmWindowsTest {
     fun nextWindowLoadsWhileCurrentIsOwnedAndPreservesExactBoundary() {
         val secondStarted = CountDownLatch(1)
         var calls = 0
+        var openings = 0
         val port =
             object : OriginalAudioPort {
+                override fun openAuthenticated(
+                    reference: OriginalAudioReference
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> {
+                    openings++
+                    return AudioResult.Value(rangeSource(this))
+                }
+
                 override fun acquire(identity: AudioIdentity) =
                     AudioResult.Value(OriginalAudioStatus.Available(source))
 
@@ -81,6 +89,7 @@ class PcmWindowsTest {
                 assertArrayEquals(floatArrayOf(0f, 0f, 0f), second.samples, 0f)
                 assertNull(windows.next())
             }
+        assertEquals(1, openings)
     }
 
     @Test
@@ -91,6 +100,11 @@ class PcmWindowsTest {
         val restored = AtomicBoolean(false)
         val port =
             object : OriginalAudioPort {
+                override fun openAuthenticated(
+                    reference: OriginalAudioReference
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> =
+                    AudioResult.Value(rangeSource(this))
+
                 override fun acquire(identity: AudioIdentity) =
                     AudioResult.Value(OriginalAudioStatus.Available(source))
 
@@ -133,4 +147,33 @@ class PcmWindowsTest {
             windows.close()
         }
     }
+
+    private fun rangeSource(port: OriginalAudioPort) =
+        object : com.monumentogram.dora.audio.AuthenticatedAudioSource {
+            override val reference = source
+
+            override fun close() = Unit
+
+            override fun extractRange(
+                firstFrame: Long,
+                frameCount: Long,
+                consume: (Long, ByteArray) -> Unit,
+            ) =
+                port.extract(source) { first, bytes ->
+                    val begin = maxOf(first, firstFrame)
+                    val end = minOf(first + bytes.size / 2, firstFrame + frameCount)
+                    if (end > begin) {
+                        val selected =
+                            bytes.copyOfRange(
+                                ((begin - first) * 2).toInt(),
+                                ((end - first) * 2).toInt(),
+                            )
+                        try {
+                            consume(begin, selected)
+                        } finally {
+                            selected.fill(0)
+                        }
+                    }
+                }
+        }
 }

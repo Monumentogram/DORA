@@ -24,19 +24,35 @@ import com.monumentogram.dora.ui.BootstrapNavigationLayout
 import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 
+// Unconditional picker registration and Activity lifecycle entry points remain together.
+@Suppress("TooManyFunctions")
 class MainActivity : ComponentActivity() {
     private val textExports by lazy {
         ViewModelProvider(this)[com.monumentogram.dora.transcript.TextExportController::class.java]
     }
     private val textExportPicker =
         com.monumentogram.dora.transcript.registerTextExportPicker(activityResultRegistry, this) {
-            textExports.completeSelection(it)
+            textExports.completeSelection(it, this)
         }
     internal val textExportStatus
         get() = textExports.status
 
     internal fun launchTextExport(text: String) {
         if (textExports.beginSelection(text)) {
+            try {
+                textExportPicker.launch("DORA.txt")
+            } catch (_: RuntimeException) {
+                textExports.selectionFailed()
+            }
+        }
+    }
+
+    internal fun launchPagedTextExport(
+        identity: com.monumentogram.dora.audio.AudioIdentity,
+        version: String,
+        revision: Long,
+    ) {
+        if (textExports.beginPagedSelection(identity, version, revision)) {
             try {
                 textExportPicker.launch("DORA.txt")
             } catch (_: RuntimeException) {

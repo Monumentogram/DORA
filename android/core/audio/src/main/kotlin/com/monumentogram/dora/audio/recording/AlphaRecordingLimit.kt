@@ -2,7 +2,8 @@ package com.monumentogram.dora.audio.recording
 
 /** Canonical audio frames, independent of wall time, pauses, chunks and transport units. */
 object AlphaRecordingLimit {
-    const val MAX_ALPHA_FRAMES = 28_800_000L
+    const val MAX_ALPHA_FRAMES =
+        1_382_400_000L // 86,400 seconds at 16 kHz; PCM bytes exceed Int.MAX_VALUE.
 
     fun remaining(frames: Long): Long {
         require(frames >= 0)

@@ -1674,3 +1674,29 @@ Android16 acceptance and owner-signed update are SAMSUNG_DEVICE_VALIDATION_PENDI
 POCO user10 preservation is PENDING. No personal-phone installation, data clear,
 profile reset, AWS mutation or merge occurred. Current end-to-end AWS deletion and
 credential-loss cleanup are a before-public-release gate in Issue125.
+
+## ALPHA-V9-24H — Recording and resumable transcription successor (2026-10-30)
+
+Status: `IN_PROGRESS / QUALIFICATION_PENDING`. Owner scope supersedes the intermediate
+30-minute request with one 24-hour logical recording. Authority:
+[DEC-053](DORA_MVP1_PRODUCT_DECISIONS.md#dec-053--alpha-v9-twenty-four-hour-recording-and-resumable-transcription-2026-10-30),
+[ADR-0031](adr/ADR-0031-twenty-four-hour-recording.md),
+[design and qualification scope](ALPHA_V9_24H_DESIGN.md) and
+[implementation plan](superpowers/plans/2026-10-30-alpha-v9-24h.md).
+
+Required work/evidence remains separately tracked: capture/admission and interruption
+regressions; indexed authenticated 64-bit source ranges and scalable deletion; additive
+v4->v5->v6 migrations, encrypted partial checkpoints and paged revisions/search/export;
+288-window Local orchestration with native/boundary evidence; capability-gated 48-child
+Cloud orchestration with bounded backend memory, aggregate budget, idempotent resume,
+revocation/deadline and cleanup tests. Source implementation or a short test does not
+qualify the 24-hour physical maximum or live long Cloud processing.
+
+Release preparation targets Preview code9 / `0.1.0-owner-preview.9`, unchanged package
+and owner signer, exact-source checks, inherited mandatory CI and preservation of v8
+recordings/model/edits/history. Pending release gates include final exact-source software
+checks, controlled signed artifact/upgrade qualification, measured capture/ASR limits,
+independent review and the applicable owner-authorized device matrix. Production AWS
+configuration/cost limits stay unchanged; a blocked aggregate budget is an expected
+fail-closed result. Stage12 security/Issue125/privacy-control approvals, Stage8.6 and
+historical inventories remain independent. No installation, release or merge is claimed.

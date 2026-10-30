@@ -2010,3 +2010,34 @@ Raw meeting audio, production secrets, signing keys, unapproved model weights an
 - Нельзя гарантировать физическое стирание flash blocks; формулировка — logical + cryptographic erasure и disclosed backup expiry.
 - Regional API/payment/store/legal status проверяется повторно непосредственно перед релизом.
 - Этот документ не утверждает конкретного коммерческого LLM/API или облачного провайдера до решений P1/P10/P11 и procurement/legal review.
+
+## Alpha v9 technical amendment — 2026-10-30 — IN_PROGRESS
+
+The owner's overriding 24-hour scope is recorded in [DEC-053](DORA_MVP1_PRODUCT_DECISIONS.md#dec-053--alpha-v9-twenty-four-hour-recording-and-resumable-transcription-2026-10-30),
+[ADR-0031](adr/ADR-0031-twenty-four-hour-recording.md) and the
+[Alpha v9 design](ALPHA_V9_24H_DESIGN.md). This prospective successor replaces ADR-0030's
+30-minute recording limit and repeated full-source authentication per Local window.
+One logical source spans at most 1,382,400,000 16-kHz mono PCM16 frames / 2,764,800,000
+plaintext bytes. Aggregate arithmetic uses 64-bit values; encrypted five-second units,
+ten-minute physical rotation and the existing outstanding durability budget remain.
+An authenticated attempt handle verifies the full source once, fences subsequent use on
+live source/deletion/authority and durable catalog revision, then authenticates selected
+indexed ranges. It grants no permission after closure or process restart.
+
+Additive SQLCipher migrations v4->v5->v6 preserve the installed intermediate schema and
+historical DTR1/DTR2 transcripts; DTR3 adds bounded transcript-page references. Immutable
+part checkpoints, attempt fences and revisioned page edits support resume without replacing
+the existing history/selection model. Search/export stream stable selected revisions.
+Local Whisper consumes at most 288 contiguous five-minute windows. Compatible Cloud runs
+use at most 48 balanced <=1800-second children, globally offset timestamps, source-bound
+idempotent identities, bounded Android windows and streaming encrypted backend reads.
+A parent reserves all first attempts before paid work; retries reserve separately, and
+one first-byte 24-hour deadline covers the complete run. Long Cloud stays disabled by
+default and unchanged live cost limits reject unaffordable aggregate requests.
+
+Qualification is `IN_PROGRESS / QUALIFICATION_PENDING`: source architecture, synthetic
+maximum-size storage, actual capture duration, Local native coverage, Cloud software/live
+coverage and physical-device endurance require distinct evidence. Preview9 identity
+preparation does not establish those results. Stage12 security, Issue125, privacy/control
+approval, Stage8.6 and signed-upgrade/device gates retain their independent requirements.
+No production AWS change, personal-phone installation, release or merge follows here.

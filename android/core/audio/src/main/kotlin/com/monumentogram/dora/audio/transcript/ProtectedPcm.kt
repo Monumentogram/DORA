@@ -1,6 +1,7 @@
 package com.monumentogram.dora.audio.transcript
 
 import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.AuthenticatedAudioSource
 import com.monumentogram.dora.audio.OriginalAudioPort
 import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.OriginalAudioStatus
@@ -19,6 +20,58 @@ class ProtectedPcm private constructor(val samples: FloatArray) : AutoCloseable 
 
         private fun checkCancellation(cancelled: () -> Boolean) {
             if (cancelled()) throw CancellationException()
+        }
+
+        /**
+         * The handle authenticated the complete source at open; this call reauthenticates range
+         * units.
+         */
+        @Suppress("TooGenericExceptionCaught")
+        fun readWindow(
+            handle: AuthenticatedAudioSource,
+            firstFrame: Long,
+            frameCount: Int,
+            cancelled: () -> Boolean,
+        ): ProtectedPcm {
+            val source = handle.reference
+            require(source.frames in 1..AlphaRecordingLimit.MAX_ALPHA_FRAMES)
+            require(firstFrame >= 0 && frameCount in 1..MAX_WINDOW_FRAMES)
+            require(firstFrame <= source.frames - frameCount)
+            checkCancellation(cancelled)
+            val owned = ProtectedPcm(FloatArray(frameCount))
+            var next = firstFrame
+            try {
+                val result =
+                    handle.extractRange(firstFrame, frameCount.toLong()) { first, bytes ->
+                        checkCancellation(cancelled)
+                        require(
+                            first == next &&
+                                bytes.isNotEmpty() &&
+                                bytes.size % PCM_SAMPLE_BYTES == 0
+                        )
+                        val count = bytes.size / PCM_SAMPLE_BYTES
+                        require(count <= firstFrame + frameCount - next)
+                        for (sample in 0 until count) {
+                            val index = sample * PCM_SAMPLE_BYTES
+                            val value =
+                                (bytes[index].toInt() and UNSIGNED_BYTE_MASK) or
+                                    (bytes[index + 1].toInt() shl Byte.SIZE_BITS)
+                            owned.samples[(next - firstFrame).toInt() + sample] =
+                                value.toShort() / PCM_NORMALIZATION
+                        }
+                        next += count
+                    }
+                checkCancellation(cancelled)
+                check(
+                    result is AudioResult.Value &&
+                        result.value == OriginalAudioStatus.Available(source)
+                )
+                check(next == firstFrame + frameCount)
+                return owned
+            } catch (error: Throwable) {
+                owned.close()
+                throw error
+            }
         }
 
         @Suppress(

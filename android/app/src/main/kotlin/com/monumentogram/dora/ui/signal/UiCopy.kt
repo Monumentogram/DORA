@@ -19,6 +19,11 @@ private val legacyCopy =
         "Микрофон" to "Microphone",
         "Доступно на устройстве" to "Available storage",
         "МБ" to "MB",
+        "МБ аудио" to "MB of audio",
+        "Места недостаточно для всех 24 часов. Примерно доступно" to
+            "Not enough storage for all 24 hours. Estimated capacity",
+        "Для 24 часов предусмотрите около 5 ГБ свободного места. Другие приложения могут уменьшить доступное место." to
+            "Allow about 5 GB of free storage for 24 hours. Other apps may reduce the available space.",
         "Открыть расшифровку" to "Open transcript",
         "Версия" to "Version",
         "Правка" to "Edit",
@@ -40,8 +45,8 @@ private val legacyCopy =
         "Запись сохранена" to "Recording saved",
         "Запись завершена без аудио" to "No audio recorded",
         "Запись прервана" to "Recording interrupted",
-        "Достигнут лимит записи Alpha — 30 минут. Запись сохранена" to
-            "Alpha limit reached — 30 minutes. Recording saved",
+        "Достигнут лимит записи Alpha — 24 часа. Запись сохранена" to
+            "Alpha limit reached — 24 hours. Recording saved",
         "Сохраняем последние секунды…" to "Saving the last few seconds…",
         "Сохраняем…" to "Saving…",
         "Ожидаем подтверждения сохранения" to "Waiting for save confirmation",
@@ -50,8 +55,8 @@ private val legacyCopy =
         "Я предупредил(а) участников о записи" to
             "I have informed the participants about recording",
         "Не удалось проверить свободное место" to "Could not check available storage",
-        "Alpha: до 30 минут аудио. Для начала записи требуется не менее 142 МБ свободного места." to
-            "Alpha: up to 30 minutes of audio. At least 142 MB of free storage is required.",
+        "Alpha: до 24 часа аудио. Для начала записи требуется не менее 142 МБ свободного места." to
+            "Alpha: up to 24 hours of audio. At least 142 MB of free storage is required.",
         "Освободите место и обновите проверку. Сохранённые записи останутся доступны." to
             "Free some storage and check again. Saved recordings remain available.",
         "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» " to
