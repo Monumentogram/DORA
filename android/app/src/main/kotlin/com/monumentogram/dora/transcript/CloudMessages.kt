@@ -2,6 +2,8 @@ package com.monumentogram.dora.transcript
 
 internal fun cloudFailureMessage(code: String): String =
     when (code) {
+        "DURATION_LIMIT" ->
+            "Облако пока поддерживает записи до 5 минут. Используйте локальное распознавание; исходное аудио сохранено."
         "AUTH" -> "Доступ к облаку не подтверждён или истёк. Проверьте приглашение установки."
         "SETUP" -> "Сначала подключите облако. Локальная запись доступна без подключения."
         "CONSENT" ->

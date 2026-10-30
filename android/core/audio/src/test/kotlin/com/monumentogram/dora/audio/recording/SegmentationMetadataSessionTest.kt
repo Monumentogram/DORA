@@ -101,7 +101,7 @@ class SegmentationMetadataSessionTest {
     }
 
     @Test
-    fun alphaCapPrecedesTenMinuteTechnicalRotation() {
+    fun longRecordingCrossesTenMinuteTechnicalRotation() {
         val w = Writer()
         val s = RecordingSession(identity, w)
         s.start()
@@ -110,13 +110,14 @@ class SegmentationMetadataSessionTest {
         s.confirmStop()
         val opens = w.metadata.filter { it.kind == SegmentationKind.TECHNICAL_OPEN }
         val closes = w.metadata.filter { it.kind == SegmentationKind.TECHNICAL_CLOSE }
-        assertEquals(1, opens.size)
-        assertEquals(1, closes.size)
-        assertNull(opens.last().overlapFirstFrame)
-        assertEquals(4_800_000L, closes.first().endFrame)
-        assertEquals("STOP", closes.first().reason)
+        assertEquals(2, opens.size)
+        assertEquals(2, closes.size)
+        assertEquals(9_568_000L, opens.last().overlapFirstFrame)
+        assertEquals(9_600_000L, closes.first().endFrame)
+        assertEquals("CAP", closes.first().reason)
+        assertEquals("STOP", closes.last().reason)
         assertEquals(opens.first().captureEpochId, opens.last().captureEpochId)
-        assertEquals(4_800_000L, w.frames)
+        assertEquals(9_680_000L, w.frames)
     }
 
     @Test

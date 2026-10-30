@@ -42,6 +42,7 @@ internal fun CloudControls(
     val pending =
         actions.document?.jobs?.lastOrNull { it.consent != null && it.status != "SUCCEEDED" }
     val active = actions.document?.jobs?.any { it.status in setOf("QUEUED", "RUNNING") } == true
+    Text(uiCopy("Cloud: до 5 минут. Для длинных записей используйте Local."))
     Button(enabled = enabled && !active, onClick = { disclosure = true }) {
         Text(stringResource(R.string.signal_copy_39))
     }

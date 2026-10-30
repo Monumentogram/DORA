@@ -29,8 +29,47 @@ class LocalRecognitionRunTest {
             AudioAssetId("00000000-0000-4000-8000-000000000002"),
             "00000000-0000-4000-8000-000000000003",
         )
-    private val source = OriginalAudioReference(1, id, "a".repeat(64), 2)
+    private var source = OriginalAudioReference(1, id, "a".repeat(64), 2)
     private val job = "00000000-0000-4000-8000-000000000004"
+
+    @Test
+    fun longAudioUsesBoundedWindowsInOrderAndPublishesOnce() {
+        source = source.copy(frames = 28_800_000)
+        val store = Store()
+        val lengths = mutableListOf<Int>()
+        val run =
+            LocalRecognitionRun({ pcm, _, _ ->
+                lengths.add(pcm.size)
+                assertTrue(pcm.size <= 4_800_000)
+                assertEquals(lengths.size / 32768f, pcm.first(), 0f)
+                assertEquals(lengths.size / 32768f, pcm.last(), 0f)
+                "part${lengths.size}"
+            })
+        run.run(session(store), id, job, "en", "test", RecognitionAttempt()) {}
+        assertEquals(List(6) { 4_800_000 }, lengths)
+        assertEquals("part1\npart2\npart3\npart4\npart5\npart6", store.published)
+    }
+
+    @Test
+    fun cancellationInSecondWindowDoesNotPublishPartialTextAndWipesBothWindows() {
+        source = source.copy(frames = 4_800_002)
+        val store = Store()
+        val attempt = RecognitionAttempt()
+        val owned = mutableListOf<FloatArray>()
+        val run =
+            LocalRecognitionRun({ pcm, _, _ ->
+                owned.add(pcm)
+                if (owned.size == 2) attempt.cancel()
+                "partial"
+            })
+        assertThrows(RecognitionFailure::class.java) {
+            run.run(session(store), id, job, "en", "test", attempt) {}
+        }
+        assertNull(store.published)
+        assertEquals("CANCELLED", store.terminal)
+        assertEquals(2, owned.size)
+        assertTrue(owned.all { window -> window.all { it == 0f } })
+    }
 
     @Test
     fun realPcmConversionAndSuccessfulPublicationReleaseOwnedMemory() {
@@ -152,7 +191,20 @@ class LocalRecognitionRunTest {
                         reference: OriginalAudioReference,
                         consume: (Long, ByteArray) -> Unit,
                     ): AudioResult<OriginalAudioStatus> {
-                        consume(0, byteArrayOf(0, -128, -1, 127))
+                        if (source.frames == 2L) consume(0, byteArrayOf(0, -128, -1, 127))
+                        else {
+                            var next = 0L
+                            while (next < source.frames) {
+                                val count = minOf(80_000L, source.frames - next).toInt()
+                                consume(
+                                    next,
+                                    ByteArray(count * 2) {
+                                        if (it % 2 == 0) (next / 4_800_000 + 1).toByte() else 0
+                                    },
+                                )
+                                next += count
+                            }
+                        }
                         return if (corrupt) AudioResult.Failed(AudioFailure.CORRUPT)
                         else inspect(reference)
                     }

@@ -16,6 +16,7 @@ class SignalRecordingFlowTest {
     @get:Rule val ui = createAndroidComposeRule<MainActivity>()
 
     @Test
+    @Suppress("LongMethod") // One user flow includes optional bounded screen-off duration.
     fun microphonePauseResumeSaveAndReturnToLibrary() {
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
         automation
@@ -41,6 +42,31 @@ class SignalRecordingFlowTest {
                     controller.diagnosticSummary(),
                 timeout,
             )
+        }
+        val duration =
+            InstrumentationRegistry.getArguments().getString("longRecordingSeconds")?.toInt() ?: 0
+        if (duration > 0) {
+            require(duration in 310..1799)
+            automation.executeShellCommand("input keyevent 3").close()
+            automation.executeShellCommand("input keyevent 223").close()
+            val deadline = android.os.SystemClock.elapsedRealtime() + (duration + 60) * 1000L
+            while (controller.state.value.recording.frames < duration * 16000L) {
+                assertTrue(
+                    controller.diagnosticSummary(),
+                    controller.state.value.recording.phase == RecordingPhase.RECORDING,
+                )
+                assertTrue("Capture stalled", android.os.SystemClock.elapsedRealtime() < deadline)
+                Thread.sleep(1000)
+            }
+            assertTrue(controller.state.value.recording.durableFrames > 300 * 16000L)
+            automation.executeShellCommand("input keyevent 224").close()
+            automation.executeShellCommand("wm dismiss-keyguard").close()
+            automation
+                .executeShellCommand(
+                    "am start -n ${ui.activity.packageName}/com.monumentogram.dora.MainActivity"
+                )
+                .close()
+            ui.waitForIdle()
         }
         ui.onNodeWithText(uiCopy("Пауза"), useUnmergedTree = true).performScrollTo().performClick()
         ui.waitUntil(10000) { controller.state.value.recording.phase == RecordingPhase.PAUSED }

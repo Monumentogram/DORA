@@ -198,7 +198,7 @@ internal fun RecordingScreen(
                             RecordingPhase.SAVED ->
                                 if (state.alphaLimitReached)
                                     uiCopy(
-                                        "Достигнут лимит записи Alpha — 5 минут. Запись сохранена"
+                                        "Достигнут лимит записи Alpha — 30 минут. Запись сохранена"
                                     )
                                 else uiCopy("Запись сохранена")
                             RecordingPhase.EMPTY -> uiCopy("Запись завершена без аудио")
@@ -495,7 +495,7 @@ private fun RecordingPreflight(
             )
             Text(
                 uiCopy(
-                    "Alpha: до 5 минут аудио. Для начала записи требуется не менее 142 МБ свободного места."
+                    "Alpha: до 30 минут аудио. Для начала записи требуется не менее 142 МБ свободного места."
                 )
             )
             Text(stringResource(R.string.signal_copy_7))

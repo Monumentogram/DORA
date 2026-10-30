@@ -43,6 +43,7 @@ internal class CloudRecognitionRun(
                 throw CancellationException()
         }
         try {
+            if (source.frames > CloudAudio.MAX_FRAMES) throw CloudFailure("DURATION_LIMIT")
             if (!attempt.start() || cancellations.blocked(jobId, api.endpoint))
                 throw CancellationException()
             requireValue(session.transcripts.resumeCloud(identity, jobId))

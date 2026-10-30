@@ -17,7 +17,7 @@ import java.nio.charset.CodingErrorAction
     "TooManyFunctions"
 ) // Bounded format readers/writers share the same versioned wire contract.
 internal object TranscriptCodec {
-    const val MAX_TEXT_BYTES = 262144
+    const val MAX_TEXT_BYTES = TranscriptLimits.MAX_TEXT_BYTES
     private const val MAX_BYTES = 8388608
     private const val MAX_ENTRIES = 512
     private const val METADATA_RESERVE_BYTES = 1048576

@@ -40,8 +40,8 @@ private val legacyCopy =
         "Запись сохранена" to "Recording saved",
         "Запись завершена без аудио" to "No audio recorded",
         "Запись прервана" to "Recording interrupted",
-        "Достигнут лимит записи Alpha — 5 минут. Запись сохранена" to
-            "Alpha limit reached — 5 minutes. Recording saved",
+        "Достигнут лимит записи Alpha — 30 минут. Запись сохранена" to
+            "Alpha limit reached — 30 minutes. Recording saved",
         "Сохраняем последние секунды…" to "Saving the last few seconds…",
         "Сохраняем…" to "Saving…",
         "Ожидаем подтверждения сохранения" to "Waiting for save confirmation",
@@ -50,8 +50,8 @@ private val legacyCopy =
         "Я предупредил(а) участников о записи" to
             "I have informed the participants about recording",
         "Не удалось проверить свободное место" to "Could not check available storage",
-        "Alpha: до 5 минут аудио. Для начала записи требуется не менее 142 МБ свободного места." to
-            "Alpha: up to 5 minutes of audio. At least 142 MB of free storage is required.",
+        "Alpha: до 30 минут аудио. Для начала записи требуется не менее 142 МБ свободного места." to
+            "Alpha: up to 30 minutes of audio. At least 142 MB of free storage is required.",
         "Освободите место и обновите проверку. Сохранённые записи останутся доступны." to
             "Free some storage and check again. Saved recordings remain available.",
         "DORA использует микрофон, чтобы записывать звук, пока вы не нажмёте «Пауза» " to
@@ -145,6 +145,8 @@ private val legacyCopy =
         "Нужен HTTPS-адрес без пути, пароля и параметров" to
             "Use an HTTPS address without a path, password or parameters",
         "Ожидает обработки" to "Waiting to process",
+        "Cloud: до 5 минут. Для длинных записей используйте Local." to
+            "Cloud: up to 5 minutes. Use Local for longer recordings.",
         "Распознавание" to "Transcribing",
         "Сохраняем расшифровку" to "Saving transcript",
         "Готово" to "Ready",

@@ -343,7 +343,13 @@ private fun TranscriptEditor(
     )
     OutlinedTextField(
         value = draft,
-        onValueChange = { if (it.length <= MAX_EDIT_CHARS) draft = it },
+        onValueChange = {
+            if (
+                it.toByteArray(Charsets.UTF_8).size <=
+                    com.monumentogram.dora.audio.transcript.TranscriptLimits.MAX_TEXT_BYTES
+            )
+                draft = it
+        },
         enabled = !busy,
         label = { Text(stringResource(R.string.signal_copy_32)) },
         modifier = Modifier.fillMaxWidth().widthIn(max = 720.dp),
@@ -429,4 +435,3 @@ private fun RecordingHeading(identity: AudioIdentity, document: TranscriptDocume
 }
 
 private const val TITLE_ID_LENGTH = 8
-private const val MAX_EDIT_CHARS = 32_000

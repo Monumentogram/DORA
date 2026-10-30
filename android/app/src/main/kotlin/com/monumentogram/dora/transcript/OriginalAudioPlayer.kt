@@ -20,11 +20,12 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.OriginalAudioStatus
-import com.monumentogram.dora.audio.transcript.ProtectedPcm
+import com.monumentogram.dora.audio.transcript.PcmWindows
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /** Foreground-only playback. Extraction completes/authenticates before any sample is played. */
+@Suppress("TooManyFunctions") // Track, focus and bounded source loading share one lifecycle owner.
 internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoCloseable {
     private val runtime = (activity.application as DoraApplication).audioRuntime
     private val worker = Executors.newSingleThreadExecutor()
@@ -119,11 +120,12 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
                         ((result.session.originals.acquire(identity) as? AudioResult.Value)?.value
                                 as? OriginalAudioStatus.Available)
                             ?.reference ?: error("SOURCE_UNAVAILABLE")
-                    ProtectedPcm.read(result.session.originals, source) { !current(request) }
-                        .use { pcm ->
-                            if (!current(request)) return@use
-                            stream(request, pcm.samples, start.coerceAtMost(source.frames))
-                        }
+                    stream(
+                        request,
+                        result.session.originals,
+                        source,
+                        start.coerceAtMost(source.frames),
+                    )
                     activity.runOnUiThread { finish(request, false) }
                 } catch (_: Exception) {
                     activity.runOnUiThread { finish(request, true) }
@@ -143,8 +145,16 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
         manager.abandonAudioFocusRequest(focus)
     }
 
-    @Suppress("LongMethod") // Track lifetime is kept in one try/finally.
-    private fun stream(request: Long, samples: FloatArray, start: Long) {
+    @Suppress(
+        "LongMethod",
+        "NestedBlockDepth",
+    ) // Track and window lifetimes share one cleanup boundary.
+    private fun stream(
+        request: Long,
+        port: com.monumentogram.dora.audio.OriginalAudioPort,
+        source: com.monumentogram.dora.audio.OriginalAudioReference,
+        start: Long,
+    ) {
         val output =
             AudioTrack.Builder()
                 .setAudioAttributes(attributes)
@@ -164,35 +174,27 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
                 track = output
                 output.play()
             }
-            activity.runOnUiThread {
-                if (current(request)) {
-                    loading = false
-                    playing = true
-                    frames = samples.size.toLong()
-                    position = start
+            PcmWindows(port, source, start) { !current(request) }
+                .use { windows ->
+                    var ready = false
+                    while (current(request)) {
+                        val window = windows.next() ?: break
+                        window.use {
+                            if (!ready) {
+                                publishReady(request, source.frames, start)
+                                ready = true
+                            }
+                            writeWindow(request, output, it.samples, start)
+                        }
+                    }
                 }
-            }
-            var next = start.toInt()
-            while (current(request) && next < samples.size) {
-                val written =
-                    output.write(
-                        samples,
-                        next,
-                        minOf(BUFFER_FRAMES, samples.size - next),
-                        AudioTrack.WRITE_NON_BLOCKING,
-                    )
-                check(written >= 0)
-                next += written
-                publishPosition(request, start + output.playbackHeadPosition.toLong())
-                Thread.sleep(POLL_MILLIS)
-            }
             while (
-                current(request) && output.playbackHeadPosition.toLong() < samples.size - start
+                current(request) && output.playbackHeadPosition.toLong() < source.frames - start
             ) {
                 publishPosition(request, start + output.playbackHeadPosition.toLong())
                 Thread.sleep(POLL_MILLIS)
             }
-            if (current(request)) publishPosition(request, samples.size.toLong())
+            if (current(request)) publishPosition(request, source.frames)
         } finally {
             synchronized(trackLock) {
                 if (track === output) track = null
@@ -203,6 +205,34 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
                     output.release()
                 }
             }
+        }
+    }
+
+    private fun publishReady(request: Long, total: Long, start: Long) {
+        activity.runOnUiThread {
+            if (current(request)) {
+                loading = false
+                playing = true
+                frames = total
+                position = start
+            }
+        }
+    }
+
+    private fun writeWindow(request: Long, output: AudioTrack, samples: FloatArray, start: Long) {
+        var next = 0
+        while (current(request) && next < samples.size) {
+            val written =
+                output.write(
+                    samples,
+                    next,
+                    minOf(BUFFER_FRAMES, samples.size - next),
+                    AudioTrack.WRITE_NON_BLOCKING,
+                )
+            check(written >= 0)
+            next += written
+            publishPosition(request, start + output.playbackHeadPosition.toLong())
+            Thread.sleep(POLL_MILLIS)
         }
     }
 

@@ -26,7 +26,7 @@ class Recording(Strict):
     recording_id: str = Field(pattern=f"^{UUID_PATTERN}$")
     source_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
     source_version: int = Field(ge=1, le=1)
-    frames: int = Field(ge=1, le=4800000)
+    frames: int = Field(ge=1, le=28800000)
 
 
 class Job(Strict):
@@ -39,7 +39,7 @@ class Job(Strict):
 
 
 class Audio(Strict):
-    offset: int = Field(ge=0, le=9600044)
+    offset: int = Field(ge=0, le=57600044)
     data_base64: str = Field(max_length=87384)
     final: bool
 

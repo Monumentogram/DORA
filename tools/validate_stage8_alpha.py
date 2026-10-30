@@ -17,11 +17,11 @@ DEFERRED_DEVICE = {
 }
 NEW_DEVICE = {
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#"
-    "pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
+    "pauseReopenAt1799SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#"
     "interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization",
     "com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest#"
-    "restartPreserves299SecondsAndCannotCapturePast300",
+    "restartPreserves1799SecondsAndCannotCapturePast1800",
 }
 
 

@@ -154,7 +154,7 @@ class Service:
 
     def _validate_audio(self, job, audio):
         frames = job["binding"]["frames"]
-        if not 8000 <= frames <= 4800000 or len(audio) != frames*2+44:
+        if not 8000 <= frames <= 28800000 or len(audio) != frames*2+44:
             raise ServiceError("INVALID_MEDIA")
         header = struct.pack("<4sI4s4sIHHIIHH4sI", b"RIFF", frames*2+36, b"WAVE", b"fmt ",
                              16, 1, 1, 16000, 32000, 2, 16, b"data", frames*2)

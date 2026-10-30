@@ -3,9 +3,9 @@
   "profile": "PIN_FREE_LOCAL_ACCESS",
   "supersedes": "persistence-8.6c3-device-tests.json",
   "tests": [
-    "com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest#restartPreserves299SecondsAndCannotCapturePast300",
+    "com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest#restartPreserves1799SecondsAndCannotCapturePast1800",
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization",
-    "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
+    "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt1799SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioProcessDeathTest#verifyProcessDeathRecovery",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#deletionAndReadWriteSerializeAndDurableFencePreventsResurrection",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioVaultConcurrencyTest#differentUnitAppendsSerializeAndRetryInOrder",

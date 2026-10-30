@@ -18,27 +18,27 @@ class AlphaRecordingUiTest {
 
     @Test
     fun elapsedAndRemainingUseCapturedFrames() {
-        render(RecordingPhase.PAUSED, 4_784_000)
+        render(RecordingPhase.PAUSED, 28_784_000)
         rule.onNodeWithText("00:04:59").assertIsDisplayed()
         rule.onNodeWithText("Осталось в Alpha: 00:00:01").performScrollTo().assertIsDisplayed()
     }
 
     @Test
     fun capSavingNeverClaimsSaved() {
-        render(RecordingPhase.FINALIZING, 4_800_000)
+        render(RecordingPhase.FINALIZING, 28_800_000)
         rule.onNodeWithText("Проверяем сохранение").assertIsDisplayed()
         rule.onNodeWithText(SAVED).assertDoesNotExist()
     }
 
     @Test
     fun onlyDurableSavedShowsCapCompletion() {
-        render(RecordingPhase.SAVED, 4_800_000)
+        render(RecordingPhase.SAVED, 28_800_000)
         rule.onNodeWithText(SAVED).assertIsDisplayed()
     }
 
     @Test
     fun interruptedCapShowsActualFailure() {
-        render(RecordingPhase.INTERRUPTED, 4_800_000)
+        render(RecordingPhase.INTERRUPTED, 28_800_000)
         rule.onNodeWithText("Запись прервана").assertIsDisplayed()
         rule.onNodeWithText(SAVED).assertDoesNotExist()
     }
@@ -63,6 +63,6 @@ class AlphaRecordingUiTest {
     }
 
     companion object {
-        private const val SAVED = "Достигнут лимит записи Alpha — 5 минут. Запись сохранена"
+        private const val SAVED = "Достигнут лимит записи Alpha — 30 минут. Запись сохранена"
     }
 }

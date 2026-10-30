@@ -185,7 +185,7 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
                         Text("Восстановлена сохранённая часть. Продолжение недоступно.")
                 }
                 if (AlphaRecordingLimit.remaining(entry.recoveredFrames) == 0L) {
-                    Text("Достигнут лимит Alpha — 5 минут. Продолжение недоступно.")
+                    Text("Достигнут лимит Alpha — 30 минут. Продолжение недоступно.")
                 }
                 if (
                     entry.canResume &&
