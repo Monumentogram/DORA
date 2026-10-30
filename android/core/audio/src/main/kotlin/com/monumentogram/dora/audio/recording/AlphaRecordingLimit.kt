@@ -2,7 +2,7 @@ package com.monumentogram.dora.audio.recording
 
 /** Canonical audio frames, independent of wall time, pauses, chunks and transport units. */
 object AlphaRecordingLimit {
-    const val MAX_ALPHA_FRAMES = 4_800_000L
+    const val MAX_ALPHA_FRAMES = 28_800_000L
 
     fun remaining(frames: Long): Long {
         require(frames >= 0)

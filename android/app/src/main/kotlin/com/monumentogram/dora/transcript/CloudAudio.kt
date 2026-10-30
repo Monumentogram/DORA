@@ -17,7 +17,7 @@ internal class CloudAudio private constructor(val bytes: ByteArray) : AutoClosea
     companion object {
         private const val HEADER_BYTES = 44
         private const val SAMPLE_RATE = 16000
-        private const val MAX_FRAMES = 4800000L
+        const val MAX_FRAMES = 4800000L
         private const val MIN_FRAMES = 8000L
 
         @Suppress("TooGenericExceptionCaught", "ThrowsCount") // Wipe owned PCM on every failure.

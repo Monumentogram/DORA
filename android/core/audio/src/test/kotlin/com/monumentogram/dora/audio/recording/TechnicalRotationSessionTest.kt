@@ -65,11 +65,11 @@ class TechnicalRotationSessionTest {
         assertArrayEquals(source.digest(), writer.hash.digest())
         val groups = writer.units.groupBy { it.first.physicalSegmentId }.values.toList()
         assertEquals(
-            listOf(4_800_000),
+            listOf(9_600_000, 9_600_000, 9_600_000),
             groups.map { it.sumOf { unit -> unit.second } },
         )
         assertEquals(
-            listOf(0L),
+            listOf(0L, 9_600_000L, 19_200_000L),
             groups.map { it.first().first.physicalFirstFrame },
         )
         var expected = 0L

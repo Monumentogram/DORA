@@ -27,6 +27,20 @@ class ProtectedPcmTest {
         )
 
     @Test
+    fun windowSelectsExactSamplesAndStillRejectsCorruptTail() {
+        val input = byteArrayOf(0, -128, -1, 127)
+        val pcm = ProtectedPcm.readWindow(port(input), source, 1, 1) { false }
+        assertArrayEquals(floatArrayOf(32767f / 32768f), pcm.samples, 0f)
+        pcm.close()
+        assertArrayEquals(floatArrayOf(0f), pcm.samples, 0f)
+        assertThrows(IllegalStateException::class.java) {
+            ProtectedPcm.readWindow(port(byteArrayOf(1, 0, 2, 0), fail = true), source, 0, 1) {
+                false
+            }
+        }
+    }
+
+    @Test
     fun canonicalLittleEndianAndOwnedBufferWiped() {
         val input = byteArrayOf(0, -128, -1, 127)
         val pcm = ProtectedPcm.read(port(input), source) { false }

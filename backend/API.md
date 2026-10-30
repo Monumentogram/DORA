@@ -1,3 +1,9 @@
+Stage12 candidate amendment (2026-10-30): this source accepts up to28,800,000
+frames /57,600,044 WAV bytes. It is not deployed. Preview8 still refuses Cloud
+sources above300s; existing production limits and daily monetary reserve remain.
+Long Cloud release needs separately authorized deployment, cost configuration,
+bounded client upload and end-to-end verification. The historical contract below
+describes the deployed five-minute interface.
 # DORA manual Cloud ASR HTTP v1
 
 Frozen Stage18.1C interface. All JSON names are snake_case; JSON is UTF-8. HTTPS

@@ -42,7 +42,7 @@
     <string name="signal_appearance">Оформление</string>
     <string name="signal_system_theme">Светлая или тёмная тема следует настройке Android. Размер текста — системный.</string>
     <string name="signal_about">О приложении</string>
-    <string name="signal_about_description">Конфиденциальная запись и расшифровка. Alpha: до 5 минут на запись.</string>
+    <string name="signal_about_description">Конфиденциальная запись и расшифровка. Alpha: до 30 минут на запись.</string>
     <string name="signal_original_audio">Исходное аудио</string>
     <string name="signal_play">Воспроизвести</string>
     <string name="signal_pause">Пауза</string>
@@ -50,4 +50,8 @@
     <string name="signal_seek">Позиция воспроизведения</string>
     <string name="signal_back_ten">Назад 10 с</string>
     <string name="signal_forward_ten">Вперёд 10 с</string>
+    <string name="long_recording_limit_title">Достигнут лимит записи — 30 минут</string>
+    <string name="long_recording_limit_saved">Запись сохранена на устройстве</string>
+    <string name="long_recording_interrupted_title">Запись прервана</string>
+    <string name="long_recording_interrupted_detail">Откройте DORA, чтобы проверить сохранённую часть и варианты восстановления</string>
 </resources>

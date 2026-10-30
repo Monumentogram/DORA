@@ -43,7 +43,7 @@
     <string name="signal_appearance">Appearance</string>
     <string name="signal_system_theme">Light or dark theme follows Android settings. Text uses the system font size.</string>
     <string name="signal_about">About</string>
-    <string name="signal_about_description">Private recording and transcription. Alpha: up to 5 minutes per recording.</string>
+    <string name="signal_about_description">Private recording and transcription. Alpha: up to 30 minutes per recording.</string>
     <string name="signal_original_audio">Original audio</string>
     <string name="signal_play">Play</string>
     <string name="signal_pause">Pause</string>
@@ -51,4 +51,8 @@
     <string name="signal_seek">Playback position</string>
     <string name="signal_back_ten">Back 10 s</string>
     <string name="signal_forward_ten">Forward 10 s</string>
+    <string name="long_recording_limit_title">Recording limit reached — 30 minutes</string>
+    <string name="long_recording_limit_saved">Recording saved on this device</string>
+    <string name="long_recording_interrupted_title">Recording interrupted</string>
+    <string name="long_recording_interrupted_detail">Open DORA to check the saved portion and recovery options</string>
 </resources>

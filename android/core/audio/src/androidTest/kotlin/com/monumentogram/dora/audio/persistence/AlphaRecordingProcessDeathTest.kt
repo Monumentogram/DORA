@@ -27,6 +27,7 @@ import org.junit.Test
 
 class AlphaRecordingProcessDeathTest {
     @Test
+    // Historical inventory selector; ADR-0030 now exercises 1799 -> 1800 seconds.
     fun restartPreserves299SecondsAndCannotCapturePast300() {
         val action = InstrumentationRegistry.getArguments().getString("persistenceCrashAction")
         val base = ApplicationProvider.getApplicationContext<Context>()
@@ -47,10 +48,10 @@ class AlphaRecordingProcessDeathTest {
             open(context, true).use { vault ->
                 val session = RecordingSession(identity, vault.writer)
                 assertTrue(session.start())
-                repeat(59) { session.accept(ByteArray(160000) { 7 }) }
+                repeat(359) { session.accept(ByteArray(160000) { 7 }) }
                 session.accept(ByteArray(128000) { 7 })
                 session.pause()
-                assertEquals(4_784_000L, session.state.durableFrames)
+                assertEquals(28_784_000L, session.state.durableFrames)
                 if (action != null) {
                     signal("READY")
                     CountDownLatch(1).await(120, TimeUnit.SECONDS)
@@ -61,13 +62,13 @@ class AlphaRecordingProcessDeathTest {
         require(action == null || action == "VERIFY")
         open(context, false).use { vault ->
             val recovered = recovery(vault, identity)
-            assertEquals(4_784_000L, recovered.recoveredFrames)
+            assertEquals(28_784_000L, recovered.recoveredFrames)
             assertTrue(recovered.canResume)
             val session = RecordingSession(identity, vault.writer)
             session.restore(recovered.recoveredFrames, recovered.nextOrdinal)
             assertTrue(session.resume())
             session.accept(ByteArray(160000) { 7 })
-            assertEquals(4_800_000L, session.state.frames)
+            assertEquals(28_800_000L, session.state.frames)
             assertFalse(session.canCapture)
             session.requestStop()
             session.confirmStop()
@@ -81,7 +82,7 @@ class AlphaRecordingProcessDeathTest {
                     frames += bytes.size / 2
                 }
             )
-            assertEquals(4_800_000L, frames)
+            assertEquals(28_800_000L, frames)
         }
         if (action != null) signal("VERIFIED")
     }

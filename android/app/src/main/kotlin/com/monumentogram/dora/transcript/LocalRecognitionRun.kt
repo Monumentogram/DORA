@@ -36,14 +36,13 @@ internal class LocalRecognitionRun(
             if (attempt.cancelled()) throw CancellationException()
             requireValue(session.transcripts.running(identity, jobId))
             state("Распознавание")
-            val text =
-                ProtectedPcm.read(session.originals, source, attempt::cancelled).use { pcm ->
-                    decode(pcm.samples, language, attempt::cancelled)
-                }
+            val text = decodeWindows(session, source, language, attempt)
             if (!attempt.publish()) throw CancellationException()
             state("Сохраняем расшифровку")
             return AudioResult.Value(
-                requireValue(session.transcripts.finish(source, jobId, text, model, now()))
+                requireValue(
+                    session.transcripts.finish(source, jobId, text.toString(), model, now())
+                )
             )
         } catch (_: CancellationException) {
             session.transcripts.stop(identity, jobId, "CANCELLED")
@@ -59,6 +58,27 @@ internal class LocalRecognitionRun(
             session.transcripts.stop(identity, jobId, "FAILED")
             throw RecognitionFailure("ENGINE_OR_STORAGE")
         }
+    }
+
+    private fun decodeWindows(
+        session: ProductAudioSession,
+        source: com.monumentogram.dora.audio.OriginalAudioReference,
+        language: String,
+        attempt: RecognitionAttempt,
+    ): String {
+        val text = StringBuilder()
+        var next = 0L
+        while (next < source.frames) {
+            val count = minOf(ProtectedPcm.MAX_WINDOW_FRAMES.toLong(), source.frames - next).toInt()
+            ProtectedPcm.readWindow(session.originals, source, next, count, attempt::cancelled)
+                .use { pcm ->
+                    val part = decode(pcm.samples, language, attempt::cancelled)
+                    if (text.isNotEmpty() && part.isNotEmpty()) text.append('\n')
+                    text.append(part)
+                }
+            next += count
+        }
+        return text.toString()
     }
 }
 

@@ -211,7 +211,7 @@ class ServiceTests(unittest.TestCase):
                 self.assertIn(self.upload(data).status_code, (400, 422))
                 self.request("POST", f"/v1/jobs/{self.action}/cancel", {})
         self.assertEqual([], self.aws.puts)
-        self.assertEqual(422, self.request("POST", "/v1/recordings", {**self.binding, "recording_id": str(uuid.uuid4()), "frames": 4800001}).status_code)
+        self.assertEqual(422, self.request("POST", "/v1/recordings", {**self.binding, "recording_id": str(uuid.uuid4()), "frames": 28800001}).status_code)
 
     def test_action_idempotency_and_one_active_owner(self):
         first = self.create()

@@ -20,22 +20,24 @@ import org.junit.Test
 /** Actual SQLCipher/Keystore/AEAD adapters and synthetic PCM; no physical microphone claim. */
 class AlphaRecordingRuntimeTest {
     @Test
+    @Suppress("LongMethod") // One encrypted capture/reopen/source continuity scenario.
+    // Historical inventory selector; ADR-0030 now exercises 1799 -> 1800 seconds.
     fun pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording() {
         val f = EncryptedAudioVaultFaultFixture()
         f.open().use { vault ->
             val session = RecordingSession(f.audio, vault.writer)
             assertTrue(session.start())
-            repeat(59) { session.accept(ByteArray(160000) { 7 }) }
+            repeat(359) { session.accept(ByteArray(160000) { 7 }) }
             session.accept(ByteArray(128000) { 7 })
             session.pause()
-            assertEquals(4_784_000L, session.state.durableFrames)
+            assertEquals(28_784_000L, session.state.durableFrames)
             assertEquals(RecordingPhase.PAUSED, session.state.phase)
         }
         lateinit var original: OriginalAudioReference
         f.open(false).use { vault ->
             val restored = recovery(vault, f.audio)
             assertTrue(restored.canResume)
-            assertEquals(4_784_000L, restored.recoveredFrames)
+            assertEquals(28_784_000L, restored.recoveredFrames)
             val session = RecordingSession(f.audio, vault.writer)
             session.restore(restored.recoveredFrames, restored.nextOrdinal)
             assertTrue(session.resume())
@@ -48,6 +50,18 @@ class AlphaRecordingRuntimeTest {
             assertEquals(RecordingPhase.SAVED, session.state.phase)
             original = reference(vault, f.audio)
             exact(vault, original)
+            com.monumentogram.dora.audio.transcript.ProtectedPcm.readWindow(
+                    vault.originals,
+                    original,
+                    28_799_998,
+                    2,
+                ) {
+                    false
+                }
+                .use { window ->
+                    assertEquals(2, window.samples.size)
+                    assertTrue(window.samples.all { it == 1799f / 32768f })
+                }
             val other =
                 f.audio.copy(
                     recordingId = RecordingId(id(810)),
@@ -85,13 +99,13 @@ class AlphaRecordingRuntimeTest {
         f.open().use { vault ->
             val session = RecordingSession(f.audio, vault.writer)
             assertTrue(session.start())
-            repeat(60) { session.accept(ByteArray(160000) { 7 }) }
+            repeat(360) { session.accept(ByteArray(160000) { 7 }) }
             session.interrupt()
-            assertEquals(4_800_000L, session.state.durableFrames)
+            assertEquals(28_800_000L, session.state.durableFrames)
         }
         f.open(false).use { vault ->
             val restored = recovery(vault, f.audio)
-            assertEquals(4_800_000L, restored.recoveredFrames)
+            assertEquals(28_800_000L, restored.recoveredFrames)
             assertEquals(
                 AudioResult.Value(OriginalAudioStatus.NotFinalized),
                 vault.originals.acquire(f.audio),
@@ -100,7 +114,7 @@ class AlphaRecordingRuntimeTest {
             session.restore(restored.recoveredFrames, restored.nextOrdinal)
             assertFalse(session.resume())
             session.accept(ByteArray(1600))
-            assertEquals(4_800_000L, session.state.frames)
+            assertEquals(28_800_000L, session.state.frames)
             assertEquals(restored, recovery(vault, f.audio))
         }
     }
@@ -117,7 +131,7 @@ class AlphaRecordingRuntimeTest {
                 borrowed.add(pcm)
             },
         )
-        assertEquals(4_800_000L, next)
+        assertEquals(28_800_000L, next)
         assertTrue(borrowed.all { bytes -> bytes.all { it == 0.toByte() } })
     }
 }

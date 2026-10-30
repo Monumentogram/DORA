@@ -2,7 +2,7 @@ name: Stage12 Samsung Alpha software
 
 on:
   push:
-    branches: ["codex/stage12-alpha-ready"]
+    branches: ["codex/stage12-alpha-ready", "codex/stage12-long-recording-alpha"]
   workflow_dispatch:
 
 permissions:

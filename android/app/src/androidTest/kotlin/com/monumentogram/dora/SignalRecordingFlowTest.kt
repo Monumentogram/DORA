@@ -1,10 +1,12 @@
 package com.monumentogram.dora
 
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.lifecycle.Lifecycle
 import androidx.test.platform.app.InstrumentationRegistry
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.ui.signal.uiCopy
@@ -16,6 +18,7 @@ class SignalRecordingFlowTest {
     @get:Rule val ui = createAndroidComposeRule<MainActivity>()
 
     @Test
+    @Suppress("LongMethod") // One user flow includes optional bounded screen-off duration.
     fun microphonePauseResumeSaveAndReturnToLibrary() {
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
         automation
@@ -41,6 +44,32 @@ class SignalRecordingFlowTest {
                     controller.diagnosticSummary(),
                 timeout,
             )
+        }
+        val duration =
+            InstrumentationRegistry.getArguments().getString("longRecordingSeconds")?.toInt() ?: 0
+        if (duration > 0) {
+            require(duration in 10..1799)
+            automation.executeShellCommand("input keyevent 223").close()
+            val deadline = android.os.SystemClock.elapsedRealtime() + (duration + 60) * 1000L
+            while (controller.state.value.recording.frames < duration * 16000L) {
+                assertTrue(
+                    controller.diagnosticSummary(),
+                    controller.state.value.recording.phase == RecordingPhase.RECORDING,
+                )
+                assertTrue("Capture stalled", android.os.SystemClock.elapsedRealtime() < deadline)
+                Thread.sleep(1000)
+            }
+            if (duration >= 310)
+                assertTrue(controller.state.value.recording.durableFrames > 300 * 16000L)
+            else assertTrue(controller.state.value.recording.durableFrames > 0)
+            automation.executeShellCommand("input keyevent 224").close()
+            automation.executeShellCommand("wm dismiss-keyguard").close()
+            ui.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+            ui.waitUntil(10000) {
+                ui.onAllNodesWithText(uiCopy("Пауза"), useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .size == 1
+            }
         }
         ui.onNodeWithText(uiCopy("Пауза"), useUnmergedTree = true).performScrollTo().performClick()
         ui.waitUntil(10000) { controller.state.value.recording.phase == RecordingPhase.PAUSED }

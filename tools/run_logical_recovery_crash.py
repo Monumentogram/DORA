@@ -114,7 +114,7 @@ def main():
     profile.add_argument('--limited-alpha', action='store_true',
                         help='ADR-RECORDING-011: defer only four >300s technical CAP scenarios')
     profile.add_argument('--alpha-limit-only', action='store_true',
-                         help='Real process death at the five-minute profile 299-second boundary')
+                         help='Real process death at the thirty-minute profile 1799-second boundary')
     args = parser.parse_args()
     selected_test = ALPHA_TEST if args.alpha_limit_only else TEST
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected emulator is admitted')
@@ -154,7 +154,7 @@ def main():
         process = subprocess.Popen(adb + instrument(phase, 'PREPARE'), stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, text=True, bufsize=1)
         try:
-            pid = wait_ready(process, phase)
+            pid = wait_ready(process, phase, timeout=1800 if args.alpha_limit_only else 600)
             prepared = time.monotonic()
             before = command('shell', 'pidof', PACKAGE, absent=True)
             require(before == str(pid), 'Ready marker does not identify the live synthetic test process')
@@ -169,7 +169,7 @@ def main():
             # The device holds the phase for 120 seconds. Refuse a death observed after expiry.
             require(time.monotonic() - prepared < 110, 'Termination exceeded the prepared phase hold window')
             process.wait(timeout=20)
-            output = command(*instrument(phase, 'VERIFY'), timeout=600)
+            output = command(*instrument(phase, 'VERIFY'), timeout=1800 if args.alpha_limit_only else 600)
             fresh_pid = verified_pid(output, phase, pid, expected_test=selected_test)
             rows.append({'phase': phase, 'result': 'PASS', 'prepared_pid': pid, 'verifier_pid': fresh_pid,
                          'termination': 'AM_FORCE_STOP_WITH_PROCESS_ABSENCE_VERIFIED'})

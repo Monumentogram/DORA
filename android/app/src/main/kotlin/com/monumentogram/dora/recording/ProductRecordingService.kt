@@ -62,6 +62,7 @@ class ProductRecordingService : Service() {
             main.post {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 foreground = false
+                notifyCompletion()
                 stopSelf()
             }
         }
@@ -129,6 +130,34 @@ class ProductRecordingService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun notifyCompletion() {
+        val ended = controller.state.value.recording
+        val interrupted = ended.phase == RecordingPhase.INTERRUPTED
+        if (interrupted || (ended.phase == RecordingPhase.SAVED && ended.alphaLimitReached)) {
+            getSystemService(NotificationManager::class.java)
+                .notify(
+                    LIMIT_NOTIFICATION_ID,
+                    NotificationCompat.Builder(this, CHANNEL)
+                        .setSmallIcon(R.drawable.ic_bootstrap_mic)
+                        .setContentTitle(
+                            getString(
+                                if (interrupted) R.string.long_recording_interrupted_title
+                                else R.string.long_recording_limit_title
+                            )
+                        )
+                        .setContentText(
+                            getString(
+                                if (interrupted) R.string.long_recording_interrupted_detail
+                                else R.string.long_recording_limit_saved
+                            )
+                        )
+                        .setContentIntent(activityIntent(OPEN, 0))
+                        .setAutoCancel(true)
+                        .build(),
+                )
+        }
+    }
 
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>?) {
         writer.write(controller.diagnosticSummary())
@@ -222,6 +251,7 @@ class ProductRecordingService : Service() {
         private const val PAUSE = "com.monumentogram.dora.recording.PAUSE"
         private const val CHANNEL = "product_recording"
         private const val NOTIFICATION_ID = 8301
+        private const val LIMIT_NOTIFICATION_ID = 8302
         private const val FLAGS = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         private const val WAKE_TIMEOUT_MILLIS = 60_000L
         private const val WAKE_RENEW_MILLIS = 30_000L

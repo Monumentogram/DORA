@@ -1,3 +1,13 @@
+## 2026-10-30 — Stage12 security and thirty-minute Alpha successor
+
+Owner authorizes a bounded30-minute capture successor to Preview7, preserving data,
+package, signer and native Whisper. [ADR0030](adr/ADR-0030-thirty-minute-owner-alpha.md)
+and the [security matrix](STAGE12_LONG_RECORDING_SECURITY.md) record the change.
+Capture/local processing use bounded buffers; Cloud remains explicitly five-minute
+until separate deployment/client qualification. Stage12 remains PARTIAL; issue125,
+privacy/control approval and Samsung physical acceptance remain open. Execution
+results and final APK/CI identity must be read from the successor release evidence.
+Historical300s profiles and Stage8.6 NOT_READY are not retroactively relabelled.
 ## 2026-10-28 — Stage18.1E owner-only AWS live Cloud ASR
 
 **PASS / STAGE18_1E_AWS_LIVE_CLOUD_ASR_READY**: the authorized Frankfurt stack is

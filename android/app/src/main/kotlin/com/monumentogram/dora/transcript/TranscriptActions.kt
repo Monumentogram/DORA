@@ -124,7 +124,10 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
             cloudApi?.abortTransfer()
         }
 
-    @Suppress("ReturnCount") // Explicit preconditions before identity or job creation.
+    @Suppress(
+        "ReturnCount",
+        "ThrowsCount",
+    ) // Explicit preconditions before identity or job creation.
     fun recognizeCloud(identity: AudioIdentity, language: String, retryId: String? = null) {
         if (busy || closed) return
         if (!cloudConnectionAvailable(activity)) {
@@ -162,6 +165,7 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
                     (requireValue(session.originals.acquire(identity))
                             as? OriginalAudioStatus.Available)
                         ?.reference ?: throw CloudFailure("SOURCE_OR_STORAGE")
+                if (source.frames > CloudAudio.MAX_FRAMES) throw CloudFailure("DURATION_LIMIT")
                 val time = System.currentTimeMillis()
                 requireValue(
                     session.transcripts.beginCloud(
