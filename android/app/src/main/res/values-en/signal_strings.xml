@@ -53,4 +53,6 @@
     <string name="signal_forward_ten">Forward 10 s</string>
     <string name="long_recording_limit_title">Recording limit reached — 30 minutes</string>
     <string name="long_recording_limit_saved">Recording saved on this device</string>
+    <string name="long_recording_interrupted_title">Recording interrupted</string>
+    <string name="long_recording_interrupted_detail">Open DORA to check the saved portion and recovery options</string>
 </resources>

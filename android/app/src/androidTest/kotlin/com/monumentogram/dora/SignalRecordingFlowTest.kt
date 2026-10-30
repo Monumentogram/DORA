@@ -1,12 +1,15 @@
 package com.monumentogram.dora
 
+import android.content.Intent
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.monumentogram.dora.audio.recording.RecordingPhase
+import com.monumentogram.dora.recording.ProductRecordingService
 import com.monumentogram.dora.ui.signal.uiCopy
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -61,12 +64,22 @@ class SignalRecordingFlowTest {
             assertTrue(controller.state.value.recording.durableFrames > 300 * 16000L)
             automation.executeShellCommand("input keyevent 224").close()
             automation.executeShellCommand("wm dismiss-keyguard").close()
-            automation
-                .executeShellCommand(
-                    "am start -n ${ui.activity.packageName}/com.monumentogram.dora.MainActivity"
-                )
-                .close()
-            ui.waitForIdle()
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            context.startActivity(
+                Intent(context, MainActivity::class.java)
+                    .setAction(ProductRecordingService.OPEN)
+                    .putExtra(ProductRecordingService.TOKEN, controller.actionToken)
+                    .addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    )
+            )
+            ui.waitUntil(10000) {
+                ui.onAllNodesWithText(uiCopy("Пауза"), useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .size == 1
+            }
         }
         ui.onNodeWithText(uiCopy("Пауза"), useUnmergedTree = true).performScrollTo().performClick()
         ui.waitUntil(10000) { controller.state.value.recording.phase == RecordingPhase.PAUSED }

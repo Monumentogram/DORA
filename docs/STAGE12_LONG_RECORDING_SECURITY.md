@@ -22,6 +22,8 @@ Owner scope: 2026-10-30. Successor to b310283 / Preview7 / PR126. Implementation
 
 Full Stage12 status is PARTIAL until every mandatory criterion has evidence. Owner-only Alpha distribution is a separate gate; this is not admission for public/external service use.
 
+Executed component evidence: 1800-second encrypted source/readback and reopen tests pass on API 28 and 36; actual process termination at 1799 seconds, restart, continuation to 1800 seconds and exact byte validation pass on API 36. The API 36 key/deletion matrix passes 16 tests and app Cloud/export/deletion/search regressions pass 8 tests. These results do not establish full microphone endurance or long native ASR. The [v8 release execution receipt](https://github.com/Monumentogram/DORA/releases/tag/personal-alpha-20261030-v8) records final microphone attempts, CI, upgrade and APK identity, including unsuccessful attempts and their scope.
+
 ## Cloud data lifecycle and issue125
 
 1. Android original audio and transcript remain encrypted locally until explicit user action. Exported SAF copies are user-controlled and outside application deletion.
@@ -41,7 +43,7 @@ Local Whisper remains unchanged, including its300s native input limit. The clien
 
 Playback uses a single AudioTrack and one prefetched window. At most two five-minute float windows are owned, independent of total duration. Every load verifies the complete source, a deliberate I/O tradeoff for compatibility. Keystore/disk speed can delay initial playback/recognition; full physical throughput and battery qualification remain pending. Capture itself never retains the whole meeting.
 
-The automatic thirty-minute stop keeps existing native-release, drain and durable-finalize checks. Saved limit completion is visible in the recording UI and a completion notification (subject to Android notification permission). Storage/capture failure remains interrupted with the committed prefix recoverable; uncommitted tail is not claimed saved. No boot-time automatic microphone restart is added.
+The automatic thirty-minute stop keeps existing native-release, drain and durable-finalize checks. Saved limit completion and interrupted capture produce completion notifications (subject to Android notification permission), opening the existing recording/recovery UI. Failure wording asks the user to check the saved portion; it never claims the whole recording was saved. Storage/capture failure remains interrupted with the committed prefix recoverable; uncommitted tail is not claimed saved. No boot-time automatic microphone restart is added.
 
 Cloud Android remains explicitly limited to five minutes. Candidate backend validation accepts up to30m /57,600,044 WAV bytes, but it is not deployed and the existing daily reserve is unchanged. At the default0.25 USD reserve, a30m request cannot dispatch (estimated reserve0.91 USD under the default rate); a future deployment needs explicit cost authorization, bounded Android upload and long result qualification. Neither schema tests nor provider quotas grant LONG_RECORDING_ALPHA_READY for Cloud.
 

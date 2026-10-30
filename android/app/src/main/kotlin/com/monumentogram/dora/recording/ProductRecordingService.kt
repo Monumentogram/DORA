@@ -62,7 +62,7 @@ class ProductRecordingService : Service() {
             main.post {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 foreground = false
-                notifyLimit()
+                notifyCompletion()
                 stopSelf()
             }
         }
@@ -131,16 +131,27 @@ class ProductRecordingService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun notifyLimit() {
+    private fun notifyCompletion() {
         val ended = controller.state.value.recording
-        if (ended.phase == RecordingPhase.SAVED && ended.alphaLimitReached) {
+        val interrupted = ended.phase == RecordingPhase.INTERRUPTED
+        if (interrupted || (ended.phase == RecordingPhase.SAVED && ended.alphaLimitReached)) {
             getSystemService(NotificationManager::class.java)
                 .notify(
                     LIMIT_NOTIFICATION_ID,
                     NotificationCompat.Builder(this, CHANNEL)
                         .setSmallIcon(R.drawable.ic_bootstrap_mic)
-                        .setContentTitle(getString(R.string.long_recording_limit_title))
-                        .setContentText(getString(R.string.long_recording_limit_saved))
+                        .setContentTitle(
+                            getString(
+                                if (interrupted) R.string.long_recording_interrupted_title
+                                else R.string.long_recording_limit_title
+                            )
+                        )
+                        .setContentText(
+                            getString(
+                                if (interrupted) R.string.long_recording_interrupted_detail
+                                else R.string.long_recording_limit_saved
+                            )
+                        )
                         .setContentIntent(activityIntent(OPEN, 0))
                         .setAutoCancel(true)
                         .build(),
