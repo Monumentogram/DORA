@@ -17,7 +17,7 @@ def tree(label, *, package='com.monumentogram.dora.alpha.preview', attributes=''
 
 class PublicV8BaselineTests(unittest.TestCase):
     def test_actual_runner_flow_records_only_diagnostics_and_always_stops_owned_install(self):
-        for observation in ('crash', 'alive', 'exit', 'ui-failure'):
+        for observation in ('crash', 'alive', 'exit', 'ui-failure', 'launch-error', 'launch-empty', 'launch-duplicate'):
             with self.subTest(observation=observation), tempfile.TemporaryDirectory() as temporary:
                 apk, receipt = Path(temporary) / 'public.apk', Path(temporary) / 'result.json'
                 apk.write_bytes(b'public-fixture')
@@ -55,6 +55,10 @@ class PublicV8BaselineTests(unittest.TestCase):
                     if tail[:3] == ['shell', 'input', 'tap']:
                         taps.append(tuple(tail[3:]))
                         return ''
+                    if tail[:3] == ['shell', 'am', 'start']:
+                        return {'launch-error': 'Error type 3\nError: Activity class does not exist.',
+                                'launch-empty': '', 'launch-duplicate': 'Status: ok\nStatus: ok'}.get(
+                                    observation, 'Status: ok\nActivity: ' + baseline.PACKAGE + '/' + baseline.ACTIVITY)
                     if tail[:2] == ['exec-out', 'cat']:
                         if observation == 'ui-failure':
                             raise baseline.BaselineFailure('SYNTHETIC_UI_FAILURE')
@@ -65,7 +69,8 @@ class PublicV8BaselineTests(unittest.TestCase):
                                 '#01 libsherpa-onnx-jni.so\nPRIVATE SECRET') if observation == 'crash' else ''
                     if len(tail) == 2 and tail[1].startswith('pidof '):
                         return '123' if observation == 'alive' else ''
-                    if tail[:3] in (['shell', 'am', 'force-stop'], ['shell', 'am', 'start'],
+                    if tail[:3] in (['shell', 'am', 'force-stop'], ['shell', 'input', 'keyevent'],
+                                    ['shell', 'wm', 'dismiss-keyguard'],
                                     ['shell', 'uiautomator', 'dump'], ['shell', 'pm', 'grant'],
                                     ['shell', 'rm', '-f']) or tail == ['logcat', '-b', 'crash', '-c']:
                         return ''
@@ -79,12 +84,23 @@ class PublicV8BaselineTests(unittest.TestCase):
                 self.assertEqual(2, result['environment']['guest_cpu_count'])
                 self.assertEqual('NOT_CLAIMED', result['environment']['cross_host_equivalence'])
                 self.assertTrue(result['owned_package_force_stopped'])
+                wake = next(index for index, call in enumerate(calls) if call[-3:] == ['input', 'keyevent', '224'])
+                dismiss = next(index for index, call in enumerate(calls) if call[-2:] == ['wm', 'dismiss-keyguard'])
+                launch = next(index for index, call in enumerate(calls) if 'start' in call)
+                self.assertLess(wake, dismiss)
+                self.assertLess(dismiss, launch)
+                self.assertTrue(result['wake_and_dismiss_sent'])
                 self.assertTrue(any('packages' in call and '-u' in call for call in calls))
                 self.assertEqual(1, sum(call[-3:] == ['am', 'force-stop', baseline.PACKAGE] for call in calls))
                 self.assertNotIn('SECRET', receipt.read_text(encoding='utf-8'))
-                if observation == 'ui-failure':
+                if observation.startswith('launch-'):
+                    self.assertEqual('DIAGNOSTIC_INCOMPLETE', result['status'])
+                    self.assertEqual('ACTIVITY_LAUNCH_NOT_CONFIRMED', result['failure'])
+                    self.assertEqual([], result['visible_actions'])
+                elif observation == 'ui-failure':
                     self.assertEqual('DIAGNOSTIC_INCOMPLETE', result['status'])
                 else:
+                    self.assertEqual('start', result['last_ui_diagnostic']['expected_action'])
                     self.assertEqual(5, len(taps))
                     self.assertEqual('DIAGNOSTIC_COMPLETE', result['status'])
                     self.assertEqual({'crash': 'DORA_ORT_VAD_CRASH_OBSERVED',
@@ -187,6 +203,41 @@ class PublicV8BaselineTests(unittest.TestCase):
                 with self.assertRaises(baseline.BaselineFailure):
                     baseline.run_baseline(apk, Path(temporary), 'emulator-5554', Path(temporary) / 'fresh.json')
             self.assertFalse(any('install' in call or 'force-stop' in call for call in calls))
+
+
+class SafeUiDiagnosticTests(unittest.TestCase):
+    def test_known_dora_action_reports_only_counts_and_categories(self):
+        result = baseline.ui_diagnostic(tree('New recording'), 'new_recording', 1080, 2400)
+        self.assertEqual(['DORA'], result['package_categories'])
+        self.assertEqual(1, result['known_control_matches']['new_recording'])
+        self.assertEqual(1, result['expected_enabled_matches'])
+        self.assertEqual(1, result['expected_clickable_ancestor_matches'])
+        self.assertEqual(1, result['expected_bounded_target_matches'])
+        self.assertFalse(result['keyguard_resource_marker'])
+
+    def test_keyguard_screen_and_arbitrary_text_cannot_leak(self):
+        xml = tree('PRIVATE SECRET', package='com.android.systemui',
+                   attributes='resource-id="com.android.systemui:id/keyguard_status_view"')
+        result = baseline.ui_diagnostic(xml, 'new_recording', 1080, 2400)
+        self.assertEqual(['SYSTEM_UI'], result['package_categories'])
+        self.assertTrue(result['keyguard_resource_marker'])
+        self.assertEqual(0, result['known_control_matches']['new_recording'])
+        self.assertNotIn('SECRET', json.dumps(result))
+        self.assertNotIn('keyguard_status_view', json.dumps(result))
+
+    def test_setup_and_unrelated_packages_report_fixed_categories_only(self):
+        for package, expected in [('com.google.android.setupwizard', 'SETUP'), ('private.secret.app', 'OTHER')]:
+            with self.subTest(package=package):
+                result = baseline.ui_diagnostic(tree('SECRET', package=package), 'new_recording', 1080, 2400)
+                self.assertEqual([expected], result['package_categories'])
+                self.assertNotIn('SECRET', json.dumps(result))
+                self.assertNotIn(package, json.dumps(result))
+
+    def test_malformed_unknown_or_oversize_ui_fails_closed(self):
+        for xml, action in [('<hierarchy>', 'new_recording'), ('<hierarchy/>', 'unknown'),
+                            ('<hierarchy>' + '<node/>' * 4097 + '</hierarchy>', 'new_recording')]:
+            with self.subTest(action=action), self.assertRaises(baseline.BaselineFailure):
+                baseline.ui_diagnostic(xml, action, 1080, 2400)
 
 
 if __name__ == '__main__':

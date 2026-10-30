@@ -101,6 +101,47 @@ def click_target(xml, labels, package, width, height):
     return next(iter(candidates.values()))
 
 
+def ui_diagnostic(xml, action, width, height):
+    require(action in LABELS, 'UNKNOWN_UI_DIAGNOSTIC_ACTION')
+    try:
+        root = ET.fromstring(xml)
+    except ET.ParseError:
+        raise BaselineFailure('MALFORMED_UI_XML') from None
+    nodes = list(root.iter('node'))
+    require(len(nodes) <= 4096, 'TOO_MANY_UI_NODES')
+    parents = {child: parent for parent in root.iter() for child in parent}
+    categories, matches = set(), {name: 0 for name in LABELS}
+    enabled = actionable = bounded = 0
+    keyguard = False
+    for node in nodes:
+        package = node.get('package', '')
+        category = ('DORA' if package == PACKAGE else 'SYSTEM_UI' if package == 'com.android.systemui' else
+                    'PERMISSION_CONTROLLER' if package in {'com.google.android.permissioncontroller', 'com.android.permissioncontroller'} else
+                    'LAUNCHER' if package in {'com.google.android.apps.nexuslauncher', 'com.android.launcher3'} else
+                    'SETUP' if package in {'com.google.android.setupwizard', 'com.android.provision', 'com.android.settings'} else 'OTHER')
+        categories.add(category)
+        if category == 'SYSTEM_UI' and re.search(r'(?:keyguard|lock_icon)', node.get('resource-id', '')):
+            keyguard = True
+        for name, labels in LABELS.items():
+            if node.get('text') in labels or node.get('content-desc') in labels:
+                matches[name] += 1
+        if node.get('text') not in LABELS[action] and node.get('content-desc') not in LABELS[action]:
+            continue
+        if node.get('enabled') == 'true' and node.get('visible-to-user', 'true') == 'true':
+            enabled += 1
+        target = node
+        while target is not None and target.get('clickable') != 'true':
+            target = parents.get(target)
+        if target is not None:
+            actionable += 1
+            if bounds(target, width, height):
+                bounded += 1
+    return dict(expected_action=action, node_count=len(nodes), package_categories=sorted(categories),
+                known_control_matches=matches, expected_enabled_matches=enabled,
+                expected_clickable_ancestor_matches=actionable, expected_bounded_target_matches=bounded,
+                keyguard_resource_marker=keyguard, xml_sha256=hashlib.sha256(xml.encode('utf-8')).hexdigest())
+
+
 def crash_summary(text):
     require(len(text) <= 2_097_152, 'CRASH_BUFFER_TOO_LARGE')
     dora, matching, categories, signals = False, False, set(), set()
@@ -205,9 +246,14 @@ def run_baseline(apk, sdk, serial, receipt, *, observe_seconds=30):
         require(size is not None, 'DISPLAY_BOUNDS_UNAVAILABLE')
         width, height = map(int, size.groups())
         shell('shell', 'pm', 'grant', PACKAGE, 'android.permission.RECORD_AUDIO')
+        shell('shell', 'input', 'keyevent', '224')
+        shell('shell', 'wm', 'dismiss-keyguard')
+        result['wake_and_dismiss_sent'] = True
         # Crash-only buffer is cleared before this newly installed, exact package is launched.
         shell('logcat', '-b', 'crash', '-c')
-        shell('shell', 'am', 'start', '-W', '-n', PACKAGE + '/' + ACTIVITY)
+        launch = shell('shell', 'am', 'start', '-W', '-n', PACKAGE + '/' + ACTIVITY)
+        require(re.findall(r'^Status: ([a-z]+)$', launch, re.M) == ['ok']
+                and not re.search(r'^Error(?:\s|:)', launch, re.M), 'ACTIVITY_LAUNCH_NOT_CONFIRMED')
 
         def click(action, package=PACKAGE):
             deadline = time.monotonic() + 30
@@ -215,6 +261,7 @@ def run_baseline(apk, sdk, serial, receipt, *, observe_seconds=30):
             while time.monotonic() < deadline:
                 shell('shell', 'uiautomator', 'dump', UI_PATH)
                 xml = shell('exec-out', 'cat', UI_PATH)
+                result['last_ui_diagnostic'] = ui_diagnostic(xml, action, width, height)
                 try:
                     x, y = click_target(xml, LABELS[action], package, width, height)
                 except BaselineFailure as error:
@@ -276,7 +323,7 @@ def run_baseline(apk, sdk, serial, receipt, *, observe_seconds=30):
         summary = {key: value for key, value in result.items() if key in
                    {'status', 'observation', 'stack_categories', 'signals', 'failure', 'visible_actions',
                     'environment', 'ort_frames', 'guest_crash_abis', 'guest_architectures', 'fault_addresses', 'native_startup_markers',
-                    'observed_crash_buffer_sha256'}}
+                    'observed_crash_buffer_sha256', 'last_ui_diagnostic', 'wake_and_dismiss_sent'}}
         with receipt.with_suffix('.summary.json').open('x', encoding='utf-8') as output:
             output.write(json.dumps(summary, sort_keys=True, indent=2) + '\n')
     return result
