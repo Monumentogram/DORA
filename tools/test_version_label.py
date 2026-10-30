@@ -1,11 +1,24 @@
 """Packaged version labels must match independently pinned APK identities."""
 import unittest
+from pathlib import Path
+import re
 
-from version_label import check_label
+from version_label import IDENTITIES, check_label
 from run_version_label_device import installed_path
 
 
 class VersionLabelTests(unittest.TestCase):
+    def test_shared_owner_instrumentation_expects_current_preview_and_historical_pilot_identity(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / 'android/app/src/androidTestOwnerPilot/kotlin/com/monumentogram/dora/ownerpilot/OwnerPilotInstrumentedTest.kt').read_text(encoding='utf-8')
+        codes = re.search(r'assertEquals\(if \(preview\) (\d+)L else (\d+)L, info.longVersionCode\)', source)
+        names = re.search(r'if \(preview\) "([^"]+)" else "([^"]+)",\s*info.versionName', source)
+        self.assertIsNotNone(codes)
+        self.assertIsNotNone(names)
+        for position, variant in ((1, 'ownerPreview'), (2, 'ownerPilot')):
+            with self.subTest(variant=variant):
+                self.assertEqual(IDENTITIES[variant][1:], (codes[position], names[position]))
+
     def test_installed_apk_path_accepts_legacy_and_randomized_android_layouts(self):
         for path in ('/data/app/com.monumentogram.dora.debug-fixture==/base.apk',
                      '/data/app/~~fixture-token==/com.monumentogram.dora.debug-fixture==/base.apk'):
