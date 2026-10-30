@@ -64,6 +64,23 @@ def validate_inventory(inventory):
     return set(expected), set(controls)
 
 
+def select_inventory(expected, *, shard_index=0, shard_count=1,
+                     diagnostic_class=None, diagnostic_method=None):
+    require(type(shard_count) is int and type(shard_index) is int
+            and 1 <= shard_count <= len(expected) and 0 <= shard_index < shard_count,
+            'Invalid persistence shard bounds or empty shard')
+    require(diagnostic_method is None or diagnostic_class, 'Diagnostic method requires explicit class')
+    require(not diagnostic_class or (shard_index, shard_count) == (0, 1),
+            'Diagnostic selection cannot be combined with inventory sharding')
+    selected = set(sorted(expected)[shard_index::shard_count])
+    if diagnostic_class:
+        selected = {name for name in selected if name.split('#')[0] == diagnostic_class}
+        if diagnostic_method is not None:
+            selected &= {diagnostic_class + '#' + diagnostic_method}
+    require(bool(selected), 'Diagnostic selector is absent from exact inventory')
+    return selected
+
+
 def selectors(selected, *, diagnostic=False, exact_inventory=False):
     return (['-e', 'class', ','.join(sorted(selected))]
             if diagnostic or exact_inventory else ['-e', 'package', PACKAGE])
@@ -114,8 +131,15 @@ def main():
     parser.add_argument('--diagnostic-method', help='Exact method within --diagnostic-class; diagnostic only')
     parser.add_argument('--exact-inventory', action='store_true',
                         help='Run the supplied versioned acceptance inventory, not the whole package')
+    parser.add_argument('--shard-index', type=int, default=0, help='Zero-based deterministic inventory shard')
+    parser.add_argument('--shard-count', type=int, default=1, help='Number of disjoint inventory shards')
     args = parser.parse_args()
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected test emulator is admitted')
+    inventory = json.loads(args.inventory.read_text(encoding='utf-8'))
+    expected, no_credential = validate_inventory(inventory)
+    pin_free = inventory.get('profile') == 'PIN_FREE_LOCAL_ACCESS'
+    selected = select_inventory(expected, shard_index=args.shard_index, shard_count=args.shard_count,
+                                diagnostic_class=args.diagnostic_class, diagnostic_method=args.diagnostic_method)
     sdk = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT')
     require(bool(sdk), 'Android SDK path is required')
     adb = str(Path(sdk) / 'platform-tools' / ('adb.exe' if os.name == 'nt' else 'adb'))
@@ -135,17 +159,6 @@ def main():
     page_measurement = measure_page_sizes(command, api, abi)
     page_size = page_measurement['page_size']
     require((api, page_size) == (args.expected_api, args.expected_page_size), 'Runtime API/page-size identity mismatch')
-    inventory = json.loads(args.inventory.read_text(encoding='utf-8'))
-    expected, no_credential = validate_inventory(inventory)
-    pin_free = inventory.get('profile') == 'PIN_FREE_LOCAL_ACCESS'
-    selected = expected
-    if args.diagnostic_class:
-        selected = {name for name in expected if name.split('#')[0] == args.diagnostic_class}
-        if args.diagnostic_method:
-            selected &= {args.diagnostic_class + '#' + args.diagnostic_method}
-        require(bool(selected), 'Diagnostic selector is absent from exact inventory')
-    else:
-        require(args.diagnostic_method is None, 'Diagnostic method requires explicit class')
     prefix = args.receipt.parent / (args.receipt.stem + '-diagnostics')
     prefix.mkdir(parents=True, exist_ok=False)
 
@@ -184,7 +197,7 @@ def main():
     with diagnostics.synthetic_credential(command, pin):
         command('shell', 'input', 'keyevent', '82')
         selector = selectors(selected, diagnostic=bool(args.diagnostic_class),
-                             exact_inventory=args.exact_inventory or pin_free)
+                             exact_inventory=args.exact_inventory or pin_free or args.shard_count > 1)
         output = instrument([*selector, '-e', 'syntheticAuthPin', pin], selected,
                             'credential', 600 if args.diagnostic_class else 1800)
         credential_rows = parse_results(output, expected_skips=frozenset() if pin_free else no_credential & selected)
@@ -194,6 +207,11 @@ def main():
                'api': api, 'abi': abi, **page_measurement,
                'apk_sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
                'inventory_sha256': hashlib.sha256(args.inventory.read_bytes()).hexdigest(),
+               'shard': {'index': args.shard_index, 'count': args.shard_count,
+                         'global_test_count': len(expected), 'selected_test_count': len(selected),
+                         'selected_tests_sha256': hashlib.sha256(
+                             ('\n'.join(sorted(selected)) + '\n').encode('utf-8')).hexdigest(),
+                         'selection_policy': 'SORTED_GLOBAL_NAMES_STRIDE_V1'},
                'credential_tests': credential_rows, 'initial_no_credential_tests': initial_no_credential_rows,
                'no_credential_tests': no_credential_rows,
                'synthetic_credential_cleanup': 'VERIFIED', 'physical_device': False,

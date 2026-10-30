@@ -539,6 +539,49 @@ class RoomAudioJournalTest {
         assertThrows(IllegalStateException::class.java) { platformOpen() }
     }
 
+    @Test
+    fun cachedSnapshotRejectsHistoricMetadataMutationFromAnotherConnection() {
+        val file = file()
+        val audio = identity()
+        RoomAudioJournal.open(
+                context,
+                file,
+                FrameworkSQLiteOpenHelperFactory(),
+                id(100),
+                id(101),
+                {},
+            )
+            .use { journal ->
+                assertTrue(journal.catalog.create(audio))
+                journal.catalog.tryAcquire(audio)!!.use {
+                    val intent = reserve(journal, audio)
+                    bootstrap(journal, id(80))
+                    val (unit, manifest) = publication(id(80))
+                    journal.microfileJournal.beginNonExclusive().let {
+                        it.insert(unit, manifest)
+                        it.markSuccessful()
+                        it.end()
+                    }
+                    val pending = journal.catalog.load(audio)!!
+                    val committed =
+                        StoredAudioAsset(
+                            audio,
+                            listOf(
+                                StoredAudioSegment(intent.identity, 2, manifest.publicationSha256)
+                            ),
+                        )
+                    assertTrue(journal.catalog.compareAndSet(pending, committed))
+                    val cached = journal.catalog.load(audio)!!
+                    assertTrue(journal.catalog.isVerifiedAppendSnapshot(cached))
+                    android.database.sqlite.SQLiteDatabase.openDatabase(file.path, null, 0).use {
+                        it.execSQL("UPDATE unit_claim SET frames=3 WHERE runId=?", arrayOf(id(80)))
+                    }
+                    assertFalse(journal.catalog.isVerifiedAppendSnapshot(cached))
+                    assertThrows(IllegalStateException::class.java) { journal.catalog.load(audio) }
+                }
+            }
+    }
+
     private class EndFailureFactory(
         private val delegate: SupportSQLiteOpenHelper.Factory,
         private val fail: AtomicBoolean,

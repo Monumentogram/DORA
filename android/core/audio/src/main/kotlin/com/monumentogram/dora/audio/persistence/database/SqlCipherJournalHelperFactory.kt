@@ -6,7 +6,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteStatement
 import com.monumentogram.dora.audio.PersistenceLatency
+import com.monumentogram.dora.audio.persistence.journal.AUDIO_INDEX_SCHEMA_VERSION
 import com.monumentogram.dora.audio.persistence.journal.JournalSchemaVerifier
+import com.monumentogram.dora.audio.persistence.journal.PAGED_TRANSCRIPT_SCHEMA_VERSION
 import com.monumentogram.dora.audio.persistence.journal.SEGMENTATION_SCHEMA_VERSION
 import com.monumentogram.dora.audio.persistence.journal.TRANSCRIPT_SCHEMA_VERSION
 import java.io.File
@@ -148,7 +150,11 @@ private class GuardedHelper(
                     (oldVersion == 1 && newVersion == 2) ||
                         (oldVersion in 1..2 && newVersion == SEGMENTATION_SCHEMA_VERSION) ||
                         (oldVersion in 1..SEGMENTATION_SCHEMA_VERSION &&
-                            newVersion == TRANSCRIPT_SCHEMA_VERSION)
+                            newVersion == TRANSCRIPT_SCHEMA_VERSION) ||
+                        (oldVersion in 1..TRANSCRIPT_SCHEMA_VERSION &&
+                            newVersion == PAGED_TRANSCRIPT_SCHEMA_VERSION) ||
+                        (oldVersion in 1..PAGED_TRANSCRIPT_SCHEMA_VERSION &&
+                            newVersion == AUDIO_INDEX_SCHEMA_VERSION)
                 ) {
                     "Unadmitted database migration"
                 }

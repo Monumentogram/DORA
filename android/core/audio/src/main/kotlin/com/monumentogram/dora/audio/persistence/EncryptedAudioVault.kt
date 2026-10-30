@@ -81,6 +81,126 @@ private constructor(
 
     override val transcripts: TranscriptPort =
         object : TranscriptPort {
+            override val paged: com.monumentogram.dora.audio.transcript.PagedTranscriptPort =
+                object : com.monumentogram.dora.audio.transcript.PagedTranscriptPort {
+                    override fun begin(
+                        spec: com.monumentogram.dora.audio.transcript.PagedTranscriptSpec
+                    ) =
+                        availablePagedTranscript(spec.source) {
+                            journal.pagedTranscripts.begin(spec)
+                        }
+
+                    override fun resume(identity: AudioIdentity, jobId: String) =
+                        protectedTranscript(identity) {
+                            journal.pagedTranscripts.resume(identity, jobId)
+                        }
+
+                    override fun progress(identity: AudioIdentity, jobId: String) =
+                        protectedTranscript(identity) {
+                            journal.pagedTranscripts.progress(identity, jobId)
+                        }
+
+                    override fun part(identity: AudioIdentity, jobId: String, index: Int) =
+                        protectedTranscript(identity) {
+                            journal.pagedTranscripts.part(identity, jobId, index)
+                        }
+
+                    override fun commitPart(
+                        source: OriginalAudioReference,
+                        jobId: String,
+                        attempt: Long,
+                        index: Int,
+                        text: String,
+                        provenance:
+                            com.monumentogram.dora.audio.transcript.TranscriptPartProvenance?,
+                    ) =
+                        availablePagedTranscript(source) {
+                            journal.pagedTranscripts.commitPart(
+                                source,
+                                jobId,
+                                attempt,
+                                index,
+                                text,
+                                provenance,
+                            )
+                        }
+
+                    override fun reusePart(
+                        source: OriginalAudioReference,
+                        jobId: String,
+                        attempt: Long,
+                        fromJobId: String,
+                        index: Int,
+                    ) =
+                        availablePagedTranscript(source) {
+                            journal.pagedTranscripts.reusePart(
+                                source,
+                                jobId,
+                                attempt,
+                                fromJobId,
+                                index,
+                            )
+                        }
+
+                    override fun stop(
+                        identity: AudioIdentity,
+                        jobId: String,
+                        attempt: Long,
+                        status: String,
+                    ) =
+                        protectedTranscript(identity) {
+                            journal.pagedTranscripts.stop(identity, jobId, attempt, status)
+                        }
+
+                    override fun finish(
+                        source: OriginalAudioReference,
+                        jobId: String,
+                        attempt: Long,
+                        completedAt: Long,
+                    ) =
+                        availablePagedTranscript(source) {
+                            journal.pagedTranscripts.finish(source, jobId, attempt, completedAt)
+                        }
+
+                    override fun page(
+                        identity: AudioIdentity,
+                        versionId: String,
+                        after: com.monumentogram.dora.audio.transcript.TranscriptPageCursor?,
+                        revision: Long?,
+                        allowPartial: Boolean,
+                    ) =
+                        protectedTranscript(identity) {
+                            journal.pagedTranscripts.page(
+                                identity,
+                                versionId,
+                                after,
+                                revision,
+                                allowPartial,
+                            )
+                        }
+
+                    override fun editPage(
+                        identity: AudioIdentity,
+                        versionId: String,
+                        cursor: com.monumentogram.dora.audio.transcript.TranscriptPageCursor,
+                        expectedRevision: Long,
+                        beforeDigest: String,
+                        text: String,
+                        createdAt: Long,
+                    ) =
+                        protectedTranscript(identity) {
+                            journal.pagedTranscripts.editPage(
+                                identity,
+                                versionId,
+                                cursor,
+                                expectedRevision,
+                                beforeDigest,
+                                text,
+                                createdAt,
+                            )
+                        }
+                }
+
             override fun beginCloud(
                 source: OriginalAudioReference,
                 jobId: String,
@@ -246,6 +366,22 @@ private constructor(
         }
     }
 
+    private fun <T> availablePagedTranscript(
+        source: OriginalAudioReference,
+        action: () -> T,
+    ): AudioResult<T> = operation {
+        var value: AudioResult<T> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+        when (
+            val status =
+                originals.withAuthenticatedAvailable(source) { value = AudioResult.Value(action()) }
+        ) {
+            is AudioResult.Failed -> status
+            is AudioResult.Value ->
+                if (status.value is OriginalAudioStatus.Available) value
+                else AudioResult.Failed(AudioFailure.UNAVAILABLE)
+        }
+    }
+
     override fun findRecording(
         recordingId: com.monumentogram.dora.model.alpha.RecordingId
     ): AudioResult<AudioIdentity> = operation {
@@ -262,21 +398,26 @@ private constructor(
                 ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
         lease.use {
             val snapshot =
-                journal.loadDeletion(identity)
+                journal.loadDeletion(identity, includeSteps = false)
                     ?: return@operation AudioResult.Failed(AudioFailure.INVALID_INPUT)
             val complete =
                 journal.sourceState(identity) == AudioSourceState.UserDeleted &&
-                    snapshot.state == "USER_DELETED" &&
-                    snapshot.steps.all { it.completed }
-            val keys =
-                snapshot.steps.filter { it.target.kind == AudioDeletionTargetKind.KEY_REFERENCE }
-            val files =
-                snapshot.steps.filter { it.target.kind != AudioDeletionTargetKind.KEY_REFERENCE }
+                    snapshot.state == "USER_DELETED"
+            var keysAbsent = true
+            var filesAbsent = true
+            var receiptsComplete = true
+            journal.forEachDeletionTarget(identity) {
+                receiptsComplete = receiptsComplete && it.completed
+                val absent = deletionStorage.verifiedAbsent(it.target)
+                if (it.target.kind == AudioDeletionTargetKind.KEY_REFERENCE)
+                    keysAbsent = keysAbsent && absent
+                else filesAbsent = filesAbsent && absent
+            }
             AudioResult.Value(
                 com.monumentogram.dora.audio.AudioDeletionInspection(
-                    complete,
-                    files.all { deletionStorage.verifiedAbsent(it.target) },
-                    keys.all { deletionStorage.verifiedAbsent(it.target) },
+                    complete && receiptsComplete,
+                    filesAbsent,
+                    keysAbsent,
                 )
             )
         }
@@ -329,7 +470,19 @@ private constructor(
             .RecordingSearch(
                 journal::recordingCandidatePage,
                 transcripts::load,
-                ::recordingRecovery,
+                ::recordingLibraryMetadata,
+                { identity, document, text, fallback, cancel ->
+                    AudioResult.Value(
+                        com.monumentogram.dora.audio.transcript.PagedTranscriptRead.preview(
+                            transcripts.paged,
+                            identity,
+                            document,
+                            text,
+                            fallback,
+                            cancel,
+                        )
+                    )
+                },
             )
             .page(query, nameFormat, after) {
                 requireActive()
@@ -343,6 +496,24 @@ private constructor(
                 RecordingRecovery(identity, null, AudioFailure.UNAVAILABLE, false, 0)
             )
         RecordingRecoveryReader(journal, bridge).read(identity)
+    }
+
+    private fun recordingLibraryMetadata(
+        identity: AudioIdentity
+    ): AudioResult<com.monumentogram.dora.audio.recording.RecordingLibraryMetadata> = operation {
+        journal.requireMutableSource(identity)
+        val lease =
+            journal.catalog.tryAcquire(identity)
+                ?: return@operation AudioResult.Failed(AudioFailure.BUSY)
+        lease.use {
+            try {
+                AudioResult.Value(journal.recordingLibraryMetadata(identity))
+            } catch (
+                _:
+                    com.monumentogram.dora.audio.persistence.journal.CorruptRecordingLibraryMetadata) {
+                AudioResult.Failed(AudioFailure.CORRUPT)
+            }
+        }
     }
 
     override val originals =
@@ -360,6 +531,7 @@ private constructor(
             bridge::extractFinalizedHeld,
             ::requireActive,
             deliverAuthorized,
+            bridge::extractRangeHeld,
         )
 
     /** Only the explicit confirmed-audio operation may call this internal mutation boundary. */
@@ -373,7 +545,8 @@ private constructor(
     override fun retryDeletion(identity: AudioIdentity): AudioResult<Unit> = delete(identity, false)
 
     @Suppress(
-        "CyclomaticComplexMethod"
+        "CyclomaticComplexMethod",
+        "LongMethod",
     ) // Keep durable inventory and ordered destructive steps together.
     private fun delete(
         identity: AudioIdentity,
@@ -394,42 +567,54 @@ private constructor(
                 return@operation AudioResult.Failed(AudioFailure.INVALID_INPUT)
             cancelTranscriptBeforeDeletion(identity)
             val snapshot =
-                if (allowNew) journal.beginDeletion(identity, emptyList(), eraseTranscript)
-                else checkNotNull(journal.loadDeletion(identity))
+                if (allowNew)
+                    journal.beginDeletion(
+                        identity,
+                        emptyList(),
+                        eraseTranscript,
+                        includeSteps = false,
+                    )
+                else checkNotNull(journal.loadDeletion(identity, includeSteps = false))
             if (snapshot.state == "USER_DELETED") return@operation AudioResult.Value(Unit)
             deletionStep("TOMBSTONE")
-            val ordered =
-                snapshot.steps.sortedBy { step ->
-                    when (step.target.kind) {
-                        AudioDeletionTargetKind.KEY_REFERENCE -> 0
-                        AudioDeletionTargetKind.ARTIFACT,
-                        AudioDeletionTargetKind.QUARANTINE_ARTIFACT -> 1
-                        AudioDeletionTargetKind.RUN_DIRECTORY -> 2
+            // Validate the complete frozen inventory before any effect, then retain only 256 steps.
+            journal.forEachDeletionTarget(identity) {}
+            for (kind in
+                listOf(
+                    AudioDeletionTargetKind.KEY_REFERENCE,
+                    AudioDeletionTargetKind.ARTIFACT,
+                    AudioDeletionTargetKind.QUARANTINE_ARTIFACT,
+                    AudioDeletionTargetKind.RUN_DIRECTORY,
+                )) {
+                while (true) {
+                    val page = journal.pendingDeletionPage(identity, kind)
+                    if (page.isEmpty()) break
+                    if (kind != AudioDeletionTargetKind.KEY_REFERENCE)
+                        journal.requireDeletionKeysCompleted(identity)
+                    for (step in page) {
+                        requireActive()
+                        deletionStorage.remove(identity, step.target)
+                        deletionStep(
+                            if (kind == AudioDeletionTargetKind.KEY_REFERENCE) "KEY_REMOVED"
+                            else "FILE_REMOVED"
+                        )
+                        requireActive()
+                        check(deletionStorage.verifiedAbsent(step.target))
                     }
-                }
-            for (step in ordered) {
-                if (step.completed) continue
-                requireActive()
-                if (step.target.kind != AudioDeletionTargetKind.KEY_REFERENCE) {
-                    val latest = checkNotNull(journal.loadDeletion(identity))
-                    check(
-                        latest.steps
-                            .filter { it.target.kind == AudioDeletionTargetKind.KEY_REFERENCE }
-                            .all { it.completed }
+                    journal.completeDeletionTargets(
+                        identity,
+                        page.map { it.target },
+                        deletionStorage::verifiedAbsent,
                     )
-                }
-                deletionStorage.remove(identity, step.target)
-                deletionStep(
-                    if (step.target.kind == AudioDeletionTargetKind.KEY_REFERENCE) "KEY_REMOVED"
-                    else "FILE_REMOVED"
-                )
-                journal.completeDeletionTarget(identity, step.target) {
-                    deletionStorage.verifiedAbsent(step.target)
                 }
             }
             deletionStep("COMPLETE")
             journal.completeDeletion(identity) {
-                ordered.all { deletionStorage.verifiedAbsent(it.target) }
+                var absent = true
+                journal.forEachDeletionTarget(identity) {
+                    absent = deletionStorage.verifiedAbsent(it.target) && absent
+                }
+                absent
             }
             AudioResult.Value(Unit)
         }

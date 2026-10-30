@@ -1351,3 +1351,39 @@ advertising network destinations; external copies remain outside DORA deletion/b
 Cloud without a validated connection is rejected before identity access or job creation. Local
 flows do not consult this check and retain no-account/no-GMS/offline independence. Later transport
 loss uses existing timeout/retry/consent contracts; no new persistent upload queue is claimed.
+
+## DEC-053 — Alpha v9 twenty-four-hour recording and resumable transcription (2026-10-30)
+
+Approved direction by the owner's Alpha v9 request and overriding 24-hour supplement;
+implementation and release qualification remain `IN_PROGRESS / QUALIFICATION_PENDING`.
+Prospectively support one logical recording up to 86,400 seconds while preserving the
+existing package, owner signer, pinned Whisper, manual edits, model file and history.
+This supersedes the earlier Alpha 300/1800-second duration restrictions for this successor
+only; historical evidence and unsupported-device limitations retain their original scope.
+See [ADR-0031](adr/ADR-0031-twenty-four-hour-recording.md) and the
+[Alpha v9 design and qualification scope](ALPHA_V9_24H_DESIGN.md).
+
+Local processing uses at most 288 five-minute windows; compatible Cloud processing uses
+at most 48 balanced children of no more than 30 minutes. Completed parts persist across
+interruption and manual resume, with explicitly incomplete read-only access before final
+publication. Final versions, user edits, selection, search and export retain their existing
+ownership and revision semantics. Recording, original-audio access, transcript paging and
+backend upload must use bounded memory; a source is authenticated once per attempt and
+selected ranges remain authenticated and subject to live deletion/authority checks.
+
+Cloud remains off for long runs unless a compatible backend confirms support and reserves
+the aggregate first-attempt cost before paid work. Production configuration, the existing
+$0.25 daily reserve, $5 hard daily ceiling and $20 monthly AWS Budget are unchanged; an
+unaffordable 24-hour request is rejected. Preview release identity is prepared as code 9 /
+`0.1.0-owner-preview.9`, with the same `com.monumentogram.dora.alpha.preview` package and
+owner certificate. This decision does not certify a physical 24-hour recording, native ASR
+coverage, live long Cloud service, a signed upgrade, Samsung/POCO installation or release.
+Stage12 security remains PARTIAL; Issue125 and privacy/control approvals remain separate.
+
+DEC-053 measured follow-up, 2026-10-30: implementation is complete and the full
+synthetic 24-hour storage trial passed. Measured microphone/native-ASR maxima
+remain 30 minutes in their test environments; physical and live-Cloud maxima
+remain pending. The owner-signed upgrade preserved audio/model/history, while
+the exact candidate's ARM-translated VAD smoke crashed. Publication is withheld
+pending signed-runtime qualification and final CI. This updates evidence, not
+the approved scope or device permissions; see [qualification](ALPHA_V9_QUALIFICATION.md).

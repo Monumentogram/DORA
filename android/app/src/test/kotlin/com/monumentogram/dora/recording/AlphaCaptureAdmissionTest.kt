@@ -10,7 +10,7 @@ class AlphaCaptureAdmissionTest {
     fun restartUsesDurablePrefixAndNewRecordingResetsOnlyAfterRetirement() {
         val queue = BoundedPcmQueue(320)
         val admission = CaptureAdmission(queue)
-        admission.retire(28_799_999)
+        admission.retire(1_382_399_999)
         var generation = admission.begin("recovered")
         assertTrue(admission.open(generation))
         assertEquals(
@@ -33,7 +33,7 @@ class AlphaCaptureAdmissionTest {
     fun limitDoesNotReleaseOutstandingDurabilityBudget() {
         val queue = BoundedPcmQueue(320)
         val admission = CaptureAdmission(queue)
-        admission.retire(28_544_000)
+        admission.retire(1_382_144_000)
         val generation = admission.begin()
         admission.open(generation)
         repeat(319) { admission.offer(generation, ByteArray(1600)) }
@@ -50,9 +50,10 @@ class AlphaCaptureAdmissionTest {
     }
 
     @Test
-    fun queueCannotOwnFramesBeyondThirtyMinutesAcrossGenerations() {
+    fun queueCannotOwnFramesBeyondTwentyFourHoursAcrossGenerations() {
         val queue = BoundedPcmQueue(320)
         val admission = CaptureAdmission(queue)
+        admission.retire(1_353_600_000)
         var generation = admission.begin("first")
         admission.open(generation)
         repeat(359) {

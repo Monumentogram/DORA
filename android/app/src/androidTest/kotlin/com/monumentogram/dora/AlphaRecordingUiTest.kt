@@ -9,6 +9,7 @@ import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.audio.recording.RecordingState
 import com.monumentogram.dora.recording.RecordingScreen
 import com.monumentogram.dora.recording.RecordingViewState
+import com.monumentogram.dora.ui.signal.uiCopy
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 import org.junit.Rule
 import org.junit.Test
@@ -18,29 +19,32 @@ class AlphaRecordingUiTest {
 
     @Test
     fun elapsedAndRemainingUseCapturedFrames() {
-        render(RecordingPhase.PAUSED, 28_784_000)
-        rule.onNodeWithText("00:04:59").assertIsDisplayed()
-        rule.onNodeWithText("Осталось в Alpha: 00:00:01").performScrollTo().assertIsDisplayed()
+        render(RecordingPhase.PAUSED, 1_382_384_000)
+        rule.onNodeWithText("23:59:59").assertIsDisplayed()
+        rule
+            .onNodeWithText(uiCopy("Осталось в Alpha") + ": 00:00:01")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
     fun capSavingNeverClaimsSaved() {
-        render(RecordingPhase.FINALIZING, 28_800_000)
-        rule.onNodeWithText("Проверяем сохранение").assertIsDisplayed()
-        rule.onNodeWithText(SAVED).assertDoesNotExist()
+        render(RecordingPhase.FINALIZING, 1_382_400_000)
+        rule.onNodeWithText(uiCopy("Проверяем сохранение")).assertIsDisplayed()
+        rule.onNodeWithText(uiCopy(SAVED)).assertDoesNotExist()
     }
 
     @Test
     fun onlyDurableSavedShowsCapCompletion() {
-        render(RecordingPhase.SAVED, 28_800_000)
-        rule.onNodeWithText(SAVED).assertIsDisplayed()
+        render(RecordingPhase.SAVED, 1_382_400_000)
+        rule.onNodeWithText(uiCopy(SAVED)).assertIsDisplayed()
     }
 
     @Test
     fun interruptedCapShowsActualFailure() {
-        render(RecordingPhase.INTERRUPTED, 28_800_000)
-        rule.onNodeWithText("Запись прервана").assertIsDisplayed()
-        rule.onNodeWithText(SAVED).assertDoesNotExist()
+        render(RecordingPhase.INTERRUPTED, 1_382_400_000)
+        rule.onNodeWithText(uiCopy("Запись прервана")).assertIsDisplayed()
+        rule.onNodeWithText(uiCopy(SAVED)).assertDoesNotExist()
     }
 
     private fun render(phase: RecordingPhase, frames: Long) {
@@ -63,6 +67,6 @@ class AlphaRecordingUiTest {
     }
 
     companion object {
-        private const val SAVED = "Достигнут лимит записи Alpha — 30 минут. Запись сохранена"
+        private const val SAVED = "Достигнут лимит записи Alpha — 24 часа. Запись сохранена"
     }
 }

@@ -163,6 +163,10 @@ android {
         .directories
         .add("src/androidTestOwnerPilot/kotlin")
 
+    // Public native-marker evidence helpers are test-only and shared with fast JVM regressions.
+    sourceSets.getByName("test").kotlin.directories.add("src/sharedTest/kotlin")
+    sourceSets.getByName("androidTest").kotlin.directories.add("src/sharedTest/kotlin")
+
     testBuildType =
         providers.gradleProperty("doraTestBuildType").orElse("debug").get().also {
             check(it in setOf("debug", "alphaTest", "ownerPilot", "ownerPreview")) {
@@ -203,8 +207,8 @@ androidComponents {
         val ownerPilot = variant.buildType == "ownerPilot"
         val ownerPreview = variant.buildType == "ownerPreview"
         if (ownerPreview) {
-            output.versionCode.set(8)
-            output.versionName.set("0.1.0-owner-preview.8")
+            output.versionCode.set(9)
+            output.versionName.set("0.1.0-owner-preview.9")
         }
         if (ownerPilot) {
             output.versionCode.set(4)

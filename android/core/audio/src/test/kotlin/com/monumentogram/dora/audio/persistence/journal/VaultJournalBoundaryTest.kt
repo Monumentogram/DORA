@@ -11,6 +11,41 @@ import org.junit.Test
 
 class VaultJournalBoundaryTest {
     @Test
+    fun maintenanceRunsOnlyAfterExactReadbackAndCannotRecursivelyCommit() {
+        val events = mutableListOf<String>()
+        var active = false
+        lateinit var transaction: JournalCommitBoundary
+        transaction =
+            JournalCommitBoundary(
+                begin = {
+                    active = true
+                    events += "begin"
+                },
+                markSuccessful = { events += "mark" },
+                end = {
+                    active = false
+                    events += "end"
+                },
+                isInTransaction = { active },
+                afterReadback = {
+                    assertFalse(active)
+                    events += "maintenance"
+                    assertThrows(IllegalStateException::class.java) {
+                        transaction.commit({ events += "nested write" }) { true }
+                    }
+                },
+            )
+        transaction.commit({ events += "write" }) {
+            events += "read"
+            true
+        }
+        assertEquals(listOf("begin", "write", "mark", "end", "read", "maintenance"), events)
+        events.clear()
+        assertThrows(IllegalStateException::class.java) { transaction.commit({}) { false } }
+        assertFalse(events.contains("maintenance"))
+    }
+
+    @Test
     fun nestedAcquisitionCannotAuthorizeAnotherOperation() {
         val lease = VaultJournalLease {}
         lease.tryAcquire("asset")!!.use {

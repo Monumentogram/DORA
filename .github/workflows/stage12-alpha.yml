@@ -2,7 +2,7 @@ name: Stage12 Samsung Alpha software
 
 on:
   push:
-    branches: ["codex/stage12-alpha-ready", "codex/stage12-long-recording-alpha"]
+    branches: ["codex/stage12-alpha-ready", "codex/stage12-long-recording-alpha", "codex/alpha-v9-recording-stabilization"]
   workflow_dispatch:
 
 permissions:
@@ -41,6 +41,9 @@ jobs:
       - name: Privacy, version, inventory and existing Cloud contracts
         run: |
           python3 -m unittest discover -s tools -p test_owner_arm82.py
+          python3 -m unittest discover -s tools -p test_owner_v9_inventory.py
+          python3 -m unittest discover -s tools -p test_long_transcript_query_plan.py
+          python3 -m unittest discover -s tools -p test_recording_library_projection_contract.py
           python3 -m unittest discover -s tools -p test_owner_preview_artifact.py
           python3 -m unittest discover -s tools -p test_version_label.py
           python3 -m unittest discover -s tools -p test_pin_free_local_access.py

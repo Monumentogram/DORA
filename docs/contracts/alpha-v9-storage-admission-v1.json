@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "authority": [
+    "ADR-0031",
+    "DEC-053"
+  ],
+  "scope": "ALPHA_V9_STORAGE_SOURCE_ADMISSION_ONLY",
+  "qualification": "NOT_DETERMINED_BY_SOURCE_CHECK",
+  "normalization": {
+    "kotlin": "UTF8_LF",
+    "schema_json": "CANONICAL_JSON_SORT_KEYS_COMPACT_UTF8"
+  },
+  "migration_versions": [
+    4,
+    5,
+    6
+  ],
+  "sources": {
+    "android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt": "2d686766c08838a845cc8de5be38cc3f3ae96196b523d918941449c5667bf10c",
+    "android/core/audio/schemas/com.monumentogram.dora.audio.persistence.journal.AudioJournalDatabase/4.json": "1cdcaf178022ffb17881fc9981b979c316dcf587d29ce4a455cb0d68061b2ef4",
+    "android/core/audio/schemas/com.monumentogram.dora.audio.persistence.journal.AudioJournalDatabase/5.json": "da09f3ff275a7e420f67aab6fc618f470063a0f6d1d316a47f5598709264d079",
+    "android/core/audio/schemas/com.monumentogram.dora.audio.persistence.journal.AudioJournalDatabase/6.json": "d9eb51fa6cae078ce7c48d1bc0a653592cb8a8afac3ca3bc28eb0983e1d93700",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/EncryptedAudioVault.kt": "03cd2db2749ace57dd8c1bd617d7f7ef23a4e5beee7389216362056a30f99505",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/database/SqlCipherJournalHelperFactory.kt": "4f2cb335df7308ac482c5f182d669ec7eebc03a62114e1817994c56c5a1059fb",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/AudioCatalogRevision.kt": "76f10f6ca29b05e178d61f5b639570eea9f39fabb069af7a3f01ad70e2b87be6",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/AudioDeletionIndexMigration.kt": "b7a5bcb5557411b0ab5518cc10aa6bd30bae3e88bbaef189f1ad4dd629d9afd2",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/AudioJournalSchema.kt": "52c4e222eaecb98c08968049e482ab3aa7873a6006487dd68adccc6e4f744c4b",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/JournalSchemaVerifier.kt": "1f2feba6020c4677ab3dd48d5298a35de6ce8419b66dcdf839e33dc637ce049b",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/JournalWalCheckpoint.kt": "1a4a24da8270fec1a5a800e3532df5f5b1c57997bcf011e298a1b8c856ce8f09",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/PagedTranscriptEntities.kt": "b8e95c3bcbcf7da942114a9398592b336da4470d199b3730313abf2f415f9c4e",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/PagedTranscriptStore.kt": "71c414db40fb0c62cf4b1c0035264337c3d0c3f1826c893622fe312121d9f3c7",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RecordingLibraryProjection.kt": "fb3cc076ae11ce1cbe4a07394326ea690346037d0e1c19d9e9097578fbc9c5a6",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/RoomAudioJournal.kt": "5e3bd795493e4c3926b89a4840ae2aa2255087e15fe3d02c94023244acb32549",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/VaultJournalLease.kt": "c6a364079250bedbac8e217d60e899de0ea523ed94b2948ff808fb8a3cfb73bc",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingLibraryMetadata.kt": "98fc3972f375a9b742555cc220b6575e8e914a31e41c16a6fbed96d83f75d62c",
+    "android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/recording/RecordingSearch.kt": "3e0db453bf78ad9aa79db706bea459e2684e4d0105a0bb59df0dd2f50b589ecb"
+  }
+}

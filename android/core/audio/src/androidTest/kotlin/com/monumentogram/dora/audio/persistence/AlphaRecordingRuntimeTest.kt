@@ -7,7 +7,6 @@ import com.monumentogram.dora.audio.persistence.EncryptedAudioVaultFaultFixture.
 import com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest.Companion.id
 import com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest.Companion.recovery
 import com.monumentogram.dora.audio.persistence.LogicalRecoveryRuntimeTest.Companion.reference
-import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.audio.recording.RecordingSession
 import com.monumentogram.dora.model.alpha.AudioAssetId
@@ -21,7 +20,7 @@ import org.junit.Test
 class AlphaRecordingRuntimeTest {
     @Test
     @Suppress("LongMethod") // One encrypted capture/reopen/source continuity scenario.
-    // Historical inventory selector; ADR-0030 now exercises 1799 -> 1800 seconds.
+    // Historical selector: v9 retains 1799 -> 1800-second recovery below the new 24h cap.
     fun pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording() {
         val f = EncryptedAudioVaultFaultFixture()
         f.open().use { vault ->
@@ -41,10 +40,9 @@ class AlphaRecordingRuntimeTest {
             val session = RecordingSession(f.audio, vault.writer)
             session.restore(restored.recoveredFrames, restored.nextOrdinal)
             assertTrue(session.resume())
-            session.accept(ByteArray(32002) { 7 })
-            session.accept(ByteArray(1600) { 99 })
-            assertEquals(AlphaRecordingLimit.MAX_ALPHA_FRAMES, session.state.frames)
-            assertFalse(session.canCapture)
+            session.accept(ByteArray(32000) { 7 })
+            assertEquals(28_800_000L, session.state.frames)
+            assertTrue(session.canCapture)
             session.requestStop()
             session.confirmStop()
             assertEquals(RecordingPhase.SAVED, session.state.phase)
@@ -112,26 +110,28 @@ class AlphaRecordingRuntimeTest {
             )
             val session = RecordingSession(f.audio, vault.writer)
             session.restore(restored.recoveredFrames, restored.nextOrdinal)
-            assertFalse(session.resume())
+            assertTrue(session.resume())
             session.accept(ByteArray(1600))
-            assertEquals(28_800_000L, session.state.frames)
-            assertEquals(restored, recovery(vault, f.audio))
+            assertEquals(28_800_800L, session.state.frames)
+            session.pause()
+            assertEquals(28_800_800L, recovery(vault, f.audio).recoveredFrames)
         }
     }
 
     private fun exact(vault: EncryptedAudioVault, ref: OriginalAudioReference) {
         var next = 0L
-        val borrowed = mutableListOf<ByteArray>()
+        var borrowed: ByteArray? = null
         assertEquals(
             AudioResult.Value(OriginalAudioStatus.Available(ref)),
             vault.originals.extract(ref) { first, pcm ->
                 assertEquals(next, first)
                 assertTrue(pcm.all { it == 7.toByte() })
                 next += pcm.size / 2
-                borrowed.add(pcm)
+                borrowed?.let { previous -> assertTrue(previous.all { it == 0.toByte() }) }
+                borrowed = pcm
             },
         )
         assertEquals(28_800_000L, next)
-        assertTrue(borrowed.all { bytes -> bytes.all { it == 0.toByte() } })
+        assertTrue(borrowed!!.all { it == 0.toByte() })
     }
 }

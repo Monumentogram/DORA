@@ -181,6 +181,91 @@ class OriginalAudioLifecycleTest {
         assertNull(f.loss)
     }
 
+    @Test
+    fun `authenticated handle scans once then fences selected ranges and closure`() {
+        val f = Fixture()
+        val ref = f.reference()
+        val handle = (f.lifecycle.openAuthenticated(ref) as AudioResult.Value).value
+        val scans = f.scans
+        assertEquals(AudioResult.Value(OriginalAudioStatus.Available(ref)), handle.checkAvailable())
+        repeat(3) {
+            var delivered = 0L
+            assertEquals(
+                AudioResult.Value(OriginalAudioStatus.Available(ref)),
+                handle.extractRange(1, 1) { first, bytes ->
+                    assertEquals(1L, first)
+                    delivered += bytes.size / 2
+                },
+            )
+            assertEquals(1L, delivered)
+        }
+        assertEquals(scans, f.scans)
+        var accepted = 0
+        assertEquals(
+            AudioResult.Value(OriginalAudioStatus.Available(ref)),
+            f.lifecycle.withAuthenticatedAvailable(ref) { accepted++ },
+        )
+        assertEquals(scans, f.scans)
+        assertEquals(1, accepted)
+        f.source = AudioSourceState.UserDeleted
+        assertEquals(AudioResult.Value(OriginalAudioStatus.SourceDeleted), handle.checkAvailable())
+        assertEquals(
+            AudioResult.Value(OriginalAudioStatus.SourceDeleted),
+            f.lifecycle.withAuthenticatedAvailable(ref) { fail("Deleted publication") },
+        )
+        assertEquals(
+            AudioResult.Value(OriginalAudioStatus.SourceDeleted),
+            handle.extractRange(0, 1) { _, _ -> fail("Deleted delivery") },
+        )
+        f.source = null
+        f.locked = true
+        assertEquals(
+            AudioResult.Failed(AudioFailure.LOCKED),
+            handle.extractRange(0, 1) { _, _ -> fail("Revoked delivery") },
+        )
+        f.locked = false
+        handle.close()
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNAVAILABLE),
+            handle.extractRange(0, 1) { _, _ -> fail("Closed delivery") },
+        )
+    }
+
+    @Test
+    fun `playback can acquire authenticated source with one scan by identity`() {
+        val f = Fixture()
+        val handle = (f.lifecycle.openAuthenticated(f.id) as AudioResult.Value).value
+        assertEquals(1, f.scans)
+        assertEquals(2L, handle.reference.frames)
+        assertTrue(
+            handle.extractRange(1, 1) { first, bytes ->
+                assertEquals(1L, first)
+                assertEquals(2, bytes.size)
+            } is AudioResult.Value
+        )
+        assertEquals(1, f.scans)
+        handle.close()
+    }
+
+    @Test
+    fun `authenticated handle detects replacement and full open still rejectss corruption`() {
+        val f = Fixture()
+        val ref = f.reference()
+        f.failure = AudioFailure.INCOMPLETE
+        assertEquals(
+            AudioResult.Failed(AudioFailure.INCOMPLETE),
+            f.lifecycle.openAuthenticated(ref),
+        )
+        f.failure = null
+        val handle = (f.lifecycle.openAuthenticated(ref) as AudioResult.Value).value
+        f.asset = f.asset.copy(segments = emptyList(), finalization = emptyList())
+        assertEquals(
+            AudioResult.Value(OriginalAudioStatus.StaleReference),
+            handle.extractRange(0, 1) { _, _ -> fail("Replacement delivery") },
+        )
+        handle.close()
+    }
+
     private class Fixture {
         val owner = "00000000-0000-0000-0000-000000000001"
         val vault = "00000000-0000-0000-0000-000000000002"
@@ -193,6 +278,7 @@ class OriginalAudioLifecycleTest {
         var loss: AudioFailure? = null
         var failure: AudioFailure? = null
         var locked = false
+        var scans = 0
         var readHook: () -> Unit = {}
         private val held = AtomicReference<Thread?>()
         val catalog =
@@ -237,6 +323,7 @@ class OriginalAudioLifecycleTest {
                     if (reason != null) loss = reason
                 },
                 { snapshot, consume ->
+                    scans++
                     readHook()
                     failure?.let { AudioResult.Failed(it) }
                         ?: run {
@@ -256,6 +343,20 @@ class OriginalAudioLifecycleTest {
                     gate()
                     action()
                     gate()
+                },
+                { _, first, count, consume ->
+                    failure?.let { AudioResult.Failed(it) }
+                        ?: run {
+                            val bytes = ByteArray((count * 2).toInt())
+                            try {
+                                consume(first, bytes)
+                            } finally {
+                                bytes.fill(0)
+                            }
+                            AudioResult.Value(
+                                AudioReadSummary(id, count, AudioCompletion.FINALIZED)
+                            )
+                        }
                 },
             )
 

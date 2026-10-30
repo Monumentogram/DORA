@@ -189,6 +189,11 @@ internal fun TranscriptDialog(
                             },
                             exportEnabled = !activity.textExportStatus.busy,
                             export = activity::launchTextExport,
+                            actions = actions,
+                            identity = selected,
+                            exportPaged = { version, revision ->
+                                activity.launchPagedTextExport(selected, version, revision)
+                            },
                         )
                     }
                     androidx.compose.material3.HorizontalDivider()
@@ -220,6 +225,23 @@ internal fun TranscriptDialog(
                                 uiCopy("Распознать заново")
                             else uiCopy("Расшифровать")
                         )
+                    }
+                    actions.localProgress?.let { checkpoint ->
+                        Text(
+                            "Сохранено фрагментов: ${checkpoint.completedParts}/${checkpoint.totalParts}"
+                        )
+                        TextButton(
+                            enabled = !actions.busy && !dirty,
+                            onClick = {
+                                actions.recognize(
+                                    selected,
+                                    checkpoint.spec.language,
+                                    checkpoint.spec.jobId,
+                                )
+                            },
+                        ) {
+                            Text("Продолжить распознавание")
+                        }
                     }
                     if (actions.busy)
                         TextButton(onClick = actions::cancel) {
@@ -288,6 +310,9 @@ private fun TranscriptEditor(
     select: (String, Set<String>) -> Unit,
     exportEnabled: Boolean,
     export: (String) -> Unit,
+    actions: TranscriptActions,
+    identity: AudioIdentity,
+    exportPaged: (String, Long) -> Unit,
 ) {
     var preview by remember(document.source) { mutableStateOf<String?>(null) }
     val version =
@@ -295,6 +320,21 @@ private fun TranscriptEditor(
             ?: document.versions.find { it.id == document.activeId }
             ?: document.versions.lastOrNull()
     if (version == null) return
+    if (version.paged != null) {
+        PagedTranscriptEditor(
+            document,
+            version.id,
+            actions,
+            identity,
+            onDirty,
+            { preview = it },
+            select,
+            exportEnabled,
+        ) {
+            exportPaged(version.id, document.revision)
+        }
+        return
+    }
     val rendered = document.rendered(version.id)
     var draft by remember(version.id, document.revision) { mutableStateOf(rendered) }
     var choosing by remember(document.revision, version.id) { mutableStateOf(false) }
@@ -410,7 +450,11 @@ private fun RecordingHeading(identity: AudioIdentity, document: TranscriptDocume
     val active =
         document?.versions?.find { it.id == document.activeId } ?: document?.versions?.lastOrNull()
     val title =
-        active?.let { document?.rendered(it.id) }?.lineSequence()?.firstOrNull { it.isNotBlank() }
+        active
+            ?.takeIf { it.paged == null }
+            ?.let { document?.rendered(it.id) }
+            ?.lineSequence()
+            ?.firstOrNull { it.isNotBlank() }
             ?: stringResource(
                 R.string.signal_recording_name,
                 identity.recordingId.value.take(TITLE_ID_LENGTH),
@@ -432,6 +476,104 @@ private fun RecordingHeading(identity: AudioIdentity, document: TranscriptDocume
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+@Composable
+private fun PagedTranscriptEditor(
+    document: TranscriptDocument,
+    versionId: String,
+    actions: TranscriptActions,
+    identity: AudioIdentity,
+    onDirty: (Boolean) -> Unit,
+    preview: (String) -> Unit,
+    select: (String, Set<String>) -> Unit,
+    exportEnabled: Boolean,
+    export: () -> Unit,
+) {
+    LaunchedEffect(versionId) { actions.loadPage(identity, versionId, null) }
+    val loadedPage = actions.textPage?.takeIf { actions.pageVersion == versionId }
+    var draft by
+        remember(versionId, loadedPage?.cursor, loadedPage?.digest) {
+            mutableStateOf(loadedPage?.text.orEmpty())
+        }
+    val dirty = loadedPage != null && draft != loadedPage.text
+    LaunchedEffect(dirty) { onDirty(dirty) }
+    document.versions.forEachIndexed { index, item ->
+        TextButton(enabled = !actions.busy && !dirty, onClick = { preview(item.id) }) {
+            Text(
+                "Версия ${index + 1} · ${if (item.engine == "CLOUD") "Облако" else "На устройстве"}" +
+                    if (item.id == document.activeId) " · активная" else ""
+            )
+        }
+    }
+    val page = loadedPage ?: return
+    var choosing by remember(versionId) { mutableStateOf(false) }
+    Text(
+        "Фрагмент ${page.cursor.partIndex + 1} · страница ${page.cursor.pageIndex + 1}",
+        style = MaterialTheme.typography.titleMedium,
+    )
+    OutlinedTextField(
+        value = draft,
+        onValueChange = { if (it.toByteArray(Charsets.UTF_8).size <= 65_536) draft = it },
+        enabled = !actions.busy,
+        modifier = Modifier.fillMaxWidth().widthIn(max = 720.dp),
+        minLines = 8,
+        label = { Text(stringResource(R.string.signal_copy_32)) },
+    )
+    Button(
+        enabled = !actions.busy && dirty,
+        onClick = { actions.editPage(identity, versionId, document.revision, page, draft) },
+    ) {
+        Text(stringResource(R.string.signal_copy_33))
+    }
+    Row {
+        TextButton(
+            enabled =
+                !actions.busy && !dirty && (page.cursor.partIndex > 0 || page.cursor.pageIndex > 0),
+            onClick = { actions.previousPage(identity, versionId) },
+        ) {
+            Text("Назад")
+        }
+        TextButton(
+            enabled = !actions.busy && !dirty,
+            onClick = { actions.loadPage(identity, versionId, page.cursor) },
+        ) {
+            Text("Далее")
+        }
+    }
+    TextButton(enabled = !actions.busy && !dirty && exportEnabled, onClick = export) {
+        Text(stringResource(R.string.stage11_export_text))
+    }
+    if (versionId != document.activeId)
+        TextButton(enabled = !actions.busy && !dirty, onClick = { choosing = true }) {
+            Text(stringResource(R.string.signal_copy_35))
+        }
+    if (choosing)
+        AlertDialog(
+            onDismissRequest = { choosing = false },
+            title = { Text("Выбрать эту версию?") },
+            text = {
+                Text(
+                    "Все сохранённые правки останутся в прежних версиях. " +
+                        "В списке и поиске будет использоваться выбранная версия."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        select(versionId, document.conflicts(versionId).map { it.id }.toSet())
+                        choosing = false
+                    }
+                ) {
+                    Text("Выбрать")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { choosing = false }) {
+                    Text(stringResource(R.string.signal_copy_2))
+                }
+            },
+        )
 }
 
 private const val TITLE_ID_LENGTH = 8

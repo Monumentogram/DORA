@@ -2,7 +2,7 @@ name: Owner Preview parallel Alpha software
 
 on:
   push:
-    branches: ["codex/parallel-alpha-preview"]
+    branches: ["codex/parallel-alpha-preview", "codex/alpha-v9-recording-stabilization"]
   workflow_dispatch:
 
 permissions:
@@ -39,6 +39,7 @@ jobs:
           :poc:recovery:testDebugUnitTest :ml:vad-api:testDebugUnitTest :ml:vad-sherpa:testDebugUnitTest
           :app:testOwnerPreviewUnitTest :app:lintOwnerPreview
           :app:assembleOwnerPreview :app:assembleOwnerPreviewAndroidTest
+          :core:audio:assembleDebugAndroidTest
       - name: Host denial controls and native packaging
         run: |
           python3 -m unittest discover -s tools -p 'test_owner*.py'
@@ -46,6 +47,7 @@ jobs:
           python3 -m unittest discover -s tools -p 'test_pin_free_local_access.py'
           python3 -m unittest discover -s tools -p 'test_version_label.py'
           python3 -m unittest discover -s tools -p 'test_encrypted_persistence_device.py'
+          python3 -m unittest discover -s tools -p 'test_recording_library_projection_contract.py'
           python3 tools/validate_pin_free_local_access.py
           python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/ownerPreview/app-ownerPreview.apk --allowlist android/product-native-libs-allowlist.txt
       - name: Audit actual pilot Manifest, DEX, release denials and disposable signing
@@ -64,6 +66,13 @@ jobs:
                           '--certificate-sha256', pins[0].lower(), '--receipt',
                           str(pathlib.Path(os.environ['RUNNER_TEMP']) / 'owner-preview-artifact.json')], check=True)
           PY
+      - name: Publish shared synthetic persistence test APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: owner-preview-persistence-test-apk
+          path: android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
+          retention-days: 7
+          if-no-files-found: error
       - name: Publish synthetic software results only
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -152,7 +161,7 @@ jobs:
           --apk android/app/build/outputs/apk/ownerPreview/app-ownerPreview.apk
           --test-apk android/app/build/outputs/apk/androidTest/ownerPreview/app-ownerPreview-androidTest.apk
           --receipt "${RUNNER_TEMP}/owner-preview/pilot.json"
-      - name: Publish pilot UI receipt before independent persistence tests
+      - name: Publish pilot UI receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
@@ -160,19 +169,6 @@ jobs:
           path: ${{ runner.temp }}/owner-preview/*.json
           retention-days: 7
           if-no-files-found: warn
-      - name: Compile persistence regression APK
-        id: persistence_compile
-        if: ${{ !cancelled() && steps.emulator.outcome == 'success' }}
-        working-directory: android
-        run: ./gradlew --no-daemon --dependency-verification strict :core:audio:assembleDebugAndroidTest
-      - name: PIN_FREE_LOCAL_ACCESS complete encrypted persistence inventory with and without system PIN
-        if: ${{ !cancelled() && steps.persistence_compile.outcome == 'success' }}
-        run: >-
-          python3 tools/run_encrypted_persistence_device.py
-          --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
-          --apk android/core/audio/build/outputs/apk/androidTest/debug/audio-debug-androidTest.apk
-          --inventory docs/contracts/owner-arm82-persistence-tests-v1.json --exact-inventory
-          --receipt "${RUNNER_TEMP}/owner-preview/persistence.json"
       - name: Publish content-free synthetic receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -181,7 +177,67 @@ jobs:
           path: |
             ${{ runner.temp }}/owner-preview/*.json
             ${{ runner.temp }}/owner-preview-artifact.json
-            ${{ runner.temp }}/owner-preview/persistence-diagnostics/*.json*
+          retention-days: 7
+          if-no-files-found: error
+
+  owner-preview-persistence:
+    name: owner-preview-persistence-api${{ matrix.api }}-shard${{ matrix.shard }}
+    needs: owner-preview-software
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [28, 36]
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: owner-preview-persistence-test-apk
+          path: persistence-apk
+      - name: Install disposable emulator SDK inputs
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools" "emulator"
+          "system-images;android-${{ matrix.api }};google_apis;x86_64"
+      - name: Create disposable persistence emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/owner-preview-persistence-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name dora_owner_persistence --package "system-images;android-${{ matrix.api }};google_apis;x86_64" --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_owner_persistence -port 5554 \
+            -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics \
+            -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            kill -0 "${emulator_pid}" 2>/dev/null || exit 1
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot}" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Exact 47-method persistence shard in both PIN states with original controls
+        run: >-
+          python3 tools/run_encrypted_persistence_device.py
+          --serial emulator-5554 --expected-api ${{ matrix.api }} --expected-page-size 4096
+          --apk persistence-apk/audio-debug-androidTest.apk
+          --inventory docs/contracts/alpha-v9-persistence-tests-v1.json --exact-inventory
+          --shard-index ${{ matrix.shard }} --shard-count 4
+          --receipt "${RUNNER_TEMP}/owner-preview-persistence/persistence.json"
+      - name: Publish content-free shard receipt and diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: owner-preview-persistence-api${{ matrix.api }}-shard${{ matrix.shard }}
+          path: |
+            ${{ runner.temp }}/owner-preview-persistence/*.json
+            ${{ runner.temp }}/owner-preview-persistence/persistence-diagnostics/*.json*
           retention-days: 7
           if-no-files-found: error
 

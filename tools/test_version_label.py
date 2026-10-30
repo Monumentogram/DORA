@@ -1,11 +1,24 @@
 """Packaged version labels must match independently pinned APK identities."""
 import unittest
+from pathlib import Path
+import re
 
-from version_label import check_label
+from version_label import IDENTITIES, check_label
 from run_version_label_device import installed_path
 
 
 class VersionLabelTests(unittest.TestCase):
+    def test_shared_owner_instrumentation_expects_current_preview_and_historical_pilot_identity(self):
+        root = Path(__file__).resolve().parents[1]
+        source = (root / 'android/app/src/androidTestOwnerPilot/kotlin/com/monumentogram/dora/ownerpilot/OwnerPilotInstrumentedTest.kt').read_text(encoding='utf-8')
+        codes = re.search(r'assertEquals\(if \(preview\) (\d+)L else (\d+)L, info.longVersionCode\)', source)
+        names = re.search(r'if \(preview\) "([^"]+)" else "([^"]+)",\s*info.versionName', source)
+        self.assertIsNotNone(codes)
+        self.assertIsNotNone(names)
+        for position, variant in ((1, 'ownerPreview'), (2, 'ownerPilot')):
+            with self.subTest(variant=variant):
+                self.assertEqual(IDENTITIES[variant][1:], (codes[position], names[position]))
+
     def test_installed_apk_path_accepts_legacy_and_randomized_android_layouts(self):
         for path in ('/data/app/com.monumentogram.dora.debug-fixture==/base.apk',
                      '/data/app/~~fixture-token==/com.monumentogram.dora.debug-fixture==/base.apk'):
@@ -29,13 +42,19 @@ class VersionLabelTests(unittest.TestCase):
             ('release', 'com.monumentogram.dora', '5', '0.1.0-alpha.3', 'DORA Alpha'),
             ('debug', 'com.monumentogram.dora.debug', '5', '0.1.0-alpha.3-debug', 'DORA Alpha'),
             ('alphaTest', 'com.monumentogram.dora.alpha.test', '5', '0.1.0-alpha.3', 'DORA Alpha'),
-            ('ownerPreview', 'com.monumentogram.dora.alpha.preview', '8', '0.1.0-owner-preview.8', 'DORA Owner Preview'),
+            ('ownerPreview', 'com.monumentogram.dora.alpha.preview', '9', '0.1.0-owner-preview.9', 'DORA Owner Preview'),
             ('ownerPilot', 'com.monumentogram.dora.alpha.pilot', '4', '0.1.0-owner-alpha.4', 'DORA Owner Alpha'),
         ):
             label = f'{prefix} {name} ({code})'
             badging = f"package: name='{package}' versionCode='{code}' versionName='{name}'"
             with self.subTest(variant=variant):
                 self.assertEqual(label, check_label(badging, self.table(package, label), variant))
+
+    def test_preview_rejects_stale_v8_even_with_matching_compiled_label(self):
+        package = 'com.monumentogram.dora.alpha.preview'
+        badging = f"package: name='{package}' versionCode='8' versionName='0.1.0-owner-preview.8'"
+        with self.assertRaisesRegex(ValueError, 'VERSION_LABEL_APK_IDENTITY'):
+            check_label(badging, self.table(package, 'DORA Owner Preview 0.1.0-owner-preview.8 (8)'), 'ownerPreview')
 
     def test_missing_stale_wrong_name_code_and_qualified_overrides_fail(self):
         package = 'com.monumentogram.dora.alpha.pilot'

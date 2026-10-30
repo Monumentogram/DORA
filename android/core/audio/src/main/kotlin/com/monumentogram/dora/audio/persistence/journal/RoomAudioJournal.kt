@@ -9,17 +9,22 @@ import com.monumentogram.dora.audio.AudioDeletionCategory
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioIntent
+import com.monumentogram.dora.audio.AudioSegmentIndex
 import com.monumentogram.dora.audio.AudioSourceState
 import com.monumentogram.dora.audio.EncryptedAudioCatalog
 import com.monumentogram.dora.audio.OriginalAudioLifecycle
 import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.OriginalAudioReferenceCodec
+import com.monumentogram.dora.audio.PersistenceLatency
 import com.monumentogram.dora.audio.SegmentationKind
 import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.StoredAudioAsset
 import com.monumentogram.dora.audio.StoredAudioSegment
 import com.monumentogram.dora.audio.persistence.DiagnosticJournalFactory
 import com.monumentogram.dora.audio.persistence.DiagnosticSourcePolicy
+import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
+import com.monumentogram.dora.audio.recording.RecordingLibraryMetadata
+import com.monumentogram.dora.audio.recording.RecordingLibraryState
 import com.monumentogram.dora.poc.recovery.bootstrap.KeyConfirmationState
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryBootstrapRunRow
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryRunBootstrapJournal
@@ -72,6 +77,55 @@ private constructor(
     // One immutable observation for the next append reservation, owned by the current lease.
     // Never used by load, CAS, finalization, or a post-commit readback.
     private var reservationSnapshot: StoredAudioAsset? = null
+
+    private data class CatalogSnapshot(val revision: Long, val asset: StoredAudioAsset)
+
+    private var verifiedCatalog: CatalogSnapshot? = null
+    private val schemaVersionQuery =
+        database.openHelper.writableDatabase.compileStatement("PRAGMA schema_version")
+    private val expectedSchemaVersion = schemaVersionQuery.simpleQueryForLong()
+    private var maintainingWal = false
+
+    private fun maintainWalAfterReadback() {
+        if (File("$registryKey-wal").length() < JournalWalCheckpoint.TRIGGER_BYTES) return
+        lease.requireHeld()
+        check(!maintainingWal && !database.inTransaction())
+        maintainingWal = true
+        try {
+            PersistenceLatency.measure("wal_checkpoint") {
+                JournalWalCheckpoint.perform(database.openHelper.writableDatabase)
+            }
+        } finally {
+            maintainingWal = false
+        }
+    }
+
+    private fun catalogRevision(): Long {
+        if (schemaVersionQuery.simpleQueryForLong() != expectedSchemaVersion)
+            throw UncertainAudioSourceState()
+        return database.openHelper.writableDatabase
+            .query("SELECT revision FROM audio_catalog_revision WHERE singleton=1")
+            .use {
+                check(it.moveToFirst())
+                it.getLong(0).also { value -> check(value >= 0 && !it.moveToNext()) }
+            }
+    }
+
+    /** Readback may advance the proof only by the exact known transaction's row mutations. */
+    private fun retainCatalogDelta(
+        previous: Long,
+        mutations: Long,
+        next: StoredAudioAsset,
+    ): Boolean {
+        val revision = Math.addExact(previous, mutations)
+        if (catalogRevision() != revision) {
+            verifiedCatalog = null
+            return false
+        }
+        verifiedCatalog = CatalogSnapshot(revision, next)
+        return true
+    }
+
     private val commits =
         JournalCommitBoundary(
             {
@@ -81,11 +135,81 @@ private constructor(
             database::setTransactionSuccessful,
             database::endTransaction,
             database::inTransaction,
+            afterReadback = ::maintainWalAfterReadback,
         ) {
             reservationSnapshot = null
+            verifiedCatalog = null
             uncertain = true
         }
     val catalog: EncryptedAudioCatalog = Catalog()
+
+    val pagedTranscripts =
+        PagedTranscriptStore(
+            database.paged(),
+            ::transcript,
+            ::mutatePagedTranscript,
+            commits::commit,
+        )
+
+    /** A bounded header mutation and its page/progress rows share one durability boundary. */
+    private fun mutatePagedTranscript(
+        identity: AudioIdentity,
+        transform:
+            (
+                com.monumentogram.dora.audio.transcript.TranscriptDocument?
+            ) -> com.monumentogram.dora.audio.transcript.TranscriptDocument,
+        write: () -> Unit,
+        readback: () -> Boolean,
+    ): com.monumentogram.dora.audio.transcript.TranscriptDocument {
+        requireOperation(identity)
+        requireMutableSource(identity)
+        requireMutable()
+        val old = transcript(identity)
+        val next = transform(old)
+        check(next.source.identity == identity)
+        val source = checkNotNull(dao.originalReference(identity.assetId.value))
+        check(
+            source.digest == next.source.digest &&
+                source.version == next.source.version &&
+                source.frames == next.source.frames
+        )
+        check(next == old || next.revision == Math.addExact(old?.revision ?: 0, 1))
+        val payload = com.monumentogram.dora.audio.transcript.TranscriptCodec.encode(next)
+        try {
+            commits.commit({
+                if (old == null)
+                    dao.insert(TranscriptEntity(identity.assetId.value, next.revision, payload))
+                else
+                    check(
+                        dao.replaceTranscript(
+                            identity.assetId.value,
+                            old.revision,
+                            next.revision,
+                            payload,
+                        ) == 1
+                    )
+                write()
+            }) {
+                val stored = dao.transcript(identity.assetId.value)
+                stored != null &&
+                    stored.revision == next.revision &&
+                    stored.payload.contentEquals(payload) &&
+                    readback()
+            }
+        } finally {
+            payload.fill(0)
+        }
+        return next
+    }
+
+    private fun removePagedTranscript(asset: String) {
+        database.paged().run {
+            removeEdits(asset)
+            removePages(asset)
+            removeParts(asset)
+            removeJobs(asset)
+        }
+    }
 
     fun transcript(
         identity: AudioIdentity
@@ -351,6 +475,119 @@ private constructor(
         return row.identity().also { diagnostic.requireNewSource(it) }
     }
 
+    /**
+     * Journal-only display projection. No PCM reconciliation, source repair or resume authority.
+     */
+    @Suppress("LongMethod", "CyclomaticComplexMethod", "ComplexCondition")
+    fun recordingLibraryMetadata(identity: AudioIdentity): RecordingLibraryMetadata {
+        requireOperation(identity)
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        val revision = catalogRevision()
+        fun valid(condition: Boolean) {
+            if (!condition) throw CorruptRecordingLibraryMetadata()
+        }
+        fun observed(metadata: RecordingLibraryMetadata): RecordingLibraryMetadata {
+            if (catalogRevision() != revision) throw UncertainAudioSourceState()
+            return metadata
+        }
+        val asset = exactAsset(identity) ?: throw CorruptRecordingLibraryMetadata()
+        dao.tombstone(asset.assetId)?.let {
+            valid(it.state in setOf("DELETING", "USER_DELETED"))
+            return observed(
+                RecordingLibraryMetadata(
+                    identity,
+                    0,
+                    if (it.state == "DELETING") RecordingLibraryState.DELETION_PENDING
+                    else RecordingLibraryState.DELETED,
+                )
+            )
+        }
+        valid(dao.invalidLibraryClaim(asset.assetId, AlphaRecordingLimit.MAX_ALPHA_FRAMES) == null)
+        val stats = dao.libraryClaimStats(asset.assetId)
+        val tail = dao.lastLibraryClaim(asset.assetId)
+        valid(stats.unitCount in 0..AlphaRecordingLimit.MAX_ALPHA_FRAMES)
+        valid(
+            stats.committedCount in 0..stats.unitCount &&
+                stats.unitCount - stats.committedCount <= 1
+        )
+        valid(
+            stats.committedFrames in 0..AlphaRecordingLimit.MAX_ALPHA_FRAMES &&
+                stats.reservedFrames in stats.committedFrames..AlphaRecordingLimit.MAX_ALPHA_FRAMES
+        )
+        valid(
+            if (stats.unitCount == 0L)
+                tail == null && stats.firstOrdinal == null && stats.lastOrdinal == null
+            else
+                tail != null &&
+                    stats.firstOrdinal == 0L &&
+                    stats.lastOrdinal == stats.unitCount - 1 &&
+                    tail.ordinal.toLong() == stats.lastOrdinal &&
+                    Math.addExact(tail.firstFrame, tail.frames) == stats.reservedFrames
+        )
+        tail?.let {
+            canonical(it.runId)
+            canonical(it.physicalId)
+        }
+        val receipt = dao.intent(asset.assetId)
+        val pending = receipt?.takeUnless { it.applied }
+        val finals = dao.libraryFinalizationStats(asset.assetId)
+        valid(finals.invalid == 0L)
+        if (asset.finalized || pending?.kind == "FINALIZE") {
+            valid(
+                stats.unitCount > 0 &&
+                    stats.unitCount == stats.committedCount &&
+                    finals.unitCount == stats.unitCount &&
+                    finals.frames == stats.committedFrames
+            )
+        } else valid(finals.unitCount == 0L)
+        when (receipt?.kind) {
+            null -> valid(stats.unitCount == stats.committedCount)
+            "APPEND" -> {
+                valid(!asset.finalized && tail?.runId == receipt.appendRunId)
+                valid(
+                    if (receipt.applied)
+                        stats.unitCount == stats.committedCount && tail?.committed == true
+                    else stats.unitCount == stats.committedCount + 1 && tail?.committed == false
+                )
+            }
+            "FINALIZE" ->
+                valid(
+                    receipt.appendRunId == null &&
+                        stats.unitCount == stats.committedCount &&
+                        asset.finalized == receipt.applied
+                )
+            else -> valid(false)
+        }
+        var loss: AudioFailure? = null
+        dao.originalReference(asset.assetId)?.let {
+            valid(
+                asset.finalized &&
+                    it.version == 1 &&
+                    it.frames == stats.committedFrames &&
+                    it.digest.matches(Regex("[0-9a-f]{64}"))
+            )
+            loss =
+                it.unavailableReason?.let { reason ->
+                    val failure = AudioFailure.entries.firstOrNull { entry -> entry.name == reason }
+                    valid(failure in OriginalAudioLifecycle.permanentFailures)
+                    failure
+                }
+        }
+        val collision = dao.recordingAssets(identity.recordingId.value) != listOf(asset.assetId)
+        return observed(
+            RecordingLibraryMetadata(
+                identity,
+                stats.committedFrames,
+                when {
+                    loss != null || collision -> RecordingLibraryState.UNAVAILABLE
+                    asset.finalized -> RecordingLibraryState.FINALIZED
+                    else -> RecordingLibraryState.NEEDS_RECOVERY
+                },
+                loss ?: if (collision) AudioFailure.COLLISION else null,
+            )
+        )
+    }
+
     val bootstrapJournal: RecoveryRunBootstrapJournal = BootstrapJournal()
     val microfileJournal: RecoveryMicrofileJournal = MicrofileJournal()
     val quarantineJournal: RecoveryQuarantineJournal = QuarantineJournal()
@@ -484,6 +721,15 @@ private constructor(
         )
 
     private inner class Catalog : EncryptedAudioCatalog {
+        override fun isVerifiedAppendSnapshot(snapshot: StoredAudioAsset): Boolean {
+            requireOperation(snapshot.identity)
+            val cached = verifiedCatalog ?: return false
+            return !uncertain &&
+                !database.inTransaction() &&
+                cached.asset === snapshot &&
+                cached.revision == catalogRevision()
+        }
+
         override fun tryAcquire(identity: AudioIdentity): AutoCloseable? {
             checkOpen()
             canonical(identity.sessionId)
@@ -540,6 +786,17 @@ private constructor(
             lease.requireOwner()
             reservationSnapshot = null
             requireOperation(identity)
+            if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+            val revision = catalogRevision()
+            verifiedCatalog
+                ?.takeIf { it.revision == revision && it.asset.identity == identity }
+                ?.let {
+                    val snapshot = it.asset
+                    if (snapshot.pending == null && snapshot.finalization == null)
+                        reservationSnapshot = snapshot
+                    return snapshot
+                }
+            verifiedCatalog = null
             val asset = exactAsset(identity) ?: return null
             if (dao.tombstone(asset.assetId) != null) return null
             val claims = dao.claims(asset.assetId)
@@ -614,19 +871,22 @@ private constructor(
                 verifyFinalSources(asset.assetId, sources)
             } else if (pending !is AudioIntent.Finalize)
                 check(dao.finalSources(asset.assetId).isEmpty())
+            val indexed = AudioSegmentIndex.from(sources)
+            check(catalogRevision() == revision) { "Catalog changed during snapshot" }
             return StoredAudioAsset(
                     identity,
-                    sources,
+                    indexed,
                     pending,
-                    if (asset.finalized) sources.toList() else null,
+                    if (asset.finalized) indexed else null,
                 )
                 .also { snapshot ->
+                    verifiedCatalog = CatalogSnapshot(revision, snapshot)
                     val hasNoPendingOrFinalization =
                         snapshot.pending == null && snapshot.finalization == null
                     if (hasNoPendingOrFinalization && !uncertain && !database.inTransaction()) {
                         // Elements/identities/digests are immutable; only the exposed list needs
                         // copying. Ineligible pending/finalization lists are never retained.
-                        reservationSnapshot = snapshot.copy(segments = snapshot.segments.toList())
+                        reservationSnapshot = snapshot
                     }
                 }
         }
@@ -644,6 +904,8 @@ private constructor(
             }
         }
 
+        // Keep precondition, mutation and exact durable readback together for lease review.
+        @Suppress("LongMethod", "CyclomaticComplexMethod")
         override fun reserve(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
             requireOperation(expected.identity)
             requireMutable()
@@ -680,13 +942,25 @@ private constructor(
                             unit.physicalFirstFrame,
                             unit.sourceFrameOffset,
                         )
+                    val revision = catalogRevision()
+                    val oldReceipt = dao.intent(assetId)
                     commits.commit({
+                        check(catalogRevision() == revision)
                         if (existing == null) dao.insert(physical)
                         dao.insert(claim)
                         dao.removeIntent(assetId)
                         dao.insert(IntentEntity(assetId, "APPEND", claim.runId))
                     }) {
-                        load(expected.identity) == expected.copy(pending = intent)
+                        dao.claim(claim.runId) == claim &&
+                            dao.physical(assetId, physical.physicalId) == physical &&
+                            dao.intent(assetId) == IntentEntity(assetId, "APPEND", claim.runId) &&
+                            retainCatalogDelta(
+                                revision,
+                                2L +
+                                    (if (existing == null) 1 else 0) +
+                                    (if (oldReceipt == null) 0 else 1),
+                                expected.copy(pending = intent),
+                            )
                     }
                 }
                 is AudioIntent.Finalize -> {
@@ -704,7 +978,8 @@ private constructor(
             return true
         }
 
-        @Suppress("ComplexCondition")
+        // Append/finalize retain their explicit transaction and post-commit failure gates.
+        @Suppress("ComplexCondition", "LongMethod", "CyclomaticComplexMethod")
         override fun compareAndSet(expected: StoredAudioAsset, next: StoredAudioAsset): Boolean {
             requireOperation(expected.identity)
             requireMutable()
@@ -724,18 +999,27 @@ private constructor(
                     val source =
                         StoredAudioSegment(pending.identity, pending.frames, manifest.digest.sha())
                     if (
-                        next != expected.copy(segments = expected.segments + source, pending = null)
+                        next !=
+                            expected.copy(
+                                segments = AudioSegmentIndex.append(expected.segments, source),
+                                pending = null,
+                            )
                     )
                         return false
+                    val revision = catalogRevision()
+                    val receipt = checkNotNull(dao.intent(claim.assetId))
+                    val committed = claim.copy(committed = true)
+                    val applied = receipt.copy(applied = true)
                     commits.commit({
-                        check(dao.update(claim.copy(committed = true)) == 1)
-                        check(
-                            dao.update(
-                                checkNotNull(dao.intent(claim.assetId)).copy(applied = true)
-                            ) == 1
-                        )
+                        check(catalogRevision() == revision)
+                        check(dao.update(committed) == 1)
+                        check(dao.update(applied) == 1)
                     }) {
-                        load(expected.identity) == next
+                        dao.claim(claim.runId) == committed &&
+                            dao.intent(claim.assetId) == applied &&
+                            dao.microfile(claim.runId) == unit &&
+                            dao.manifest(claim.runId) == manifest &&
+                            retainCatalogDelta(revision, 2, next)
                     }
                 }
                 is AudioIntent.Finalize -> {
@@ -768,7 +1052,10 @@ private constructor(
             val unit = intent.identity
             canonical(unit.unitId)
             canonical(unit.physicalSegmentId)
-            val end = asset.segments.fold(0L) { start, row -> Math.addExact(start, row.frames) }
+            val end =
+                asset.segments.lastOrNull()?.let {
+                    Math.addExact(it.identity.firstFrame, it.frames)
+                } ?: 0L
             unit.audio == asset.identity &&
                 unit.ordinal == asset.segments.size &&
                 unit.firstFrame == end &&
@@ -887,6 +1174,9 @@ private constructor(
         private var ended = false
         private var successful = false
         private val readbacks = mutableListOf<() -> Boolean>()
+        private var catalogBefore: CatalogSnapshot? = null
+        private var catalogMutations = 0L
+        private var knownCatalogWrites = true
 
         init {
             checkOpen()
@@ -895,12 +1185,19 @@ private constructor(
             check(!database.inTransaction())
             reservationSnapshot = null
             database.beginTransaction()
+            catalogBefore = verifiedCatalog?.takeIf { it.revision == catalogRevision() }
         }
 
-        fun write(exactReadback: () -> Boolean, mutation: () -> Unit) {
+        fun write(
+            exactReadback: () -> Boolean,
+            catalogChanges: Long? = null,
+            mutation: () -> Unit,
+        ) {
             lease.requireHeld()
             check(!ended && !successful)
             mutation()
+            if (catalogChanges == null) knownCatalogWrites = false
+            else catalogMutations = Math.addExact(catalogMutations, catalogChanges)
             readbacks += exactReadback
         }
 
@@ -918,9 +1215,17 @@ private constructor(
             check(!ended)
             try {
                 database.endTransaction()
-                if (successful) check(readbacks.all { it() }) { "Journal readback rejected" }
+                if (successful) {
+                    check(readbacks.all { it() }) { "Journal readback rejected" }
+                    val before = catalogBefore
+                    if (before != null && knownCatalogWrites) {
+                        check(retainCatalogDelta(before.revision, catalogMutations, before.asset))
+                    } else verifiedCatalog = null
+                    maintainWalAfterReadback()
+                }
             } catch (error: Exception) {
                 reservationSnapshot = null
+                verifiedCatalog = null
                 uncertain = true
                 throw error
             } finally {
@@ -942,7 +1247,9 @@ private constructor(
                     )
                     validateBootstrap(value)
                     val row = value.entity()
-                    session.write({ dao.bootstrap(row.runId) == row }) { dao.insert(row) }
+                    session.write({ dao.bootstrap(row.runId) == row }, catalogChanges = 1) {
+                        dao.insert(row)
+                    }
                 }
 
                 override fun markSuccessful() = session.markSuccessful()
@@ -972,9 +1279,13 @@ private constructor(
                     validatePublication(claim, unit, publication)
                     val manifest = publication.entity()
                     val row = unit.entity(publication)
-                    session.write({
-                        dao.microfile(row.runId) == row && dao.manifest(manifest.runId) == manifest
-                    }) {
+                    session.write(
+                        {
+                            dao.microfile(row.runId) == row &&
+                                dao.manifest(manifest.runId) == manifest
+                        },
+                        catalogChanges = 2,
+                    ) {
                         dao.insert(manifest)
                         dao.insert(row)
                     }
@@ -1113,11 +1424,12 @@ private constructor(
         identity: AudioIdentity,
         discovered: List<AudioDeletionTarget>,
         eraseTranscript: Boolean = false,
+        includeSteps: Boolean = true,
     ): AudioDeletionSnapshot {
         requireOperation(identity)
         requireMutable()
         checkNotNull(exactAsset(identity))
-        loadDeletion(identity)?.let {
+        loadDeletion(identity, includeSteps)?.let {
             if (eraseTranscript) eraseRecordingText(identity)
             return it
         }
@@ -1146,113 +1458,141 @@ private constructor(
             check(target.relativeName.split('/').none { it.isEmpty() || it == "." || it == ".." })
             target.digest?.sha()
         }
-        val targets = buildList {
-            addAll(discovered)
-            claims.forEach { claim ->
-                val run = claim.runId
-                add(AudioDeletionTarget(run, AudioDeletionTargetKind.RUN_DIRECTORY, ""))
-                add(
-                    AudioDeletionTarget(
-                        run,
-                        AudioDeletionTargetKind.KEY_REFERENCE,
-                        "",
-                        CanonicalRecoveryAlias.sha256(RunId.fromCanonicalString(run)).hex(),
-                    )
-                )
-                dao.bootstrap(run)?.let {
+        val targets =
+            mutableListOf<AudioDeletionTarget>().apply {
+                addAll(discovered)
+                claims.forEach { claim ->
+                    val run = claim.runId
+                    add(AudioDeletionTarget(run, AudioDeletionTargetKind.RUN_DIRECTORY, ""))
                     add(
                         AudioDeletionTarget(
                             run,
-                            AudioDeletionTargetKind.ARTIFACT,
-                            it.relativeName,
-                            it.digest,
+                            AudioDeletionTargetKind.KEY_REFERENCE,
+                            "",
+                            CanonicalRecoveryAlias.sha256(RunId.fromCanonicalString(run)).hex(),
                         )
                     )
-                }
-                dao.microfile(run)?.let {
-                    add(
-                        AudioDeletionTarget(
-                            run,
-                            AudioDeletionTargetKind.ARTIFACT,
-                            it.relativeName,
-                            it.digest,
+                    dao.bootstrap(run)?.let {
+                        add(
+                            AudioDeletionTarget(
+                                run,
+                                AudioDeletionTargetKind.ARTIFACT,
+                                it.relativeName,
+                                it.digest,
+                            )
                         )
-                    )
-                    add(
-                        AudioDeletionTarget(
-                            run,
-                            AudioDeletionTargetKind.ARTIFACT,
-                            it.keyName,
-                            it.keyDigest,
+                    }
+                    dao.microfile(run)?.let {
+                        add(
+                            AudioDeletionTarget(
+                                run,
+                                AudioDeletionTargetKind.ARTIFACT,
+                                it.relativeName,
+                                it.digest,
+                            )
                         )
-                    )
-                }
-                dao.manifest(run)?.let {
-                    add(
-                        AudioDeletionTarget(
-                            run,
-                            AudioDeletionTargetKind.ARTIFACT,
-                            it.relativeName,
-                            it.digest,
+                        add(
+                            AudioDeletionTarget(
+                                run,
+                                AudioDeletionTargetKind.ARTIFACT,
+                                it.keyName,
+                                it.keyDigest,
+                            )
                         )
-                    )
-                    add(
-                        AudioDeletionTarget(
-                            run,
-                            AudioDeletionTargetKind.ARTIFACT,
-                            it.keyName,
-                            it.keyDigest,
+                    }
+                    dao.manifest(run)?.let {
+                        add(
+                            AudioDeletionTarget(
+                                run,
+                                AudioDeletionTargetKind.ARTIFACT,
+                                it.relativeName,
+                                it.digest,
+                            )
                         )
-                    )
-                }
-                dao.quarantines(run).forEach {
-                    add(
-                        AudioDeletionTarget(
-                            run,
-                            AudioDeletionTargetKind.QUARANTINE_ARTIFACT,
-                            it.destinationName,
-                            it.sourceDigest,
+                        add(
+                            AudioDeletionTarget(
+                                run,
+                                AudioDeletionTargetKind.ARTIFACT,
+                                it.keyName,
+                                it.keyDigest,
+                            )
                         )
-                    )
+                    }
+                    dao.quarantines(run).forEach {
+                        add(
+                            AudioDeletionTarget(
+                                run,
+                                AudioDeletionTargetKind.QUARANTINE_ARTIFACT,
+                                it.destinationName,
+                                it.sourceDigest,
+                            )
+                        )
+                    }
                 }
             }
+        val byName =
+            linkedMapOf<Triple<String, AudioDeletionTargetKind, String>, AudioDeletionTarget>()
+        targets.forEach {
+            val previous = byName.putIfAbsent(Triple(it.runId, it.kind, it.relativeName), it)
+            check(previous == null || previous.digest == it.digest)
         }
-        val byName = targets.groupBy { Triple(it.runId, it.kind, it.relativeName) }
-        check(byName.values.all { versions -> versions.map { it.digest }.distinct().size == 1 })
         val rows =
             byName.values
-                .map { it.first() }
                 .map {
                     DeletionTargetEntity(asset, it.runId, it.kind.name, it.relativeName, it.digest)
                 }
+                .sortedWith(compareBy({ it.runId }, { it.kind }, { it.relativeName }))
+        targets.clear()
+        byName.clear()
         val tombstone = TombstoneEntity(asset, UUID.randomUUID().toString(), "DELETING")
         commits.commit({
             dao.insert(tombstone)
-            rows.forEach { dao.insert(it) }
+            dao.insertDeletionTargets(rows)
             if (eraseTranscript) {
+                removePagedTranscript(asset)
                 dao.removeTranscript(asset)
                 dao.removeSegmentation(asset)
             }
         }) {
+            var ordinal = 0
+            var exact = true
+            deletionRows(identity) { row ->
+                if (ordinal >= rows.size || row != rows[ordinal]) exact = false
+                ordinal++
+            }
             dao.tombstone(asset) == tombstone &&
-                dao.deletionTargets(asset).toSet() == rows.toSet() &&
-                (!eraseTranscript || dao.transcript(asset) == null)
+                exact &&
+                ordinal == rows.size &&
+                (!eraseTranscript ||
+                    dao.transcript(asset) == null && database.paged().jobCount(asset) == 0)
         }
-        return checkNotNull(loadDeletion(identity))
+        return AudioDeletionSnapshot(
+            identity,
+            tombstone.operationId,
+            tombstone.state,
+            if (includeSteps) rows.map { AudioDeletionStep(it.target(), it.completed) }
+            else emptyList(),
+        )
     }
 
     private fun eraseRecordingText(identity: AudioIdentity) {
         lease.requireHeld(identity.assetId.value)
         val asset = identity.assetId.value
         commits.commit({
+            removePagedTranscript(asset)
             dao.removeTranscript(asset)
             dao.removeSegmentation(asset)
         }) {
-            dao.transcript(asset) == null && dao.segmentationPage(asset, "").isEmpty()
+            dao.transcript(asset) == null &&
+                database.paged().jobCount(asset) == 0 &&
+                dao.segmentationPage(asset, "").isEmpty()
         }
     }
 
-    fun loadDeletion(identity: AudioIdentity): AudioDeletionSnapshot? {
+    fun loadDeletion(
+        identity: AudioIdentity,
+        includeSteps: Boolean = true,
+    ): AudioDeletionSnapshot? {
         requireOperation(identity)
         val row = dao.tombstone(identity.assetId.value) ?: return null
         check(row.state in setOf("DELETING", "USER_DELETED"))
@@ -1260,8 +1600,57 @@ private constructor(
             identity,
             row.operationId,
             row.state,
-            dao.deletionTargets(row.assetId).map { AudioDeletionStep(it.target(), it.completed) },
+            if (includeSteps)
+                buildList {
+                    deletionRows(identity) { add(AudioDeletionStep(it.target(), it.completed)) }
+                }
+            else emptyList(),
         )
+    }
+
+    /** Bounded ordered readback; never retain a second whole inventory while comparing receipts. */
+    private fun deletionRows(identity: AudioIdentity, action: (DeletionTargetEntity) -> Unit) {
+        val revision = catalogRevision()
+        var after: DeletionTargetEntity? = null
+        while (true) {
+            val cursor = after
+            val page =
+                if (cursor == null) dao.firstDeletionTargetPage(identity.assetId.value)
+                else
+                    dao.deletionTargetPage(
+                        identity.assetId.value,
+                        cursor.runId,
+                        cursor.kind,
+                        cursor.relativeName,
+                    )
+            if (page.isEmpty()) break
+            page.forEach(action)
+            after = page.last()
+        }
+        check(catalogRevision() == revision) { "Deletion inventory changed during readback" }
+    }
+
+    fun forEachDeletionTarget(identity: AudioIdentity, action: (AudioDeletionStep) -> Unit) {
+        requireOperation(identity)
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        checkNotNull(dao.tombstone(identity.assetId.value))
+        deletionRows(identity) { action(AudioDeletionStep(it.target(), it.completed)) }
+    }
+
+    fun pendingDeletionPage(
+        identity: AudioIdentity,
+        kind: AudioDeletionTargetKind,
+    ): List<AudioDeletionStep> {
+        requireOperation(identity)
+        if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
+        check(checkNotNull(dao.tombstone(identity.assetId.value)).state == "DELETING")
+        return dao.pendingDeletionTargets(identity.assetId.value, kind.name).map {
+            AudioDeletionStep(it.target(), it.completed)
+        }
+    }
+
+    fun requireDeletionKeysCompleted(identity: AudioIdentity) {
+        check(pendingDeletionPage(identity, AudioDeletionTargetKind.KEY_REFERENCE).isEmpty())
     }
 
     /** Read-only, under the exact caller's live lease. Null means catalog-present, not readable. */
@@ -1269,32 +1658,29 @@ private constructor(
         requireOperation(identity)
         if (uncertain || database.inTransaction()) throw UncertainAudioSourceState()
         val asset = exactAsset(identity) ?: return AudioSourceState.Missing
-        val snapshot = loadDeletion(identity) ?: return null
-        if (snapshot.state == "USER_DELETED") {
-            check(snapshot.steps.all { it.completed })
+        val tombstone = dao.tombstone(asset.assetId) ?: return null
+        check(tombstone.state in setOf("DELETING", "USER_DELETED"))
+        val pending = mutableSetOf<AudioDeletionTargetKind>()
+        deletionRows(identity) { row ->
+            val target = row.target()
+            if (!row.completed) pending.add(target.kind)
+        }
+        if (tombstone.state == "USER_DELETED") {
+            check(pending.isEmpty())
             check(dao.intent(asset.assetId) == null && dao.finalSources(asset.assetId).isEmpty())
-            check(
-                dao.claims(asset.assetId).all {
-                    dao.bootstrap(it.runId) == null &&
-                        dao.microfile(it.runId) == null &&
-                        dao.manifest(it.runId) == null &&
-                        dao.quarantines(it.runId).isEmpty()
-                }
-            )
+            check(dao.remainingDeletionMetadata(asset.assetId) == null)
             return AudioSourceState.UserDeleted
         }
         return AudioSourceState.Deleting(
             buildSet {
                 add(AudioDeletionCategory.JOURNAL_COMPLETION)
-                snapshot.steps
-                    .filterNot { it.completed }
-                    .forEach {
-                        add(
-                            if (it.target.kind == AudioDeletionTargetKind.KEY_REFERENCE)
-                                AudioDeletionCategory.KEY_MATERIAL
-                            else AudioDeletionCategory.AUDIO_FILES
-                        )
-                    }
+                pending.forEach {
+                    add(
+                        if (it == AudioDeletionTargetKind.KEY_REFERENCE)
+                            AudioDeletionCategory.KEY_MATERIAL
+                        else AudioDeletionCategory.AUDIO_FILES
+                    )
+                }
             }
         )
     }
@@ -1307,34 +1693,75 @@ private constructor(
     ) {
         requireOperation(identity)
         requireMutable()
-        val snapshot = checkNotNull(loadDeletion(identity))
-        check(snapshot.state == "DELETING")
+        check(checkNotNull(dao.tombstone(identity.assetId.value)).state == "DELETING")
         val row =
             checkNotNull(
-                dao.deletionTargets(identity.assetId.value).singleOrNull { it.target() == target }
+                dao.deletionTarget(
+                    identity.assetId.value,
+                    target.runId,
+                    target.kind.name,
+                    target.relativeName,
+                )
             )
+        check(row.target() == target)
         if (row.completed) return
         if (target.kind != AudioDeletionTargetKind.KEY_REFERENCE) {
-            check(
-                snapshot.steps
-                    .filter { it.target.kind == AudioDeletionTargetKind.KEY_REFERENCE }
-                    .all { it.completed }
-            )
+            requireDeletionKeysCompleted(identity)
         }
+        val revision = catalogRevision()
         check(verifiedAbsent())
         lease.requireHeld(identity.assetId.value)
         val completed = row.copy(completed = true)
-        commits.commit({ check(dao.update(completed) == 1) }) {
-            completed in dao.deletionTargets(row.assetId)
+        commits.commit({
+            check(catalogRevision() == revision)
+            check(dao.update(completed) == 1)
+        }) {
+            dao.deletionTarget(row.assetId, row.runId, row.kind, row.relativeName) == completed &&
+                catalogRevision() == Math.addExact(revision, 1)
+        }
+    }
+
+    /**
+     * One same-phase page, after idempotent effects; a crash before commit replays absence safely.
+     */
+    fun completeDeletionTargets(
+        identity: AudioIdentity,
+        targets: List<AudioDeletionTarget>,
+        verifiedAbsent: (AudioDeletionTarget) -> Boolean,
+    ) {
+        requireOperation(identity)
+        requireMutable()
+        require(targets.isNotEmpty() && targets.size <= DELETION_RECEIPT_BATCH_SIZE)
+        val kind = targets.first().kind
+        require(targets.all { it.kind == kind })
+        check(checkNotNull(dao.tombstone(identity.assetId.value)).state == "DELETING")
+        val rows = dao.pendingDeletionTargets(identity.assetId.value, kind.name)
+        check(rows.map { it.target() } == targets)
+        if (kind != AudioDeletionTargetKind.KEY_REFERENCE) requireDeletionKeysCompleted(identity)
+        val revision = catalogRevision()
+        targets.forEach {
+            lease.requireHeld(identity.assetId.value)
+            check(verifiedAbsent(it))
+        }
+        lease.requireHeld(identity.assetId.value)
+        val completed = rows.map { it.copy(completed = true) }
+        commits.commit({
+            check(catalogRevision() == revision)
+            check(dao.updateDeletionTargets(completed) == completed.size)
+        }) {
+            completed.all {
+                dao.deletionTarget(it.assetId, it.runId, it.kind, it.relativeName) == it
+            } && catalogRevision() == Math.addExact(revision, completed.size.toLong())
         }
     }
 
     fun completeDeletion(identity: AudioIdentity, verifiedComplete: () -> Boolean) {
         requireOperation(identity)
         requireMutable()
-        val snapshot = checkNotNull(loadDeletion(identity))
-        if (snapshot.state == "USER_DELETED") return
-        check(snapshot.steps.all { it.completed })
+        val tombstone = checkNotNull(dao.tombstone(identity.assetId.value))
+        if (tombstone.state == "USER_DELETED") return
+        check(tombstone.state == "DELETING")
+        forEachDeletionTarget(identity) { check(it.completed) }
         check(verifiedComplete())
         lease.requireHeld(identity.assetId.value)
         val old = checkNotNull(dao.tombstone(identity.assetId.value))
@@ -1342,15 +1769,16 @@ private constructor(
         commits.commit({
             dao.removeIntent(old.assetId)
             dao.removeFinalSources(old.assetId)
-            dao.claims(old.assetId).forEach {
-                dao.removeQuarantine(it.runId)
-                dao.removeMicrofile(it.runId)
-                dao.removeManifest(it.runId)
-                dao.removeBootstrap(it.runId)
-            }
+            dao.removeAssetQuarantines(old.assetId)
+            dao.removeAssetMicrofiles(old.assetId)
+            dao.removeAssetManifests(old.assetId)
+            dao.removeAssetBootstraps(old.assetId)
             check(dao.update(completed) == 1)
         }) {
-            dao.tombstone(old.assetId) == completed
+            dao.tombstone(old.assetId) == completed &&
+                dao.remainingDeletionMetadata(old.assetId) == null &&
+                dao.intent(old.assetId) == null &&
+                dao.finalSources(old.assetId).isEmpty()
         }
     }
 
@@ -1358,13 +1786,19 @@ private constructor(
         checkOpen()
         lease.withExclusiveCleanup {
             reservationSnapshot = null
-            database.close()
+            verifiedCatalog = null
+            try {
+                schemaVersionQuery.close()
+            } finally {
+                database.close()
+            }
             closed = true
             openPaths.remove(registryKey)
         }
     }
 
     companion object {
+        private const val DELETION_RECEIPT_BATCH_SIZE = 256
         private const val MAX_UNIT_FRAMES = 80_000L
         private const val MAX_DELETION_TARGETS = 100_000
         private const val MAX_RELATIVE_NAME_LENGTH = 512
@@ -1473,7 +1907,21 @@ private constructor(
                     }
                     command.run()
                 }
-                .addMigrations(OriginalAudioMigration, SegmentationMigration, TranscriptMigration)
+                .addMigrations(
+                    OriginalAudioMigration,
+                    SegmentationMigration,
+                    TranscriptMigration,
+                    PagedTranscriptMigration,
+                    AudioDeletionIndexMigration,
+                )
+                .addCallback(
+                    object : RoomDatabase.Callback() {
+                        override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                            AudioCatalogRevisionSchema.install(db)
+                            AudioDeletionIndexMigration.install(db)
+                        }
+                    }
+                )
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                 .build()
 

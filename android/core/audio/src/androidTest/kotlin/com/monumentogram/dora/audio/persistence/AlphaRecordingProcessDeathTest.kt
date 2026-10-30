@@ -21,13 +21,12 @@ import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AlphaRecordingProcessDeathTest {
     @Test
-    // Historical inventory selector; ADR-0030 now exercises 1799 -> 1800 seconds.
+    // Historical selector: v9 verifies the 1799 -> 1800-second prefix below its 24h cap.
     fun restartPreserves299SecondsAndCannotCapturePast300() {
         val action = InstrumentationRegistry.getArguments().getString("persistenceCrashAction")
         val base = ApplicationProvider.getApplicationContext<Context>()
@@ -67,9 +66,9 @@ class AlphaRecordingProcessDeathTest {
             val session = RecordingSession(identity, vault.writer)
             session.restore(recovered.recoveredFrames, recovered.nextOrdinal)
             assertTrue(session.resume())
-            session.accept(ByteArray(160000) { 7 })
+            session.accept(ByteArray(32000) { 7 })
             assertEquals(28_800_000L, session.state.frames)
-            assertFalse(session.canCapture)
+            assertTrue(session.canCapture)
             session.requestStop()
             session.confirmStop()
             assertEquals(RecordingPhase.SAVED, session.state.phase)

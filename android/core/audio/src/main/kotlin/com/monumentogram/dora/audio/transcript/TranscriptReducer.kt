@@ -186,6 +186,40 @@ internal object TranscriptReducer {
         )
     }
 
+    fun resumePaged(doc: TranscriptDocument, id: String): TranscriptDocument {
+        val job = doc.jobs.single { it.id == id }
+        require(job.consent?.revoked != true && job.status != "SUCCEEDED")
+        require(doc.jobs.none { it.id != id && it.status in activeStatuses })
+        require(job.consent != null || job == doc.jobs.last())
+        return advance(
+            doc.copy(jobs = doc.jobs.map { if (it.id == id) it.copy(status = "RUNNING") else it })
+        )
+    }
+
+    fun finishPaged(
+        doc: TranscriptDocument,
+        id: String,
+        reference: PagedTranscriptReference,
+        model: String,
+        time: Long,
+    ): TranscriptDocument {
+        reference.validate()
+        require(reference.publicationRevision == doc.revision + 1 && time >= 0)
+        val job = doc.jobs.single { it.id == id }
+        require(job.status in activeStatuses && job.consent?.revoked != true)
+        require((job.consent != null) == (reference.engine == "CLOUD"))
+        require(doc.versions.none { it.id == id })
+        return advance(
+            doc.copy(
+                versions = doc.versions + MachineTranscript(id, "", time, model, paged = reference),
+                jobs = doc.jobs.map { if (it.id == id) it.copy(status = "SUCCEEDED") else it },
+                activeId =
+                    if (doc.activeId == null && doc.edits.isEmpty() && doc.selections.isEmpty()) id
+                    else doc.activeId,
+            )
+        )
+    }
+
     fun edit(
         doc: TranscriptDocument,
         id: String,

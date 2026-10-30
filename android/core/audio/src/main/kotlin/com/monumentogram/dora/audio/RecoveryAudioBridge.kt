@@ -80,6 +80,11 @@ internal interface EncryptedAudioCatalog {
 
     fun load(identity: AudioIdentity): StoredAudioAsset?
 
+    /**
+     * True only for a fully validated immutable snapshot fenced by the current durable revision.
+     */
+    fun isVerifiedAppendSnapshot(snapshot: StoredAudioAsset): Boolean = false
+
     fun reserve(expected: StoredAudioAsset, intent: AudioIntent): Boolean
 
     fun compareAndSet(expected: StoredAudioAsset, next: StoredAudioAsset): Boolean
@@ -160,15 +165,22 @@ internal class RecoveryAudioBridge(
     ): AudioResult<Unit> {
         if (asset.pending != null || asset.finalization != null)
             return failed(AudioFailure.COLLISION)
-        val start = validateOrder(asset)
+        val verified = catalog.isVerifiedAppendSnapshot(asset)
+        val start =
+            if (verified)
+                asset.segments.lastOrNull()?.let {
+                    AudioTimeline.nextFrame(it.identity.firstFrame, it.frames)
+                } ?: 0L
+            else validateOrder(asset)
         if (segment.ordinal != asset.segments.size || segment.firstFrame != start) {
             return failed(AudioFailure.INVALID_INPUT)
         }
         if (
-            asset.segments.any {
-                it.identity.physicalSegmentId == segment.physicalSegmentId &&
-                    it.identity.physicalFirstFrame != segment.physicalFirstFrame
-            }
+            !verified &&
+                asset.segments.any {
+                    it.identity.physicalSegmentId == segment.physicalSegmentId &&
+                        it.identity.physicalFirstFrame != segment.physicalFirstFrame
+                }
         )
             return failed(AudioFailure.INVALID_INPUT)
         val intent = AudioIntent.Append(segment, frames)
@@ -222,7 +234,10 @@ internal class RecoveryAudioBridge(
             val pending = asset.copy(pending = intent)
             return if (
                 PersistenceLatency.measure("catalog_commit") {
-                    catalog.compareAndSet(pending, asset.copy(segments = asset.segments + stored))
+                    catalog.compareAndSet(
+                        pending,
+                        asset.copy(segments = AudioSegmentIndex.append(asset.segments, stored)),
+                    )
                 }
             ) {
                 AudioResult.Value(Unit)
@@ -280,7 +295,13 @@ internal class RecoveryAudioBridge(
                         return failed(AudioFailure.INCOMPLETE)
                     val stored =
                         StoredAudioSegment(intent.identity, intent.frames, recovered.manifestDigest)
-                    commit(asset, asset.copy(pending = null, segments = asset.segments + stored))
+                    commit(
+                        asset,
+                        asset.copy(
+                            pending = null,
+                            segments = AudioSegmentIndex.append(asset.segments, stored),
+                        ),
+                    )
                 } finally {
                     recovered.bytes.fill(0)
                 }
@@ -324,6 +345,61 @@ internal class RecoveryAudioBridge(
         check(catalog.load(expected.identity) == expected)
         check(expected.pending == null && expected.finalization != null)
         return extractAsset(expected, requireComplete = true, consume = consume)
+    }
+
+    /** Only a fully authenticated immutable snapshot may enter this range-only path. */
+    internal fun extractRangeHeld(
+        snapshot: StoredAudioAsset,
+        firstFrame: Long,
+        frameCount: Long,
+        consume: (Long, ByteArray) -> Unit,
+    ): AudioResult<AudioReadSummary> = guarded {
+        check(snapshot.pending == null && snapshot.finalization != null)
+        require(firstFrame >= 0 && frameCount > 0)
+        val end = Math.addExact(firstFrame, frameCount)
+        val segments = snapshot.segments
+        val last = segments.last()
+        require(end <= Math.addExact(last.identity.firstFrame, last.frames))
+        // Lower bound for the first unit whose end lies after the requested first frame.
+        var low = 0
+        var high = segments.size
+        while (low < high) {
+            val middle = (low + high) ushr 1
+            val unit = segments[middle]
+            if (unit.identity.firstFrame + unit.frames <= firstFrame) low = middle + 1
+            else high = middle
+        }
+        var next = firstFrame
+        var index = low
+        while (next < end) {
+            val segment = segments[index++]
+            val read = recover(segment.identity)
+            if (read is AudioResult.Failed) return@guarded read
+            val recovered = (read as AudioResult.Value).value
+            try {
+                if (!recovered.complete) return@guarded failed(AudioFailure.INCOMPLETE)
+                if (
+                    recovered.manifestDigest != segment.manifestDigest ||
+                        recovered.bytes.size.toLong() != segment.frames * 2
+                )
+                    return@guarded failed(AudioFailure.CORRUPT)
+                val finish = minOf(end, segment.identity.firstFrame + segment.frames)
+                val from = ((next - segment.identity.firstFrame) * 2).toInt()
+                val until = ((finish - segment.identity.firstFrame) * 2).toInt()
+                val selected = recovered.bytes.copyOfRange(from, until)
+                try {
+                    consume(next, selected)
+                } finally {
+                    selected.fill(0)
+                }
+                next = finish
+            } finally {
+                recovered.bytes.fill(0)
+            }
+        }
+        AudioResult.Value(
+            AudioReadSummary(snapshot.identity, frameCount, AudioCompletion.FINALIZED)
+        )
     }
 
     private fun extractAsset(

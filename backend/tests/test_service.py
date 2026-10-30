@@ -359,7 +359,8 @@ class ServiceTests(unittest.TestCase):
         response = self.client.post(path, content=raw, headers=self.proof("POST", path, raw))
         self.assertEqual(200, response.status_code, response.text)
         self.assertEqual(65536, response.json()["uploaded_bytes"])
-        self.assertEqual(chunk, self.service._audio(self.store.job(self.action)))
+        saved = self.store.db.execute("SELECT ciphertext FROM chunks WHERE job=? AND offset=0", (self.action,)).fetchone()[0]
+        self.assertEqual(chunk, self.store.decrypt(f"audio:{self.action}:0", saved))
         self.assertEqual(0, self.store.job(self.action)["attempt_count"])
         self.assertEqual(401, self.client.post(path, content=raw).status_code)
         headers = self.proof("POST", path, raw)
@@ -381,12 +382,12 @@ class ServiceTests(unittest.TestCase):
 
     def test_restart_after_final_chunk_commit_can_finalize_same_attempt(self):
         self.create()
-        original = self.service._validate_audio
+        original = self.service._audio
         def interrupted(*args):
             raise RuntimeError("simulate process dying after chunk commit")
-        self.service._validate_audio = interrupted
+        self.service._audio = interrupted
         self.assertEqual(503, self.upload().status_code)
-        self.service._validate_audio = original
+        self.service._audio = original
         self.assertEqual(200, self.upload().status_code)
         self.assertEqual(1, len(self.aws.starts))
 

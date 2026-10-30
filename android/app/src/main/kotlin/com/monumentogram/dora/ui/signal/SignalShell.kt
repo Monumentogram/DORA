@@ -38,6 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -45,7 +47,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioIdentity
-import com.monumentogram.dora.audio.recording.RecordingCompletionState
+import com.monumentogram.dora.audio.recording.RecordingLibraryState
 import com.monumentogram.dora.audio.recording.RecordingSearchRow
 import com.monumentogram.dora.recording.capturedTime
 import com.monumentogram.dora.transcript.TranscriptDialog
@@ -130,9 +132,11 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
             }
         },
         floatingActionButton = {
+            val recordLabel = stringResource(R.string.signal_new_recording)
             if (!settings)
                 ExtendedFloatingActionButton(
                     onClick = onRecord,
+                    modifier = Modifier.semantics { contentDescription = recordLabel },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     icon = { Icon(painterResource(R.drawable.ic_bootstrap_mic), null) },
@@ -212,7 +216,7 @@ internal fun SignalShell(activity: MainActivity, onRecord: () -> Unit) {
                     }
                 items(library.entries, key = { it.recording.cursor }) { entry ->
                     RecordingRow(entry, library.query.trim()) {
-                        selectedFrames = entry.recording.recoveredFrames
+                        selectedFrames = entry.recording.committedFrames
                         selected = entry.recording.identity
                         library.invalidate()
                     }
@@ -280,18 +284,15 @@ private fun RecordingRow(entry: RecordingSearchRow, query: String, onClick: () -
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    capturedTime(entry.recording.recoveredFrames) +
+                    capturedTime(entry.recording.committedFrames) +
                         " · " +
                         stringResource(
                             when {
-                                entry.recording.completionState ==
-                                    RecordingCompletionState.DELETION_PENDING ->
+                                entry.recording.state == RecordingLibraryState.DELETION_PENDING ->
                                     R.string.stage11_deletion_pending
-                                entry.recording.completionState ==
-                                    RecordingCompletionState.DELETED ->
+                                entry.recording.state == RecordingLibraryState.DELETED ->
                                     R.string.signal_audio_deleted
-                                entry.recording.completionState !=
-                                    RecordingCompletionState.FINALIZED ->
+                                entry.recording.state != RecordingLibraryState.FINALIZED ->
                                     R.string.signal_recovery_needed
                                 preview.processing -> R.string.signal_processing
                                 preview.transcriptDate != null -> R.string.signal_transcript_ready

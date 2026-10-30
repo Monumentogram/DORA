@@ -50,6 +50,7 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
 import androidx.test.runner.lifecycle.Stage
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
+import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioAvailability
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioFormat
@@ -68,6 +69,7 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryRelativeNames
 import com.monumentogram.dora.recording.ProductRecordingService
 import com.monumentogram.dora.recording.RecordingRecoveryCard
 import com.monumentogram.dora.recording.SavedRecordingVerification
+import com.monumentogram.dora.ui.signal.uiCopy
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 import java.io.File
 import java.io.RandomAccessFile
@@ -226,9 +228,9 @@ class OwnerPilotInstrumentedTest {
                     PackageManager.GET_INSTRUMENTATION,
             )
         val preview = context.packageName.endsWith(".preview")
-        assertEquals(if (preview) 5L else 4L, info.longVersionCode)
+        assertEquals(if (preview) 9L else 4L, info.longVersionCode)
         assertEquals(
-            if (preview) "0.1.0-owner-preview.5" else "0.1.0-owner-alpha.4",
+            if (preview) "0.1.0-owner-preview.9" else "0.1.0-owner-alpha.4",
             info.versionName,
         )
         assertEquals(null, info.sharedUserId)
@@ -463,13 +465,19 @@ class OwnerPilotInstrumentedTest {
         )
         assertFalse(vault.exists())
         assertTrue(runtime.isRecordingUiAuthorized())
-        ui.onNodeWithContentDescription("Открыть экран записи").performClick()
-        ui.onNodeWithText("Начать запись").assertIsDisplayed().assertIsNotEnabled()
-        ui.onNodeWithContentDescription("Я предупредил(а) участников о записи")
+        ui.onNodeWithContentDescription(context.getString(R.string.signal_new_recording))
+            .performClick()
+        ui.onNodeWithText(context.getString(R.string.signal_copy_4))
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
+        ui.onNodeWithContentDescription(uiCopy("Я предупредил(а) участников о записи"))
             .performScrollTo()
             .assertIsOff()
             .performClick()
-        ui.onNodeWithText("Начать запись").assertIsDisplayed().assertIsEnabled().performClick()
+        ui.onNodeWithText(context.getString(R.string.signal_copy_4))
+            .assertIsDisplayed()
+            .assertIsEnabled()
+            .performClick()
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
         val denialButtons =
             mapOf(
@@ -498,8 +506,8 @@ class OwnerPilotInstrumentedTest {
             "Microphone denial must use the real Android permission dialog",
             checkNotNull(deny).performAction(AccessibilityNodeInfo.ACTION_CLICK),
         )
-        waitText("Микрофон не разрешён. Запись не началась.")
-        ui.onNodeWithText("Микрофон не разрешён. Запись не началась.")
+        waitText(uiCopy("Микрофон не разрешён. Запись не началась."))
+        ui.onNodeWithText(uiCopy("Микрофон не разрешён. Запись не началась."))
             .performScrollTo()
             .assertIsDisplayed()
         assertEquals(
@@ -526,8 +534,11 @@ class OwnerPilotInstrumentedTest {
             "Permission denial must not create vault keys",
             initialAliases == Collections.list(keys.aliases()).toSet(),
         )
-        ui.onNodeWithText("Отмена").assertIsDisplayed().performClick()
-        ui.onNodeWithContentDescription("Открыть экран записи").assertIsDisplayed()
+        ui.onNodeWithText(context.getString(R.string.signal_copy_2))
+            .assertIsDisplayed()
+            .performClick()
+        ui.onNodeWithContentDescription(context.getString(R.string.signal_new_recording))
+            .assertIsDisplayed()
     }
 
     private fun verified(
@@ -560,7 +571,8 @@ class OwnerPilotInstrumentedTest {
     }
 
     private fun exerciseProductUi(identity: AudioIdentity) {
-        ui.onNodeWithContentDescription("Открыть экран записи").performClick()
+        ui.onNodeWithContentDescription(context.getString(R.string.signal_new_recording))
+            .performClick()
         loadSaved(identity)
         ui.onNodeWithText("Сохранено кадров: 320").performScrollTo().assertIsDisplayed()
         actWithoutPrompt { ui.onNodeWithText("Проверить аудио").performScrollTo().performClick() }

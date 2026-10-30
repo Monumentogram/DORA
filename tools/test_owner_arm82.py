@@ -74,32 +74,32 @@ class OwnerArm82Tests(unittest.TestCase):
 
     def test_successor_inventory_cannot_hide_regressions_or_add_skips(self):
         import json
-        from owner_arm82_inventory import validate_accounting
+        from owner_v9_inventory import read_inventory, validate_accounting
         import validate_encrypted_persistence as persistence
         root = self.audit.ROOT
         directory = root / 'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio/persistence'
         discovered = persistence.discover_device_tests({p.relative_to(directory).as_posix():
             p.read_text(encoding='utf-8-sig') for p in directory.rglob('*.kt')})
-        contract = json.loads((root / 'docs/contracts/owner-arm82-persistence-tests-v1.json').read_text())
-        legacy = json.loads((root / 'docs/contracts/pin-free-local-access-device-tests-v1.json').read_text())
-        validate_accounting(contract, discovered, set(legacy['tests']), set(legacy['deferred_tests']))
-        self.assertEqual(167, len(contract['tests']))
-        for field in ('tests', 'historical_not_qualified', 'separate_process_tests', 'deferred_tests'):
+        contract = read_inventory(root)
+        legacy = json.loads((root / 'docs/contracts/owner-arm82-persistence-tests-v1.json').read_text())
+        validate_accounting(contract, discovered, legacy)
+        self.assertEqual(188, len(contract['tests']))
+        for field in ('tests', 'historical_not_qualified', 'separate_process_tests', 'qualification_only_tests'):
             broken = copy.deepcopy(contract)
             broken[field].pop()
             with self.subTest(field=field), self.assertRaises(ValueError):
-                validate_accounting(broken, discovered, set(legacy['tests']), set(legacy['deferred_tests']))
+                validate_accounting(broken, discovered, legacy)
 
     def test_sql_projection_rejects_any_unreviewed_storage_policy_change(self):
-        from owner_arm82_inventory import project_stage9_policy
+        from owner_v9_inventory import project_policy_sources
         from validate_recording_latency import POLICY_PATH
         root = self.audit.ROOT
         source = (root / POLICY_PATH).read_text(encoding='utf-8')
-        project_stage9_policy({POLICY_PATH: source}, root)
+        project_policy_sources({POLICY_PATH: source}, root)
         for changed in (source.replace('PRAGMA synchronous=FULL', 'PRAGMA synchronous=OFF'),
                         source.replace('TRANSCRIPT_SCHEMA_VERSION)', '999)'), source + '// unreviewed'):
             with self.assertRaises(ValueError):
-                project_stage9_policy({POLICY_PATH: changed}, root)
+                project_policy_sources({POLICY_PATH: changed}, root)
 
     def test_actual_cyrillic_pin_resource_prompts_are_rejected(self):
         from owner_alpha_pilot_artifact import check_pin_resources

@@ -179,6 +179,38 @@ class AdapterTests(unittest.TestCase):
         with self.assertRaises(ProviderError):
             self.provider.delete_job(self.attempt)
 
+    def test_composite_accepts_bounded_larger_provider_json_without_changing_legacy_limit(self):
+        document = self.document()
+        item = document["results"]["items"][0]
+        document["results"]["items"] = [item] * 12_000
+        self.assertGreater(len(json.dumps(document).encode()), 1_048_576)
+        self.add_result(document)
+        with self.assertRaises(ProviderError):
+            self.provider.result(self.attempt, self.job)
+        self.job["parent_id"] = "00000000-0000-4000-8000-000000000002"
+        self.add_result(document)
+        try:
+            result = self.provider.result(self.attempt, self.job)
+        except ProviderError:
+            self.fail("Valid bounded composite result was rejected")
+        self.assertEqual(12_000, len(result["segments"]))
+
+    def test_composite_rejects_oversize_text_segment_count_and_provider_envelope_without_truncation(self):
+        self.job["parent_id"] = "00000000-0000-4000-8000-000000000002"
+        text = self.document()
+        text["results"]["transcripts"][0]["transcript"] = "x" * 1_048_577
+        self.add_result(text)
+        with self.assertRaises(ProviderError):
+            self.provider.result(self.attempt, self.job)
+        segments = self.document()
+        segments["results"]["items"] = [segments["results"]["items"][0]] * 20_001
+        self.add_result(segments)
+        with self.assertRaises(ProviderError):
+            self.provider.result(self.attempt, self.job)
+        self.add_result(self.document(), ContentLength=8_388_609)
+        with self.assertRaises(ProviderError):
+            self.provider.result(self.attempt, self.job)
+
 
 if __name__ == "__main__":
     unittest.main()

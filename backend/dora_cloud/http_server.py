@@ -44,6 +44,13 @@ class Audio(Strict):
     final: bool
 
 
+class Run(Job):
+    source_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    source_version: int = Field(ge=1, le=1)
+    frames: int = Field(ge=8000, le=1_382_400_000)
+    window_policy: Literal["cloud-balanced-1800-v1"]
+
+
 def create_app(service, auth):
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -60,12 +67,26 @@ def create_app(service, auth):
                 raise ServiceError("PATH_INVALID")
             method = request.method
             match = re.fullmatch(rf"/v1/jobs/({UUID_PATTERN})(?:/(audio|retry|cancel))?", path)
+            run_match = re.fullmatch(rf"/v1/runs/({UUID_PATTERN})(?:/(cancel|parts/([0-9]|[1-3][0-9]|4[0-7])))?", path)
+            part_index = None
             if (method, path) == ("POST", "/v1/session"):
                 model, operation, job_id = Empty, "session", None
             elif (method, path) == ("POST", "/v1/recordings"):
                 model, operation, job_id = Recording, "register", None
             elif (method, path) == ("POST", "/v1/jobs"):
                 model, operation, job_id = Job, "create", None
+            elif method == "POST" and path in ("/v1/runs", "/v1/runs/quote"):
+                model, operation, job_id = Run, "run_create" if path == "/v1/runs" else "run_quote", None
+            elif run_match and canonical_uuid(run_match[1]):
+                job_id, suffix, raw_index = run_match.groups()
+                if method == "GET" and suffix is None:
+                    model, operation = None, "run_get"
+                elif method == "POST" and suffix == "cancel":
+                    model, operation = Empty, "run_cancel"
+                elif method == "POST" and raw_index is not None:
+                    model, operation, part_index = Empty, "run_part", int(raw_index)
+                else:
+                    raise ServiceError("NOT_FOUND", 404)
             elif match and canonical_uuid(match[1]):
                 job_id, suffix = match.groups()
                 if method == "GET" and not suffix:
@@ -83,11 +104,19 @@ def create_app(service, auth):
             # occupy almost 175 KiB of JSON. Keep metadata routes at 100 KiB and
             # the decoded audio bound at 65536 bytes in Service.audio.
             body_limit = 192 * 1024 if operation == "audio" else 100 * 1024
+            lengths = [value for key, value in request.scope["headers"] if key == b"content-length"]
+            if len(lengths) > 1 or (lengths and (not lengths[0].isdigit() or len(lengths[0]) > 12)):
+                raise ServiceError("CONTENT_LENGTH_INVALID", 422)
+            declared = int(lengths[0]) if lengths else None
+            if declared is not None and declared > body_limit:
+                raise ServiceError("BODY_TOO_LARGE", 413)
             raw = bytearray()
             async for chunk in request.stream():
                 if len(raw) + len(chunk) > body_limit:
                     raise ServiceError("BODY_TOO_LARGE", 413)
                 raw.extend(chunk)
+            if declared is not None and declared != len(raw):
+                raise ServiceError("CONTENT_LENGTH_MISMATCH", 422)
             if model is None:
                 if raw:
                     raise ServiceError("BODY_FORBIDDEN")
@@ -111,8 +140,12 @@ def create_app(service, auth):
                     args = [principal]
                     if job_id:
                         args.append(job_id)
-                    if operation in ("register", "create", "audio"):
+                    if part_index is not None:
+                        args.append(part_index)
+                    if operation in ("register", "create", "audio", "run_quote", "run_create"):
                         args.append(body)
+                    if operation.startswith("run_"):
+                        return getattr(service.runs, operation[4:])(*args)
                     return getattr(service, operation)(*args)
             return JSONResponse(await run_in_threadpool(process))
         except ServiceError as exc:
