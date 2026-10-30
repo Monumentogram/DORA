@@ -70,7 +70,7 @@ class OriginalAudioFullMigrationTest {
             assertTrue(vault.deleteAudio(deleting) is AudioResult.Failed)
         }
         lateinit var before: Map<String, List<List<String?>>>
-        raw(f, TRANSCRIPT_SCHEMA_VERSION) { db ->
+        raw(f, AUDIO_INDEX_SCHEMA_VERSION) { db ->
             JournalSchemaVerifier.verify(db)
             before = snapshot(db, oldVersion)
             listOf(
@@ -91,6 +91,16 @@ class OriginalAudioFullMigrationTest {
             // Test fixture only: the current writer preserves the published v1/v2 tables.
             // Remove successor tables, restore the exact exported identity/version, and verify
             // the complete accepted legacy DDL before allowing the product to migrate it.
+            AudioCatalogRevisionSchema.tables
+                .filterValues { it.startsWith("CREATE TRIGGER") }
+                .keys
+                .forEach { db.execSQL("DROP TRIGGER `$it`") }
+            db.execSQL("DROP INDEX index_deletion_target_assetId_kind_completed_runId_relativeName")
+            db.execSQL("DROP TABLE transcript_page_edit")
+            db.execSQL("DROP TABLE transcript_page")
+            db.execSQL("DROP TABLE transcript_part")
+            db.execSQL("DROP TABLE transcript_progress")
+            db.execSQL("DROP TABLE audio_catalog_revision")
             db.execSQL("DROP TABLE transcript_state")
             db.execSQL("DROP TABLE audio_segmentation")
             if (oldVersion == 1) db.execSQL("DROP TABLE original_audio_reference")
@@ -102,7 +112,7 @@ class OriginalAudioFullMigrationTest {
             JournalSchemaVerifier.verify(db, oldVersion)
         }
         f.open(create = false).close()
-        raw(f, TRANSCRIPT_SCHEMA_VERSION) { db ->
+        raw(f, AUDIO_INDEX_SCHEMA_VERSION) { db ->
             assertTrue(
                 "Every existing encrypted row must survive migration",
                 before == snapshot(db, oldVersion),

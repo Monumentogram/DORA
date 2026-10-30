@@ -67,3 +67,17 @@ the follow-up independent review and final formatting. The 250-test host batch a
 working source gate passed. Seven supplemental API28 device methods passed in
 330.492 seconds; complete ordinary-inventory execution and maximum-size qualification
 remain separately reported requirements.
+
+The first v9 Stage9 CI run failed three ordinary Original Audio migration methods
+on both API28 and API36. These are not the three historical diagnostic-v3
+exclusions. The fixtures still opened the current journal with a version-4 raw
+callback, and their synthetic v1/v2 preparation did not remove the additive v5
+tables/triggers and v6 index. The fixture-only correction uses the current schema
+version and removes successor DDL before restoring and strictly verifying the
+unchanged exported historical schema. Production migration and downgrade rejection
+remain unchanged; Stage9 still selects all nine persistence/migration methods.
+Host regressions fail on the stale callbacks and incomplete teardown, then pass
+with the correction, including real SQLite equality against exported v1/v2 table
+and index DDL. The unchanged nine-method batch then passed on API36 in 23.08s
+(`stage9-migration-api36-green.log`). Exact-head CI and API28 requalification
+remain required; no ordinary method was excluded or relabelled historical.

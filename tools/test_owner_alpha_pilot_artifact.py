@@ -62,6 +62,43 @@ class PilotArtifactTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.pilot.check_badging(broken)
 
+
+    def test_synthetic_peer_network_profile_preserves_default_historical_denial(self):
+        good = "package: name='com.monumentogram.dora.alpha.pilot' versionCode='4' versionName='0.1.0-owner-alpha.4'"
+        network = ('android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE')
+        badging = good + ''.join("\nuses-permission: name='" + permission + "'" for permission in network)
+        xml = self.manifest().replace('<application ', ''.join(
+            '<uses-permission android:name="' + permission + '"/>' for permission in network) + '<application ', 1)
+        for check, value in ((self.pilot.check_badging, badging), (self.pilot.check_manifest, xml)):
+            with self.assertRaisesRegex(ValueError, 'UNADMITTED_PERMISSION'):
+                check(value)
+            check(value, synthetic_peer=True)
+        for permission in ('READ_CONTACTS', 'ACCESS_FINE_LOCATION', 'INTERACT_ACROSS_USERS'):
+            with self.subTest(permission=permission):
+                with self.assertRaisesRegex(ValueError, 'UNADMITTED_PERMISSION'):
+                    self.pilot.check_badging(badging + "\nuses-permission: name='android.permission." +
+                                             permission + "'", synthetic_peer=True)
+                with self.assertRaisesRegex(ValueError, 'UNADMITTED_PERMISSION'):
+                    self.pilot.check_manifest(xml.replace('<application ',
+                        '<uses-permission android:name="android.permission.' + permission +
+                        '"/><application ', 1), synthetic_peer=True)
+
+    def test_synthetic_peer_profile_keeps_identity_and_manifest_security_checks(self):
+        good = "package: name='com.monumentogram.dora.alpha.pilot' versionCode='4' versionName='0.1.0-owner-alpha.4'"
+        for broken in (good.replace('.alpha.pilot', '.alpha.preview'),
+                       good.replace("versionCode='4'", "versionCode='2'")):
+            with self.assertRaises(ValueError):
+                self.pilot.check_badging(broken, synthetic_peer=True)
+        for broken in (self.manifest().replace('allowBackup="false"', 'allowBackup="true"'),
+                       self.manifest().replace('ProductRecordingService" android:exported="false"',
+                                               'ProductRecordingService" android:exported="true"'),
+                       self.manifest().replace('<application ', '<application android:usesCleartextTraffic="true" ')):
+            with self.assertRaises(ValueError):
+                self.pilot.check_manifest(broken, synthetic_peer=True)
+        for mode in ('owner-local', 'ci-test-signed'):
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, 'SYNTHETIC_PEER_UNSIGNED_ONLY'):
+                self.pilot.audit_apk(Path('unread.apk'), Path('unread-sdk'), mode, synthetic_peer=True)
+
     def test_actual_backup_resources_disable_cloud_and_device_transfer(self):
         domains = ('root', 'file', 'database', 'sharedpref', 'external', 'device_root', 'device_file', 'device_database', 'device_sharedpref')
         excludes = ''.join('<exclude domain="' + domain + '" path="."/>' for domain in domains)
