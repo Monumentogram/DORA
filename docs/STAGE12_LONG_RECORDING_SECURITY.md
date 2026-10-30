@@ -59,4 +59,6 @@ AWS sources checked2026-10-30: the [quota table](https://docs.aws.amazon.com/gen
 
 Executed counts, maximum duration and artifact/CI identifiers belong in the final evidence receipt, not inferred from this design. Samsung Android16 remains PENDING. Historical Stage8.6 NOT_READY/LONG02 root cause is not relabelled by these tests.
 
+Historical inventory files and method selectors containing `299`, `300` and the host phase `ALPHA_299` remain unchanged for compatibility. Under ADR-0030 their current test bodies exercise 1799/1800 seconds; execution receipts identify the actual frame counts. This does not rewrite prior five-minute results.
+
 Next: approve/test a bounded long Cloud upload and cost profile on an isolated backend; close current-deployment issue125 evidence and privacy/control approvals; then physical Samsung30m screen-off, recovery and owner-signed upgrade acceptance. Extend to60–120m only after measured persistence, memory, thermal and ASR evidence.

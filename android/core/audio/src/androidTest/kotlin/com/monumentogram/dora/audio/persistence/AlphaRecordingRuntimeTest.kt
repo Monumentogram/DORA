@@ -21,7 +21,8 @@ import org.junit.Test
 class AlphaRecordingRuntimeTest {
     @Test
     @Suppress("LongMethod") // One encrypted capture/reopen/source continuity scenario.
-    fun pauseReopenAt1799SecondsClipsResumeAndPreservesOriginalAcrossNewRecording() {
+    // Historical inventory selector; ADR-0030 now exercises 1799 -> 1800 seconds.
+    fun pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording() {
         val f = EncryptedAudioVaultFaultFixture()
         f.open().use { vault ->
             val session = RecordingSession(f.audio, vault.writer)

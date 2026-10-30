@@ -19,7 +19,7 @@ from run_encrypted_persistence_device import RUNNER, measure_page_sizes, parse_r
 
 TEST = 'com.monumentogram.dora.audio.persistence.LogicalRecoveryProcessDeathTest#verifyLogicalRecoveryProcessDeath'
 ALPHA_TEST = ('com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest'
-              '#restartPreserves1799SecondsAndCannotCapturePast1800')
+              '#restartPreserves299SecondsAndCannotCapturePast300')
 ALPHA_LIMIT_PHASE = 'ALPHA_299'
 PHASES = ('FIRST_OPEN_METADATA_FAILED', 'OPEN_BEFORE_PCM', 'COMMITTED_OPEN', 'APPEND_RESERVED', 'KEY_BOOTSTRAP',
           'PUBLICATION_COMMITTED', 'AUTHENTICATED_READBACK', 'CATALOG_COMMITTED',

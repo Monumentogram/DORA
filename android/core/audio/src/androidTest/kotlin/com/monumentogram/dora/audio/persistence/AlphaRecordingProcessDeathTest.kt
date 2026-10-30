@@ -27,7 +27,8 @@ import org.junit.Test
 
 class AlphaRecordingProcessDeathTest {
     @Test
-    fun restartPreserves1799SecondsAndCannotCapturePast1800() {
+    // Historical inventory selector; ADR-0030 now exercises 1799 -> 1800 seconds.
+    fun restartPreserves299SecondsAndCannotCapturePast300() {
         val action = InstrumentationRegistry.getArguments().getString("persistenceCrashAction")
         val base = ApplicationProvider.getApplicationContext<Context>()
         val root =

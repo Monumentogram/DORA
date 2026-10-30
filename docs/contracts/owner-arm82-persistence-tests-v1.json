@@ -3,9 +3,9 @@
   "profile": "PIN_FREE_LOCAL_ACCESS",
   "supersedes": "pin-free-local-access-device-tests-v1.json (successor inventory only; history preserved)",
   "tests": [
-    "com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest#restartPreserves1799SecondsAndCannotCapturePast1800",
+    "com.monumentogram.dora.audio.persistence.AlphaRecordingProcessDeathTest#restartPreserves299SecondsAndCannotCapturePast300",
     "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization",
-    "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt1799SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
+    "com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording",
     "com.monumentogram.dora.audio.persistence.CloudTranscriptPersistenceTest#cancelledCloudCannotUploadOrPublishAfterReopenAndAudioRemains",
     "com.monumentogram.dora.audio.persistence.CloudTranscriptPersistenceTest#cloudConsentAndResultSurviveEncryptedReopenWithoutReplacingLocalEdits",
     "com.monumentogram.dora.audio.persistence.EncryptedAudioProcessDeathTest#verifyProcessDeathRecovery",
