@@ -1700,3 +1700,12 @@ independent review and the applicable owner-authorized device matrix. Production
 configuration/cost limits stay unchanged; a blocked aggregate budget is an expected
 fail-closed result. Stage12 security/Issue125/privacy-control approvals, Stage8.6 and
 historical inventories remain independent. No installation, release or merge is claimed.
+
+ALPHA-V9-24H measured follow-up, 2026-10-30: implementation, scoped independent
+source review, full synthetic storage, 30-minute emulator capture/playback,
+native RU/EN functional checks, Cloud software integration and owner-signed
+upgrade/reboot preservation are complete within the
+[reported evidence scope](ALPHA_V9_QUALIFICATION.md). The current release status
+is `NOT_READY`: signed ARM-translated VAD crash discrimination and final CI remain
+open. Physical endurance, Samsung, 24-hour native inference, long live Cloud,
+recognition boundary quality and independent security/privacy gates are pending.

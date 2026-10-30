@@ -12,6 +12,31 @@ SCHEMAS = ROOT / 'android/core/audio/schemas/com.monumentogram.dora.audio.persis
 
 
 class Stage9EmulatorTest(unittest.TestCase):
+    def test_every_core_sqlite_callback_has_an_explicit_current_or_historical_scope(self):
+        directory = ROOT / 'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio'
+        observed = {}
+        for path in directory.rglob('*.kt'):
+            versions = re.findall(r'SupportSQLiteOpenHelper\s*\.\s*Callback\s*\(\s*([^\)]+)\)',
+                                  path.read_text(encoding='utf-8'))
+            if versions:
+                observed[path.relative_to(directory).as_posix()] = [v.strip() for v in versions]
+        # Current-source checkpoint readers must use the latest admitted journal. The other
+        # callbacks deliberately create tiny policy/revision databases or explicit old fixtures.
+        self.assertEqual({
+            'diagnostic/ProtectedHistoricalVaultTest.kt': ['3', '3'],
+            'persistence/LogicalSourceCheckpoint.kt': ['AUDIO_INDEX_SCHEMA_VERSION'],
+            'persistence/OriginalAudioProcessDeathTest.kt': ['AUDIO_INDEX_SCHEMA_VERSION'],
+            'persistence/database/SqlCipherConnectionPolicyTest.kt': ['1', '1'],
+            'persistence/journal/AudioCatalogRevisionTest.kt': ['1'],
+            'persistence/journal/OriginalAudioFullMigrationTest.kt': ['version'],
+            'persistence/journal/OriginalAudioMigrationTest.kt': ['version'],
+            'persistence/journal/TranscriptMigrationTest.kt': ['version'],
+        }, observed)
+        latest = max(int(path.stem) for path in SCHEMAS.glob('*.json'))
+        migration = ROOT / 'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/journal/AudioDeletionIndexMigration.kt'
+        self.assertRegex(migration.read_text(encoding='utf-8'),
+                         rf'const val AUDIO_INDEX_SCHEMA_VERSION = {latest}\b')
+
     def test_stage9_preserves_all_ordinary_original_audio_migration_cases(self):
         tree = ast.parse((ROOT / 'tools/run_stage9_emulator.py').read_text(encoding='utf-8'))
         batch = next(node for node in ast.walk(tree) if isinstance(node, ast.Call)

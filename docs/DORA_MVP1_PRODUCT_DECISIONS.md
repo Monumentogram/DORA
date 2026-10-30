@@ -1379,3 +1379,11 @@ unaffordable 24-hour request is rejected. Preview release identity is prepared a
 owner certificate. This decision does not certify a physical 24-hour recording, native ASR
 coverage, live long Cloud service, a signed upgrade, Samsung/POCO installation or release.
 Stage12 security remains PARTIAL; Issue125 and privacy/control approvals remain separate.
+
+DEC-053 measured follow-up, 2026-10-30: implementation is complete and the full
+synthetic 24-hour storage trial passed. Measured microphone/native-ASR maxima
+remain 30 minutes in their test environments; physical and live-Cloud maxima
+remain pending. The owner-signed upgrade preserved audio/model/history, while
+the exact candidate's ARM-translated VAD smoke crashed. Publication is withheld
+pending signed-runtime qualification and final CI. This updates evidence, not
+the approved scope or device permissions; see [qualification](ALPHA_V9_QUALIFICATION.md).

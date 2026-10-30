@@ -2041,3 +2041,14 @@ coverage and physical-device endurance require distinct evidence. Preview9 ident
 preparation does not establish those results. Stage12 security, Issue125, privacy/control
 approval, Stage8.6 and signed-upgrade/device gates retain their independent requirements.
 No production AWS change, personal-phone installation, release or merge follows here.
+
+### Alpha v9 measured follow-up — 2026-10-30
+
+The [qualification record](ALPHA_V9_QUALIFICATION.md) now confirms the full
+2,764,800,000-byte synthetic encrypted source, all 288 bounded reads, exact hash
+and deletion/revocation. Peak PSS was 174,749 KiB; 805,387ms finalization and
+1,015,128ms deletion remain latency limitations. Real-time test-signed emulator
+capture reaches 30 minutes; physical 24-hour operation is unqualified. Actual
+owner-signed v8 upgrade preserved data and model, but the signed v9 ARM-translated
+VAD load crashed. Publication is `NOT_READY` pending that runtime qualification
+and final CI; byte-identical native payloads alone do not resolve the failure.

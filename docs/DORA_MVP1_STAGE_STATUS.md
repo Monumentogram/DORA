@@ -2019,3 +2019,20 @@ qualified. Stage12 remains PARTIAL; Issue125 and privacy/control approval are op
 independent gates. Historical releases, Stage8.6 NOT_READY and prior evidence retain
 their original meanings. No AWS mutation, personal-phone installation, release or merge
 is authorized by this preparation entry.
+
+### Alpha v9 measured progress — 2026-10-30, 14:15 UTC
+
+`NOT_READY / SIGNED_RUNTIME_AND_FINAL_CI_PENDING`. The implementation and scoped
+source review are complete. The [qualification record](ALPHA_V9_QUALIFICATION.md)
+now records the successful full 24-hour synthetic encrypted-storage trial,
+30-minute API28/API36 test-signed microphone capture and playback, RU/EN native
+30-minute functional evidence with partial boundary accuracy, isolated Cloud
+software integration, two reproducible owner-signed builds and actual signed
+v8-to-v9 data/model/history preservation through reboot.
+
+Publication remains withheld: the exact signed candidate crashed while loading
+ONNX Runtime through ARM translation on x86 API36, and final persistence CI needs
+the reviewed schema-fixture/sharding corrections. Unchanged native payload bytes
+do not prove a pre-existing emulator defect. Samsung/POCO, physical endurance,
+24-hour native ASR, live long Cloud and Stage12/Issue125 retain their separate
+pending status. No personal phone, production AWS or merge was touched.
