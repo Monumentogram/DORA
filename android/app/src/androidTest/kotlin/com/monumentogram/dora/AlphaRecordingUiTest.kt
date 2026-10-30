@@ -9,6 +9,7 @@ import com.monumentogram.dora.audio.recording.RecordingPhase
 import com.monumentogram.dora.audio.recording.RecordingState
 import com.monumentogram.dora.recording.RecordingScreen
 import com.monumentogram.dora.recording.RecordingViewState
+import com.monumentogram.dora.ui.signal.uiCopy
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 import org.junit.Rule
 import org.junit.Test
@@ -20,27 +21,30 @@ class AlphaRecordingUiTest {
     fun elapsedAndRemainingUseCapturedFrames() {
         render(RecordingPhase.PAUSED, 1_382_384_000)
         rule.onNodeWithText("23:59:59").assertIsDisplayed()
-        rule.onNodeWithText("Осталось в Alpha: 00:00:01").performScrollTo().assertIsDisplayed()
+        rule
+            .onNodeWithText(uiCopy("Осталось в Alpha") + ": 00:00:01")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
     fun capSavingNeverClaimsSaved() {
         render(RecordingPhase.FINALIZING, 1_382_400_000)
-        rule.onNodeWithText("Проверяем сохранение").assertIsDisplayed()
-        rule.onNodeWithText(SAVED).assertDoesNotExist()
+        rule.onNodeWithText(uiCopy("Проверяем сохранение")).assertIsDisplayed()
+        rule.onNodeWithText(uiCopy(SAVED)).assertDoesNotExist()
     }
 
     @Test
     fun onlyDurableSavedShowsCapCompletion() {
         render(RecordingPhase.SAVED, 1_382_400_000)
-        rule.onNodeWithText(SAVED).assertIsDisplayed()
+        rule.onNodeWithText(uiCopy(SAVED)).assertIsDisplayed()
     }
 
     @Test
     fun interruptedCapShowsActualFailure() {
         render(RecordingPhase.INTERRUPTED, 1_382_400_000)
-        rule.onNodeWithText("Запись прервана").assertIsDisplayed()
-        rule.onNodeWithText(SAVED).assertDoesNotExist()
+        rule.onNodeWithText(uiCopy("Запись прервана")).assertIsDisplayed()
+        rule.onNodeWithText(uiCopy(SAVED)).assertDoesNotExist()
     }
 
     private fun render(phase: RecordingPhase, frames: Long) {
