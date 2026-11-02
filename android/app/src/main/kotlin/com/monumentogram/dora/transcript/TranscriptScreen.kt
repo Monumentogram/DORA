@@ -243,7 +243,7 @@ internal fun TranscriptDialog(
                             Text("Продолжить распознавание")
                         }
                     }
-                    if (actions.busy)
+                    if (actions.canCancelRecognition)
                         TextButton(onClick = actions::cancel) {
                             Text(stringResource(R.string.signal_copy_25))
                         }

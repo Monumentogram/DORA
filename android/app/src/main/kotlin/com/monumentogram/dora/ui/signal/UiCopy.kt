@@ -49,6 +49,12 @@ private val legacyCopy =
             "Alpha limit reached — 24 hours. Recording saved",
         "Сохраняем последние секунды…" to "Saving the last few seconds…",
         "Сохраняем…" to "Saving…",
+        "Сохраняем восстановленную часть…" to "Saving recovered audio…",
+        "Сохранить восстановленную часть" to "Save recovered audio",
+        "Восстановленная часть сохранена. Микрофон не включался." to
+            "Recovered audio saved. The microphone stayed off.",
+        "Не удалось подтвердить сохранение. Проверьте запись ещё раз." to
+            "Could not confirm saving. Check the recording again.",
         "Ожидаем подтверждения сохранения" to "Waiting for save confirmation",
         "Сохранённое аудио остаётся на устройстве. Проверьте его состояние ниже." to
             "Saved audio stays on your device. Check its status below.",

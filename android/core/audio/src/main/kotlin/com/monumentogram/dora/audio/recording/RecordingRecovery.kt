@@ -44,6 +44,20 @@ internal constructor(
     val semanticMetadataState: RecoveryMetadataState = RecoveryMetadataState.NOT_EVALUATED,
     val cursor: String = identity?.assetId?.value.orEmpty(),
 ) {
+    /** Display eligibility only. Saving reauthenticates this exact source under current access. */
+    val canSavePrefix: Boolean
+        get() {
+            val source = summary ?: return false
+            return identity != null &&
+                source.identity == identity &&
+                source.completion == AudioCompletion.PARTIAL_RECOVERED &&
+                source.frames in 1L..AlphaRecordingLimit.MAX_ALPHA_FRAMES &&
+                source.tailFailure == null &&
+                failure == null &&
+                canResume &&
+                completionState == RecordingCompletionState.RECOVERABLE_PARTIAL
+        }
+
     val recoveredFrames: Long
         get() = summary?.frames ?: 0
 

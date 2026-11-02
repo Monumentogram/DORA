@@ -891,11 +891,19 @@ private constructor(
                 }
         }
 
-        private fun reservationMatches(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
+        private fun reservationMatches(
+            expected: StoredAudioAsset,
+            intent: AudioIntent,
+            revision: Long,
+        ): Boolean {
             val observed = reservationSnapshot
             reservationSnapshot = null
-            if (intent is AudioIntent.Append && observed != null && observed == expected)
-                return true
+            val proof = verifiedCatalog
+            val matchingObservation =
+                intent is AudioIntent.Append && observed != null && observed == expected
+            val currentProof =
+                proof != null && proof.asset === observed && proof.revision == revision
+            if (matchingObservation && currentProof) return true
             return try {
                 load(expected.identity) == expected
             } finally {
@@ -909,8 +917,11 @@ private constructor(
         override fun reserve(expected: StoredAudioAsset, intent: AudioIntent): Boolean {
             requireOperation(expected.identity)
             requireMutable()
+            // Bind observation and write to one live revision. A later revision must never
+            // bless an earlier immutable snapshot after an external connection changes it.
+            val revision = catalogRevision()
             if (
-                !reservationMatches(expected, intent) ||
+                !reservationMatches(expected, intent, revision) ||
                     expected.pending != null ||
                     expected.finalization != null
             )
@@ -942,7 +953,6 @@ private constructor(
                             unit.physicalFirstFrame,
                             unit.sourceFrameOffset,
                         )
-                    val revision = catalogRevision()
                     val oldReceipt = dao.intent(assetId)
                     commits.commit({
                         check(catalogRevision() == revision)
@@ -967,6 +977,7 @@ private constructor(
                     if (intent.sources.isEmpty() || intent.sources != expected.segments)
                         return false
                     commits.commit({
+                        check(catalogRevision() == revision)
                         dao.removeIntent(assetId)
                         dao.insert(IntentEntity(assetId, "FINALIZE", null))
                         intent.sources.forEach { dao.insert(it.finalSource()) }

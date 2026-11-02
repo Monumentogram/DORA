@@ -34,8 +34,12 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
     private val cancellations = EncryptedCloudCancellations(activity.applicationContext)
     private var cloudAction: Pair<String, String>? = null
     @Volatile private var compositeCloud = false
+    private var recognitionInProgress = false
     var busy by mutableStateOf(false)
         private set
+
+    val canCancelRecognition: Boolean
+        get() = busy && recognitionInProgress && attempt != null
 
     var document by mutableStateOf<TranscriptDocument?>(null)
         private set
@@ -95,19 +99,28 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
         result
     }
 
-    fun deleteRecording(identity: AudioIdentity, onDeleted: () -> Unit) = open { session ->
-        // Revoke every retained Cloud action before erasing its transcript/job metadata.
-        // This is local revocation; the UI never claims a remote deletion receipt.
-        requireValue(session.transcripts.load(identity))?.jobs?.forEach { job ->
-            job.consent?.let { cancellations.record(job.id, it.destination) }
+    fun deleteRecording(identity: AudioIdentity, onDeleted: () -> Unit) {
+        val request = generation + 1
+        open(
+            waitingMessage = activity.getString(R.string.stage11_delete_preparing),
+            failureText = activity.getString(R.string.stage11_delete_incomplete),
+        ) { session ->
+            // Revoke every retained Cloud action before erasing its transcript/job metadata.
+            // This is local revocation; the UI never claims a remote deletion receipt.
+            requireValue(session.transcripts.load(identity))?.jobs?.forEach { job ->
+                job.consent?.let { cancellations.record(job.id, it.destination) }
+            }
+            activity.runOnUiThread {
+                if (current(request)) message = activity.getString(R.string.stage11_delete_working)
+            }
+            val result = session.deleteRecordingConfirmed(identity)
+            val publish: () -> Unit = {
+                document = null
+                if (result is com.monumentogram.dora.audio.AudioResult.Value) onDeleted()
+                else message = activity.getString(R.string.stage11_delete_incomplete)
+            }
+            publish
         }
-        val result = session.deleteRecordingConfirmed(identity)
-        val publish: () -> Unit = {
-            document = null
-            if (result is com.monumentogram.dora.audio.AudioResult.Value) onDeleted()
-            else message = activity.getString(R.string.stage11_delete_incomplete)
-        }
-        publish
     }
 
     fun library() = open { session ->
@@ -125,7 +138,7 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
         attempt = owned
         localIdentity = identity
         val request = generation + 1
-        open { session ->
+        open(recognition = true) { session ->
             val file = model.installed() ?: throw RecognitionFailure("MODEL_MISSING")
             if (!WhisperNative.available()) throw RecognitionFailure("RUNTIME_UNAVAILABLE")
             val result =
@@ -153,6 +166,7 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
     }
 
     fun cancel() {
+        if (!canCancelRecognition) return
         message = cancelAttempt()
     }
 
@@ -208,7 +222,7 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
         // Capture before requestOpen: cancellation may happen while the vault is opening.
         cloudAction = jobId to endpoint
         val request = generation + 1
-        open { session ->
+        open(recognition = true) { session ->
             val api = CloudHttpClient(endpoint, installation.installationId, installation::sign)
             cloudApi = api
             if (owned.cancelled() || cancellations.blocked(jobId, endpoint))
@@ -455,10 +469,16 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
 
     // Authorization, worker completion and generation-bound UI delivery share one lifecycle.
     @Suppress("LongMethod", "CyclomaticComplexMethod")
-    private fun open(action: (ProductAudioSession) -> (() -> Unit)) {
+    private fun open(
+        waitingMessage: String = "Ожидает обработки",
+        failureText: String? = null,
+        recognition: Boolean = false,
+        action: (ProductAudioSession) -> (() -> Unit),
+    ) {
         if (busy || closed) return
+        recognitionInProgress = recognition
         busy = true
-        message = "Ожидает обработки"
+        message = waitingMessage
         val request = ++generation
         runtime.requestOpen(activity, AudioOpenMode.OPEN_EXISTING) { available ->
             if (!current(request)) {
@@ -498,7 +518,8 @@ internal class TranscriptActions(private val activity: MainActivity) : AutoClose
                             localProgress = checkpoint?.takeIf { it.spec.engine == "LOCAL" }
                             cloudProgress = checkpoint?.takeIf { it.spec.engine == "CLOUD" }
                             message =
-                                (error as? CloudFailure)?.let { cloudFailureMessage(it) }
+                                failureText
+                                    ?: (error as? CloudFailure)?.let { cloudFailureMessage(it) }
                                     ?: failureMessage(category)
                         }
                         failure

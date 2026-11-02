@@ -121,3 +121,51 @@ Source binding must distinguish subsequent test/CI-only changes from the measure
 candidate. Stage12 stays PARTIAL; Issue125 and privacy/control approvals,
 historical unqualified migrations and Stage8.6 are not closed by this record.
 No personal-phone installation, production AWS change, release or merge follows.
+
+## E. Resumed stabilization, 2026-11-02
+
+The preceding attempts retain their historical outcomes. The candidate remains
+unpublished; current-source signed builds, complete CI and final independent
+review are still required after these code changes.
+
+The [native investigation](ALPHA_V9_NATIVE_STARTUP_INVESTIGATION.md) now explains
+the observed startup failure with pinned CPUInfo source, exact binary mapping,
+native-visible topology and a same-library control. On the four-core translated
+emulator proc reports two CPUs while sysfs reports four; the isolated loader
+reproduced the exact constructor crash. Changing only the virtual CPU count to
+two aligned the inputs and the same ORT loaded in 291 ms. The retained signed
+candidate then saved 90 seconds through normal UI without native crash. Initial
+VAD backpressure was observed separately. This is neither real ARM qualification
+nor a clean endurance/performance verdict; no runtime or model was replaced.
+
+The failed persistence shards contained stale full-catalog/probe expectations
+after incremental catalog readback. A separate new regression also exposed a
+real defect: direct reservation could reuse a snapshot after another connection
+changed the durable catalog. Reservation now binds the observation and write to
+one revision, rechecked inside the transaction. The exact original 12-method
+class passed on API36 in 9.468s, including external mutations before reservation
+and between precondition and transaction. No method or assertion category was
+removed; injected readback failures still fence the journal until reopen.
+
+Four virtual-clock wake tests pass after the original policy failed three of
+them. The new independent timer preserves a bounded 60-second wake lease during
+finalization without requiring state emissions. Explicit recovered-prefix save
+has passed targeted JVM checks and the 14-method encrypted recovery class on
+API36 in 60.658s. The strengthened fault-phase witness and all twelve reservation
+methods then passed together in 21.928s (13 methods). The current local build
+passed detekt, lint, core JVM debug/release (292/293), app JVM (152), the remaining
+required module suites and APK compilation. The integrated host batch passed
+304 tests; independent targeted runner checks passed 22. These tests do not
+repeat or replace the full-day storage trial,
+and repeated authentication scans remain a latency limitation.
+
+Stage9 API28's earlier 900-second CI timeout is not classified as a pass or an
+infrastructure fault. Its runner now retains exact test progress, bounded health
+diagnostics and a terminal receipt while preserving that deadline. Current-source
+local reproduction completed the interrupted-prefix method in 350.328s, then hit
+the aggregate 900s deadline during the continuity/finalization method with its
+process alive. No assertion failure was observed before that timeout; the batch
+is FAIL, not an infrastructure waiver. A focused phase-instrumented diagnosis is
+pending. CI must establish the final result. [Whisper quality evidence](ALPHA_V9_WHISPER_QUALITY.md)
+keeps functional success and strict quality failures separate; an ordered-prefix
+score alone is not proof that transcript parts were reordered.

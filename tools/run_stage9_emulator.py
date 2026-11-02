@@ -8,6 +8,28 @@ import re
 import shutil
 import subprocess
 import uuid
+from persistence_instrumentation_diagnostics import Progress, stream, emulator_diagnostics
+
+
+def recording_diagnostics(adb, serial, arguments, receipt):
+    validate_serial(serial)
+    prefix = 'com.monumentogram.dora.audio.persistence.'
+    expected = [prefix + name for name in (
+        'AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording',
+        'AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization',
+        'auth.AndroidLocalAccessTest#exactResumedActivityRequiredWithoutCredentialPrompt',
+    )]
+    progress = receipt.with_name(receipt.stem + '-recording-progress.json')
+    output = stream([adb, '-s', serial, *arguments], expected, progress, hard_timeout=900,
+                    probe=lambda: emulator_diagnostics(adb, serial),
+                    capture=lambda: emulator_diagnostics(adb, serial, stack=True))
+    terminal = Progress(expected)
+    for line in output.splitlines():
+        terminal.feed(line)
+    terminal.require_passed()
+    if re.findall(r'^INSTRUMENTATION_CODE: (-?\d+)$', output, re.M) != ['-1']:
+        raise ValueError('INCOMPLETE_INSTRUMENTATION_RESULT')
+    return output
 
 
 def validate_serial(serial):
@@ -55,10 +77,15 @@ def main():
                 raise RuntimeError("Install failed")
 
         def instrument(label, package, classes, count, extra=()):
-            output = command("shell", "am", "instrument", "-w", "-r", "-e", "class", classes,
-                             *extra, package + "/androidx.test.runner.AndroidJUnitRunner", timeout=900)
-            passed = successful(output, count)
-            receipt["checks"].append({"name": label, "expectedTests": count, "passed": passed})
+            arguments = ["shell", "am", "instrument", "-w", "-r", "-e", "class", classes,
+                         *extra, package + "/androidx.test.runner.AndroidJUnitRunner"]
+            check = {"name": label, "expectedTests": count, "passed": False}
+            receipt["checks"].append(check)
+            if label == "bounded-recording-and-pin-free-authority":
+                output = recording_diagnostics(adb, args.serial, arguments, args.receipt)
+            else:
+                output = command(*arguments, timeout=900)
+            passed = check["passed"] = successful(output, count)
             # Tests contain only synthetic fixtures; failure output is useful for diagnosing CI.
             if not passed:
                 print(output)

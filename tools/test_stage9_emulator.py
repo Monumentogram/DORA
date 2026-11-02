@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import sqlite3
+from unittest.mock import patch
 from run_stage9_emulator import successful, validate_serial
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,6 +13,44 @@ SCHEMAS = ROOT / 'android/core/audio/schemas/com.monumentogram.dora.audio.persis
 
 
 class Stage9EmulatorTest(unittest.TestCase):
+    def test_summary_and_progress_cannot_replace_completed_tests(self):
+        import run_stage9_emulator as runner
+        prefix = 'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest'
+        output = ('INSTRUMENTATION_STATUS: class=' + prefix + '\n'
+                  'INSTRUMENTATION_STATUS: test=interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization\n'
+                  'INSTRUMENTATION_STATUS_CODE: 1\n'
+                  'INSTRUMENTATION_STATUS: stage9Progress=phase=DONE acceptedUnits=361 durableFrames=28800800 elapsedMs=500\n'
+                  'INSTRUMENTATION_STATUS_CODE: 3\nOK (3 tests)\nINSTRUMENTATION_CODE: -1\n')
+        with patch.object(runner, 'stream', return_value=output):
+            with self.assertRaises(ValueError):
+                runner.recording_diagnostics('adb', 'emulator-5554', [], Path('receipt.json'))
+
+    def test_recording_diagnostics_keep_deadline_and_exact_inventory(self):
+        import run_stage9_emulator as runner
+        expected = {
+            'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording',
+            'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization',
+            'com.monumentogram.dora.audio.persistence.auth.AndroidLocalAccessTest#exactResumedActivityRequiredWithoutCredentialPrompt',
+        }
+        lines = []
+        for name in sorted(expected):
+            cls, method = name.split('#')
+            for code in (1, 0):
+                lines += ['INSTRUMENTATION_STATUS: class=' + cls,
+                          'INSTRUMENTATION_STATUS: test=' + method,
+                          'INSTRUMENTATION_STATUS_CODE: ' + str(code)]
+        output = '\n'.join(lines + ['OK (3 tests)', 'INSTRUMENTATION_CODE: -1']) + '\n'
+        with patch.object(runner, 'stream', return_value=output) as capture:
+            self.assertEqual(output, runner.recording_diagnostics(
+                'adb', 'emulator-5554', ['shell', 'am', 'instrument'], Path('receipt.json')))
+        args, kwargs = capture.call_args
+        self.assertEqual(['adb', '-s', 'emulator-5554', 'shell', 'am', 'instrument'], args[0])
+        self.assertEqual(expected, set(args[1]))
+        self.assertEqual(Path('receipt-recording-progress.json'), args[2])
+        self.assertEqual(900, kwargs['hard_timeout'])
+        self.assertTrue(callable(kwargs['probe']))
+        self.assertTrue(callable(kwargs['capture']))
+
     def test_every_core_sqlite_callback_has_an_explicit_current_or_historical_scope(self):
         directory = ROOT / 'android/core/audio/src/androidTest/kotlin/com/monumentogram/dora/audio'
         observed = {}

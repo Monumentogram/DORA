@@ -81,3 +81,14 @@ with the correction, including real SQLite equality against exported v1/v2 table
 and index DDL. The unchanged nine-method batch then passed on API36 in 23.08s
 (`stage9-migration-api36-green.log`). Exact-head CI and API28 requalification
 remain required; no ordinary method was excluded or relabelled historical.
+
+On 2026-11-02 exactly two source pins were refreshed after independent review of
+the formatted bytes: RoomAudioJournal binds direct reservation to one durable
+revision through transaction entry; EncryptedAudioVault exposes authenticated
+explicit finalization of a recovered prefix through the existing worker and
+bridge. Schema versions, the other sixteen pins and the 188-method ordinary
+inventory are unchanged. The original 12 reservation methods and 14 logical
+recovery methods retain their identities and add external-connection mutation,
+readback-failure/reopen, exact PCM, cap, deletion and durable-intent checks.
+This source admission does not carry an old APK or old runtime receipt forward
+as qualification of changed product bytes.

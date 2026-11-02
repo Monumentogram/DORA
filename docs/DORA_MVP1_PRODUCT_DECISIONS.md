@@ -1387,3 +1387,14 @@ remain pending. The owner-signed upgrade preserved audio/model/history, while
 the exact candidate's ARM-translated VAD smoke crashed. Publication is withheld
 pending signed-runtime qualification and final CI. This updates evidence, not
 the approved scope or device permissions; see [qualification](ALPHA_V9_QUALIFICATION.md).
+
+DEC-053 stabilization follow-up, 2026-11-02: an authenticated, clean recovered
+prefix can be saved explicitly without reopening the microphone, including at
+the 24-hour cap. The action revalidates the current session, exact source,
+authority and deletion state and uses the existing durable finalization path;
+it does not automatically finalize resumable partial recordings. Long-running
+finalization renews its bounded wake lease independently of presentation-state
+updates. Deletion feedback distinguishes preparation and execution, explains
+retry after interruption and offers recognition cancellation only during a
+recognition operation. These are local recovery/lifecycle corrections within
+the owner's existing scope, not a storage redesign or new performance claim.

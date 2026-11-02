@@ -57,6 +57,9 @@ internal interface RuntimeVault : AutoCloseable {
     ): AudioResult<List<com.monumentogram.dora.audio.recording.RecordingRecovery>> =
         AudioResult.Failed(AudioFailure.UNAVAILABLE)
 
+    fun finalizeRecoveredPrefix(identity: AudioIdentity): AudioResult<Unit> =
+        AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
     val originals: OriginalAudioPort
 
     fun recordingSearchPage(
@@ -205,6 +208,19 @@ internal class AudioRuntimeCoordinator(
             return
         }
         worker.execute { completion(handle.perform { recordingRecoveryPage(after) }) }
+    }
+
+    fun finalizeRecoveredPrefix(
+        session: ProductAudioSession,
+        identity: AudioIdentity,
+        completion: (AudioResult<Unit>) -> Unit,
+    ) {
+        val handle = session as? Handle
+        if (handle == null || !isCurrent(handle)) {
+            completion(AudioResult.Failed(AudioFailure.LOCKED))
+            return
+        }
+        worker.execute { completion(handle.perform { finalizeRecoveredPrefix(identity) }) }
     }
 
     fun isCurrent(session: ProductAudioSession): Boolean =

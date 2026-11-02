@@ -84,5 +84,8 @@ jobs:
         if: always()
         with:
           name: stage9-api${{ matrix.api }}-receipt
-          path: ${{ runner.temp }}/stage9-api${{ matrix.api }}.json
+          path: |
+            ${{ runner.temp }}/stage9-api${{ matrix.api }}.json
+            ${{ runner.temp }}/stage9-api${{ matrix.api }}-recording-progress.json
+            ${{ runner.temp }}/stage9-api${{ matrix.api }}-recording-progress.jsonl
           retention-days: 7

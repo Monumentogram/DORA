@@ -5,6 +5,7 @@ import android.content.ContextWrapper
 import android.system.Os
 import android.system.OsConstants
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import com.monumentogram.dora.audio.AudioCompletion
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioFormat
 import com.monumentogram.dora.audio.AudioIdentity
@@ -39,6 +40,7 @@ import com.monumentogram.dora.audio.persistence.keys.VaultKeystoreIo
 import com.monumentogram.dora.audio.persistence.keys.VaultSecretStore
 import com.monumentogram.dora.audio.persistence.runtime.ResourceRetirement
 import com.monumentogram.dora.audio.persistence.runtime.RuntimeVault
+import com.monumentogram.dora.audio.recording.RecordingCompletionState
 import com.monumentogram.dora.audio.recording.RecordingRecovery
 import com.monumentogram.dora.audio.transcript.TranscriptPort
 import com.monumentogram.dora.audio.transcript.TranscriptReducer
@@ -496,6 +498,26 @@ private constructor(
                 RecordingRecovery(identity, null, AudioFailure.UNAVAILABLE, false, 0)
             )
         RecordingRecoveryReader(journal, bridge).read(identity)
+    }
+
+    override fun finalizeRecoveredPrefix(identity: AudioIdentity): AudioResult<Unit> = operation {
+        journal.requireMutableSource(identity)
+        val recovered = recordingRecovery(identity)
+        if (recovered is AudioResult.Failed) return@operation recovered
+        val observation = (recovered as AudioResult.Value).value
+        val summary = observation.summary
+        if (observation.identity != identity)
+            return@operation AudioResult.Failed(AudioFailure.INVALID_INPUT)
+        val finalized =
+            observation.completionState == RecordingCompletionState.FINALIZED &&
+                summary?.completion == AudioCompletion.FINALIZED
+        val clean = observation.failure == null && summary?.tailFailure == null
+        if (finalized && clean) return@operation AudioResult.Value(Unit)
+        if (!observation.canSavePrefix)
+            return@operation AudioResult.Failed(observation.failure ?: AudioFailure.INCOMPLETE)
+        // Existing authenticated reconciliation, immutable finalization intent and exact durable
+        // readback are reused. This action never opens a microphone or resumes capture.
+        bridge.finalize(identity)
     }
 
     private fun recordingLibraryMetadata(

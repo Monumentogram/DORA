@@ -35,10 +35,36 @@ class Progress:
         self.current = {}
         self.last_started = self.last_completed = None
         self.completed = []
+        self.passed = []
         self.events = 0
         self.suppressed = 0
+        self.stage9_checkpoint = self.pending_checkpoint = None
 
     def feed(self, line):
+        if self.pending_checkpoint is not None:
+            if line != 'INSTRUMENTATION_STATUS_CODE: 3':
+                raise ValueError('INVALID_STAGE9_CHECKPOINT_STATUS')
+            self.stage9_checkpoint, self.pending_checkpoint = self.pending_checkpoint, None
+            self.events += 1
+            return line
+        marker = 'INSTRUMENTATION_STATUS: stage9Progress='
+        if line.startswith(marker):
+            phases = {'FIXTURE_READY', 'OPEN_BEGIN', 'OPEN_END', 'APPEND', 'INTERRUPT_BEGIN',
+                      'INTERRUPT_END', 'REOPEN_BEGIN', 'REOPEN_END', 'RECOVERY_BEGIN', 'RECOVERY_END',
+                      'PAUSE_BEGIN', 'PAUSE_END', 'FINALIZE_BEGIN', 'FINALIZE_END', 'VERIFY_BEGIN',
+                      'VERIFY_END', 'SECOND_SOURCE_BEGIN', 'SECOND_SOURCE_END', 'FINAL_REOPEN_BEGIN',
+                      'FINAL_REOPEN_END', 'DONE'}
+            match = re.fullmatch(r'phase=([A-Z_]+) acceptedUnits=(\d{1,3}) durableFrames=(\d{1,8}) elapsedMs=(\d{1,12})', line[len(marker):])
+            active = self.last_started or ''
+            if (self.current or not active.startswith('com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#')
+                    or active in self.completed or not match or match[1] not in phases):
+                raise ValueError('INVALID_STAGE9_CHECKPOINT')
+            units, frames, elapsed = map(int, match.groups()[1:])
+            if units > 362 or frames > 28_800_800:
+                raise ValueError('INVALID_STAGE9_CHECKPOINT_BOUNDS')
+            self.pending_checkpoint = {'phase': match[1], 'acceptedUnits': units,
+                                       'durableFrames': frames, 'elapsedMs': elapsed}
+            return line
         match = re.fullmatch(r'INSTRUMENTATION_STATUS: (class|test)=(.+)', line)
         if match:
             key, value = match.groups()
@@ -56,11 +82,14 @@ class Progress:
             code = int(match[1])
             if code == 1:
                 self.last_started = name
+                self.stage9_checkpoint = None
             elif code in (0, -1, -2, -3, -4):
                 if name in self.completed:
                     raise ValueError('DUPLICATE_COMPLETION')
                 self.last_completed = name
                 self.completed.append(name)
+                if code == 0:
+                    self.passed.append(name)
             else:
                 raise ValueError('UNEXPECTED_STATUS_CODE')
             self.current = {}
@@ -73,10 +102,17 @@ class Progress:
         self.suppressed += 1
         return None
 
+    def require_passed(self):
+        if self.current or self.pending_checkpoint is not None:
+            raise ValueError('INCOMPLETE_TERMINAL_STATUS')
+        require_complete(self.completed, self.expected)
+        require_complete(self.passed, self.expected)
+
     def snapshot(self):
         return {'lastStartedTest': self.last_started, 'lastCompletedTest': self.last_completed,
                 'completedCount': len(self.completed), 'completedTests': list(self.completed),
-                'statusEvents': self.events, 'suppressedLineCount': self.suppressed}
+                'statusEvents': self.events, 'suppressedLineCount': self.suppressed,
+                'stage9Checkpoint': self.stage9_checkpoint}
 
 
 @contextmanager

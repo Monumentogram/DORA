@@ -20,7 +20,6 @@ import androidx.core.app.ServiceCompat
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.R
-import com.monumentogram.dora.audio.recording.RecordingDurability
 import com.monumentogram.dora.audio.recording.RecordingPhase
 import java.io.FileDescriptor
 import java.io.PrintWriter
@@ -40,8 +39,8 @@ class ProductRecordingService : Service() {
     private var lastPhase: RecordingPhase? = null
     private var lastPausePending = false
     private var lastResumePending = false
-    private var renewedAt = 0L
     private lateinit var wakeLock: PowerManager.WakeLock
+    private lateinit var wakeRenewal: RecordingWakeRenewal
 
     override fun onCreate() {
         super.onCreate()
@@ -58,10 +57,13 @@ class ProductRecordingService : Service() {
             getSystemService(PowerManager::class.java)
                 .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "DORA:recording")
                 .apply { setReferenceCounted(false) }
+        wakeRenewal = RecordingWakeRenewal(WakeDriver())
         controller.onTerminal = {
             main.post {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 foreground = false
+                val recording = controller.state.value.recording
+                wakeRenewal.update(foreground, recording.phase, recording.durability)
                 notifyCompletion()
                 stopSelf()
             }
@@ -83,17 +85,7 @@ class ProductRecordingService : Service() {
                     lastPausePending = snapshot.pausePending
                     lastResumePending = snapshot.resumePending
                 }
-                val needsWake =
-                    phase == RecordingPhase.RECORDING ||
-                        phase == RecordingPhase.FINALIZING ||
-                        snapshot.recording.durability == RecordingDurability.PENDING
-                if (foreground && needsWake) {
-                    val now = SystemClock.elapsedRealtime()
-                    if (!wakeLock.isHeld || now - renewedAt >= WAKE_RENEW_MILLIS) {
-                        wakeLock.acquire(WAKE_TIMEOUT_MILLIS)
-                        renewedAt = now
-                    }
-                } else if (wakeLock.isHeld) wakeLock.release()
+                wakeRenewal.update(foreground, phase, snapshot.recording.durability)
             }
         }
     }
@@ -118,6 +110,8 @@ class ProductRecordingService : Service() {
                         )
                         foreground = true
                         controller.serviceStart(token)
+                        val recording = controller.state.value.recording
+                        wakeRenewal.update(foreground, recording.phase, recording.durability)
                     } catch (_: Exception) {
                         controller.serviceRejected()
                         stopSelf()
@@ -165,10 +159,33 @@ class ProductRecordingService : Service() {
 
     override fun onDestroy() {
         controller.onTerminal = null
+        foreground = false
+        wakeRenewal.close()
         controller.serviceDestroyed()
-        if (wakeLock.isHeld) wakeLock.release()
         scope.cancel()
         super.onDestroy()
+    }
+
+    private inner class WakeDriver : RecordingWakeRenewal.Driver {
+        override fun nowMillis() = SystemClock.elapsedRealtime()
+
+        override fun isHeld() = wakeLock.isHeld
+
+        override fun acquire(timeoutMillis: Long) {
+            wakeLock.acquire(timeoutMillis)
+        }
+
+        override fun release() {
+            wakeLock.release()
+        }
+
+        override fun schedule(callback: Runnable, delayMillis: Long) {
+            main.postDelayed(callback, delayMillis)
+        }
+
+        override fun cancel(callback: Runnable) {
+            main.removeCallbacks(callback)
+        }
     }
 
     private fun notification(
@@ -253,8 +270,6 @@ class ProductRecordingService : Service() {
         private const val NOTIFICATION_ID = 8301
         private const val LIMIT_NOTIFICATION_ID = 8302
         private const val FLAGS = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        private const val WAKE_TIMEOUT_MILLIS = 60_000L
-        private const val WAKE_RENEW_MILLIS = 30_000L
 
         fun startIntent(context: Context, token: String) =
             Intent(context, ProductRecordingService::class.java)

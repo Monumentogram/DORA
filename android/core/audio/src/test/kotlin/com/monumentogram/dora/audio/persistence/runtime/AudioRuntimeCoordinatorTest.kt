@@ -31,6 +31,39 @@ import org.junit.Test
 
 class AudioRuntimeCoordinatorTest {
     @Test
+    fun savingRecoveredPrefixUsesCurrentSerializedSessionAndRechecksRevocation() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                fun save(): AudioResult<Unit> {
+                    val done = CountDownLatch(1)
+                    var result: AudioResult<Unit>? = null
+                    runtime.finalizeRecoveredPrefix(session, identity) {
+                        result = it
+                        done.countDown()
+                    }
+                    assertTrue(done.await(5, TimeUnit.SECONDS))
+                    return checkNotNull(result)
+                }
+                assertEquals(AudioResult.Value(Unit), save())
+                assertEquals(identity, vault.savedPrefixIdentity)
+                assertEquals(1, vault.savedPrefixes)
+                assertEquals(0, vault.writes)
+                vault.onSavePrefix = {
+                    lock.revoke()
+                    runtime.revoke()
+                }
+                assertEquals(AudioResult.Failed(AudioFailure.LOCKED), save())
+                assertEquals(2, vault.savedPrefixes)
+                assertEquals(AudioResult.Failed(AudioFailure.LOCKED), save())
+                assertEquals(2, vault.savedPrefixes)
+                assertEquals(0, vault.writes)
+            }
+    }
+
+    @Test
     fun cloudRuntimeHandleForwardsEveryOperationAndFencesRevocation() {
         val lock = LocalAccessSession { true }
         val vault = FixtureVault()
@@ -398,6 +431,17 @@ class AudioRuntimeCoordinatorTest {
             AudioResult.Value(emptyList())
         }
     ) : RuntimeVault {
+        var savedPrefixes = 0
+        var savedPrefixIdentity: AudioIdentity? = null
+        var onSavePrefix: () -> Unit = {}
+
+        override fun finalizeRecoveredPrefix(identity: AudioIdentity): AudioResult<Unit> {
+            savedPrefixes++
+            savedPrefixIdentity = identity
+            onSavePrefix()
+            return AudioResult.Value(Unit)
+        }
+
         var transcriptReads = 0
         var onTranscriptLoad: () -> Unit = {}
         override val transcripts =

@@ -1,5 +1,6 @@
 package com.monumentogram.dora.audio.persistence
 
+import com.monumentogram.dora.audio.AudioCompletion
 import com.monumentogram.dora.audio.AudioFailure
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioIntent
@@ -19,9 +20,11 @@ import com.monumentogram.dora.audio.recording.RecordingSession
 import com.monumentogram.dora.audio.recording.RecoveryMetadataState
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
+import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -240,6 +243,71 @@ class LogicalRecoveryRuntimeTest {
                 recovery(vault, f.audio).completionState,
             )
         }
+        saveRecoveredPrefixAfterReopen(false)
+        saveRecoveredPrefixAfterReopen(true)
+    }
+
+    private fun saveRecoveredPrefixAfterReopen(stopAfterIntent: Boolean) {
+        val fixture = EncryptedAudioVaultFaultFixture()
+        var armed = false
+        var finalizeIntentStopped = false
+        val dependencies =
+            EncryptedAudioVault.Dependencies(
+                catalog = { real ->
+                    object : EncryptedAudioCatalog by real {
+                        override fun reserve(
+                            expected: StoredAudioAsset,
+                            intent: AudioIntent,
+                        ): Boolean =
+                            real.reserve(expected, intent).also {
+                                if (it && armed && intent is AudioIntent.Finalize) {
+                                    finalizeIntentStopped = true
+                                    error("SYNTHETIC_FINALIZE_INTENT_STOP")
+                                }
+                            }
+                    }
+                }
+            )
+        fixture.open(dependencies = dependencies).use { vault ->
+            val session = RecordingSession(fixture.audio, vault.writer)
+            assertTrue(session.start())
+            repeat(2) { session.accept(ByteArray(160000) { 7 }) }
+            session.interrupt()
+            assertEquals(
+                AudioResult.Value(OriginalAudioStatus.NotFinalized),
+                vault.originals.acquire(fixture.audio),
+            )
+            if (stopAfterIntent) {
+                armed = true
+                assertTrue(vault.finalizeRecoveredPrefix(fixture.audio) is AudioResult.Failed)
+                assertTrue("Finalize fault boundary was not reached", finalizeIntentStopped)
+            }
+        }
+        fixture.open(false).use { vault ->
+            success(vault.finalizeRecoveredPrefix(fixture.audio))
+            val ref = reference(vault, fixture.audio)
+            assertEquals(160000L, ref.frames)
+            val digest = MessageDigest.getInstance("SHA-256")
+            val read = vault.reader.extract(fixture.audio) { _, pcm -> digest.update(pcm) }
+            assertTrue(read is AudioResult.Value)
+            assertEquals(AudioCompletion.FINALIZED, (read as AudioResult.Value).value.completion)
+            assertArrayEquals(
+                MessageDigest.getInstance("SHA-256").digest(ByteArray(320000) { 7 }),
+                digest.digest(),
+            )
+            val rows = metadata(vault, fixture.audio)
+            success(vault.finalizeRecoveredPrefix(fixture.audio))
+            assertEquals(ref, reference(vault, fixture.audio))
+            assertEquals(rows, metadata(vault, fixture.audio))
+        }
+        fixture.open(false).use { vault ->
+            assertEquals(
+                RecordingCompletionState.FINALIZED,
+                recovery(vault, fixture.audio).completionState,
+            )
+            success(vault.finalizeRecoveredPrefix(fixture.audio))
+            assertEquals(160000L, reference(vault, fixture.audio).frames)
+        }
     }
 
     @Test
@@ -276,6 +344,10 @@ class LogicalRecoveryRuntimeTest {
                     assertEquals(
                         AudioResult.Failed(AudioFailure.BUSY),
                         vault.recordingRecovery(f.audio),
+                    )
+                    assertEquals(
+                        AudioResult.Failed(AudioFailure.BUSY),
+                        vault.finalizeRecoveredPrefix(f.audio),
                     )
                     assertEquals(AudioResult.Failed(AudioFailure.BUSY), vault.deleteAudio(f.audio))
                     val newIdentity =
@@ -423,6 +495,7 @@ class LogicalRecoveryRuntimeTest {
             val deleted = recovery(vault, f.audio)
             assertEquals(RecordingCompletionState.DELETED, deleted.completionState)
             assertFalse(deleted.canResume)
+            assertTrue(vault.finalizeRecoveredPrefix(f.audio) is AudioResult.Failed)
             assertEquals(0L, deleted.recoveredFrames)
             assertTrue((vault.recordingRecoveryPage("") as AudioResult.Value).value.isEmpty())
         }
@@ -502,6 +575,7 @@ class LogicalRecoveryRuntimeTest {
             val snapshot = recovery(vault, f.audio)
             assertFalse(snapshot.canResume)
             assertNull(snapshot.summary) // Accepted ADR-AUDIO-001 rejects corrupt extraction.
+            assertTrue(vault.finalizeRecoveredPrefix(f.audio) is AudioResult.Failed)
             assertTrue(
                 snapshot.completionState in
                     setOf(

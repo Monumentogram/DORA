@@ -10,7 +10,7 @@ from validate_recording_latency import POLICY_PATH
 ADMISSION = 'docs/contracts/alpha-v9-storage-admission-v1.json'
 INVENTORY = 'docs/contracts/alpha-v9-persistence-tests-v1.json'
 PREDECESSOR = 'docs/contracts/owner-arm82-persistence-tests-v1.json'
-ADMISSION_SHA256 = '1d1e1bc07e04a06df5bdfa5005a339547696a63af9dd7ca39da6ffad2bf6fbc7'
+ADMISSION_SHA256 = '023b8d2802af2d5cf9988ec6ec13125f91cf26093e2c66c9ba9b91287b2a3bf5'
 INVENTORY_SHA256 = '3db0fdade6f90323984cd88650492a60dc0fe143d7247a279e309a2fbd50a9cd'
 PREDECESSOR_SHA256 = 'f72905a663e7bfcd7b41ce7497f4141ddb2014c039cc5afedf665d1c314edd85'
 CONTROLLER = 'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt'
