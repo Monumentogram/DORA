@@ -2,7 +2,7 @@ name: Stage18 manual Cloud ASR software
 on:
   pull_request:
   push:
-    branches: ["codex/stage18-1c-amazon-cloud-asr", "codex/stage13-owner-alpha-stabilization"]
+    branches: ["codex/stage18-1c-amazon-cloud-asr"]
   workflow_dispatch:
 permissions:
   contents: read

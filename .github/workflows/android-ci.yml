@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - "stage/**"
-      - "codex/stage13-owner-alpha-stabilization"
   pull_request:
     branches:
       - main
