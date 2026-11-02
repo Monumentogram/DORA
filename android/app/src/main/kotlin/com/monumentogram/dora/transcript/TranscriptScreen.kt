@@ -84,18 +84,25 @@ internal fun TranscriptDialog(
     var pendingExit by remember { mutableStateOf(false) }
     var dirty by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
+    var refreshPending by remember { mutableStateOf(true) }
+    var foreground by
+        remember(activity) {
+            mutableStateOf(activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+        }
     fun close() {
         if (dirty) pendingExit = true else onClose()
     }
     DisposableEffect(activity) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
+                foreground = false
+                refreshPending = true
                 actions.clearVisible()
                 dirty = false
                 pendingExit = false
                 deleting = false
             }
-            if (event == Lifecycle.Event.ON_RESUME) identity?.let(actions::load)
+            if (event == Lifecycle.Event.ON_RESUME) foreground = true
         }
         activity.lifecycle.addObserver(observer)
         onDispose {
@@ -103,7 +110,15 @@ internal fun TranscriptDialog(
             actions.close()
         }
     }
-    LaunchedEffect(identity) { identity?.let(actions::load) ?: actions.library() }
+    LaunchedEffect(identity) { refreshPending = true }
+    LaunchedEffect(identity, foreground, actions.busy, refreshPending) {
+        // Cancellation may still own the worker when the Activity resumes. Keep the refresh
+        // pending until it settles; an empty document/history is a completed load, not a retry.
+        if (foreground && refreshPending && !actions.busy) {
+            refreshPending = false
+            identity?.let(actions::load) ?: actions.library()
+        }
+    }
     Dialog(
         onDismissRequest = ::close,
         properties =

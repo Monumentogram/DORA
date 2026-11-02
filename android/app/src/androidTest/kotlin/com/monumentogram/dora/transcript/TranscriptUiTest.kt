@@ -117,6 +117,19 @@ class TranscriptUiTest {
             )
             awaitText("Synthetic machine")
             awaitText("Synthetic correction")
+            ui.onNodeWithText(label(R.string.signal_copy_3), useUnmergedTree = true)
+                .performScrollTo()
+                .performClick()
+            scenario.onActivity {
+                it.setContent { DoraBootstrapTheme { TranscriptLauncher(host) } }
+            }
+            ui.onNodeWithText(uiCopy("История расшифровок")).performClick()
+            val historyEntry = uiCopy("Открыть расшифровку") + " 1"
+            awaitText(historyEntry)
+            scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED)
+            scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED)
+            // Background clears sensitive content; return must restore history without Refresh.
+            awaitText(historyEntry)
         }
     }
 

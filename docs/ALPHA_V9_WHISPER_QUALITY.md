@@ -39,7 +39,7 @@ within-window prefix therefore does not establish four reorderings. No metric
 or threshold has been weakened; the distinction prevents an unsupported cause
 claim.
 
-## Localized EN findings and RU uncertainty
+## Localized EN and RU findings
 
 The existing hash-guarded EN public-fixture diagnostic has six parts of
 4,103 / 4,099 / 4,250 / 4,099 / 4,106 / 4,101 UTF-8 bytes. Its first window's
@@ -55,11 +55,18 @@ confirmed that exact tail. This supports an input-context-dependent decoding
 omission, rather than missing fixture audio; it does not identify the exact
 internal decoder branch or fully exclude every application defect.
 
-Only RU scalar/functional/quality logs were available in the retained host files
-at this review. Actual missing/substituted words or within-window reordering
-cannot be inferred from those counts. The existing zero-inference public-source
-diagnostic can read the original RU version after checking its fixed source
-digest. Its output must remain private and limited to that synthetic fixture.
+The subsequent hash-guarded RU readback performed zero new inference (quiet
+retry PASS, 93.694s; the first 120s authentication timeout is retained). All four
+absent markers are interior midpoint phrases in windows 0, 2, 4 and 5, beginning
+145 seconds into their windows. All 12 start/end markers and the other two
+midpoint markers are exact after established normalization. None of the eight
+words belonging to the missing phrases appears within the existing one-character
+bound. Present markers retain their expected parts and order. The per-window
+prefix lengths `1,3,1,3,1,1` explain the 10/18 prefix total without evidence of
+reordering. Original direct-native-return counts match retained readback: missing
+output predates publication and does not indicate 300-second partition clipping.
+The exact internal decoder cause remains unproven; the strict quality failure
+is preserved. See [Stage 13 diagnosis](STAGE13_WHISPER_QUALITY.md) for follow-up.
 
 ## Boundary and implementation audit
 
@@ -89,8 +96,8 @@ seek/filter trace proves which mechanism omitted the marker. Its terminal
 
 The fixtures align complete utterances to window edges; they do not qualify
 utterances crossing a 300-second partition. No overlap or stitching quality is
-demonstrated. Keep quality **PARTIAL** and use the existing RU readback before
-considering any targeted decoder diagnostic, model/settings change or new run.
+demonstrated. Keep quality **PARTIAL**; the RU readback narrows the next diagnostic
+to interior input context, without supporting a model/settings change.
 
 Retained evidence filenames: `native-long-en-api36.log`,
 `native-long-ru-api36.log`, `native-en-run-scalar-evidence.log`,

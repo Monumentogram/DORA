@@ -1709,3 +1709,17 @@ upgrade/reboot preservation are complete within the
 is `NOT_READY`: signed ARM-translated VAD crash discrimination and final CI remain
 open. Physical endurance, Samsung, 24-hour native inference, long live Cloud,
 recognition boundary quality and independent security/privacy gates are pending.
+
+## Stage13 limited owner Alpha stabilization — 2026-11-02
+
+S13-OWNER-A: exact Samsung device identity, owner-authorized installation and
+physical acceptance sheet; preserve PENDING until all required evidence exists.
+S13-OWNER-B: diagnose retained RU/EN omissions with immutable full/isolated PCM
+controls, same model/runtime; no speculative decoder change or relaxed quality gate.
+S13-OWNER-C: reject unaffordable resumed Cloud work before upload; retain disabled
+long Cloud and production limits; prepare30->60minute live qualification.
+S13-OWNER-D: restore transcript history/selected recording after foreground return
+without weakening privacy draft clearing; real lifecycle regression coverage.
+S13-OWNER-E: Preview10 same package/signer, retained-v9 update, mandatory seven CI
+workflows and independent review before publication. Source and physical/live
+qualification remain distinct; [current evidence](STAGE13_RESULT.md). No merge.
