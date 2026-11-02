@@ -1410,3 +1410,22 @@ authority: current access, session, action token and foreground-service generati
 are rechecked at native microphone start. Preparation uses the existing bounded,
 foreground-only wake lease. Native libraries, model, observer queue capacity and
 quality thresholds are unchanged; fallback is not healthy VAD qualification.
+
+## DEC-054 — Limited Stage13 owner Alpha stabilization (2026-11-02)
+
+Owner scope continues published v9 without expanding product functionality.
+Transcript history and the selected recording refresh automatically on foreground
+return, including after an in-flight cancelled action settles. Existing privacy
+clearing of unsaved drafts on background remains authoritative. Saved edits and
+selected versions must survive restart and update.
+
+Cloud resume quotes must apply the existing daily reserve to still-unstarted
+allocations when an old hold would move to a new UTC day; quotes never authorize
+new charges or change production limits. Long Cloud remains disabled without
+separate owner budget/configuration approval. Whisper model/runtime and strict
+quality gates remain unchanged until a proven minimal improvement exists.
+
+Preview10 retains package and signer; publication requires exact-candidate gates.
+Samsung acceptance may run only under the owner's explicit device authorization.
+Stage13 overall and Stage12 remain PARTIAL while canonical gates are incomplete;
+issue125 remains separate. See STAGE13_RESULT.md and its domain evidence.

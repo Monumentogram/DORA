@@ -17,7 +17,7 @@ class PilotArtifactTests(unittest.TestCase):
             self.fail('owner pilot artifact verifier must exist')
 
     def manifest(self):
-        return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.monumentogram.dora.alpha.preview" android:versionCode="9" android:versionName="0.1.0-owner-preview.9"><application android:allowBackup="false"><activity android:name="com.monumentogram.dora.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><service android:name="com.monumentogram.dora.recording.ProductRecordingService" android:exported="false" android:foregroundServiceType="microphone"/></application></manifest>'''
+        return '''<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.monumentogram.dora.alpha.preview" android:versionCode="10" android:versionName="0.1.0-owner-preview.10"><application android:allowBackup="false"><activity android:name="com.monumentogram.dora.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><service android:name="com.monumentogram.dora.recording.ProductRecordingService" android:exported="false" android:foregroundServiceType="microphone"/></application></manifest>'''
 
     def test_namespace_is_not_runtime_package_and_launcher_is_only_export(self):
         self.assertEqual(2, len(self.pilot.check_manifest(self.manifest())))
@@ -42,9 +42,11 @@ class PilotArtifactTests(unittest.TestCase):
             ('<application ', '<uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/><application '),
             ('<application ', '<instrumentation android:name="Runner"/><application '),
             ('android:exported="false"', 'android:exported="false" android:singleUser="true"'),
-            ('versionCode="9"', 'versionCode="1"'),
-            ('versionCode="9"', 'versionCode="8"'),
-            ('owner-preview.9', 'owner-preview.8'),
+            ('versionCode="10"', 'versionCode="1"'),
+            ('versionCode="10"', 'versionCode="8"'),
+            ('versionCode="10"', 'versionCode="9"'),
+            ('owner-preview.10', 'owner-preview.8'),
+            ('owner-preview.10', 'owner-preview.9'),
         ):
             with self.subTest(new=new), self.assertRaises(ValueError):
                 self.pilot.check_manifest(self.manifest().replace(old, new))
@@ -57,26 +59,27 @@ class PilotArtifactTests(unittest.TestCase):
             self.pilot.check_manifest(xml.replace('</application>', '<activity android:name="com.monumentogram.dora.audio.persistence.auth.AppLockAuthenticationActivity" android:exported="false"/></application>'))
 
     def test_badging_accepts_cloud_network_but_rejects_legacy_identity_and_unrelated_permissions(self):
-        good = "package: name='com.monumentogram.dora.alpha.preview' versionCode='9' versionName='0.1.0-owner-preview.9'"
+        good = "package: name='com.monumentogram.dora.alpha.preview' versionCode='10' versionName='0.1.0-owner-preview.10'"
         self.pilot.check_badging(good + "\nuses-permission: name='android.permission.INTERNET'")
         self.pilot.check_manifest(self.manifest().replace('<application ', '<uses-permission android:name="android.permission.INTERNET"/><application '))
         for broken in (good.replace('.alpha.preview', '.alpha.pilot'), good.replace('.alpha.preview', ''), good.replace('.alpha.preview', '.debug'),
-                       good.replace('.alpha.preview', '.alpha.test'), good.replace("versionCode='9'", "versionCode='4'"),
-                       good.replace("versionCode='9'", "versionCode='8'").replace('owner-preview.9', 'owner-preview.8'),
+                       good.replace('.alpha.preview', '.alpha.test'), good.replace("versionCode='10'", "versionCode='4'"),
+                       good.replace("versionCode='10'", "versionCode='8'").replace('owner-preview.10', 'owner-preview.8'),
+                       good.replace("versionCode='10'", "versionCode='9'").replace('owner-preview.10', 'owner-preview.9'),
                        good + "\nuses-permission: name='android.permission.READ_CONTACTS'"):
             with self.assertRaises(ValueError):
                 self.pilot.check_badging(broken)
 
-    def test_owner_local_source_requires_exact_v9_branch_clean_source_and_local_custody(self):
+    def test_owner_local_source_requires_exact_stage13_branch_v9_ancestry_clean_source_and_local_custody(self):
         source = 'a' * 40
-        branch = 'codex/alpha-v9-recording-stabilization'
+        branch = 'codex/stage13-owner-alpha-stabilization'
 
         def git(command):
             if command == ['git', 'rev-parse', 'HEAD']:
                 return source
             if command == ['git', 'status', '--porcelain=v1', '--untracked-files=all']:
                 return ''
-            if command == ['git', 'merge-base', '--is-ancestor', self.pilot.BASE, source]:
+            if command == ['git', 'merge-base', '--is-ancestor', '49ca2070f15a618d145ded307fc87249f382b22c', source]:
                 return ''
             self.assertEqual(['git', 'branch', '--show-current'], command)
             return branch
@@ -88,6 +91,9 @@ class PilotArtifactTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'UNADMITTED_BRANCH'):
                 self.pilot.exact_source(source, 'owner-local')
             branch = 'codex/alpha-v9-recording-stabilization'
+            with self.assertRaisesRegex(ValueError, 'UNADMITTED_BRANCH'):
+                self.pilot.exact_source(source, 'owner-local')
+            branch = 'codex/stage13-owner-alpha-stabilization'
             with patch.dict(self.pilot.os.environ, {'GITHUB_ACTIONS': 'true'}):
                 with self.assertRaisesRegex(ValueError, 'OWNER_LOCAL_ONLY'):
                     self.pilot.exact_source(source, 'owner-local')
@@ -226,7 +232,7 @@ class PilotArtifactTests(unittest.TestCase):
         graph['project_configurations'] = {c['path']: ('ownerPreviewRuntimeClasspath' if c['path'] == ':app' else 'releaseRuntimeClasspath') for c in graph['components'] if c['kind'] == 'project'}
         ci = sbom.generate(graph, 'a' * 40)
         owner = sbom.generate(graph, 'a' * 40, private_vad=True)
-        self.assertEqual('0.1.0-owner-preview.9', ci['metadata']['component']['version'])
+        self.assertEqual('0.1.0-owner-preview.10', ci['metadata']['component']['version'])
         self.assertNotIn('private-vad-model', {c['bom-ref'] for c in ci['components']})
         model = next(c for c in owner['components'] if c['bom-ref'] == 'private-vad-model')
         self.assertEqual('1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3', model['hashes'][0]['content'])

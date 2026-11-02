@@ -2,7 +2,7 @@ name: Owner Preview parallel Alpha software
 
 on:
   push:
-    branches: ["codex/parallel-alpha-preview", "codex/alpha-v9-recording-stabilization"]
+    branches: ["codex/parallel-alpha-preview", "codex/alpha-v9-recording-stabilization", "codex/stage13-owner-alpha-stabilization"]
   workflow_dispatch:
 
 permissions:

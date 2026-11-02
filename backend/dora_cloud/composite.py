@@ -56,9 +56,23 @@ class CompositeRuns:
         day = int(self.service.clock())//86400
         spent = self.store.db.execute("SELECT coalesce(sum(micro_usd),0) FROM reservations WHERE owner=? AND day=?",
                                       (principal["owner"], day)).fetchone()[0]
+        affordable = spent+required <= Decimal(self.service.policy.daily_reserve_usd)*1_000_000
+        if previous:
+            pending = 0
+            for row in self.store.db.execute("SELECT child,frames FROM composite_parts WHERE run=?", (previous["id"],)):
+                child = self.store.job(row["child"])
+                if not child or child["attempt_count"] == 0:
+                    pending += self.reserve(row["frames"])
+            hold = self.store.db.execute("SELECT day,micro_usd FROM reservations WHERE job=? AND number=0",
+                                         (previous["id"],)).fetchone()
+            # A prior-day hold cannot authorize today's spending. Quote the still
+            # unstarted allocations before Android reads/uploads the next window.
+            # Started/uncertain attempts are already reserved and must not be charged again.
+            affordable = pending == 0 or bool(hold and hold["micro_usd"] >= pending and
+                (hold["day"] == day or spent+pending <= Decimal(self.service.policy.daily_reserve_usd)*1_000_000))
         return {"enabled": self.service.policy.long_runs_enabled, "part_count": len(parts),
                 "required_micro_usd": required, "available_micro_usd": max(0, int(Decimal(self.service.policy.daily_reserve_usd)*1_000_000)-spent),
-                "affordable": previous is not None or spent+required <= Decimal(self.service.policy.daily_reserve_usd)*1_000_000,
+                "affordable": affordable,
                 "window_policy": POLICY, "max_frames": MAX_FRAMES, "max_part_frames": WINDOW_FRAMES}
 
     def consent(self, run):

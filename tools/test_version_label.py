@@ -42,7 +42,7 @@ class VersionLabelTests(unittest.TestCase):
             ('release', 'com.monumentogram.dora', '5', '0.1.0-alpha.3', 'DORA Alpha'),
             ('debug', 'com.monumentogram.dora.debug', '5', '0.1.0-alpha.3-debug', 'DORA Alpha'),
             ('alphaTest', 'com.monumentogram.dora.alpha.test', '5', '0.1.0-alpha.3', 'DORA Alpha'),
-            ('ownerPreview', 'com.monumentogram.dora.alpha.preview', '9', '0.1.0-owner-preview.9', 'DORA Owner Preview'),
+            ('ownerPreview', 'com.monumentogram.dora.alpha.preview', '10', '0.1.0-owner-preview.10', 'DORA Owner Preview'),
             ('ownerPilot', 'com.monumentogram.dora.alpha.pilot', '4', '0.1.0-owner-alpha.4', 'DORA Owner Alpha'),
         ):
             label = f'{prefix} {name} ({code})'
@@ -55,6 +55,12 @@ class VersionLabelTests(unittest.TestCase):
         badging = f"package: name='{package}' versionCode='8' versionName='0.1.0-owner-preview.8'"
         with self.assertRaisesRegex(ValueError, 'VERSION_LABEL_APK_IDENTITY'):
             check_label(badging, self.table(package, 'DORA Owner Preview 0.1.0-owner-preview.8 (8)'), 'ownerPreview')
+
+    def test_preview_rejects_stale_v9_even_with_matching_compiled_label(self):
+        package = 'com.monumentogram.dora.alpha.preview'
+        badging = f"package: name='{package}' versionCode='9' versionName='0.1.0-owner-preview.9'"
+        with self.assertRaisesRegex(ValueError, 'VERSION_LABEL_APK_IDENTITY'):
+            check_label(badging, self.table(package, 'DORA Owner Preview 0.1.0-owner-preview.9 (9)'), 'ownerPreview')
 
     def test_missing_stale_wrong_name_code_and_qualified_overrides_fail(self):
         package = 'com.monumentogram.dora.alpha.pilot'

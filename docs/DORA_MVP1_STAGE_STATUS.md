@@ -2036,3 +2036,18 @@ the reviewed schema-fixture/sharding corrections. Unchanged native payload bytes
 do not prove a pre-existing emulator defect. Samsung/POCO, physical endurance,
 24-hour native ASR, live long Cloud and Stage12/Issue125 retain their separate
 pending status. No personal phone, production AWS or merge was touched.
+
+## Stage13 owner Alpha stabilization — 2026-11-02
+
+Published v9 at49ca207 completed its scoped release gates (7/7CI, signed
+30-minute translated-ARM runtime and retained-fixture upgrade), as recorded in
+PR128 and the published v9 RESULTS.md; older working NOT_READY entries above
+remain historical. Stage13 now starts from that exact head, stacked on128->127.
+
+Limited Alpha work fixes foreground transcript-history refresh and pre-upload
+Cloud resume budget quotes; adds localized unchanged-model Whisper controls and
+Samsung acceptance preparation/observations. See [Stage13 working qualification](STAGE13_RESULT.md).
+Stage13 overall remains PARTIAL. Candidate10 runtime/update/CI/review are pending;
+Samsung acceptance remains pending until its actual scenario sheet is complete.
+Stage12/issue125, canonical device/endurance/security/privacy gates remain open.
+No production AWS mutation or main merge is authorized or performed.

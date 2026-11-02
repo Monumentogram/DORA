@@ -4,6 +4,7 @@ import unittest
 
 from test_service import ServiceTests, wav
 from dora_cloud.service import Policy
+from dora_cloud.aws_adapter import ProviderError
 
 
 class CompositeTests(ServiceTests):
@@ -188,6 +189,48 @@ class CompositeTests(ServiceTests):
         self.assertEqual(state, again.json())
         self.assertEqual(1, self.store.db.execute("SELECT count(*) FROM reservations").fetchone()[0])
         self.assertEqual([], self.aws.starts)
+
+    def test_resume_quote_rechecks_new_day_reserve_before_upload(self):
+        self.enable(daily="0.03", rate="0.0001", ancillary="0.01")
+        body = self.plan(28_800_001)
+        self.assertEqual(200, self.request("POST", "/v1/runs", body).status_code)
+        child = self.request("POST", f"/v1/runs/{self.action}/parts/0", {}).json()["id"]
+        self.now[0] = (self.now[0]//86400+1)*86400
+        self.tokens[self.install] = self.request("POST", "/v1/session", {}).json()["access_token"]
+        # Restore the durable ledger shape after child zero's first attempt moved
+        # to today and a known failure admitted its explicit second attempt.
+        job = self.store.job(child)
+        job.update(status="IN_PROGRESS", attempt_count=2)
+        self.store.save_job(job)
+        self.store.db.execute("UPDATE reservations SET micro_usd=micro_usd-11500 WHERE job=?", (self.action,))
+        for number in (1, 2):
+            self.store.db.execute("INSERT INTO reservations VALUES(?,?,?,?,?)",
+                                  (child, number, "owner-a", self.now[0]//86400, 11_500))
+        before = [tuple(row) for row in self.store.db.execute("SELECT * FROM reservations")]
+        quote = self.request("POST", "/v1/runs/quote", body)
+        self.assertEqual(200, quote.status_code)
+        self.assertEqual(23_002, quote.json()["required_micro_usd"])
+        self.assertEqual(7_000, quote.json()["available_micro_usd"])
+        self.assertFalse(quote.json()["affordable"])
+        self.assertEqual(before, [tuple(row) for row in self.store.db.execute("SELECT * FROM reservations")])
+        self.assertEqual([], self.aws.puts)
+        self.assertEqual([], self.aws.starts)
+
+    def test_resume_quote_does_not_charge_again_for_a_started_uncertain_child(self):
+        self.enable(daily="0.02", rate="0.01", ancillary="0.01")
+        body = self.plan(16_000)
+        self.assertEqual(200, self.request("POST", "/v1/runs", body).status_code)
+        child = self.request("POST", f"/v1/runs/{self.action}/parts/0", {}).json()["id"]
+        self.now[0] = (self.now[0]//86400+1)*86400
+        self.tokens[self.install] = self.request("POST", "/v1/session", {}).json()["access_token"]
+        self.aws.start_error = ProviderError("PROVIDER_UNAVAILABLE", uncertain=True)
+        self.assertEqual(200, self.request("POST", f"/v1/jobs/{child}/audio", {
+            "offset": 0, "data_base64": base64.b64encode(wav(16_000)).decode(), "final": True}).status_code)
+        quote = self.request("POST", "/v1/runs/quote", body)
+        self.assertEqual(200, quote.status_code)
+        self.assertEqual(7_500, quote.json()["available_micro_usd"])
+        self.assertTrue(quote.json()["affordable"])
+        self.assertEqual(1, len(self.aws.starts))
 
     def test_first_attempt_crossing_utc_day_moves_its_unused_hold_before_paid_start(self):
         import uuid
