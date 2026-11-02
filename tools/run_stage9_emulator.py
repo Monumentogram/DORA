@@ -20,7 +20,9 @@ def recording_diagnostics(adb, serial, arguments, receipt):
         'auth.AndroidLocalAccessTest#exactResumedActivityRequiredWithoutCredentialPrompt',
     )]
     progress = receipt.with_name(receipt.stem + '-recording-progress.json')
-    output = stream([adb, '-s', serial, *arguments], expected, progress, hard_timeout=900,
+    # Two complete encrypted 30-minute fixtures: measured API28 methods require
+    # 350/406s and 665s. Keep bounded stall diagnostics; 900s cannot fit the batch.
+    output = stream([adb, '-s', serial, *arguments], expected, progress, hard_timeout=1800,
                     probe=lambda: emulator_diagnostics(adb, serial),
                     capture=lambda: emulator_diagnostics(adb, serial, stack=True))
     terminal = Progress(expected)

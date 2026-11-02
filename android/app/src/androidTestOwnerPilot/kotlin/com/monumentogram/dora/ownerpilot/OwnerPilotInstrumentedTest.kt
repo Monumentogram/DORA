@@ -179,6 +179,7 @@ class OwnerPilotInstrumentedTest {
         val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15)
         var previous: MainActivity? = null
         var previousConfiguration: Configuration? = null
+        var lastHost: MainActivity? = null
         while (System.nanoTime() < deadline) {
             ui.waitForIdle()
             val frame = CountDownLatch(1)
@@ -190,6 +191,7 @@ class OwnerPilotInstrumentedTest {
             var current: MainActivity? = null
             var configuration: Configuration? = null
             scenario.onActivity { host ->
+                lastHost = host
                 if (localCallerState(host) == "1110000") {
                     current = host
                     configuration = Configuration(host.resources.configuration)
@@ -201,7 +203,15 @@ class OwnerPilotInstrumentedTest {
             previous = current
             previousConfiguration = configuration
         }
-        throw AssertionError("Restart fixture configuration did not settle")
+        val diagnostics = lastHost?.let { host ->
+            var state = ""
+            instrumentation.runOnMainSync { state = localCallerState(host) }
+            callerDiagnostics(host, state[0] == '1', state[1] == '1')
+        }
+        throw AssertionError(
+            "Restart fixture configuration did not settle" +
+                if (diagnostics == null) "" else ": $diagnostics"
+        )
     }
 
     private fun restartIdentity() =

@@ -33,6 +33,10 @@ def parse_results(output, *, expected_skips=frozenset()):
         if not code:
             continue
         code = int(code[1])
+        if code == 3:
+            # Progress is not a completion. Replay below admits only the bounded
+            # Stage 9 checkpoint protocol inside an active recording test.
+            continue
         if code == 1:
             current = {}
             continue
@@ -50,6 +54,12 @@ def parse_results(output, *, expected_skips=frozenset()):
             'Instrumentation completion/count mismatch')
     require({row['name'] for row in rows if row['result'] == 'SKIPPED'} == set(expected_skips),
             'Expected credential-state control missing')
+    progress = diagnostics.Progress({row['name'] for row in rows})
+    for line in output.splitlines():
+        progress.feed(line)
+    require(not progress.current and progress.pending_checkpoint is None,
+            'Incomplete instrumentation status bundle')
+    diagnostics.require_complete(progress.completed, [row['name'] for row in rows])
     return rows
 
 

@@ -9,6 +9,116 @@ from unittest.mock import patch
 
 
 class PilotRunnerTests(unittest.TestCase):
+    def test_configuration_settle_timeout_uses_existing_bounded_caller_fields(self):
+        line = ('INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+                'Restart fixture configuration did not settle: '
+                'callerResumedAtRequest=true focusAtRequest=false secure=false locked=false '
+                'callerFinishing=false callerDestroyed=false callerChangingConfigurations=false '
+                'configurationChanges=NONE configurationMask=00000000 otherMainResumed=false')
+        state = self.runner.failure_caller_state(line)
+        self.assertEqual('CALLER_CONFIGURATION_NOT_SETTLED', state['failure'])
+        self.assertTrue(state['caller_resumed_at_request'])
+        self.assertFalse(state['focus_at_request'])
+        self.assertEqual([], state['configuration_changes'])
+        for raw in (line + ' PIN=123456', line + ' /data/private',
+                    line.replace('00000000', 'private'),
+                    line + '\n' + line.replace('focusAtRequest=false', 'focusAtRequest=true'),
+                    line + '\n' + line.replace('Restart fixture configuration did not settle',
+                                               'Fixture caller never resumed')):
+            with self.subTest(raw=raw):
+                self.assertIsNone(self.runner.failure_caller_state(raw))
+
+    def test_reboot_stage_failure_has_only_allowlisted_stage_and_error(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / 'pilot.json'
+            def rejected(*args, **kwargs):
+                if args == ('shell', 'cat', '/proc/sys/kernel/random/boot_id'):
+                    return '00000000-0000-0000-0000-000000000001'
+                raise ValueError('PIN=123456 /private/provider')
+            with self.assertRaises(ValueError):
+                self.runner.restart_owner_after_initial(rejected, 'emulator-5554', 28, receipt)
+            record = json.loads(receipt.with_suffix('.stage-failure.json').read_text())
+            self.assertEqual(dict(schema_version=1, status='FAILED_NOT_ACCEPTANCE', api=28,
+                                  phase='owner_reboot', stage='REBOOT_REQUEST',
+                                  error='UNCLASSIFIED_HOST_ERROR', physical_device=False), record)
+            self.assertFalse(receipt.exists())
+            self.assertNotIn('123456', json.dumps(record))
+            self.assertNotIn('private', json.dumps(record))
+
+    def test_reboot_timeout_keeps_180_second_deadline_and_reports_actual_boundary(self):
+        calls = []
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / 'pilot.json'
+            def command(*args, **kwargs):
+                calls.append(args)
+                if args == ('shell', 'cat', '/proc/sys/kernel/random/boot_id'):
+                    return '00000000-0000-0000-0000-000000000001'
+                if args == ('shell', 'getprop', 'sys.boot_completed'):
+                    return '1'
+                return ''
+            with patch.object(self.runner.time, 'monotonic', side_effect=[0, 180]), \
+                    self.assertRaisesRegex(ValueError, 'EMULATOR_REBOOT_TIMEOUT'):
+                self.runner.restart_owner_after_initial(command, 'emulator-5554', 28, receipt)
+            record = json.loads(receipt.with_suffix('.stage-failure.json').read_text())
+            self.assertEqual('REBOOT_WAIT', record['stage'])
+            self.assertEqual('EMULATOR_REBOOT_TIMEOUT', record['error'])
+            self.assertNotIn(('shell', 'input', 'keyevent', '224'), calls)
+
+    def test_successful_restart_keeps_fence_service_wake_and_theme_order(self):
+        calls = []
+        reads = 0
+        def command(*args, **kwargs):
+            nonlocal reads
+            calls.append(args)
+            if args == ('shell', 'cat', '/proc/sys/kernel/random/boot_id'):
+                reads += 1
+                return '00000000-0000-0000-0000-00000000000' + str(reads)
+            if args == ('shell', 'getprop', 'sys.boot_completed'): return '1'
+            if args == ('get-state',): return 'device'
+            if args == ('shell', 'getprop', 'ro.kernel.qemu'): return '1'
+            if args == ('shell', 'getprop', 'ro.build.version.sdk'): return '28'
+            return ''
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / 'pilot.json'
+            self.assertEqual('NOT_APPLICABLE', self.runner.restart_owner_after_initial(
+                command, 'emulator-5554', 28, receipt))
+            self.assertFalse(receipt.with_suffix('.stage-failure.json').exists())
+        service = ('shell', 'dumpsys', 'activity', 'services', self.runner.PACKAGE)
+        wake = ('shell', 'input', 'keyevent', '224')
+        dismiss = ('shell', 'wm', 'dismiss-keyguard')
+        self.assertLess(calls.index(('get-state',)), calls.index(service))
+        self.assertLess(calls.index(service), calls.index(wake))
+        self.assertLess(calls.index(wake), calls.index(dismiss))
+
+    def test_post_boot_fence_service_and_wake_errors_keep_only_the_actual_stage(self):
+        cases = [(('get-state',), 'POST_REBOOT_FENCE'),
+                 (('shell', 'dumpsys', 'activity', 'services', self.runner.PACKAGE), 'POST_REBOOT_SERVICE'),
+                 (('shell', 'input', 'keyevent', '224'), 'WAKE'),
+                 (('shell', 'wm', 'dismiss-keyguard'), 'DISMISS_KEYGUARD')]
+        for failing, stage in cases:
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory() as directory:
+                receipt = Path(directory) / 'pilot.json'
+                reads = 0
+                def command(*args, **kwargs):
+                    nonlocal reads
+                    if args == failing:
+                        raise OSError('PIN=123456 /private/device/error')
+                    if args == ('shell', 'cat', '/proc/sys/kernel/random/boot_id'):
+                        reads += 1
+                        return '00000000-0000-0000-0000-00000000000' + str(reads)
+                    if args == ('shell', 'getprop', 'sys.boot_completed'): return '1'
+                    if args == ('get-state',): return 'device'
+                    if args == ('shell', 'getprop', 'ro.kernel.qemu'): return '1'
+                    if args == ('shell', 'getprop', 'ro.build.version.sdk'): return '28'
+                    return ''
+                with self.assertRaises(OSError):
+                    self.runner.restart_owner_after_initial(command, 'emulator-5554', 28, receipt)
+                record = json.loads(receipt.with_suffix('.stage-failure.json').read_text())
+                self.assertEqual(stage, record['stage'])
+                self.assertEqual('UNCLASSIFIED_HOST_ERROR', record['error'])
+                self.assertNotIn('123456', json.dumps(record))
+                self.assertNotIn('private', json.dumps(record))
+
     def test_packaged_test_apk_must_contain_owner_ui_class(self):
         with tempfile.TemporaryDirectory() as directory:
             apk = Path(directory) / 'tests.apk'

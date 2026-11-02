@@ -15,6 +15,27 @@ def result(name, code):
 
 
 class DeviceReceiptTests(unittest.TestCase):
+    def test_recording_progress_is_validated_without_becoming_a_test_completion(self):
+        name = 'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest'
+        start = result('recording', 1).replace('example.PersistenceTest', name)
+        end = result('recording', 0).replace('example.PersistenceTest', name)
+        checkpoint = ('INSTRUMENTATION_STATUS: stage9Progress=phase=APPEND acceptedUnits=30 '
+                      'durableFrames=2400000 elapsedMs=1000\nINSTRUMENTATION_STATUS_CODE: 3\n')
+        terminal = 'OK (1 test)\nINSTRUMENTATION_CODE: -1\n'
+        self.assertEqual([{'name': name + '#recording', 'result': 'PASS'}],
+                         device.parse_results(start + checkpoint + end + terminal))
+        for output in (start + checkpoint + terminal,
+                       checkpoint + start + end + terminal,
+                       start + end + checkpoint + terminal,
+                       (start + checkpoint + end + terminal).replace(name, 'example.PersistenceTest'),
+                       start + checkpoint.replace('APPEND', 'UNKNOWN') + end + terminal,
+                       start + checkpoint.replace('acceptedUnits=30', 'acceptedUnits=999') + end + terminal,
+                       start + 'INSTRUMENTATION_STATUS_CODE: 3\n' + end + terminal,
+                       start + checkpoint.replace('INSTRUMENTATION_STATUS_CODE: 3\n', '') + end + terminal,
+                       start + checkpoint + end + terminal + checkpoint):
+            with self.subTest(output=output), self.assertRaises(ValueError):
+                device.parse_results(output)
+
     def test_four_shards_partition_all_188_ordinary_methods_without_overlap(self):
         inventory = json.loads((Path(__file__).resolve().parents[1] /
                                 'docs/contracts/alpha-v9-persistence-tests-v1.json').read_text(encoding='utf-8'))

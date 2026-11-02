@@ -25,7 +25,7 @@ class Stage9EmulatorTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 runner.recording_diagnostics('adb', 'emulator-5554', [], Path('receipt.json'))
 
-    def test_recording_diagnostics_keep_deadline_and_exact_inventory(self):
+    def test_recording_diagnostics_keep_measured_batch_deadline_and_exact_inventory(self):
         import run_stage9_emulator as runner
         expected = {
             'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording',
@@ -47,7 +47,9 @@ class Stage9EmulatorTest(unittest.TestCase):
         self.assertEqual(['adb', '-s', 'emulator-5554', 'shell', 'am', 'instrument'], args[0])
         self.assertEqual(expected, set(args[1]))
         self.assertEqual(Path('receipt-recording-progress.json'), args[2])
-        self.assertEqual(900, kwargs['hard_timeout'])
+        # API28 measures 350/406s for interrupted-prefix and 665s for continuity;
+        # the former 900s total cannot execute both complete 30-minute fixtures.
+        self.assertEqual(1800, kwargs['hard_timeout'])
         self.assertTrue(callable(kwargs['probe']))
         self.assertTrue(callable(kwargs['capture']))
 

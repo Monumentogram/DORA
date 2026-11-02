@@ -160,12 +160,41 @@ repeat or replace the full-day storage trial,
 and repeated authentication scans remain a latency limitation.
 
 Stage9 API28's earlier 900-second CI timeout is not classified as a pass or an
-infrastructure fault. Its runner now retains exact test progress, bounded health
-diagnostics and a terminal receipt while preserving that deadline. Current-source
+infrastructure fault. Its runner retains exact test progress, bounded health
+diagnostics and a terminal receipt. The initial diagnostic revision preserved
+that deadline. Current-source
 local reproduction completed the interrupted-prefix method in 350.328s, then hit
 the aggregate 900s deadline during the continuity/finalization method with its
 process alive. No assertion failure was observed before that timeout; the batch
-is FAIL, not an infrastructure waiver. A focused phase-instrumented diagnosis is
-pending. CI must establish the final result. [Whisper quality evidence](ALPHA_V9_WHISPER_QUALITY.md)
+is FAIL, not an infrastructure waiver. The focused continuity/finalization method
+subsequently passed in 664.860s on API28; its checkpoints show active encrypted
+append, recovery, finalization and verification work. The two measured local
+method durations exceed the unchanged aggregate 900s budget; this explains the
+local deadline failure without establishing the final CI result. The API36
+three-method batch passed in 294.312s. [Whisper quality evidence](ALPHA_V9_WHISPER_QUALITY.md)
 keeps functional success and strict quality failures separate; an ordered-prefix
 score alone is not proof that transcript parts were reordered.
+
+At `aaa447b9341902c6323c123869b3b65120dfe1ea`, persistence API36 shards 1/2
+and API28 shard 2 failed in the host result parser with
+`Incomplete instrumentation test identity`. The streamed recording checkpoints
+use status code 3 and do not contain a test completion identity. The completion
+parser had not been updated to replay this protocol, although the streaming
+validator already admitted its bounded, active-test-only form. The correction
+validates all checkpoints through that same strict parser and grants completion
+credit only to actual terminal test statuses. A reproducing host test failed
+before the correction; 61 related host checks and replay of the actual API36
+three-method output then passed. This is a runner regression, not an assertion
+waiver or a CI PASS. Full CI must execute on the corrected revision.
+
+The same revision's Stage9 API28 CI job `125134609867` completed the first
+recording method at approximately 406s, the second method's recovery at 695.554s
+of batch time, and finalization at 751.335s. At the 900s deadline it was still
+verifying authenticated data, with the emulator and instrumentation process
+alive. The independently completed local second method took 664.860s. The
+recording batch deadline is therefore raised to 1,800s for these two complete
+30-minute encrypted fixtures and the unchanged local-access control. This
+finite budget covers the observed 1,015–1,071s combined work plus host/Keystore
+variance; it does not waive a failure or change fixtures, assertions, inventory,
+inactivity diagnostics or any product deadline. A fresh complete CI result is
+still required. The previous timed-out runs remain failures.
