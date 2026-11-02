@@ -109,7 +109,7 @@ def main(argv=None):
         store = Store(config.ledger_path, custody_key(config))
         store.bind_namespace(config.namespace())
         provider = AmazonProvider(config, aws["s3"], aws["transcribe"], admission)
-        policy = Policy(config.daily_reserve_usd, config.per_minute_reserve_usd, config.ancillary_per_attempt_usd)
+        policy = Policy(config.daily_reserve_usd, config.per_minute_reserve_usd, config.ancillary_per_attempt_usd, config.long_runs_enabled)
         service = Service(store, provider, policy)
         if args.command == "watchdog":
             # Cleanup must remain operable if live admission is disabled or drifts.

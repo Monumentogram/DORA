@@ -8,6 +8,83 @@ import org.junit.Test
 
 class VadObserverTest {
     @Test
+    fun explicitPreparationCreatesEngineBeforeAnyPcmAndCompletesOnlyOnWorker() {
+        val prepared = observer.prepare()
+        assertFalse(prepared.isDone)
+        assertEquals(0, creations)
+        assertEquals(0, observer.stats().queueSize)
+
+        tasks.run()
+
+        assertTrue(prepared.isDone)
+        assertEquals(null, prepared.get())
+        assertEquals(1, creations)
+        assertEquals(0, engine.calls)
+        assertTrue(events.isEmpty())
+        observer.offer(ByteArray(1024), 0)
+        tasks.run()
+        assertEquals(1, engine.calls)
+        assertEquals(null, observer.stats().failure)
+        assertEquals(1L, observer.stats().inferenceCount)
+    }
+
+    @Test
+    fun cancelledEmptyPreparationDoesNotConstructNativeEngine() {
+        val prepared = observer.prepare()
+        observer.stop(0)
+        tasks.run()
+        assertTrue(prepared.isDone)
+        assertEquals(0, creations)
+        assertTrue(observer.stats().closed)
+    }
+
+    @Test
+    fun explicitPreparationRetainsTypedUnavailableOutcomeWithoutPcm() {
+        val selected =
+            VadObserver(
+                SegmentationProfile.FROZEN,
+                0,
+                VadEngineFactory { throw VadException(VadFailure.MODEL_UNAVAILABLE) },
+                tasks,
+            ) {}
+        val prepared = selected.prepare()
+        tasks.run()
+        assertEquals(VadFailure.MODEL_UNAVAILABLE, prepared.get())
+        assertEquals(VadFailure.MODEL_UNAVAILABLE, selected.stats().failure)
+        assertEquals(0, selected.stats().queueSize)
+    }
+
+    @Test
+    fun nativeEngineReturnedAfterStopIsClosedExactlyOnceOnWorker() {
+        lateinit var selected: VadObserver
+        var closes = 0
+        selected =
+            VadObserver(
+                SegmentationProfile.FROZEN,
+                0,
+                VadEngineFactory {
+                    selected.stop(0) // Stop while the factory is still returning its native owner.
+                    object : VadEngine {
+                        override fun probability(samples: FloatArray) = error("No PCM admitted")
+
+                        override fun reset() = Unit
+
+                        override fun close() {
+                            closes++
+                        }
+                    }
+                },
+                tasks,
+            ) {}
+        selected.prepare()
+        tasks.run()
+        selected.stop(0)
+        tasks.run()
+        assertEquals(1, closes)
+        assertTrue(selected.stats().closed)
+    }
+
+    @Test
     fun rejectedWorkerDoesNotThrowOrRetainCanonicalCopy() {
         val rejected =
             VadObserver(
@@ -224,6 +301,8 @@ class VadObserverTest {
 
     @Test
     fun offerAfterStopCannotResurrectRuntime() {
+        observer.prepare()
+        tasks.run()
         observer.stop(0)
         tasks.run()
         observer.offer(ByteArray(1024), 0)

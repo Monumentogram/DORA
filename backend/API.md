@@ -4,6 +4,10 @@ sources above300s; existing production limits and daily monetary reserve remain.
 Long Cloud release needs separately authorized deployment, cost configuration,
 bounded client upload and end-to-end verification. The historical contract below
 describes the deployed five-minute interface.
+
+The additive, default-disabled24-hour parent/30-minute child protocol is documented
+in [COMPOSITE_API.md](COMPOSITE_API.md). It preserves the historical interface
+below and does not change production budgets or deployment.
 # DORA manual Cloud ASR HTTP v1
 
 Frozen Stage18.1C interface. All JSON names are snake_case; JSON is UTF-8. HTTPS

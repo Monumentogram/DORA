@@ -17,6 +17,28 @@ NAMES = {'example.First#one', 'example.Second#two'}
 
 
 class StreamDiagnosticsTests(unittest.TestCase):
+    def test_stage9_checkpoint_never_counts_as_test_completion(self):
+        name = 'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization'
+        state = diag.Progress({name})
+        state.feed('INSTRUMENTATION_STATUS: class=' + name.split('#')[0])
+        state.feed('INSTRUMENTATION_STATUS: test=' + name.split('#')[1])
+        state.feed('INSTRUMENTATION_STATUS_CODE: 1')
+        state.feed('INSTRUMENTATION_STATUS: stage9Progress=phase=APPEND acceptedUnits=30 durableFrames=2400000 elapsedMs=9000')
+        self.assertIsNone(state.snapshot().get('stage9Checkpoint'))
+        state.feed('INSTRUMENTATION_STATUS_CODE: 3')
+        self.assertEqual({'phase': 'APPEND', 'acceptedUnits': 30, 'durableFrames': 2400000,
+                          'elapsedMs': 9000}, state.snapshot()['stage9Checkpoint'])
+        self.assertEqual(0, state.snapshot()['completedCount'])
+        self.assertEqual(name, state.snapshot()['lastStartedTest'])
+        for bad in ('phase=PRIVATE acceptedUnits=30 durableFrames=2400000 elapsedMs=9',
+                    'phase=APPEND acceptedUnits=363 durableFrames=2400000 elapsedMs=9',
+                    'phase=APPEND acceptedUnits=30 durableFrames=28800801 elapsedMs=9',
+                    'phase=APPEND acceptedUnits=30 durableFrames=2400000 elapsedMs=-1'):
+            with self.assertRaises(ValueError):
+                state.feed('INSTRUMENTATION_STATUS: stage9Progress=' + bad)
+        with self.assertRaises(ValueError):
+            diag.Progress(NAMES).feed('INSTRUMENTATION_STATUS: stage9Progress=phase=APPEND acceptedUnits=30 durableFrames=2400000 elapsedMs=9')
+
     def setUp(self):
         self.assertIsNotNone(SPEC, 'Streaming diagnostics module is not implemented')
 

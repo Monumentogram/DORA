@@ -153,7 +153,7 @@ class CloudRecognitionRunTest {
                     CloudJobState(
                         id(4),
                         "UPLOADING",
-                        if (alreadyUploaded) 16044 else uploaded.size,
+                        if (alreadyUploaded) 16044 else uploaded.size.toLong(),
                         false,
                         false,
                         null,
@@ -175,7 +175,7 @@ class CloudRecognitionRunTest {
                 }
 
                 override fun status(id: String) =
-                    CloudJobState(id, "COMPLETED", uploaded.size, false, false, result())
+                    CloudJobState(id, "COMPLETED", uploaded.size.toLong(), false, false, result())
 
                 override fun retry(id: String, cancelled: () -> Boolean): CloudJobState {
                     if (cancelled()) throw java.util.concurrent.CancellationException()
@@ -185,19 +185,26 @@ class CloudRecognitionRunTest {
 
                 override fun upload(
                     id: String,
-                    offset: Int,
+                    offset: Long,
                     bytes: ByteArray,
                     final: Boolean,
                     cancelled: () -> Boolean,
                 ): CloudJobState {
-                    assertEquals(uploaded.size, offset)
+                    assertEquals(uploaded.size.toLong(), offset)
                     uploaded.addAll(bytes.toList())
                     if (cancelOnUpload) attempt.cancel()
-                    return CloudJobState(id, "COMPLETED", uploaded.size, false, false, result())
+                    return CloudJobState(
+                        id,
+                        "COMPLETED",
+                        uploaded.size.toLong(),
+                        false,
+                        false,
+                        result(),
+                    )
                 }
 
                 override fun cancel(id: String) =
-                    CloudJobState(id, "CANCELLED", uploaded.size, false, true, null)
+                    CloudJobState(id, "CANCELLED", uploaded.size.toLong(), false, true, null)
 
                 override fun abortTransfer() = Unit
             }

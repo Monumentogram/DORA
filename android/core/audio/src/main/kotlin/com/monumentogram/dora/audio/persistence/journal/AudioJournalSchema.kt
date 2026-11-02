@@ -401,7 +401,11 @@ internal data class TombstoneEntity(
                 onDelete = ForeignKey.RESTRICT,
             ),
         ],
-    indices = [Index(value = ["runId"])],
+    indices =
+        [
+            Index(value = ["runId"]),
+            Index(value = ["assetId", "kind", "completed", "runId", "relativeName"]),
+        ],
 )
 internal data class DeletionTargetEntity(
     val assetId: String,
@@ -499,6 +503,62 @@ internal interface AudioJournalDao {
 
     @Query("SELECT * FROM unit_claim WHERE runId=:id") fun claim(id: String): UnitClaimEntity?
 
+    @Query("SELECT * FROM unit_claim WHERE assetId=:asset ORDER BY ordinal DESC LIMIT 1")
+    fun lastLibraryClaim(asset: String): UnitClaimEntity?
+
+    @Query(
+        """
+        SELECT COUNT(*) AS unitCount,
+          COALESCE(SUM(CASE WHEN committed=1 THEN 1 ELSE 0 END),0) AS committedCount,
+          COALESCE(SUM(CASE WHEN committed=1 THEN frames ELSE 0 END),0) AS committedFrames,
+          COALESCE(SUM(frames),0) AS reservedFrames,
+          MIN(ordinal) AS firstOrdinal, MAX(ordinal) AS lastOrdinal
+        FROM unit_claim WHERE assetId=:asset
+    """
+    )
+    fun libraryClaimStats(asset: String): LibraryClaimStats
+
+    @Query(
+        """
+        SELECT 1 FROM unit_claim c
+        LEFT JOIN unit_claim previous ON previous.assetId=c.assetId AND previous.ordinal=c.ordinal-1
+        LEFT JOIN physical_source physical ON physical.assetId=c.assetId AND physical.physicalId=c.physicalId
+        LEFT JOIN bootstrap b ON b.runId=c.runId
+        LEFT JOIN microfile u ON u.runId=c.runId
+        LEFT JOIN manifest m ON m.runId=c.runId
+        WHERE c.assetId=:asset AND (
+          c.ordinal<0 OR c.ordinal>=:maximum OR c.frames<1 OR c.frames>80000 OR
+          c.firstFrame<0 OR c.firstFrame>:maximum-c.frames OR c.committed NOT IN (0,1) OR
+          c.physicalFirstFrame<0 OR c.sourceFrameOffset<0 OR
+          c.physicalFirstFrame+c.sourceFrameOffset!=c.firstFrame OR
+          physical.physicalId IS NULL OR physical.physicalFirstFrame!=c.physicalFirstFrame OR
+          (c.ordinal=0 AND c.firstFrame!=0) OR
+          (c.ordinal>0 AND (previous.runId IS NULL OR previous.firstFrame+previous.frames!=c.firstFrame)) OR
+          (c.committed=1 AND previous.committed=0) OR
+          (c.committed=1 AND (b.runId IS NULL OR u.runId IS NULL OR m.runId IS NULL OR
+            b.state!='VALID' OR u.state!='VALID' OR m.state!='VALID' OR
+            u.startInclusive!=0 OR u.endExclusive!=c.frames*2 OR m.endExclusive!=u.endExclusive OR
+            u.unitIndex!=0 OR u.cadence!=5 OR u.generation!=1 OR m.generation!=1 OR
+            u.manifestDigest!=m.digest OR m.kind!='MANIFEST'))
+        ) LIMIT 1
+    """
+    )
+    fun invalidLibraryClaim(asset: String, maximum: Long): Int?
+
+    @Query(
+        """
+        SELECT COUNT(*) AS unitCount, COALESCE(SUM(f.frames),0) AS frames,
+          COALESCE(SUM(CASE WHEN c.runId IS NULL OR c.committed!=1 OR f.runId!=c.runId OR
+            f.frames!=c.frames OR f.generation!=1 OR m.runId IS NULL OR
+            f.manifestDigest!=m.digest OR f.generation!=m.generation THEN 1 ELSE 0 END),0) AS invalid
+        FROM finalization_source f
+        LEFT JOIN unit_claim c ON c.assetId=f.assetId AND c.ordinal=f.ordinal
+        LEFT JOIN manifest m ON m.runId=f.runId
+        WHERE f.assetId=:asset
+    """
+    )
+    fun libraryFinalizationStats(asset: String): LibraryFinalizationStats
+
     @Insert fun insert(value: UnitClaimEntity)
 
     @Update fun update(value: UnitClaimEntity): Int
@@ -549,9 +609,46 @@ internal interface AudioJournalDao {
     @Query("SELECT * FROM deletion_target WHERE assetId=:id ORDER BY runId,kind,relativeName")
     fun deletionTargets(id: String): List<DeletionTargetEntity>
 
+    @Query(
+        "SELECT * FROM deletion_target WHERE assetId=:asset AND runId=:run AND kind=:kind AND relativeName=:name"
+    )
+    fun deletionTarget(
+        asset: String,
+        run: String,
+        kind: String,
+        name: String,
+    ): DeletionTargetEntity?
+
+    @Query(
+        "SELECT * FROM deletion_target WHERE assetId=:asset AND kind=:kind AND completed=0 " +
+            "ORDER BY runId,relativeName LIMIT 256"
+    )
+    fun pendingDeletionTargets(asset: String, kind: String): List<DeletionTargetEntity>
+
+    @Query(
+        "SELECT * FROM deletion_target WHERE assetId=:asset ORDER BY runId,kind,relativeName LIMIT 256"
+    )
+    fun firstDeletionTargetPage(asset: String): List<DeletionTargetEntity>
+
+    @Query(
+        "SELECT * FROM deletion_target WHERE assetId=:asset " +
+            "AND (runId,kind,relativeName)>(:afterRun,:afterKind,:afterName) " +
+            "ORDER BY runId,kind,relativeName LIMIT 256"
+    )
+    fun deletionTargetPage(
+        asset: String,
+        afterRun: String,
+        afterKind: String,
+        afterName: String,
+    ): List<DeletionTargetEntity>
+
     @Insert fun insert(value: DeletionTargetEntity)
 
+    @Insert fun insertDeletionTargets(values: List<DeletionTargetEntity>)
+
     @Update fun update(value: DeletionTargetEntity): Int
+
+    @Update fun updateDeletionTargets(values: List<DeletionTargetEntity>): Int
 
     @Query("DELETE FROM finalization_source WHERE assetId=:id") fun removeFinalSources(id: String)
 
@@ -562,6 +659,39 @@ internal interface AudioJournalDao {
     @Query("DELETE FROM manifest WHERE runId=:run") fun removeManifest(run: String)
 
     @Query("DELETE FROM bootstrap WHERE runId=:run") fun removeBootstrap(run: String)
+
+    @Query(
+        "DELETE FROM quarantine_intent WHERE runId IN (SELECT runId FROM unit_claim WHERE assetId=:asset)"
+    )
+    fun removeAssetQuarantines(asset: String)
+
+    @Query(
+        "DELETE FROM microfile WHERE runId IN (SELECT runId FROM unit_claim WHERE assetId=:asset)"
+    )
+    fun removeAssetMicrofiles(asset: String)
+
+    @Query(
+        "DELETE FROM manifest WHERE runId IN (SELECT runId FROM unit_claim WHERE assetId=:asset)"
+    )
+    fun removeAssetManifests(asset: String)
+
+    @Query(
+        "DELETE FROM bootstrap WHERE runId IN (SELECT runId FROM unit_claim WHERE assetId=:asset)"
+    )
+    fun removeAssetBootstraps(asset: String)
+
+    @Query(
+        """
+        SELECT 1 FROM unit_claim c
+        LEFT JOIN bootstrap b ON b.runId=c.runId
+        LEFT JOIN microfile u ON u.runId=c.runId
+        LEFT JOIN manifest m ON m.runId=c.runId
+        LEFT JOIN quarantine_intent q ON q.runId=c.runId
+        WHERE c.assetId=:asset AND (b.runId IS NOT NULL OR u.runId IS NOT NULL OR
+          m.runId IS NOT NULL OR q.runId IS NOT NULL) LIMIT 1
+    """
+    )
+    fun remainingDeletionMetadata(asset: String): Int?
 }
 
 @Database(
@@ -582,10 +712,17 @@ internal interface AudioJournalDao {
             OriginalAudioReferenceEntity::class,
             SegmentationEntity::class,
             TranscriptEntity::class,
+            PagedJobEntity::class,
+            PagedPartEntity::class,
+            PagedPageEntity::class,
+            PagedEditEntity::class,
+            AudioCatalogRevisionEntity::class,
         ],
-    version = 4,
+    version = 6,
     exportSchema = true,
 )
 internal abstract class AudioJournalDatabase : RoomDatabase() {
     abstract fun journal(): AudioJournalDao
+
+    abstract fun paged(): PagedTranscriptDao
 }

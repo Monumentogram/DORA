@@ -14,6 +14,25 @@ class TextExportQueueTest {
     private val direct = Executor { it.run() }
 
     @Test
+    fun streamingSelectionDoesNotReadUntilPickerAndReportsMidstreamFailure() {
+        val states = mutableListOf<TextExportStatus>()
+        val queue = TextExportQueue(direct, direct, states::add)
+        var calls = 0
+        assertTrue(
+            queue.beginSelection { output ->
+                calls++
+                output.write("first page".toByteArray())
+                throw IOException("controlled page read failure")
+            }
+        )
+        assertEquals(0, calls)
+        queue.completeSelection { ByteArrayOutputStream() }
+        assertEquals(1, calls)
+        assertEquals(TextExportStatus.FAILED, states.last())
+        assertFalse(TextExportStatus.SAVED in states)
+    }
+
+    @Test
     fun exportsExactDisplayedUtf8ParagraphsAndWipesSnapshot() {
         val states = mutableListOf<TextExportStatus>()
         val queue = TextExportQueue(direct, direct, states::add)

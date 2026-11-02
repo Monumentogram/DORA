@@ -46,10 +46,12 @@ class AmazonProvider:
 
     def put(self, attempt, audio):
         self.admission()
+        stream = hasattr(audio, "sha256") and hasattr(audio, "length")
         aws_call(self.s3.put_object, Bucket=self.config.input_bucket, Key=self._input(attempt), Body=audio,
                  ContentType="audio/wav", ServerSideEncryption="aws:kms", SSEKMSKeyId=self.config.input_kms_arn,
                  ExpectedBucketOwner=self.config.account_id,
-                 ChecksumSHA256=base64.b64encode(hashlib.sha256(audio).digest()).decode())
+                 ChecksumSHA256=base64.b64encode(audio.sha256 if stream else hashlib.sha256(audio).digest()).decode(),
+                 **({"ContentLength": audio.length} if stream else {}))
 
     def start(self, attempt, job):
         self.admission()
@@ -90,11 +92,13 @@ class AmazonProvider:
                             ExpectedBucketOwner=self.config.account_id)
         stream = response["Body"]
         try:
+            composite = bool(job.get("parent_id"))
+            limit = 8_388_608 if composite else 1_048_576
             if (response.get("ServerSideEncryption") != "aws:kms" or response.get("SSEKMSKeyId") != self.config.output_kms_arn or
-                    not 0 < response.get("ContentLength", 0) <= 1048576):
+                    not 0 < response.get("ContentLength", 0) <= limit):
                 raise ProviderError("PROVIDER_INVALID_RESULT")
-            data = stream.read(1048577)
-            if len(data) > 1048576:
+            data = stream.read(limit+1)
+            if len(data) > limit:
                 raise ProviderError("PROVIDER_INVALID_RESULT")
             document = json.loads(data)
             if (document["jobName"] != attempt["name"] or document["accountId"] != self.config.account_id or
@@ -106,12 +110,20 @@ class AmazonProvider:
             transcripts = results["transcripts"]
             if len(transcripts) != 1 or not isinstance(transcripts[0]["transcript"], str):
                 raise ValueError()
+            text_limit = 1_048_576 if composite else 262_144
+            if (len(transcripts[0]["transcript"].encode("utf-8")) > text_limit or
+                    len(results["items"]) > (20_000 if composite else 10_000)):
+                raise ValueError()
             segments, previous = [], 0
+            segment_bytes = 0
             for item in results["items"]:
                 if item["type"] not in ("pronunciation", "punctuation"):
                     raise ValueError()
                 alt = item["alternatives"][0]
                 if not isinstance(alt["content"], str):
+                    raise ValueError()
+                segment_bytes += len(alt["content"].encode("utf-8"))
+                if segment_bytes > text_limit:
                     raise ValueError()
                 start, end = (self._time(item.get(k), job["binding"]["frames"]) for k in ("start_time", "end_time"))
                 if (start is not None and start < previous) or (start is not None and end is not None and end < start):

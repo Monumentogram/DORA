@@ -18,6 +18,43 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RecoveryAudioBridgeTest {
+    @Test
+    fun `authenticated range selects exact units and rejects changed selected ciphertext`() {
+        val f = AudioMemoryFixture()
+        f.bridge.create(identity)
+        append(f, first, 0, 0, byteArrayOf(1, 2, 3, 4))
+        append(f, second, 1, 2, byteArrayOf(5, 6))
+        f.bridge.finalize(identity)
+        val snapshot = f.catalog.assets.getValue(identity.assetId.value)
+        val output = mutableListOf<Byte>()
+        requireNotNull(f.catalog.tryAcquire(identity)).use {
+            val result =
+                f.bridge.extractRangeHeld(snapshot, 1, 2) { start, bytes ->
+                    assertEquals(if (output.isEmpty()) 1L else 2L, start)
+                    output.addAll(bytes.toList())
+                }
+            assertEquals(
+                AudioResult.Value(AudioReadSummary(identity, 2, AudioCompletion.FINALIZED)),
+                result,
+            )
+        }
+        assertArrayEquals(byteArrayOf(3, 4, 5, 6), output.toByteArray())
+        val key =
+            f.files.keys.single { it.startsWith(second) && it.endsWith("units/u-0000000000.ct") }
+        f.files.getValue(key)[0] = (f.files.getValue(key)[0].toInt() xor 1).toByte()
+        requireNotNull(f.catalog.tryAcquire(identity)).use {
+            assertEquals(
+                AudioResult.Failed(AudioFailure.CORRUPT),
+                f.bridge.extractRangeHeld(snapshot, 2, 1) { _, _ -> error("Corrupt range") },
+            )
+            assertTrue(
+                f.bridge.extractRangeHeld(snapshot, 0, 1) { _, bytes ->
+                    assertArrayEquals(byteArrayOf(1, 2), bytes)
+                } is AudioResult.Value
+            )
+        }
+    }
+
     private val identity =
         AudioIdentity(
             RecordingId("20112233-4455-4677-8899-aabbccddeeff"),

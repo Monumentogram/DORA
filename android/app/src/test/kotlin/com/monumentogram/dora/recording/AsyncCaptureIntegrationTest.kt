@@ -27,8 +27,8 @@ class AsyncCaptureIntegrationTest {
     fun nativeReleaseFailureAtAlphaLimitCannotAuthorizeFinalization() {
         val rig = Rig()
         rig.first.failRelease = true
-        rig.capture.retire(28_799_999)
-        rig.session.restore(28_799_999, 60)
+        rig.capture.retire(1_382_399_999)
+        rig.session.restore(1_382_399_999, 60)
         rig.session.resume()
         rig.capture.start({ it() }, captureEpochId = rig.session.captureEpochId)
         rig.first.reads.put(1600)
@@ -45,8 +45,8 @@ class AsyncCaptureIntegrationTest {
     @Test
     fun alphaBoundaryReleasesNativeReaderAndKeepsOnlyRemainingFrame() {
         val rig = Rig()
-        rig.capture.retire(28_799_999)
-        rig.session.restore(28_799_999, 60)
+        rig.capture.retire(1_382_399_999)
+        rig.session.restore(1_382_399_999, 60)
         assertTrue(rig.session.resume())
         rig.capture.start({ it() }, captureEpochId = rig.session.captureEpochId)
         rig.first.reads.put(1600)
@@ -56,7 +56,7 @@ class AsyncCaptureIntegrationTest {
         assertEquals(1L, rig.capture.admittedFrames)
         rig.capture.drainOwned {
             assertEquals(2, it.pcm.size)
-            rig.session.accept(it.pcm, it.captureEpochId, 28_799_999 + it.firstFrame)
+            rig.session.accept(it.pcm, it.captureEpochId, 1_382_399_999 + it.firstFrame)
         }
         assertFalse(rig.session.canCapture)
         rig.session.requestStop()
@@ -65,7 +65,7 @@ class AsyncCaptureIntegrationTest {
         rig.writes.all()
         rig.completions.all()
         assertEquals(RecordingPhase.SAVED, rig.session.state.phase)
-        assertEquals(28_800_000L, rig.session.state.durableFrames)
+        assertEquals(1_382_400_000L, rig.session.state.durableFrames)
         assertEquals(1, rig.first.releases.get())
     }
 

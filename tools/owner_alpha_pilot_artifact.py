@@ -35,6 +35,10 @@ PERMISSIONS = {'android.permission.' + name for name in (
     'RECORD_AUDIO', 'FOREGROUND_SERVICE', 'FOREGROUND_SERVICE_MICROPHONE',
     'POST_NOTIFICATIONS', 'WAKE_LOCK')}
 PERMISSIONS.add(PACKAGE + '.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION')
+# ADR-0024 current-source disposable peer only; historical owner Pilot remains offline.
+SYNTHETIC_PEER_PERMISSIONS = PERMISSIONS | {
+    'android.permission.INTERNET', 'android.permission.ACCESS_NETWORK_STATE',
+}
 
 
 def run(command, *, timeout=180):
@@ -54,13 +58,13 @@ def exact_source(source, mode):
         require(run(['git', 'branch', '--show-current']).strip() == 'codex/arm82-owner-alpha', 'UNADMITTED_BRANCH')
 
 
-def check_badging(text):
+def check_badging(text, *, synthetic_peer=False):
     found = re.search(r"^package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", text, re.M)
     require(found and found.groups() == (PACKAGE, str(VERSION_CODE), VERSION_NAME), 'PILOT_IDENTITY_MISMATCH')
-    require(set(re.findall(r"^uses-permission[^:]*: name='([^']+)'", text, re.M)) <= PERMISSIONS, 'UNADMITTED_PERMISSION')
+    require(set(re.findall(r"^uses-permission[^:]*: name='([^']+)'", text, re.M)) <= (SYNTHETIC_PEER_PERMISSIONS if synthetic_peer else PERMISSIONS), 'UNADMITTED_PERMISSION')
 
 
-def check_manifest(xml):
+def check_manifest(xml, *, synthetic_peer=False):
     root = ET.fromstring(xml)
     require(root.get('package') == PACKAGE, 'PILOT_MANIFEST_PACKAGE_MISMATCH')
     require(root.get(ANDROID + 'versionCode') == str(VERSION_CODE) and
@@ -70,7 +74,7 @@ def check_manifest(xml):
     require(root.find('instrumentation') is None, 'INSTRUMENTATION_IN_PILOT')
     for permission in root:
         if permission.tag.startswith('uses-permission'):
-            require(permission.get(ANDROID + 'name') in PERMISSIONS, 'UNADMITTED_PERMISSION')
+            require(permission.get(ANDROID + 'name') in (SYNTHETIC_PEER_PERMISSIONS if synthetic_peer else PERMISSIONS), 'UNADMITTED_PERMISSION')
         if permission.tag == 'permission':
             require(permission.get(ANDROID + 'name') == PACKAGE + '.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION' and
                     permission.get(ANDROID + 'protectionLevel') in ('signature', '0x2'), 'UNADMITTED_DEFINED_PERMISSION')
@@ -214,15 +218,17 @@ def check_pin_resources(resources):
         require(token not in resources, 'NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT')
 
 
-def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None):
+def audit_apk(path, sdk, mode, certificate=None, excluded=None, aar=None, *, synthetic_peer=False):
+    require(type(synthetic_peer) is bool and (not synthetic_peer or mode == 'ci-unsigned'),
+            'SYNTHETIC_PEER_UNSIGNED_ONLY')
     before = sha(path)
     bt = sdk / 'build-tools/36.0.0'
     exe, bat = ('.exe', '.bat') if os.name == 'nt' else ('', '')
     analyzer = sdk / ('cmdline-tools/latest/bin/apkanalyzer' + bat)
     badging = run([bt / ('aapt' + exe), 'dump', 'badging', path])
-    check_badging(badging)
+    check_badging(badging, synthetic_peer=synthetic_peer)
     xml = run([analyzer, 'manifest', 'print', path])
-    components = check_manifest(xml)
+    components = check_manifest(xml, synthetic_peer=synthetic_peer)
     app = ET.fromstring(xml).find('application')
     resources = run([bt / ('aapt' + exe), 'dump', '--values', 'resources', path])
     version_label = check_label(badging, resources, 'ownerPilot')

@@ -21,8 +21,8 @@ from version_label import check_label
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'com.monumentogram.dora.alpha.preview'
 NAMESPACE = 'com.monumentogram.dora'
-VERSION_CODE = 8
-VERSION_NAME = '0.1.0-owner-preview.8'
+VERSION_CODE = 9
+VERSION_NAME = '0.1.0-owner-preview.9'
 OWNER_CERTIFICATE = 'a5f865ce5d28056429b323ede48f53e9ae8ad06880ea20ed242c2a2ba274603d'
 EXCLUDED_CERTIFICATES = {
     'diagnostic': '2f02873f869862680f63e58e2cac37561f45078019e666eae67440365b801ee8',
@@ -51,7 +51,7 @@ def exact_source(source, mode):
     run(['git', 'merge-base', '--is-ancestor', BASE, source])
     if mode == 'owner-local':
         require(os.environ.get('GITHUB_ACTIONS') != 'true', 'OWNER_LOCAL_ONLY')
-        require(run(['git', 'branch', '--show-current']).strip() == 'codex/stage12-long-recording-alpha', 'UNADMITTED_BRANCH')
+        require(run(['git', 'branch', '--show-current']).strip() == 'codex/alpha-v9-recording-stabilization', 'UNADMITTED_BRANCH')
 
 
 def check_badging(text):

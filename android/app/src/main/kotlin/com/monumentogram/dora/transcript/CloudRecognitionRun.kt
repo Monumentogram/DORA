@@ -4,6 +4,7 @@ package com.monumentogram.dora.transcript
 
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.AuthenticatedAudioSource
 import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.OriginalAudioStatus
 import com.monumentogram.dora.audio.ProductAudioSession
@@ -15,6 +16,7 @@ internal class CloudRecognitionRun(
     private val api: CloudApi,
     private val cancellations: CloudCancellations,
     private val pause: () -> Unit = { Thread.sleep(2000) },
+    private val authenticated: AuthenticatedAudioSource? = null,
 ) {
     @Suppress("LongMethod", "CyclomaticComplexMethod", "ThrowsCount")
     // One consent -> transport -> publication boundary and shared fail-closed guard.
@@ -32,6 +34,10 @@ internal class CloudRecognitionRun(
         require(!consent.revoked && consent.destination == api.endpoint)
         require(job.status in setOf("QUEUED", "RUNNING", "FAILED", "INTERRUPTED"))
         val source = stored.source
+        if (source.frames > CloudAudio.MAX_FRAMES) {
+            return CloudCompositeRun(api, cancellations, pause, authenticated = authenticated)
+                .run(session, identity, jobId, attempt, state)
+        }
         fun guard() {
             if (attempt.cancelled() || cancellations.blocked(jobId, api.endpoint))
                 throw CancellationException()
@@ -118,19 +124,25 @@ internal class CloudRecognitionRun(
         return CloudAudio.read(session.originals, source, attempt::cancelled).use { audio ->
             var remote = initial
             var offset = remote.uploadedBytes
-            require(offset in 0..audio.bytes.size)
+            require(offset in 0..audio.bytes.size.toLong())
             // Final bytes may be accepted before quota/dispatch/reply failure. Replaying the
             // exact last chunk is idempotent under this action; it cannot create a second job.
-            if (offset == audio.bytes.size) offset = ((offset - 1) / CHUNK) * CHUNK
+            if (offset == audio.bytes.size.toLong()) offset = ((offset - 1) / CHUNK) * CHUNK
             while (offset < audio.bytes.size) {
                 guard()
                 checkSource(session, source)
                 state("Отправка аудио: ${offset * 100L / audio.bytes.size}%")
-                val end = minOf(offset + CHUNK, audio.bytes.size)
-                val part = audio.bytes.copyOfRange(offset, end)
+                val end = minOf(offset + CHUNK, audio.bytes.size.toLong())
+                val part = audio.bytes.copyOfRange(offset.toInt(), end.toInt())
                 try {
                     remote =
-                        api.upload(jobId, offset, part, end == audio.bytes.size, attempt::cancelled)
+                        api.upload(
+                            jobId,
+                            offset,
+                            part,
+                            end == audio.bytes.size.toLong(),
+                            attempt::cancelled,
+                        )
                 } finally {
                     part.fill(0)
                 }

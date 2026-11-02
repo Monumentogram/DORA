@@ -12,6 +12,7 @@ import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.ProductAudioSession
+import com.monumentogram.dora.ui.signal.uiCopy
 import java.util.concurrent.Executors
 
 /** Ordinary local actions; no command interface, injected authority or retained PCM. */
@@ -24,6 +25,9 @@ internal class SavedRecordingActions(private val activity: MainActivity) {
         private set
 
     var message by mutableStateOf<String?>(null)
+        private set
+
+    var savingPrefix by mutableStateOf(false)
         private set
 
     fun clearVisible() {
@@ -52,6 +56,23 @@ internal class SavedRecordingActions(private val activity: MainActivity) {
         }
     }
 
+    fun savePrefix(identity: AudioIdentity, onSaved: () -> Unit) = open { request, session ->
+        savingPrefix = true
+        runtime.requestRecoveredPrefixFinalization(activity, session, identity) { result ->
+            if (!active(request)) return@requestRecoveredPrefixFinalization
+            val visible = current(session)
+            publish(request, session) {
+                when (result) {
+                    is AudioResult.Value ->
+                        uiCopy("Восстановленная часть сохранена. Микрофон не включался.")
+                    is AudioResult.Failed ->
+                        uiCopy("Не удалось подтвердить сохранение. Проверьте запись ещё раз.")
+                }
+            }
+            if (visible && result is AudioResult.Value) onSaved()
+        }
+    }
+
     fun delete(identity: AudioIdentity) = open { request, session ->
         runtime.requestAudioDeletion(activity, session, identity) { result ->
             if (!active(request)) return@requestAudioDeletion
@@ -76,6 +97,7 @@ internal class SavedRecordingActions(private val activity: MainActivity) {
         val request = ++attempt
         busy = true
         message = null
+        savingPrefix = false
         runtime.requestOpen(activity, AudioOpenMode.OPEN_EXISTING) { availability ->
             if (!active(request)) return@requestOpen
             if (availability is AudioAvailability.Available && current(availability.session)) {
@@ -90,6 +112,7 @@ internal class SavedRecordingActions(private val activity: MainActivity) {
     private fun publish(request: Long, session: ProductAudioSession, text: () -> String) {
         if (!active(request)) return
         busy = false
+        savingPrefix = false
         message = if (current(session)) text() else null
     }
 

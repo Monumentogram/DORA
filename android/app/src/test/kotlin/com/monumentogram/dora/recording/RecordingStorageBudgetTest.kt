@@ -9,22 +9,22 @@ import org.junit.Test
 class RecordingStorageBudgetTest {
     @Test
     fun finalizationHeadroomCannotBeSpentOnTheHourAllowance() {
-        val budget = RecordingStorageBudget.assess(125_000_000)
+        val budget = RecordingStorageBudget.assess(200_000_000)
         assertFalse(budget.canStart)
-        assertEquals(141_777_216L, budget.requiredBytes)
-        assertEquals(108_222_784L, budget.recordingBudgetBytes)
+        assertEquals(216_777_216L, budget.requiredBytes)
+        assertEquals(183_222_784L, budget.recordingBudgetBytes)
     }
 
     @Test
     fun exactMinimumAdmitsOneHourWithoutConsumingFinalizationReserve() {
-        val budget = RecordingStorageBudget.assess(141_777_216)
+        val budget = RecordingStorageBudget.assess(216_777_216)
         assertTrue(budget.canStart)
-        assertEquals(125_000_000L, budget.recordingBudgetBytes)
+        assertEquals(200_000_000L, budget.recordingBudgetBytes)
     }
 
     @Test
     fun oneByteShortDoesNotRoundUpIntoAdmission() {
-        assertFalse(RecordingStorageBudget.assess(141_777_215).canStart)
+        assertFalse(RecordingStorageBudget.assess(216_777_215).canStart)
     }
 
     @Test
@@ -48,8 +48,21 @@ class RecordingStorageBudgetTest {
 
     @Test
     fun laterCapacityLossCannotReuseAnEarlierEligibleSnapshot() {
-        assertTrue(RecordingStorageBudget.assess(200_000_000).canStart)
+        assertTrue(RecordingStorageBudget.assess(300_000_000).canStart)
         assertFalse(RecordingStorageBudget.assess(100_000_000).canStart)
+    }
+
+    @Test
+    fun dayEstimateUsesLongAndWarnsWithoutPreventingShorterRecording() {
+        val partial = RecordingStorageBudget.assess(2_900_000_000L)
+        assertTrue(partial.canStart)
+        assertFalse(partial.canFitFullDay)
+        assertEquals(4_816_777_216L, partial.fullDayRequiredBytes)
+        assertEquals(51_898L, partial.estimatedSeconds)
+        val full = RecordingStorageBudget.assess(4_816_777_216L)
+        assertTrue(full.canFitFullDay)
+        assertEquals(86_400L, full.estimatedSeconds)
+        assertEquals(86_400L, RecordingStorageBudget.assess(Long.MAX_VALUE).estimatedSeconds)
     }
 
     @Test

@@ -10,6 +10,8 @@ from decimal import Decimal, ROUND_CEILING
 
 from .aws_adapter import ProviderError
 from .errors import ServiceError
+from .audio_stream import EncryptedAudioReader
+from .composite import CompositeRuns
 
 
 @dataclass(frozen=True)
@@ -17,8 +19,11 @@ class Policy:
     daily_reserve_usd: str = "0.25"
     per_minute_reserve_usd: str = "0.03"
     ancillary_per_attempt_usd: str = "0.01"
+    long_runs_enabled: bool = False
 
     def __post_init__(self):
+        if type(self.long_runs_enabled) is not bool:
+            raise ValueError("boolean long-run gate required")
         for value in (self.daily_reserve_usd, self.per_minute_reserve_usd, self.ancillary_per_attempt_usd):
             if not Decimal(value).is_finite() or Decimal(value) <= 0:
                 raise ValueError("positive finite reserve required")
@@ -30,6 +35,7 @@ class Service:
     def __init__(self, store, provider, policy=None, clock=time.time):
         self.store, self.provider, self.clock = store, provider, clock
         self.policy = policy or Policy()
+        self.runs = CompositeRuns(self)
 
     def register(self, principal, body):
         db = self.store.db
@@ -46,6 +52,8 @@ class Service:
         return {"recording_id": body["recording_id"]}
 
     def create(self, principal, body):
+        if self.runs.load(body["action_id"]):
+            raise ServiceError("ACTION_CONFLICT", 409)
         old = self.store.job(body["action_id"])
         if old:
             self._owner(principal, old)
@@ -57,13 +65,17 @@ class Service:
         row = self.store.db.execute("SELECT * FROM recordings WHERE id=?", (body["recording_id"],)).fetchone()
         if not row or row["owner"] != principal["owner"]:
             raise ServiceError("NOT_FOUND", 404)
+        if json.loads(row["binding"])["frames"] > 28_800_000:
+            raise ServiceError("COMPOSITE_REQUIRED", 400)
         if (body["consent_version"] != "dora-cloud-manual-v1" or body["consent_source"] != "MANUAL_USER_ACTION" or
                 not 0 < body["consent_granted_at"] <= (self.clock()+60)*1000):
             raise ServiceError("CONSENT_INVALID", 403)
         self._active_quota(principal["owner"])
         day = int(self.clock()) // 86400
-        count = self.store.db.execute("SELECT count(*) FROM jobs WHERE owner=? AND created>=? AND created<?",
+        count = self.store.db.execute("SELECT count(*) FROM jobs WHERE owner=? AND created>=? AND created<? AND id NOT IN (SELECT child FROM composite_parts)",
                                      (principal["owner"], day*86400, (day+1)*86400)).fetchone()[0]
+        count += self.store.db.execute("SELECT count(*) FROM composite_runs WHERE owner=? AND created>=? AND created<?",
+                                      (principal["owner"], day*86400, (day+1)*86400)).fetchone()[0]
         if count >= 10:
             raise ServiceError("DAILY_JOB_LIMIT", 429)
         job = {"id": body["action_id"], "owner": principal["owner"], "installation": principal["id"],
@@ -84,6 +96,16 @@ class Service:
                     (row["trusted_at"] is not None or row["expires"] > self.clock()))
 
     def _consent(self, job):
+        if job.get("parent_id"):
+            parent = self.runs.load(job["parent_id"])
+            if not parent:
+                raise ServiceError("CONSENT_REVOKED", 403)
+            completed_after_deadline = (job["status"] == "COMPLETED" and
+                                        parent.get("cancel_reason") == "DEADLINE_EXCEEDED")
+            if parent["revoked"] and not completed_after_deadline:
+                raise ServiceError("CONSENT_REVOKED", 403)
+            if job["status"] != "COMPLETED":
+                self.runs.consent(parent)
         if job["revoked"] or not self._grant_valid(job):
             raise ServiceError("CONSENT_REVOKED", 403)
         if job["deadline"] is not None and self.clock() >= job["deadline"]:
@@ -92,8 +114,13 @@ class Service:
                 raise ServiceError("DEADLINE_EXCEEDED", 403)
 
     def _active_quota(self, owner, excluding=None):
+        excluded = self.store.job(excluding) if excluding else None
+        parent = excluded.get("parent_id") if excluded else None
+        self.runs.active(owner, parent)
         for row in self.store.db.execute("SELECT payload FROM jobs WHERE owner=?", (owner,)):
             job = json.loads(row[0])
+            if parent and job.get("parent_id") == parent:
+                continue
             if job["id"] != excluding and job["status"] in ("UPLOADING", "QUEUED", "IN_PROGRESS"):
                 raise ServiceError("ACTIVE_JOB_LIMIT", 429)
 
@@ -124,6 +151,8 @@ class Service:
         if body["final"] and offset + len(chunk) != total:
             raise ServiceError("INVALID_MEDIA")
         with self.store.transaction():
+            if job.get("parent_id"):
+                self.runs.first_byte(job)
             if job["deadline"] is None:
                 job["deadline"] = int(self.clock()) + 86400
             self.store.db.execute("INSERT INTO chunks VALUES(?,?,?,?,?,?)", (job_id, offset, len(chunk), digest,
@@ -135,22 +164,21 @@ class Service:
         return self.view(job)
 
     def _finalize(self, job):
-        audio = self._audio(job)
         try:
-            self._validate_audio(job, audio)
+            audio = self._audio(job)
         except ServiceError:
             job.update(status="FAILED", error_code="INVALID_MEDIA", known_failure=False)
             with self.store.transaction():
                 self.store.save_job(job)
                 self.store.erase_audio(job["id"])
             raise
-        job.update(validated=True, uploaded_sha256=hashlib.sha256(audio).hexdigest())
-        self.store.save_job(job)
-        self._dispatch(job, audio)
+        with audio:
+            job.update(validated=True, uploaded_sha256=audio.sha256.hex())
+            self.store.save_job(job)
+            self._dispatch(job, audio)
 
     def _audio(self, job):
-        return b"".join(self.store.decrypt(f"audio:{job['id']}:{c['offset']}", c["ciphertext"])
-                        for c in self.store.chunks(job["id"]))
+        return EncryptedAudioReader.validated(self.store, job)
 
     def _validate_audio(self, job, audio):
         frames = job["binding"]["frames"]
@@ -173,7 +201,17 @@ class Service:
         day = int(self.clock()) // 86400
         total = self.store.db.execute("SELECT coalesce(sum(micro_usd),0) FROM reservations WHERE owner=? AND day=?",
                                      (job["owner"], day)).fetchone()[0]
-        if Decimal(total + micro) > Decimal(self.policy.daily_reserve_usd)*1000000:
+        covered = bool(job.get("parent_id") and job["attempt_count"] == 0)
+        move_hold = False
+        if covered:
+            hold = self.store.db.execute("SELECT day,micro_usd FROM reservations WHERE job=? AND number=0",
+                                         (job["parent_id"],)).fetchone()
+            if not hold or hold["micro_usd"] < micro:
+                raise ServiceError("AGGREGATE_RESERVE_LIMIT", 429)
+            move_hold = hold["day"] != day
+        if job.get("parent_id") and not self.policy.long_runs_enabled:
+            raise ServiceError("LONG_RUNS_DISABLED", 403)
+        if (not covered or move_hold) and Decimal(total + micro) > Decimal(self.policy.daily_reserve_usd)*1000000:
             raise ServiceError("DAILY_RESERVE_LIMIT", 429)
         number = job["attempt_count"] + 1
         attempt = {"job": job["id"], "number": number, "name": f"dora-{job['id']}-{number}",
@@ -182,7 +220,15 @@ class Service:
         # Persist the reservation AND ambiguous intent before any external side effect.
         # A crash anywhere after here reconciles Get; it never repeats Start.
         with self.store.transaction():
-            self.store.db.execute("INSERT INTO reservations VALUES(?,?,?,?,?)", (job["id"], number, job["owner"], day, micro))
+            if move_hold:
+                # Only an unstarted child's allocation may move to its actual paid-start day.
+                # Previously started/uncertain attempts are never refunded or charged again.
+                changed = self.store.db.execute("UPDATE reservations SET micro_usd=micro_usd-? "
+                    "WHERE job=? AND number=0 AND micro_usd>=?", (micro, job["parent_id"], micro))
+                if changed.rowcount != 1:
+                    raise ServiceError("AGGREGATE_RESERVE_LIMIT", 429)
+            if not covered or move_hold:
+                self.store.db.execute("INSERT INTO reservations VALUES(?,?,?,?,?)", (job["id"], number, job["owner"], day, micro))
             self.store.save_attempt(attempt)
             job.update(attempt_count=number, status="QUEUED", known_failure=False, error_code="START_UNCERTAIN")
             self.store.save_job(job)
@@ -216,12 +262,21 @@ class Service:
         if job["status"] in ("QUEUED", "IN_PROGRESS"):
             self._poll(job)
         elif job["status"] == "FAILED" and job["known_failure"] and job["attempt_count"] < 2:
-            self._dispatch(job, self._audio(job))
+            with self._audio(job) as audio:
+                self._dispatch(job, audio)
         elif job["status"] == "UPLOADING" and job["validated"] and not job["attempt_count"]:
-            self._dispatch(job, self._audio(job))
+            with self._audio(job) as audio:
+                self._dispatch(job, audio)
         return self.view(job)
 
     def cancel(self, principal, job_id):
+        run = self.runs.load(job_id)
+        if run:
+            self.runs.cancel(principal, job_id)
+            pending = any(a["cleanup"] for row in self.store.db.execute("SELECT child FROM composite_parts WHERE run=?", (job_id,))
+                          for a in self.store.attempts(row[0]))
+            return {"id": job_id, "status": "CANCELLED", "uploaded_bytes": 0, "retryable": False,
+                    "error_code": "CANCELLED_BY_OWNER", "cleanup_pending": pending, "result": None}
         job = self.store.job(job_id)
         self._owner(principal, job)
         self._cancel(job, "CANCELLED_BY_OWNER")
@@ -317,6 +372,8 @@ class Service:
     def view(self, job):
         row = self.store.db.execute("SELECT ciphertext FROM results WHERE job=?", (job["id"],)).fetchone()
         return {"id": job["id"], "status": job["status"], "uploaded_bytes": job["uploaded_bytes"],
+                **({"parent_id": job["parent_id"], "part_index": job["part_index"], "first_frame": job["first_frame"],
+                    "frames": job["binding"]["frames"]} if job.get("parent_id") else {}),
                 "retryable": bool(not job["revoked"] and ((job["status"] == "FAILED" and job["known_failure"] and job["attempt_count"] < 2) or
                                   job["status"] in ("UPLOADING", "QUEUED", "IN_PROGRESS"))),
                 "error_code": job["error_code"], "cleanup_pending": any(a["cleanup"] for a in self.store.attempts(job["id"])),
@@ -325,6 +382,7 @@ class Service:
     def sweep(self):
         with self.store.serialized():
             now = int(self.clock())
+            self.runs.sweep()
             for row in self.store.db.execute("SELECT payload FROM jobs").fetchall():
                 job = json.loads(row[0])
                 if not job["revoked"] and (not self._grant_valid(job) or

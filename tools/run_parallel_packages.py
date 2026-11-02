@@ -3,6 +3,7 @@
 Pilot here is the synthetic current-source v4 peer, NOT exact v2 or migration evidence.
 """
 import argparse
+from functools import partial
 import json
 import os
 from pathlib import Path
@@ -51,9 +52,12 @@ def main():
     import run_owner_pilot_device as device
     for package, (apk, test) in paths.items():
         audit = audit_pilot if package == PILOT else audit_preview
-        audit(apk, sdk, 'ci-unsigned')
+        # The current-source Pilot is a disposable isolation peer, not a historical release.
+        profile = {'synthetic_peer': True} if package == PILOT else {}
+        audit(apk, sdk, 'ci-unsigned', **profile)
         device.PACKAGE = package
-        device.check_badging = __import__('owner_alpha_pilot_artifact' if package == PILOT else 'owner_preview_artifact').check_badging
+        check = __import__('owner_alpha_pilot_artifact' if package == PILOT else 'owner_preview_artifact').check_badging
+        device.check_badging = partial(check, **profile)
         inspect_apk_inputs(str(sdk), apk, test)
     hashes = {package: [sha(p) for p in files] for package, files in paths.items()}
 

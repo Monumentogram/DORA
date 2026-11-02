@@ -198,7 +198,7 @@ internal fun RecordingScreen(
                             RecordingPhase.SAVED ->
                                 if (state.alphaLimitReached)
                                     uiCopy(
-                                        "Достигнут лимит записи Alpha — 30 минут. Запись сохранена"
+                                        "Достигнут лимит записи Alpha — 24 часа. Запись сохранена"
                                     )
                                 else uiCopy("Запись сохранена")
                             RecordingPhase.EMPTY -> uiCopy("Запись завершена без аудио")
@@ -212,7 +212,8 @@ internal fun RecordingScreen(
                         Text(capturedTime(state.frames))
                         Text(
                             uiCopy("Сохранено на устройстве") +
-                                ": ${capturedTime(state.durableFrames)}"
+                                ": ${capturedTime(state.durableFrames)} · ${state.durableFrames * 2L / BYTES_PER_MB} " +
+                                uiCopy("МБ аудио")
                         )
                     }
                     if (state.phase == RecordingPhase.INTERRUPTED) {
@@ -348,7 +349,8 @@ internal fun RecordingScreen(
                     Text(
                         if (state.durableFrames > 0)
                             uiCopy("Сохранено на устройстве") +
-                                ": ${capturedTime(state.durableFrames)}"
+                                ": ${capturedTime(state.durableFrames)} · ${state.durableFrames * 2L / BYTES_PER_MB} " +
+                                uiCopy("МБ аудио")
                         else uiCopy("Ожидаем подтверждения сохранения"),
                         minLines = 2,
                         maxLines = 2,
@@ -376,7 +378,13 @@ internal fun RecordingScreen(
                                     controller.resume(activity)
                                 else controller.pause()
                             },
-                            modifier = Modifier.heightIn(min = DoraDimensions.recordControl),
+                            modifier =
+                                Modifier.heightIn(min = DoraDimensions.recordControl).semantics {
+                                    contentDescription =
+                                        if (state.phase == RecordingPhase.PAUSED)
+                                            uiCopy("Продолжить")
+                                        else uiCopy("Пауза")
+                                },
                         ) {
                             Text(
                                 if (state.phase == RecordingPhase.PAUSED) uiCopy("Продолжить")
@@ -385,7 +393,10 @@ internal fun RecordingScreen(
                         }
                         OutlinedButton(
                             onClick = controller::requestStop,
-                            modifier = Modifier.heightIn(min = DoraDimensions.recordControl),
+                            modifier =
+                                Modifier.heightIn(min = DoraDimensions.recordControl).semantics {
+                                    contentDescription = activity.getString(R.string.signal_copy_13)
+                                },
                         ) {
                             Text(stringResource(R.string.signal_copy_13))
                         }
@@ -411,7 +422,13 @@ internal fun RecordingScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = controller::confirmStop) {
+                TextButton(
+                    onClick = controller::confirmStop,
+                    modifier =
+                        Modifier.semantics {
+                            contentDescription = activity.getString(R.string.signal_copy_17)
+                        },
+                ) {
                     Text(stringResource(R.string.signal_copy_17))
                 }
             },
@@ -495,7 +512,19 @@ private fun RecordingPreflight(
             )
             Text(
                 uiCopy(
-                    "Alpha: до 30 минут аудио. Для начала записи требуется не менее 142 МБ свободного места."
+                    "Alpha: до 24 часа аудио. Для начала записи требуется не менее 142 МБ свободного места."
+                )
+            )
+            if (storageBudget.canStart && !storageBudget.canFitFullDay) {
+                Text(
+                    uiCopy("Места недостаточно для всех 24 часов. Примерно доступно") +
+                        ": ${capturedTime(storageBudget.estimatedSeconds * SAMPLE_RATE)}"
+                )
+            }
+            Text(
+                uiCopy(
+                    "Для 24 часов предусмотрите около 5 ГБ свободного места. " +
+                        "Другие приложения могут уменьшить доступное место."
                 )
             )
             Text(stringResource(R.string.signal_copy_7))
@@ -558,13 +587,21 @@ private fun RecordingPreflight(
                     controller.start(activity)
                 } else micRequest.launch(Manifest.permission.RECORD_AUDIO)
             },
-            modifier = Modifier.fillMaxWidth().heightIn(min = DoraDimensions.buttonPrimaryHeight),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .heightIn(min = DoraDimensions.buttonPrimaryHeight)
+                    .semantics {
+                        contentDescription = activity.getString(R.string.signal_copy_4)
+                    },
         ) {
             Text(stringResource(R.string.signal_copy_4))
         }
         TextButton(
             onClick = onCancel,
-            modifier = Modifier.heightIn(min = DoraDimensions.touchMinimum),
+            modifier =
+                Modifier.heightIn(min = DoraDimensions.touchMinimum).semantics {
+                    contentDescription = activity.getString(R.string.signal_copy_2)
+                },
         ) {
             Text(stringResource(R.string.signal_copy_2))
         }

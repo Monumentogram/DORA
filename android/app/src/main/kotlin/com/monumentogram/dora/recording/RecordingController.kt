@@ -125,6 +125,22 @@ class RecordingController(
     private val worker = Executors.newSingleThreadScheduledExecutor { task ->
         Thread(task, "Dora recording controls")
     }
+    private val preparation =
+        RecordingPreparation(
+            object : RecordingPreparation.Driver {
+                override fun post(action: () -> Unit) {
+                    worker.execute(action)
+                }
+
+                override fun schedule(task: Runnable, delayMillis: Long): () -> Unit {
+                    val deadline = worker.schedule(task, delayMillis, TimeUnit.MILLISECONDS)
+                    return {
+                        deadline.cancel(false)
+                        Unit
+                    }
+                }
+            }
+        )
     private val persistence = Executors.newSingleThreadExecutor { task ->
         Thread(task, "Dora recording persistence")
     }
@@ -202,6 +218,7 @@ class RecordingController(
             "queueHighWater=${capture.maximumQueuedBlocks} maxAppendNanos=$maximumAppendNanos " +
             "frames=${state.value.recording.frames} durableFrames=${state.value.recording.durableFrames} " +
             "shortReads=${capture.shortReads} readErrors=${capture.readErrors} healthy=${capture.healthy}\n" +
+            "writer=${session?.persistenceProgress} pendingWriterUnits=${session?.pendingWriterUnits ?: 0}\n" +
             latency.dump() +
             "\nappend_stages " +
             lastAppendStages.entries.joinToString(" ") { "${it.key}=${it.value}" } +
@@ -225,6 +242,7 @@ class RecordingController(
         latency.recordingStarted(token)
         actionToken = token
         worker.execute {
+            preparation.cancel()
             terminalDiagnostics.begin()
             authorityRevoked.set(false)
             captureAttempted = false
@@ -333,9 +351,7 @@ class RecordingController(
                         selected.identity,
                         selected.writer,
                         timing = latency::appendEvent,
-                        appendTiming =
-                            if (latency.enabled) ({ stages -> lastAppendStages = stages })
-                            else null,
+                        appendTiming = { stages -> lastAppendStages = stages },
                         persistence = persistence,
                         completion = worker,
                         changed = { if (access === selected) persistenceChanged() },
@@ -352,51 +368,101 @@ class RecordingController(
                     terminate()
                     return@execute
                 }
-                segmentation = RecordingSegmentation(created, vadFactory)
+                val observer = RecordingSegmentation(created, vadFactory)
+                segmentation = observer
                 if (state.value.recording.stopConfirmation) created.requestStop()
                 if (stopRequested.get()) return@execute
-                val initialStart: (() -> Unit) -> Unit = { nativeStart ->
-                    selected.activate {
-                        if (
-                            !serviceOwner.runCurrent(owner) {
-                                if (
-                                    access !== selected ||
-                                        token != actionToken ||
-                                        stopRequested.get() ||
-                                        pauseRequested.get()
-                                )
-                                    throw ResumeCancelled()
-                                if (!storageBudget().canStart)
-                                    throw CaptureException(CaptureFailure.STORAGE_FULL)
-                                nativeStart()
-                            }
-                        )
-                            throw ResumeCancelled()
-                    }
-                }
-                try {
-                    captureAttempted = true
-                    capture.start(initialStart, captureEpochId = created.captureEpochId)
-                } catch (_: ResumeCancelled) {
-                    if (stopRequested.get() || !serviceOwner.isCurrent(owner)) return@execute
-                    if (pauseRequested.get())
-                        selected.activate {
-                            if (
-                                !serviceOwner.isCurrent(owner) ||
-                                    access !== selected ||
-                                    token != actionToken
-                            )
-                                throw ResumeCancelled()
+                preparation.begin(
+                    created,
+                    observer.prepare(),
+                    current = { preparedStartCurrent(created, selected, token, owner) },
+                    settled = { failure ->
+                        try {
+                            if (failure != null) observer.preparationUnavailable(failure)
+                            startPreparedCapture(created, selected, token, owner)
+                        } catch (error: CaptureException) {
+                            fail(error.failure)
+                        } catch (_: Exception) {
+                            failPersistence(AudioFailure.LOCKED)
                         }
-                    else throw ResumeCancelled()
-                }
-                if (pauseRequested.get()) pauseNow() else publish()
+                    },
+                    cancelled = observer::stop,
+                )
+                publish()
             } catch (error: CaptureException) {
                 fail(error.failure)
             } catch (_: Exception) {
                 failPersistence(AudioFailure.LOCKED)
             }
         }
+    }
+
+    @Suppress("ComplexCondition") // Exact session and lifecycle identity are checked again at JNI.
+    private fun preparedStartCurrent(
+        created: RecordingSession,
+        selected: RecordingAccess,
+        token: String,
+        owner: RecordingServiceOwner.Token?,
+    ): Boolean =
+        session === created &&
+            access === selected &&
+            token == actionToken &&
+            serviceOwner.isCurrent(owner) &&
+            serviceActive &&
+            servicePresent &&
+            !retiring &&
+            !stopRequested.get() &&
+            !authorityRevoked.get() &&
+            created.canCapture &&
+            created.state.phase == RecordingPhase.RECORDING
+
+    @Suppress(
+        "ThrowsCount"
+    ) // Preserve typed cancellation/storage exits at the original native gate.
+    private fun startPreparedCapture(
+        created: RecordingSession,
+        selected: RecordingAccess,
+        token: String,
+        owner: RecordingServiceOwner.Token?,
+    ) {
+        // Pause queued during preparation never needs to construct an AudioRecord.
+        if (pauseRequested.get()) {
+            selected.activate {
+                if (!preparedStartCurrent(created, selected, token, owner)) throw ResumeCancelled()
+            }
+            pauseNow()
+            return
+        }
+        val initialStart: (() -> Unit) -> Unit = { nativeStart ->
+            selected.activate {
+                if (
+                    !serviceOwner.runCurrent(owner) {
+                        if (
+                            !preparedStartCurrent(created, selected, token, owner) ||
+                                pauseRequested.get()
+                        )
+                            throw ResumeCancelled()
+                        if (!storageBudget().canStart)
+                            throw CaptureException(CaptureFailure.STORAGE_FULL)
+                        nativeStart()
+                    }
+                )
+                    throw ResumeCancelled()
+            }
+        }
+        try {
+            captureAttempted = true
+            capture.start(initialStart, captureEpochId = created.captureEpochId)
+        } catch (_: ResumeCancelled) {
+            if (stopRequested.get() || !serviceOwner.isCurrent(owner)) return
+            if (pauseRequested.get()) {
+                selected.activate {
+                    if (!preparedStartCurrent(created, selected, token, owner))
+                        throw ResumeCancelled()
+                }
+            } else throw ResumeCancelled()
+        }
+        if (pauseRequested.get()) pauseNow() else publish()
     }
 
     fun serviceCreated() {
@@ -431,16 +497,19 @@ class RecordingController(
     private fun pauseNow() {
         latency.mark(timingOperation, "pause_worker")
         val current = session ?: return
+        if (preparation.pending(current)) return
         if (current.state.phase != RecordingPhase.RECORDING) {
             mutable.update { it.copy(pausePending = false) }
             return
         }
         try {
             capture.stop()
-            capture.failure?.let {
-                fail(it)
-                return
-            }
+            capture.failure
+                ?.takeIf { captureAttempted }
+                ?.let {
+                    fail(it)
+                    return
+                }
             latency.mark(timingOperation, "drain_start")
             drainOwned(current)
             latency.mark(timingOperation, "drain_end")
@@ -489,6 +558,7 @@ class RecordingController(
                         return@execute
                     }
                     val current = session ?: return@execute
+                    if (preparation.pending(current)) return@execute
                     if (
                         current.state.phase != RecordingPhase.PAUSED ||
                             !current.canCapture ||
@@ -499,6 +569,7 @@ class RecordingController(
                     )
                         return@execute
                     val captureEpochId = id()
+                    captureAttempted = true
                     capture.start(
                         withStartAuthority = { nativeStart ->
                             result.value.consume {
@@ -576,6 +647,7 @@ class RecordingController(
 
     /** Control owner only. Native shutdown must be confirmed before finalization is admitted. */
     private fun finishStop() {
+        preparation.cancel()
         val current = session
         if (current == null) {
             if (access != null) {
@@ -586,10 +658,12 @@ class RecordingController(
         }
         try {
             capture.stop()
-            capture.failure?.let {
-                fail(it)
-                return
-            }
+            capture.failure
+                ?.takeIf { captureAttempted }
+                ?.let {
+                    fail(it)
+                    return
+                }
             drainOwned(current)
             current.requestStop()
             mutable.update {
@@ -648,6 +722,7 @@ class RecordingController(
         }
         val current = session ?: return
         if (!serviceActive || retiring || current.state.phase != RecordingPhase.RECORDING) return
+        if (preparation.pending(current) || !captureAttempted) return
         try {
             // A finite quantum guarantees queued commands run even under sustained storage load.
             drainOwned(current, DRAIN_BLOCKS_PER_TICK)
@@ -701,6 +776,7 @@ class RecordingController(
     }
 
     private fun terminate() {
+        preparation.cancel()
         if (session?.state?.phase == RecordingPhase.INTERRUPTED)
             recordTerminal(
                 capture.failure,
@@ -762,6 +838,8 @@ class RecordingController(
 
     private fun release() {
         check(!capture.hasLiveThread)
+        preparation.cancel()
+        segmentation?.stop()
         latency.retireDurability()
         stopPresentation()
         actionToken = null
@@ -851,24 +929,23 @@ class RecordingController(
         maximumAppendNanos = current.maximumAppendNanos
         val signal = capture.signal
         val fresh = System.nanoTime() - signal.atNanos < SIGNAL_STALE_NANOS
+        val visiblePhase = preparation.visiblePhase(current, current.state.phase, captureAttempted)
         mutable.update {
             it.copy(
                 recording =
                     current.state.let { value ->
-                        if (value.phase == RecordingPhase.RECORDING)
+                        if (visiblePhase == RecordingPhase.RECORDING)
                             value.copy(
                                 frames =
                                     maxOf(value.frames, timeline.frames(capture.admittedFrames))
                             )
-                        else value
+                        else value.copy(phase = visiblePhase)
                     },
                 pausePending =
                     pauseRequested.get() && current.state.phase == RecordingPhase.RECORDING,
                 resumePending = it.resumePending && current.state.phase == RecordingPhase.PAUSED,
                 signalAtNanos = signal.atNanos,
-                level =
-                    if (current.state.phase == RecordingPhase.RECORDING && fresh) signal.level
-                    else 0f,
+                level = if (visiblePhase == RecordingPhase.RECORDING && fresh) signal.level else 0f,
                 route = capture.route,
                 shortReads = capture.shortReads,
                 readErrors = capture.readErrors,

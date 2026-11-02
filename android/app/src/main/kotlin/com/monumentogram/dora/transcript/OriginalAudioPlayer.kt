@@ -19,7 +19,7 @@ import com.monumentogram.dora.audio.AudioAvailability
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
 import com.monumentogram.dora.audio.AudioResult
-import com.monumentogram.dora.audio.OriginalAudioStatus
+import com.monumentogram.dora.audio.AuthenticatedAudioSource
 import com.monumentogram.dora.audio.transcript.PcmWindows
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong
 internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoCloseable {
     private val runtime = (activity.application as DoraApplication).audioRuntime
     private val worker = Executors.newSingleThreadExecutor()
+    private val sourceCache = PlaybackSourceCache()
     private val generation = AtomicLong()
     private val manager = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val attributes =
@@ -93,6 +94,7 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
 
     fun clear() {
         pause()
+        if (!closed) worker.execute { sourceCache.close() }
         position = 0
         frames = 0
         failed = false
@@ -108,29 +110,71 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
         val start = if (position >= frames) 0 else position
         loading = true
         failed = false
+        worker.execute { prepareSource(request, start, identity) }
+    }
+
+    private fun prepareSource(request: Long, start: Long, identity: AudioIdentity) {
+        try {
+            if (generation.get() != request) return
+            val retained = sourceCache.reuse(identity)
+            if (retained != null) {
+                playSource(request, start, retained)
+            } else
+                activity.runOnUiThread {
+                    // A normal pause/seek reuses the existing runtime. Only a fresh source opens
+                    // it.
+                    if (generation.get() == request) openSource(request, start, identity)
+                }
+        } catch (_: Exception) {
+            sourceCache.close()
+            activity.runOnUiThread { finish(request, true) }
+        }
+    }
+
+    @Suppress(
+        "NestedBlockDepth"
+    ) // Main-thread authorization hands off to a fenced playback worker.
+    private fun openSource(request: Long, start: Long, identity: AudioIdentity) {
         runtime.requestOpen(activity, AudioOpenMode.OPEN_EXISTING) { result ->
             if (!current(request)) return@requestOpen
             if (result !is AudioAvailability.Available) {
+                worker.execute { sourceCache.close() }
                 finish(request, true)
-                return@requestOpen
-            }
-            worker.execute {
-                try {
-                    val source =
-                        ((result.session.originals.acquire(identity) as? AudioResult.Value)?.value
-                                as? OriginalAudioStatus.Available)
-                            ?.reference ?: error("SOURCE_UNAVAILABLE")
-                    stream(
-                        request,
-                        result.session.originals,
-                        source,
-                        start.coerceAtMost(source.frames),
-                    )
-                    activity.runOnUiThread { finish(request, false) }
-                } catch (_: Exception) {
-                    activity.runOnUiThread { finish(request, true) }
+            } else
+                worker.execute {
+                    try {
+                        if (!current(request)) return@execute
+                        val source =
+                            sourceCache.remember(
+                                identity,
+                                result.session.originals.openAuthenticated(identity),
+                            )
+                        playSource(request, start, source)
+                    } catch (_: Exception) {
+                        sourceCache.close()
+                        activity.runOnUiThread { finish(request, true) }
+                    }
                 }
-            }
+        }
+    }
+
+    private fun playSource(
+        request: Long,
+        start: Long,
+        opened: AudioResult<AuthenticatedAudioSource>,
+    ) {
+        try {
+            check(opened is AudioResult.Value) { "SOURCE_UNAVAILABLE" }
+            if (!current(request)) return
+            val authenticated = opened.value
+            stream(request, authenticated, start.coerceAtMost(authenticated.reference.frames))
+            activity.runOnUiThread { finish(request, false) }
+        } catch (_: Exception) {
+            // Expected pause/seek cancellation keeps the snapshot; an active failure retires it.
+            if (generation.get() == request) sourceCache.close()
+            activity.runOnUiThread { finish(request, true) }
+        } finally {
+            if (!runtime.isRecordingUiAuthorized()) sourceCache.close()
         }
     }
 
@@ -151,10 +195,10 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
     ) // Track and window lifetimes share one cleanup boundary.
     private fun stream(
         request: Long,
-        port: com.monumentogram.dora.audio.OriginalAudioPort,
-        source: com.monumentogram.dora.audio.OriginalAudioReference,
+        authenticated: com.monumentogram.dora.audio.AuthenticatedAudioSource,
         start: Long,
     ) {
+        val source = authenticated.reference
         val output =
             AudioTrack.Builder()
                 .setAudioAttributes(attributes)
@@ -174,7 +218,7 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
                 track = output
                 output.play()
             }
-            PcmWindows(port, source, start) { !current(request) }
+            PcmWindows(authenticated, start) { !current(request) }
                 .use { windows ->
                     var ready = false
                     while (current(request)) {

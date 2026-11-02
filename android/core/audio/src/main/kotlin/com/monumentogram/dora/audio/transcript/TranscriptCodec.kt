@@ -23,12 +23,14 @@ internal object TranscriptCodec {
     private const val METADATA_RESERVE_BYTES = 1048576
     private const val MAGIC = 0x44545231
     private const val CLOUD_MAGIC = 0x44545232
+    private const val PAGED_MAGIC = 0x44545233
 
     fun encode(doc: TranscriptDocument): ByteArray {
         validate(doc)
         val bytes = ByteArrayOutputStream()
         DataOutputStream(bytes).use { out ->
-            out.writeInt(CLOUD_MAGIC)
+            val format = if (doc.versions.any { it.paged != null }) PAGED_MAGIC else CLOUD_MAGIC
+            out.writeInt(format)
             out.writeInt(doc.source.version)
             out.text(doc.source.identity.recordingId.value)
             out.text(doc.source.identity.assetId.value)
@@ -38,7 +40,7 @@ internal object TranscriptCodec {
             out.writeLong(doc.revision)
             out.text(doc.activeId ?: "")
             out.writeInt(doc.versions.size)
-            doc.versions.forEach { out.version(it) }
+            doc.versions.forEach { out.version(it, format) }
             out.writeInt(doc.edits.size)
             doc.edits.forEach {
                 out.text(it.id)
@@ -65,7 +67,7 @@ internal object TranscriptCodec {
         require(bytes.size <= MAX_BYTES)
         return DataInputStream(ByteArrayInputStream(bytes)).use { input ->
             val format = input.readInt()
-            require(format == MAGIC || format == CLOUD_MAGIC)
+            require(format == MAGIC || format == CLOUD_MAGIC || format == PAGED_MAGIC)
             val source = input.source()
             val revision = input.readLong()
             val active = input.text().ifEmpty { null }
@@ -104,6 +106,7 @@ internal object TranscriptCodec {
             readLong(),
         )
 
+    @Suppress("LongMethod") // Legacy and paged versions share one bounded document invariant pass.
     fun validate(doc: TranscriptDocument) {
         require(
             doc.revision >= 0 &&
@@ -140,7 +143,15 @@ internal object TranscriptCodec {
             )
             require(doc.jobs.single { job -> job.id == it.id }.status == "SUCCEEDED")
             val job = doc.jobs.single { job -> job.id == it.id }
-            require((it.cloud == null) == (job.consent == null))
+            require((it.engine == "CLOUD") == (job.consent != null))
+            it.paged?.let { reference ->
+                reference.validate()
+                require(
+                    it.text.isEmpty() &&
+                        it.cloud == null &&
+                        reference.publicationRevision <= doc.revision
+                )
+            }
             it.cloud?.let { cloud ->
                 require(
                     cloud.text == it.text &&
@@ -215,7 +226,7 @@ internal object TranscriptCodec {
         write(encoded)
     }
 
-    private fun DataOutputStream.version(value: MachineTranscript) {
+    private fun DataOutputStream.version(value: MachineTranscript, format: Int) {
         text(value.id)
         text(value.text)
         writeLong(value.createdAt)
@@ -225,6 +236,19 @@ internal object TranscriptCodec {
         text(value.timestampQuality)
         writeBoolean(value.cloud != null)
         value.cloud?.let { cloud(it) }
+        if (format == PAGED_MAGIC) {
+            writeBoolean(value.paged != null)
+            value.paged?.let {
+                text(it.engine)
+                text(it.configDigest)
+                text(it.windowPolicy)
+                writeInt(it.partCount)
+                writeLong(it.pageCount)
+                writeLong(it.textBytes)
+                text(it.rootDigest)
+                writeLong(it.publicationRevision)
+            }
+        }
     }
 
     private fun DataInputStream.version(format: Int): MachineTranscript {
@@ -232,8 +256,21 @@ internal object TranscriptCodec {
         val engine = text()
         val availability = text()
         val quality = text()
-        val cloud = if (format == CLOUD_MAGIC && readBoolean()) cloud(raw) else null
-        return raw.copy(cloud = cloud).also {
+        val cloud = if (format != MAGIC && readBoolean()) cloud(raw) else null
+        val paged =
+            if (format == PAGED_MAGIC && readBoolean())
+                PagedTranscriptReference(
+                    text(),
+                    text(),
+                    text(),
+                    readInt(),
+                    readLong(),
+                    readLong(),
+                    text(),
+                    readLong(),
+                )
+            else null
+        return raw.copy(cloud = cloud, paged = paged).also {
             require(
                 engine == it.engine &&
                     availability == it.timestampAvailability &&
@@ -265,7 +302,7 @@ internal object TranscriptCodec {
             text(),
             readLong(),
             readLong(),
-            if (format == CLOUD_MAGIC && readBoolean())
+            if (format != MAGIC && readBoolean())
                 CloudConsent(text(), text(), readLong(), readBoolean(), text())
             else null,
         )

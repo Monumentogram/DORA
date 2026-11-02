@@ -1,0 +1,77 @@
+name: Public owner v8 native crash baseline diagnostic
+
+on:
+  push:
+    branches: ["codex/alpha-v9-recording-stabilization"]
+    paths:
+      - .github/workflows/owner-v8-native-baseline.yml
+      - tools/run_owner_v8_native_baseline.py
+      - tools/test_owner_v8_native_baseline.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: owner-v8-native-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-v8-api36-diagnostic:
+    name: public-v8-api36-native-diagnostic-not-release-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Host artifact, UI target and crash-classification denial controls
+        run: python3 -m unittest discover -s tools -p test_owner_v8_native_baseline.py -v
+      - name: Download exact public v8 artifact without private inputs or a new APK build
+        run: |
+          curl --silent --show-error --fail --location --proto '=https' --tlsv1.2 --max-time 180 \
+            --output "${RUNNER_TEMP}/DORA-owner-alpha-v8.apk" \
+            'https://github.com/Monumentogram/DORA/releases/download/personal-alpha-20261030-v8/DORA-owner-alpha-v8.apk'
+          printf '%s  %s\n' 'd4a8f29b1ae914f33f54fa777c5976098ad823d6f1ef615e51f180d9124e8110' \
+            "${RUNNER_TEMP}/DORA-owner-alpha-v8.apk" | sha256sum --check --strict
+      - name: Install API36 diagnostic emulator inputs
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools" "emulator" "build-tools;36.0.0"
+          "system-images;android-36;google_apis;x86_64"
+      - name: Boot fresh disposable API36 emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/public-v8-baseline-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' | "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+            --name dora_public_v8_baseline --package 'system-images;android-36;google_apis;x86_64' --device pixel_6
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_public_v8_baseline -port 5554 \
+            -no-window -noaudio -no-boot-anim -no-snapshot -no-metrics \
+            -gpu swiftshader_indirect -accel on -memory 2048 > "${RUNNER_TEMP}/emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            kill -0 "${emulator_pid}" 2>/dev/null || exit 1
+            boot=$("${ANDROID_HOME}/platform-tools/adb" -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot}" = "1" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Drive actual v8 visible recording controls and observe native crash window
+        run: >-
+          python3 tools/run_owner_v8_native_baseline.py --serial emulator-5554
+          --apk "${RUNNER_TEMP}/DORA-owner-alpha-v8.apk"
+          --receipt "${RUNNER_TEMP}/public-v8-baseline/receipt.json"
+      - name: Publish categorical diagnostic metadata only
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: public-owner-v8-api36-native-baseline-diagnostic
+          path: ${{ runner.temp }}/public-v8-baseline/*.json
+          retention-days: 7
+          if-no-files-found: warn

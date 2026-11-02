@@ -39,6 +39,7 @@ def main():
     parser.add_argument("--state-dir", required=True)
     parser.add_argument("--port", type=int, default=8443)
     parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--composite", action="store_true", help="enable synthetic composite routes only")
     args = parser.parse_args()
     folder = Path(args.state_dir)
     folder.mkdir(parents=True, exist_ok=True)
@@ -62,7 +63,7 @@ def main():
     if not store.db.execute("SELECT 1 FROM installations WHERE id=?", (invite["installation_id"],)).fetchone():
         auth.invite(invite["installation_id"], "synthetic-owner", public.public_bytes(serialization.Encoding.PEM,
                     serialization.PublicFormat.SubjectPublicKeyInfo), int(time.time())+86400)
-    service = Service(store, CompletingSyntheticProvider(), Policy(daily_reserve_usd="5.00"))
+    service = Service(store, CompletingSyntheticProvider(), Policy(daily_reserve_usd="5.00", long_runs_enabled=args.composite))
     print("SYNTHETIC_ONLY_TLS_CERT=" + str((folder/"tls.crt").resolve()), flush=True)
     try:
         uvicorn.run(create_app(service, auth), host=args.host, port=args.port, access_log=False,

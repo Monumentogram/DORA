@@ -55,19 +55,26 @@ internal class JournalCommitBoundary(
     private val markSuccessful: () -> Unit,
     private val end: () -> Unit,
     private val isInTransaction: () -> Boolean,
+    private val afterReadback: () -> Unit = {},
     private val onUncertain: () -> Unit = {},
 ) {
+    private var committing = false
+
     // Mark uncertain for every driver/readback exception, then propagate the original failure.
     @Suppress("TooGenericExceptionCaught")
     fun commit(write: () -> Unit, exactReadback: () -> Boolean) {
         // A nested Room transaction can read its writes before its outer transaction rolls back.
         // Reject before mutation; this known non-mutation is not an uncertain commit.
-        check(!isInTransaction()) { "Nested journal transaction rejected" }
+        check(!committing && !isInTransaction()) { "Nested journal transaction rejected" }
+        committing = true
         try {
             commitAndRead(write, exactReadback)
+            afterReadback()
         } catch (error: Exception) {
             onUncertain()
             throw error
+        } finally {
+            committing = false
         }
     }
 

@@ -47,6 +47,9 @@ enum class RecordingWriterOperation {
     FINALIZE,
 }
 
+/** Fixed operation name and monotonic start only; contains no recording identity or audio. */
+data class RecordingPersistenceProgress(val stage: String, val startedAtNanos: Long)
+
 /** Content-free state. Signal is supplied separately by the Android capture adapter. */
 data class RecordingState(
     val phase: RecordingPhase = RecordingPhase.PREFLIGHT,
@@ -92,6 +95,10 @@ class RecordingSession(
     private val failed = AtomicReference<AudioFailure?>(null)
     @Volatile
     var failureOperation: RecordingWriterOperation? = null
+        private set
+
+    @Volatile
+    var persistenceProgress = RecordingPersistenceProgress("IDLE", 0L)
         private set
 
     val canCapture: Boolean
@@ -146,7 +153,7 @@ class RecordingSession(
     fun start(): Boolean {
         if (state.phase != RecordingPhase.PREFLIGHT) return false
         state = state.copy(phase = RecordingPhase.PREPARING)
-        val result = writer.createLogicalRecording(identity)
+        val result = tracePersistence("CREATE") { writer.createLogicalRecording(identity) }
         if (result is AudioResult.Failed) failureOperation = RecordingWriterOperation.CREATE
         if (!checkResult(result)) return false
         state = state.copy(phase = RecordingPhase.RECORDING)
@@ -305,7 +312,7 @@ class RecordingSession(
             try {
                 if (failed.get() != null || metadataFailed.get() != null)
                     AudioResult.Failed(AudioFailure.UNAVAILABLE)
-                else writer.segmentation(identity, metadata)
+                else tracePersistence("METADATA") { writer.segmentation(identity, metadata) }
             } catch (_: Exception) {
                 AudioResult.Failed(AudioFailure.UNAVAILABLE)
             }
@@ -430,7 +437,7 @@ class RecordingSession(
         }
         val result =
             try {
-                action()
+                tracePersistence(operation.name, action)
             } catch (_: Exception) {
                 AudioResult.Failed(AudioFailure.UNAVAILABLE)
             }
@@ -439,6 +446,15 @@ class RecordingSession(
             persistenceFailed()
         }
         return result
+    }
+
+    private fun <T> tracePersistence(stage: String, action: () -> T): T {
+        persistenceProgress = RecordingPersistenceProgress(stage, System.nanoTime())
+        return try {
+            action()
+        } finally {
+            persistenceProgress = RecordingPersistenceProgress("IDLE", 0L)
+        }
     }
 
     private fun checkResult(result: AudioResult<Unit>): Boolean =

@@ -17,7 +17,10 @@ data class RecordingPreview(
     override fun toString() = "RecordingPreview(redacted)"
 }
 
-data class RecordingSearchRow(val recording: RecordingRecovery, val preview: RecordingPreview) {
+data class RecordingSearchRow(
+    val recording: RecordingLibraryMetadata,
+    val preview: RecordingPreview,
+) {
     override fun toString() = "RecordingSearchRow(redacted)"
 }
 
@@ -29,7 +32,12 @@ data class RecordingSearchPage(val rows: List<RecordingSearchRow>, val nextCurso
 internal class RecordingSearch(
     private val candidates: (String) -> List<Pair<String, AudioIdentity?>>,
     private val document: (AudioIdentity) -> AudioResult<TranscriptDocument?>,
-    private val recovery: (AudioIdentity) -> AudioResult<RecordingRecovery>,
+    private val metadata: (AudioIdentity) -> AudioResult<RecordingLibraryMetadata>,
+    private val pagedPreview:
+        ((AudioIdentity, TranscriptDocument, String, String, () -> Boolean) -> AudioResult<
+                RecordingPreview?
+            >)? =
+        null,
 ) {
     @Suppress(
         "ReturnCount"
@@ -46,7 +54,8 @@ internal class RecordingSearch(
             AudioResult.Failed(AudioFailure.CANCELLED)
         }
 
-    @Suppress("ReturnCount") // Each read/cancellation fails closed without partial results.
+    // Each read/cancellation fails closed before a result page is published.
+    @Suppress("ReturnCount", "CyclomaticComplexMethod", "NestedBlockDepth")
     private fun scan(
         query: String,
         nameFormat: String,
@@ -72,18 +81,26 @@ internal class RecordingSearch(
                         nameFormat,
                         identity?.recordingId?.value?.take(SHORT_ID_LENGTH).orEmpty(),
                     )
+                val doc = (loaded as AudioResult.Value).value
+                val active = doc?.versions?.singleOrNull { it.id == doc.activeId }
                 val preview =
-                    preview((loaded as AudioResult.Value).value, title, matcher) ?: continue
+                    if (active?.paged != null && identity != null) {
+                        val found =
+                            pagedPreview?.invoke(identity, doc, normalized, title, cancelled)
+                                ?: return AudioResult.Failed(AudioFailure.UNAVAILABLE)
+                        if (found is AudioResult.Failed) return found
+                        (found as AudioResult.Value).value
+                    } else preview(doc, title, matcher)
+                if (preview == null) continue
                 if (cancelled()) return AudioResult.Failed(AudioFailure.CANCELLED)
                 val recovered =
-                    identity?.let(recovery)
+                    identity?.let(metadata)
                         ?: AudioResult.Value(
-                            RecordingRecovery(
+                            RecordingLibraryMetadata(
                                 null,
-                                null,
-                                AudioFailure.CORRUPT,
-                                false,
                                 0,
+                                RecordingLibraryState.UNAVAILABLE,
+                                AudioFailure.CORRUPT,
                                 cursor = key,
                             )
                         )

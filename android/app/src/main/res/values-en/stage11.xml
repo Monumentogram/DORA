@@ -10,6 +10,8 @@
     <string name="stage11_export_failed">Could not write the file. Recording text is preserved. An incomplete file may remain at the selected location; check it and try exporting again.</string>
     <string name="stage11_delete_recording">Delete recording</string>
     <string name="stage11_delete_confirm">Delete</string>
+    <string name="stage11_delete_preparing">Preparing deletion and recording cloud cancellation requests…</string>
+    <string name="stage11_delete_working">Deleting recording data and verifying completion… A long recording may take several minutes. Deletion cannot be cancelled. If interrupted, reopen the recording and delete again to finish the remaining steps.</string>
     <string name="stage11_delete_scope">Delete this recording’s original audio, all transcript versions and edits from this device? This cannot be undone. Other recordings remain. External exported copies are not deleted. This action does not confirm deletion of cloud data.</string>
     <string name="stage11_delete_incomplete">Deletion is incomplete. Some data may already be deleted. Tap Delete recording again to finish. Other recordings are preserved.</string>
     <string name="stage11_deletion_pending">Deletion incomplete — open recording to retry</string>

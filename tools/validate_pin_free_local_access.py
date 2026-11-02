@@ -36,8 +36,11 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     changed = set(git('diff', '--name-only', BASE).splitlines())
     require(not historical.intersection(changed), 'Historical evidence, contracts, vendor or Recovery changed')
     require(not pin_free_policy.violations(root), 'NO_APPLICATION_PIN_OR_BIOMETRIC_PROMPT')
+    import owner_v9_inventory as v9
     from owner_arm82_inventory import project_stage9_policy
-    persistence.validate_product_sources(project_stage9_policy(persistence.read_product_sources(root), root))
+    successor = v9.candidate(root)
+    project_policy = v9.project_policy_sources if successor else project_stage9_policy
+    persistence.validate_product_sources(project_policy(persistence.read_product_sources(root), root))
     manifest = (root / 'android/app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
     recording.validate_manifest(manifest)
     capture = {p.relative_to(root).as_posix(): p.read_text(encoding='utf-8')
@@ -45,9 +48,16 @@ def validate_checkout(root=ROOT, *, allow_working=None):
     # The accepted content-free terminal receipt predates ADR-0021. Keep its exact
     # implementation, then apply the older no-alternate-audio-store check elsewhere.
     controller = 'android/app/src/main/kotlin/com/monumentogram/dora/recording/RecordingController.kt'
-    require(capture.pop(controller).replace('\r\n', '\n') ==
-            persistence.git(root, 'show', BASE + ':' + controller).decode().replace('\r\n', '\n'),
-            'Accepted capture/terminal-receipt implementation changed')
+    controller_source = capture.pop(controller).replace('\r\n', '\n')
+    if successor:
+        # The v9 admission validates this exact successor before the same inherited exclusion.
+        admission = v9.read_admission(root)
+        require(v9.digest(controller, controller_source) == admission['sources'][controller],
+                'Unreviewed v9 capture/terminal-receipt implementation')
+    else:
+        require(controller_source ==
+                persistence.git(root, 'show', BASE + ':' + controller).decode().replace('\r\n', '\n'),
+                'Accepted capture/terminal-receipt implementation changed')
     recording.validate_capture_sources(capture)
     xml = ET.fromstring(manifest)
     for permission in list(xml.findall('uses-permission')):
@@ -65,13 +75,17 @@ def validate_checkout(root=ROOT, *, allow_working=None):
                                               for p in test_root.rglob('*.kt')})
     import run_encrypted_persistence_device as device
     import validate_stage8_alpha as alpha
-    contract = json.loads((root / INVENTORY).read_text())
+    contract = v9.read_inventory(root) if successor else json.loads((root / INVENTORY).read_text())
     inventory, _ = device.validate_inventory(contract)
-    require(contract.get('deferred_tests') == sorted(alpha.DEFERRED_DEVICE),
-            'Only the accepted over-five-minute test deferrals are inherited')
+    require(contract.get('deferred_tests') == ([] if successor else sorted(alpha.DEFERRED_DEVICE)),
+            'Only explicitly accounted test deferrals are admitted')
     from owner_arm82_inventory import validate_accounting
     legacy = json.loads((root / 'docs/contracts/pin-free-local-access-device-tests-v1.json').read_text())
-    accounted = validate_accounting(contract, tests, set(legacy['tests']), alpha.DEFERRED_DEVICE)
+    if successor:
+        predecessor = json.loads((root / v9.PREDECESSOR).read_text())
+        accounted = v9.validate_accounting(contract, tests, predecessor) | v9.HISTORICAL | v9.PHASED | v9.PAGED_PHASES
+    else:
+        accounted = validate_accounting(contract, tests, set(legacy['tests']), alpha.DEFERRED_DEVICE)
     old = json.loads((root / 'docs/contracts/persistence-8.6c3-device-tests.json').read_text())
     superseded = {name for name in old['tests'] if '.auth.AndroidAppLockTest#' in name or
                   '.auth.AndroidAuthProofTest#' in name or

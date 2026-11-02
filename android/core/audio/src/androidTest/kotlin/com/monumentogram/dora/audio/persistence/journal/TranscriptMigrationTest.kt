@@ -22,7 +22,7 @@ class TranscriptMigrationTest {
         RoomAudioJournal.open(f.context, f.file, f.factory(), id(1), id(2), {}).use {
             assertTrue(it.transcriptHistory().isEmpty())
         }
-        f.raw(4) { db ->
+        f.raw(AUDIO_INDEX_SCHEMA_VERSION) { db ->
             JournalSchemaVerifier.verify(db)
             db.query(
                     "SELECT recordingId,sessionId,ownerId,vaultId,finalized FROM audio_asset WHERE assetId=?",

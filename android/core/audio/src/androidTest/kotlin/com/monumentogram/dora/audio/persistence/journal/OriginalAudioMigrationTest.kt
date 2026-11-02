@@ -33,7 +33,7 @@ class OriginalAudioMigrationTest {
                     assertNotNull(journal.catalog.load(fixture.pending)!!.pending)
                 }
             }
-        fixture.raw(TRANSCRIPT_SCHEMA_VERSION) { db ->
+        fixture.raw(AUDIO_INDEX_SCHEMA_VERSION) { db ->
             JournalSchemaVerifier.verify(db)
             assertEquals(fixture.before, snapshot(db))
             listOf("original_audio_reference", "audio_segmentation", "transcript_state").forEach {

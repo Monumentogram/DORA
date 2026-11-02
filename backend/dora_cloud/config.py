@@ -21,6 +21,7 @@ class LiveConfig(BaseModel):
     daily_reserve_usd: str = "0.25"
     per_minute_reserve_usd: str = "0.03"
     ancillary_per_attempt_usd: str = "0.01"
+    long_runs_enabled: bool = False
 
     @model_validator(mode="after")
     def isolated_resources(self):
@@ -32,7 +33,7 @@ class LiveConfig(BaseModel):
         if self.input_kms_arn == self.output_kms_arn or self.input_bucket == self.output_bucket:
             raise ValueError("separate input/output custody required")
         from .service import Policy
-        Policy(self.daily_reserve_usd, self.per_minute_reserve_usd, self.ancillary_per_attempt_usd)
+        Policy(self.daily_reserve_usd, self.per_minute_reserve_usd, self.ancillary_per_attempt_usd, self.long_runs_enabled)
         return self
 
     @classmethod

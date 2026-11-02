@@ -26,6 +26,8 @@ import com.monumentogram.dora.R
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.ui.signal.uiCopy
 
+// Keep consent, retry/cancel and partial-result visibility guards in this Activity-bound UI scope.
+@Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
 @Composable
 internal fun CloudControls(
     activity: MainActivity,
@@ -39,13 +41,74 @@ internal fun CloudControls(
     var setup by remember { mutableStateOf(false) }
     val installation = remember(activity) { CloudIdentity(activity.applicationContext) }
     var endpoint by remember { mutableStateOf(installation.endpoint()) }
-    val pending =
-        actions.document?.jobs?.lastOrNull { it.consent != null && it.status != "SUCCEEDED" }
+    val cloud = cloudActions(actions.document?.jobs.orEmpty())
+    val pending = cloud.pending
     val active = actions.document?.jobs?.any { it.status in setOf("QUEUED", "RUNNING") } == true
-    Text(uiCopy("Cloud: до 5 минут. Для длинных записей используйте Local."))
-    Button(enabled = enabled && !active, onClick = { disclosure = true }) {
+    Text(uiCopy("Cloud: базовый путь до 5 минут; длинные записи требуют подготовленного сервера."))
+    Text(
+        uiCopy(
+            "Длинная запись отправляется только после проверки поддержки сервера и общего бюджета. " +
+                "Готовые части сохраняются."
+        )
+    )
+    val progress = actions.cloudProgress
+    if (progress != null) {
+        Text(
+            uiCopy("Готовые облачные части: ") + "${progress.completedParts}/${progress.totalParts}"
+        )
+        if (progress.completedParts > 0 && !progress.published) {
+            Text(
+                uiCopy(
+                    "Неполная расшифровка. Готовые части доступны для чтения; итоговая версия ещё не опубликована."
+                )
+            )
+            TextButton(
+                enabled = enabled && !active,
+                onClick = {
+                    actions.loadPage(identity, progress.spec.jobId, null, allowPartial = true)
+                },
+            ) {
+                Text(uiCopy("Читать готовые части"))
+            }
+            if (actions.partialPageVersion == progress.spec.jobId) {
+                actions.partialPage?.let { page ->
+                    Text(page.text)
+                    Row {
+                        TextButton(
+                            enabled = enabled && !active,
+                            onClick = {
+                                actions.previousPage(
+                                    identity,
+                                    progress.spec.jobId,
+                                    allowPartial = true,
+                                )
+                            },
+                        ) {
+                            Text(uiCopy("Предыдущая часть"))
+                        }
+                        TextButton(
+                            enabled = enabled && !active,
+                            onClick = {
+                                actions.loadPage(
+                                    identity,
+                                    progress.spec.jobId,
+                                    page.cursor,
+                                    allowPartial = true,
+                                )
+                            },
+                        ) {
+                            Text(uiCopy("Следующая часть"))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Button(enabled = enabled && !active && !cloud.blocksNew, onClick = { disclosure = true }) {
         Text(stringResource(R.string.signal_copy_39))
     }
+    if (cloud.blocksNew && !active)
+        Text(uiCopy("Продолжите или отмените предыдущую облачную операцию."))
     if (pending != null) {
         if (pending.consent?.revoked != true && pending.status != "CANCELLED") {
             TextButton(

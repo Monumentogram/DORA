@@ -1,6 +1,7 @@
 package com.monumentogram.dora.vad
 
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -62,6 +63,15 @@ class VadObserver(
     private var producerEnd = firstFrame // Producer-owned; canonical frame position, not a timer.
     private var workerGeneration = 1L
     private var initialized = false
+    private val preparation = CompletableFuture<VadFailure?>()
+    @Volatile
+    var initializationNanos = 0L
+        private set
+
+    @Volatile
+    var initializationState = "NOT_STARTED"
+        private set
+
     private var engine: VadEngine? = null
     private var observedEnd = firstFrame
     private var unavailableReported = false
@@ -78,6 +88,12 @@ class VadObserver(
     private var maximumNegativeRunFrames = 0L
     private val adapter =
         PcmWindowAdapter(profile.windowFrames) { range, samples -> infer(range, samples) }
+
+    /** Readiness only; construction stays on the inference worker before any PCM is required. */
+    fun prepare(): CompletableFuture<VadFailure?> {
+        schedule()
+        return preparation
+    }
 
     /** Bounded copy of already accepted PCM. Returns immediately if the observer cannot keep up. */
     @Suppress(
@@ -168,6 +184,8 @@ class VadObserver(
             worker.execute(::drain)
         } catch (_: java.util.concurrent.RejectedExecutionException) {
             failure.set(VadFailure.RUNTIME_UNAVAILABLE)
+            initializationState = "UNAVAILABLE"
+            preparation.complete(VadFailure.RUNTIME_UNAVAILABLE)
             closed = true
             while (true) {
                 val block = queue.poll() ?: break
@@ -243,12 +261,24 @@ class VadObserver(
     private fun initialize() {
         if (initialized) return
         initialized = true
+        if (stopping.get() != null && queue.isEmpty()) {
+            initializationState = "CANCELLED"
+            preparation.complete(VadFailure.RUNTIME_UNAVAILABLE)
+            return
+        }
+        initializationState = "INITIALIZING"
+        val started = System.nanoTime()
         try {
             engine = factory.create(profile)
         } catch (exception: Exception) {
             failure.set((exception as? VadException)?.failure ?: VadFailure.INITIALIZATION_FAILED)
         } catch (_: LinkageError) {
             failure.set(VadFailure.RUNTIME_UNAVAILABLE)
+        } finally {
+            initializationNanos = System.nanoTime() - started
+            initializationState =
+                if (engine != null && failure.get() == null) "READY" else "UNAVAILABLE"
+            preparation.complete(failure.get())
         }
     }
 

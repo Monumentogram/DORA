@@ -7,6 +7,9 @@ import com.monumentogram.dora.audio.OriginalAudioReference
 
 @Suppress("TooManyFunctions") // One exact-source port covers local and Cloud transcript operations.
 interface TranscriptPort {
+    val paged: PagedTranscriptPort
+        get() = UnavailablePagedTranscriptPort
+
     fun beginCloud(
         source: OriginalAudioReference,
         jobId: String,
@@ -141,9 +144,10 @@ data class MachineTranscript(
     val createdAt: Long,
     val model: String,
     val cloud: CloudTranscriptResult? = null,
+    val paged: PagedTranscriptReference? = null,
 ) {
     val engine: String
-        get() = if (cloud == null) "LOCAL" else "CLOUD"
+        get() = paged?.engine ?: if (cloud == null) "LOCAL" else "CLOUD"
 
     val timestampAvailability: String
         get() =
@@ -203,9 +207,11 @@ data class TranscriptDocument(
     val selectionRevision: Long
         get() = selections.size.toLong()
 
-    fun rendered(versionId: String): String =
-        edits.lastOrNull { it.versionId == versionId }?.text
-            ?: versions.single { it.id == versionId }.text
+    fun rendered(versionId: String): String {
+        val version = versions.single { it.id == versionId }
+        check(version.paged == null) { "Paged transcript requires bounded page access" }
+        return edits.lastOrNull { it.versionId == versionId }?.text ?: version.text
+    }
 
     fun conflicts(versionId: String): List<TranscriptEdit> = edits.filter {
         it.versionId != versionId

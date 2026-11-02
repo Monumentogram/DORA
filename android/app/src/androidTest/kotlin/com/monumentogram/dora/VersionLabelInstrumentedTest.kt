@@ -3,6 +3,8 @@ package com.monumentogram.dora
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotSame
@@ -23,11 +25,12 @@ class VersionLabelInstrumentedTest {
             else "DORA Alpha"
         val expected = "$prefix ${info.versionName} (${info.longVersionCode})"
         assertEquals(expected, context.getString(R.string.alpha_version_label))
-        ui.onNodeWithText(expected).assertIsDisplayed()
+        ui.onNodeWithText(context.getString(R.string.nav_settings)).performClick()
+        ui.onNodeWithText(expected).performScrollTo().assertIsDisplayed()
         val previous = ui.activity
         ui.activityRule.scenario.recreate()
         ui.waitForIdle()
         assertNotSame(previous, ui.activity)
-        ui.onNodeWithText(expected).assertIsDisplayed()
+        ui.onNodeWithText(expected).performScrollTo().assertIsDisplayed()
     }
 }

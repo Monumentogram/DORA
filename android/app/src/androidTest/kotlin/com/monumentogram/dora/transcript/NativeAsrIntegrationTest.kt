@@ -2,6 +2,7 @@ package com.monumentogram.dora.transcript
 
 import android.system.Os
 import android.system.OsConstants
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -41,6 +42,49 @@ import org.junit.runner.RunWith
 @LargeTest
 @RunWith(AndroidJUnit4::class)
 class NativeAsrIntegrationTest {
+    /** Read the already-published failed result; performs no additional native inference. */
+    @Test(timeout = 120_000)
+    @Suppress("LoopWithTooManyJumpStatements") // Reject unrelated sources before any text is read.
+    fun diagnoseKnownPublicShortFixtureResult() {
+        assumeTrue(
+            "NATIVE_PUBLIC_DIAGNOSTIC_NOT_REQUESTED",
+            InstrumentationRegistry.getArguments()
+                .getString("doraNativeAsrPublicFailureDiagnostic") == "true",
+        )
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { it.setContent {} }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            val session = open(scenario, reopen = true)
+            var matched = 0
+            for (identity in value(session.transcripts.history())) {
+                val document = value(session.transcripts.load(identity)) ?: continue
+                if (document.source.frames != PUBLIC_DIAGNOSTIC_FRAMES) continue
+                val opened = value(session.originals.openAuthenticated(document.source))
+                val digest = MessageDigest.getInstance("SHA-256")
+                opened.use { source ->
+                    value(
+                        source.extractRange(0, source.reference.frames) { _, bytes ->
+                            digest.update(bytes)
+                        }
+                    )
+                }
+                if (!MessageDigest.isEqual(digest.digest(), publicDiagnosticDigest())) continue
+                val recognized = normalize(document.versions.last().text)
+                assertTrue("NATIVE_PUBLIC_DIAGNOSTIC_RESULT_EMPTY", recognized.isNotEmpty())
+                assertTrue(
+                    "NATIVE_PUBLIC_DIAGNOSTIC_REQUIRES_FAILED_EXPECTATION",
+                    !recognized.contains("amber lantern"),
+                )
+                matched++
+                assertTrue("NATIVE_PUBLIC_DIAGNOSTIC_AMBIGUOUS", matched == 1)
+                File(context.cacheDir, PUBLIC_DIAGNOSTIC_PATH).writeText(recognized)
+            }
+            assertTrue("NATIVE_PUBLIC_DIAGNOSTIC_SOURCE_NOT_FOUND", matched == 1)
+            println("NATIVE_PUBLIC_DIAGNOSTIC_WRITTEN inferenceCalls=0")
+        }
+    }
+
     @Suppress("LongMethod") // One ordered real-inference, immutable-history and reopen scenario.
     @Test(timeout = TEST_TIMEOUT_MS)
     fun realNativeRecognitionPreservesEditsVersionsAndSelectionAfterReopen() {
@@ -76,7 +120,10 @@ class NativeAsrIntegrationTest {
         try {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 // This integration scenario owns the vault; the home library opens one separately.
-                scenario.onActivity { it.setContent {} }
+                scenario.onActivity {
+                    it.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    it.setContent {}
+                }
                 InstrumentationRegistry.getInstrumentation().waitForIdleSync()
                 val session = open(scenario, reopen = false)
                 val identity = saveProtectedRecording(session, pcm)
@@ -223,13 +270,66 @@ class NativeAsrIntegrationTest {
                 )
             )
         val recognized = normalize(document.versions.last().text)
+        if (!recognized.contains(expectation.phrase)) {
+            writeKnownPublicFailureDiagnostic(session, document, expectation, recognized)
+        }
         assertTrue("NATIVE_ASR_EMPTY_RESULT", recognized.isNotEmpty())
+        val twoWordMarker = expectation.phrase.split(' ').size == 2
+        val coverage =
+            if (twoWordMarker) {
+                NativePublicMarkerMatcher.analyze(recognized, listOf(expectation.phrase))
+            } else {
+                // Historical callers can provide longer phrases; their exact expectation is
+                // retained.
+                val exact = if (recognized.contains(expectation.phrase)) 1 else 0
+                NativeMarkerCoverage(exact, exact, exact, exact)
+            }
+        println(
+            "NATIVE_SHORT_MARKER_COVERAGE exact=${coverage.exactPresent}/1 " +
+                "bounded=${coverage.boundedPresent}/1 maxCharacterEditsPerMarker=${if (twoWordMarker) 1 else 0} " +
+                "quality=${if (coverage.exactPresent == 1) "EXACT" else "PARTIAL"}"
+        )
         assertTrue(
-            "NATIVE_ASR_EXPECTED_PUBLIC_PHRASE_MISSING",
-            recognized.contains(expectation.phrase),
+            "NATIVE_ASR_PUBLIC_MARKER_MISSING_WITHIN_ONE_CHARACTER",
+            coverage.boundedOrdered == 1,
         )
         return document
     }
+
+    @Suppress(
+        "ComplexCondition"
+    ) // Every explicit fixture binding must match before text can leave the vault.
+    private fun writeKnownPublicFailureDiagnostic(
+        session: ProductAudioSession,
+        document: TranscriptDocument,
+        expectation: Expectation,
+        recognized: String,
+    ) {
+        val arguments = InstrumentationRegistry.getArguments()
+        if (
+            arguments.getString("doraNativeAsrPublicFailureDiagnostic") != "true" ||
+                arguments.getString("doraNativeAsrPcmSha256") != PUBLIC_DIAGNOSTIC_SHA ||
+                expectation.language != "en" ||
+                expectation.phrase != "amber lantern" ||
+                document.source.frames != PUBLIC_DIAGNOSTIC_FRAMES
+        )
+            return
+        val digest = MessageDigest.getInstance("SHA-256")
+        value(session.originals.openAuthenticated(document.source)).use { source ->
+            value(
+                source.extractRange(0, source.reference.frames) { _, bytes -> digest.update(bytes) }
+            )
+        }
+        assertTrue(
+            "NATIVE_PUBLIC_DIAGNOSTIC_SOURCE_DIGEST",
+            MessageDigest.isEqual(digest.digest(), publicDiagnosticDigest()),
+        )
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        File(context.cacheDir, PUBLIC_DIAGNOSTIC_PATH).writeText(recognized)
+    }
+
+    private fun publicDiagnosticDigest() =
+        PUBLIC_DIAGNOSTIC_SHA.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     private fun select(
         session: ProductAudioSession,
@@ -343,5 +443,9 @@ class NativeAsrIntegrationTest {
         const val MAX_PCM_BYTES = 30L * PCM_CHUNK_BYTES
         const val PUBLIC_PCM_PATH = "native-asr-input/public-speech.pcm"
         const val PUBLIC_CORRECTION = "Public fixture correction retained by the owner."
+        const val PUBLIC_DIAGNOSTIC_SHA =
+            "44760d5d1906e22f823adc95841d8741162a5e8da774079b8b2326efe6cb02b9"
+        const val PUBLIC_DIAGNOSTIC_FRAMES = 480_000L
+        const val PUBLIC_DIAGNOSTIC_PATH = "native-public-failure.txt"
     }
 }

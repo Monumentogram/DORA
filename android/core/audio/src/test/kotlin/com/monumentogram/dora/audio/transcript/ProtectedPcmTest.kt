@@ -14,6 +14,37 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class ProtectedPcmTest {
+    @Test
+    fun authenticatedRangeUsesGlobalLongOffsetsAndWipesOwnedSamples() {
+        val longSource = source.copy(frames = 1_382_400_000L)
+        val handle =
+            object : com.monumentogram.dora.audio.AuthenticatedAudioSource {
+                override val reference = longSource
+
+                override fun close() = Unit
+
+                override fun extractRange(
+                    firstFrame: Long,
+                    frameCount: Long,
+                    consume: (Long, ByteArray) -> Unit,
+                ): AudioResult<OriginalAudioStatus> {
+                    assertEquals(1_382_399_998L, firstFrame)
+                    assertEquals(2L, frameCount)
+                    val bytes = byteArrayOf(0, -128, -1, 127)
+                    try {
+                        consume(firstFrame, bytes)
+                    } finally {
+                        bytes.fill(0)
+                    }
+                    return AudioResult.Value(OriginalAudioStatus.Available(reference))
+                }
+            }
+        val pcm = ProtectedPcm.readWindow(handle, 1_382_399_998L, 2) { false }
+        assertArrayEquals(floatArrayOf(-1f, 32767f / 32768f), pcm.samples, 0f)
+        pcm.close()
+        assertArrayEquals(floatArrayOf(0f, 0f), pcm.samples, 0f)
+    }
+
     private val source =
         OriginalAudioReference(
             1,

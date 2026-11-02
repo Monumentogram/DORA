@@ -1992,3 +1992,47 @@ Android16 acceptance and owner-signed update are SAMSUNG_DEVICE_VALIDATION_PENDI
 POCO user10 preservation is PENDING. No personal-phone installation, data clear,
 profile reset, AWS mutation or merge occurred. Current end-to-end AWS deletion and
 credential-loss cleanup are a before-public-release gate in Issue125.
+
+## Alpha v9 24-hour successor preparation — 2026-10-30
+
+`IN_PROGRESS / QUALIFICATION_PENDING`. The owner's 24-hour supplement supersedes the
+intermediate 30-minute scope prospectively. See
+[DEC-053](DORA_MVP1_PRODUCT_DECISIONS.md#dec-053--alpha-v9-twenty-four-hour-recording-and-resumable-transcription-2026-10-30),
+[ADR-0031](adr/ADR-0031-twenty-four-hour-recording.md),
+[design and qualification scope](ALPHA_V9_24H_DESIGN.md) and
+[ALPHA-V9-24H backlog](DORA_MVP1_IMPLEMENTATION_BACKLOG.md#alpha-v9-24h--recording-and-resumable-transcription-successor-2026-10-30).
+The implementation branch is `codex/alpha-v9-recording-stabilization`, based on
+`23ae744867e7ab41f5f75bc5afb4f15e0a365b28`; this source entry is not a final artifact receipt.
+
+Preview code9 / `0.1.0-owner-preview.9` identity and current artifact/label checks are
+prepared with the existing package and owner signer. Independent Preview, Stage9,
+Stage12 and version-label CI retain their existing inventories and public-input limits.
+No current exact-head CI success, signed v9 reproducibility/upgrade, physical 24-hour
+capture, full Local native processing or live long Cloud capability is asserted here.
+Actual measured limits and pending trials must be reported separately from the
+implemented maximum and synthetic encrypted-storage evidence.
+
+Long Cloud remains capability-gated and production-disabled with unchanged cost limits;
+aggregate-budget rejection does not imply a paid long run completed. Samsung physical
+acceptance, POCO preservation/upgrade and full endurance remain separately scoped and
+qualified. Stage12 remains PARTIAL; Issue125 and privacy/control approval are open
+independent gates. Historical releases, Stage8.6 NOT_READY and prior evidence retain
+their original meanings. No AWS mutation, personal-phone installation, release or merge
+is authorized by this preparation entry.
+
+### Alpha v9 measured progress — 2026-10-30, 14:15 UTC
+
+`NOT_READY / SIGNED_RUNTIME_AND_FINAL_CI_PENDING`. The implementation and scoped
+source review are complete. The [qualification record](ALPHA_V9_QUALIFICATION.md)
+now records the successful full 24-hour synthetic encrypted-storage trial,
+30-minute API28/API36 test-signed microphone capture and playback, RU/EN native
+30-minute functional evidence with partial boundary accuracy, isolated Cloud
+software integration, two reproducible owner-signed builds and actual signed
+v8-to-v9 data/model/history preservation through reboot.
+
+Publication remains withheld: the exact signed candidate crashed while loading
+ONNX Runtime through ARM translation on x86 API36, and final persistence CI needs
+the reviewed schema-fixture/sharding corrections. Unchanged native payload bytes
+do not prove a pre-existing emulator defect. Samsung/POCO, physical endurance,
+24-hour native ASR, live long Cloud and Stage12/Issue125 retain their separate
+pending status. No personal phone, production AWS or merge was touched.

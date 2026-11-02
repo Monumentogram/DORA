@@ -14,7 +14,8 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from isolated_alpha_preflight import require
-from run_isolated_alpha_device import emulator_fence, created_user, switch_complete, failure_caller_state
+from run_isolated_alpha_device import emulator_fence, created_user, switch_complete
+from run_isolated_alpha_device import failure_caller_state as shared_failure_caller_state
 from run_encrypted_persistence_device import parse_results
 from owner_alpha_pilot_artifact import check_badging
 
@@ -31,6 +32,25 @@ PHASES = {
     'owner_restart': ('restartReadbackWithoutAutomaticCapture',),
     'owner_final': ('verifyOwnerIsolationSentinelUnchanged',),
 }
+
+
+def failure_caller_state(output):
+    # Reuse the exact bounded field parser; keep the distinct settling assertion
+    # rather than describing a resumed-but-unfocused caller as never resumed.
+    prefix = 'INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: '
+    message = prefix + 'Restart fixture configuration did not settle: '
+    lines = output.splitlines()
+    settling = [line for line in lines if line.startswith(message)]
+    if not settling:
+        return shared_failure_caller_state(output)
+    if shared_failure_caller_state(output) is not None:
+        return None  # Different failure kinds in one phase are not one observation.
+    normalized = '\n'.join(prefix + 'Fixture caller never resumed: ' + line[len(message):]
+                           for line in settling)
+    result = shared_failure_caller_state(normalized)
+    if result is not None:
+        result['failure'] = 'CALLER_CONFIGURATION_NOT_SETTLED'
+    return result
 
 
 def validate_inventory(contract):
@@ -291,6 +311,62 @@ def await_boot_theme(command, api, boot):
     raise ValueError('BOOT_THEME_CONFIGURATION_NOT_READY')
 
 
+def record_restart_stage_failure(receipt, api, stage, failure):
+    stages = {'REBOOT_IDENTITY', 'REBOOT_REQUEST', 'REBOOT_WAIT', 'POST_REBOOT_FENCE',
+              'POST_REBOOT_SERVICE', 'WAKE', 'DISMISS_KEYGUARD', 'BOOT_THEME'}
+    errors = {'INVALID_PREVIOUS_BOOT_ID', 'EMULATOR_REBOOT_TIMEOUT', 'EMULATOR_COMMAND_FAILED',
+              'EMULATOR_COMMAND_TIMED_OUT', 'EXPLICIT_EMULATOR_REQUIRED', 'VERIFIED_EMULATOR_REQUIRED',
+              'EMULATOR_API_MISMATCH', 'UNEXPECTED_CAPTURE_SERVICE_AFTER_REBOOT',
+              'BOOT_CHANGED_DURING_THEME_WAIT', 'BOOT_THEME_OWNER_REQUIRED', 'SYSTEMUI_PID_NOT_UNIQUE',
+              'BOOT_THEME_CONFIGURATION_NOT_READY', 'BOOT_THEME_API_NOT_SUPPORTED'}
+    require(api in (28, 36) and stage in stages, 'INVALID_RESTART_DIAGNOSTIC')
+    code = str(failure).removeprefix('STOP / ')
+    record = {'schema_version': 1, 'status': 'FAILED_NOT_ACCEPTANCE', 'api': api,
+              'phase': 'owner_reboot', 'stage': stage,
+              'error': code if code in errors else 'UNCLASSIFIED_HOST_ERROR',
+              'physical_device': False}
+    receipt.parent.mkdir(parents=True, exist_ok=True)
+    receipt.with_suffix('.stage-failure.json').write_text(json.dumps(record, indent=2) + '\n',
+                                                        encoding='utf-8')
+
+
+def restart_owner_after_initial(command, serial, api, receipt):
+    # Preserve the existing boot identity, deadline, service and display gates.
+    # Only stage/error enums are published if a command fails outside JUnit.
+    stage = 'REBOOT_IDENTITY'
+    try:
+        previous_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
+        reboot_completed(previous_boot, previous_boot, '1')
+        stage = 'REBOOT_REQUEST'
+        command('reboot')
+        stage = 'REBOOT_WAIT'
+        deadline = time.monotonic() + 180
+        while True:
+            try:
+                current_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
+                if reboot_completed(previous_boot, current_boot,
+                                    command('shell', 'getprop', 'sys.boot_completed')):
+                    break
+            except ValueError:
+                pass
+            require(time.monotonic() < deadline, 'EMULATOR_REBOOT_TIMEOUT')
+            time.sleep(2)
+        stage = 'POST_REBOOT_FENCE'
+        emulator_fence(serial, api, command)
+        stage = 'POST_REBOOT_SERVICE'
+        require('ProductRecordingService' not in command('shell', 'dumpsys', 'activity', 'services', PACKAGE),
+                'UNEXPECTED_CAPTURE_SERVICE_AFTER_REBOOT')
+        stage = 'WAKE'
+        command('shell', 'input', 'keyevent', '224')
+        stage = 'DISMISS_KEYGUARD'
+        command('shell', 'wm', 'dismiss-keyguard')
+        stage = 'BOOT_THEME'
+        return await_boot_theme(command, api, current_boot)
+    except (ValueError, OSError, KeyError, TypeError) as failure:
+        record_restart_stage_failure(receipt, api, stage, failure)
+        raise
+
+
 def record_instrumentation_failure(receipt, output, api, phase, command, user):
     receipt.parent.mkdir(parents=True, exist_ok=True)
     diagnostic = receipt.with_suffix('.failure.json')
@@ -394,26 +470,7 @@ def main():
 
     instrument(0, 'owner_initial')
     # Restart the disposable emulator and verify no recording service before an explicit launch.
-    previous_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
-    reboot_completed(previous_boot, previous_boot, '1')  # Validate before mutation.
-    command('reboot')
-    deadline = time.monotonic() + 180
-    while True:
-        try:
-            current_boot = command('shell', 'cat', '/proc/sys/kernel/random/boot_id')
-            if reboot_completed(previous_boot, current_boot,
-                                command('shell', 'getprop', 'sys.boot_completed')):
-                break
-        except ValueError:
-            pass
-        require(time.monotonic() < deadline, 'EMULATOR_REBOOT_TIMEOUT')
-        time.sleep(2)
-    emulator_fence(args.serial, args.expected_api, command)
-    require('ProductRecordingService' not in command('shell', 'dumpsys', 'activity', 'services', PACKAGE),
-            'UNEXPECTED_CAPTURE_SERVICE_AFTER_REBOOT')
-    command('shell', 'input', 'keyevent', '224')
-    command('shell', 'wm', 'dismiss-keyguard')
-    boot_theme = await_boot_theme(command, args.expected_api, current_boot)
+    boot_theme = restart_owner_after_initial(command, args.serial, args.expected_api, args.receipt)
     instrument(0, 'owner_restart')
     for secure in (False, True):
         user = created_user(command('shell', 'pm', 'create-user', 'DoraOwnerPilotSynthetic'))

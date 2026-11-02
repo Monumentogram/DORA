@@ -8,6 +8,30 @@ import re
 import shutil
 import subprocess
 import uuid
+from persistence_instrumentation_diagnostics import Progress, stream, emulator_diagnostics
+
+
+def recording_diagnostics(adb, serial, arguments, receipt):
+    validate_serial(serial)
+    prefix = 'com.monumentogram.dora.audio.persistence.'
+    expected = [prefix + name for name in (
+        'AlphaRecordingRuntimeTest#pauseReopenAt299SecondsClipsResumeAndPreservesOriginalAcrossNewRecording',
+        'AlphaRecordingRuntimeTest#interruptedAtExactLimitReopensPrefixWithoutResumeOrFalseFinalization',
+        'auth.AndroidLocalAccessTest#exactResumedActivityRequiredWithoutCredentialPrompt',
+    )]
+    progress = receipt.with_name(receipt.stem + '-recording-progress.json')
+    # Two complete encrypted 30-minute fixtures: measured API28 methods require
+    # 350/406s and 665s. Keep bounded stall diagnostics; 900s cannot fit the batch.
+    output = stream([adb, '-s', serial, *arguments], expected, progress, hard_timeout=1800,
+                    probe=lambda: emulator_diagnostics(adb, serial),
+                    capture=lambda: emulator_diagnostics(adb, serial, stack=True))
+    terminal = Progress(expected)
+    for line in output.splitlines():
+        terminal.feed(line)
+    terminal.require_passed()
+    if re.findall(r'^INSTRUMENTATION_CODE: (-?\d+)$', output, re.M) != ['-1']:
+        raise ValueError('INCOMPLETE_INSTRUMENTATION_RESULT')
+    return output
 
 
 def validate_serial(serial):
@@ -55,10 +79,15 @@ def main():
                 raise RuntimeError("Install failed")
 
         def instrument(label, package, classes, count, extra=()):
-            output = command("shell", "am", "instrument", "-w", "-r", "-e", "class", classes,
-                             *extra, package + "/androidx.test.runner.AndroidJUnitRunner", timeout=900)
-            passed = successful(output, count)
-            receipt["checks"].append({"name": label, "expectedTests": count, "passed": passed})
+            arguments = ["shell", "am", "instrument", "-w", "-r", "-e", "class", classes,
+                         *extra, package + "/androidx.test.runner.AndroidJUnitRunner"]
+            check = {"name": label, "expectedTests": count, "passed": False}
+            receipt["checks"].append(check)
+            if label == "bounded-recording-and-pin-free-authority":
+                output = recording_diagnostics(adb, args.serial, arguments, args.receipt)
+            else:
+                output = command(*arguments, timeout=900)
+            passed = check["passed"] = successful(output, count)
             # Tests contain only synthetic fixtures; failure output is useful for diagnosing CI.
             if not passed:
                 print(output)
@@ -78,6 +107,11 @@ def main():
             instrument("process-" + phase.lower(), "com.monumentogram.dora.audio.test",
                        prefix + "TranscriptProcessRestartTest#" + method, 1,
                        ("-e", "transcriptProcessPhase", phase, "-e", "transcriptProcessRun", run))
+        for phase, method in (("SEED", "seed"), ("READ", "resumeAfterProcessRestart")):
+            command("shell", "am", "force-stop", "com.monumentogram.dora.audio.test")
+            instrument("paged-process-" + phase.lower(), "com.monumentogram.dora.audio.test",
+                       prefix + "PagedTranscriptProcessRestartTest#" + method, 1,
+                       ("-e", "pagedTranscriptProcessPhase", phase, "-e", "pagedTranscriptProcessRun", run))
         instrument("transcript-editor", "com.monumentogram.dora.debug.test",
                    "com.monumentogram.dora.transcript.TranscriptUiTest,"
                    "com.monumentogram.dora.transcript.ModelPickerLifecycleTest,"

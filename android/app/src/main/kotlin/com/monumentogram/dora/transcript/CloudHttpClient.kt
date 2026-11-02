@@ -7,6 +7,8 @@ import com.monumentogram.dora.audio.OriginalAudioReference
 import com.monumentogram.dora.audio.transcript.CloudConsent
 import com.monumentogram.dora.audio.transcript.CloudSegment
 import com.monumentogram.dora.audio.transcript.CloudTranscriptResult
+import com.monumentogram.dora.audio.transcript.PagedTranscriptLimits
+import com.monumentogram.dora.audio.transcript.PagedTranscriptSpec
 import java.net.URL
 import java.security.MessageDigest
 import java.util.UUID
@@ -29,6 +31,7 @@ internal class CloudHttpClient(
     private var token: String? = null
     private var tokenExpiry = 0L
     @Volatile private var active: HttpsURLConnection? = null
+    private val compositeJobs = mutableSetOf<String>()
 
     override fun register(source: OriginalAudioReference) {
         request(
@@ -70,9 +73,76 @@ internal class CloudHttpClient(
 
     override fun cancel(id: String) = job(request("POST", path(id) + "/cancel", JSONObject()), id)
 
+    override fun quoteRun(spec: PagedTranscriptSpec): CloudRunQuote {
+        val json = request("POST", "/v1/runs/quote", runBody(spec))
+        val required = json.getLong("required_micro_usd")
+        val available = json.getLong("available_micro_usd")
+        require(required >= 0 && available >= 0)
+        return CloudRunQuote(
+            json.getBoolean("enabled"),
+            json.getBoolean("affordable"),
+            required,
+            available,
+            json.getInt("part_count"),
+            json.getString("window_policy"),
+            json.getLong("max_frames"),
+            json.getLong("max_part_frames"),
+        )
+    }
+
+    override fun createRun(spec: PagedTranscriptSpec): CloudRunState {
+        val json = request("POST", "/v1/runs", runBody(spec))
+        require(json.getString("id") == spec.jobId)
+        val items = json.getJSONArray("parts")
+        require(items.length() in 1..48)
+        return CloudRunState(
+            spec.jobId,
+            json.getString("status"),
+            json.getString("source_digest"),
+            json.getInt("source_version"),
+            json.getLong("frames"),
+            json.getString("window_policy"),
+            List(items.length()) { index ->
+                val part = items.getJSONObject(index)
+                val id = part.getString("id")
+                path(id)
+                compositeJobs.add(id)
+                CloudRunPart(
+                    part.getInt("index"),
+                    id,
+                    part.getLong("first_frame"),
+                    part.getLong("frames"),
+                    part.getString("status"),
+                )
+            },
+        )
+    }
+
+    override fun runPart(id: String, index: Int): CloudJobState {
+        require(index in 0..47)
+        path(id)
+        val json = request("POST", "/v1/runs/$id/parts/$index", JSONObject())
+        return job(json, json.getString("id"))
+    }
+
+    private fun runBody(spec: PagedTranscriptSpec): JSONObject {
+        val consent = requireNotNull(spec.consent)
+        return JSONObject()
+            .put("action_id", spec.jobId)
+            .put("recording_id", spec.source.identity.recordingId.value)
+            .put("source_digest", spec.source.digest)
+            .put("source_version", spec.source.version)
+            .put("frames", spec.source.frames)
+            .put("language", if (spec.language == "ru") "ru-RU" else "en-US")
+            .put("consent_version", consent.version)
+            .put("consent_source", consent.source)
+            .put("consent_granted_at", consent.grantedAt)
+            .put("window_policy", spec.windowPolicy)
+    }
+
     override fun upload(
         id: String,
-        offset: Int,
+        offset: Long,
         bytes: ByteArray,
         final: Boolean,
         cancelled: () -> Boolean,
@@ -156,7 +226,7 @@ internal class CloudHttpClient(
                 if (status == 401) token = null
                 throw CloudFailure(errorCode(status))
             }
-            val response = readResponse(connection)
+            val response = connection.inputStream.use { readCloudResponse(it, path, compositeJobs) }
             return try {
                 JSONObject(String(response, Charsets.UTF_8))
             } finally {
@@ -204,25 +274,6 @@ internal class CloudHttpClient(
         }
     }
 
-    private fun readResponse(connection: HttpsURLConnection): ByteArray =
-        connection.inputStream.use(::readBounded)
-
-    private fun readBounded(input: java.io.InputStream): ByteArray {
-        val output = java.io.ByteArrayOutputStream()
-        val chunk = ByteArray(8192)
-        try {
-            while (true) {
-                val count = input.read(chunk)
-                if (count < 0) break
-                require(output.size() + count <= 2 * 1024 * 1024)
-                output.write(chunk, 0, count)
-            }
-            return output.toByteArray()
-        } finally {
-            chunk.fill(0)
-        }
-    }
-
     private fun job(json: JSONObject, id: String): CloudJobState {
         require(json.getString("id") == id)
         val status = json.getString("status")
@@ -233,7 +284,11 @@ internal class CloudHttpClient(
         val result =
             json.optJSONObject("result")?.let { raw ->
                 val items = raw.getJSONArray("segments")
-                require(items.length() <= CloudTranscriptResult.MAX_SEGMENTS)
+                require(
+                    items.length() <=
+                        if (json.has("parent_id")) PagedTranscriptLimits.MAX_CLOUD_SEGMENTS
+                        else CloudTranscriptResult.MAX_SEGMENTS
+                )
                 CloudTranscriptResult(
                     raw.getString("text"),
                     raw.getString("provider_id"),
@@ -254,8 +309,8 @@ internal class CloudHttpClient(
                 )
             }
         require((status == "COMPLETED") == (result != null))
-        val offset = json.getInt("uploaded_bytes")
-        require(offset in 0..9600044)
+        val offset = json.getLong("uploaded_bytes")
+        require(offset in 0..57_600_044L)
         return CloudJobState(
             id,
             status,
@@ -263,6 +318,10 @@ internal class CloudHttpClient(
             json.getBoolean("retryable"),
             json.getBoolean("cleanup_pending"),
             result,
+            if (json.has("parent_id")) json.getString("parent_id") else null,
+            if (json.has("part_index")) json.getInt("part_index") else null,
+            if (json.has("first_frame")) json.getLong("first_frame") else null,
+            if (json.has("frames")) json.getLong("frames") else null,
         )
     }
 }

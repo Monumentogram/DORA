@@ -35,6 +35,7 @@ import com.monumentogram.dora.audio.AudioResult
 import com.monumentogram.dora.audio.recording.AlphaRecordingLimit
 import com.monumentogram.dora.audio.recording.RecordingCompletionState
 import com.monumentogram.dora.audio.recording.RecordingRecovery
+import com.monumentogram.dora.ui.signal.uiCopy
 
 @Composable
 internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
@@ -116,7 +117,11 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
         enabled = !loading && !actions.busy,
     )
     actions.message?.let { Text(it) }
-    if (actions.busy) Text("Проверяем защищённое аудио…")
+    if (actions.busy)
+        Text(
+            if (actions.savingPrefix) uiCopy("Сохраняем восстановленную часть…")
+            else "Проверяем защищённое аудио…"
+        )
     if (authorized && entries.isNotEmpty()) {
         if (entries.any { it.canResume && AlphaRecordingLimit.remaining(it.recoveredFrames) > 0 }) {
             Text("Продолжение снова включает микрофон. Аудио остаётся только на устройстве.")
@@ -149,6 +154,13 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
                     ) {
                         Text("Проверить аудио")
                     }
+                    if (entry.canSavePrefix)
+                        Button(
+                            enabled = authorized && !actions.busy && !loading,
+                            onClick = { actions.savePrefix(identity) { load() } },
+                        ) {
+                            Text(uiCopy("Сохранить восстановленную часть"))
+                        }
                     TextButton(
                         enabled =
                             !actions.busy &&
@@ -185,7 +197,7 @@ internal fun RecordingRecoveryCard(activity: Activity, authorized: Boolean) {
                         Text("Восстановлена сохранённая часть. Продолжение недоступно.")
                 }
                 if (AlphaRecordingLimit.remaining(entry.recoveredFrames) == 0L) {
-                    Text("Достигнут лимит Alpha — 30 минут. Продолжение недоступно.")
+                    Text("Достигнут лимит Alpha — 24 часа. Продолжение недоступно.")
                 }
                 if (
                     entry.canResume &&

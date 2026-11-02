@@ -107,9 +107,11 @@ class RecordingSearchTest {
                         )
                     )
                 },
-                recovery = {
+                metadata = {
                     recovered++
-                    AudioResult.Value(RecordingRecovery(it, null, null, false, 0))
+                    AudioResult.Value(
+                        RecordingLibraryMetadata(it, 0, RecordingLibraryState.NEEDS_RECOVERY)
+                    )
                 },
             )
         var cursor = ""

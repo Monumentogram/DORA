@@ -131,6 +131,35 @@ class AndroidProductAudioRuntime(private val application: Application) : Product
         }
     }
 
+    fun requestRecoveredPrefixFinalization(
+        activity: Activity,
+        session: ProductAudioSession,
+        identity: AudioIdentity,
+        completion: (AudioResult<Unit>) -> Unit,
+    ) {
+        requireMain()
+        secure(activity)
+        try {
+            localAccess.capture(activity).requireActive()
+            coordinator.requireCurrent(session)
+        } catch (_: LocalAccessDeniedException) {
+            completion(AudioResult.Failed(AudioFailure.LOCKED))
+            return
+        }
+        coordinator.finalizeRecoveredPrefix(session, identity) { result ->
+            main.post {
+                val checked =
+                    try {
+                        coordinator.requireCurrent(session)
+                        result
+                    } catch (_: LocalAccessDeniedException) {
+                        AudioResult.Failed(AudioFailure.LOCKED)
+                    }
+                completion(checked)
+            }
+        }
+    }
+
     /**
      * Namespace existence chooses create vs existing once; failed open never falls back to create.
      */
