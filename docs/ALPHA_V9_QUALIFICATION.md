@@ -198,3 +198,32 @@ finite budget covers the observed 1,015–1,071s combined work plus host/Keystor
 variance; it does not waive a failure or change fixtures, assertions, inventory,
 inactivity diagnostics or any product deadline. A fresh complete CI result is
 still required. The previous timed-out runs remain failures.
+
+The unchanged 1,000-record encrypted search fixture also exhausted API28's
+aggregate persistence budget before the reservation correction: at `f31292c`
+it entered at 776.630s and was still active when the 1,800s deadline expired.
+At `aaa447b` it entered at 1,121.330s before the job was cancelled by a new push;
+that cancellation is not an assertion failure. The earlier fixture lower bound
+and later setup time exceed 2,144s together. A reviewed 2,700s budget therefore
+applies only to the exact pinned 188-method inventory's 47-method API28 shard
+containing that fixture, in both PIN states. All other batches retain 1,800s,
+controls 120s and credential diagnostics 600s. Fixed budget metadata is written
+before execution, including failed attempts. No assertion, inventory or outer
+workflow limit changed; this is a bounded timing correction, not a PASS waiver.
+Independent review passed 39 related host checks and six downstream checks.
+
+The actual owner-signed `aaa447b` candidate completed the 1,800s microphone test
+on the same two-core API36 translated emulator in 1,829.281s, saving 28,813,600
+frames / 57,627,200 bytes; finalization took 17,561ms. The test exercised screen
+off, pause/resume, save and next recording, with no observed native crash.
+However, startup VAD BACKPRESSURE persisted: this is functional recording PASS
+with degraded VAD, not clean signed-native qualification. Raw evidence remains
+in the private `signed-runtime-aaa447b-run2` directory.
+
+The subsequent asynchronous VAD preparation change passed 56 VAD, 296 core and
+165 app unit checks, detekt, lint and APK compilation. Independent source review
+passed after the readiness state was confined to the existing control worker.
+The integration rig uses real session/segmentation/owner components with delayed
+factory and fake microphone; it does not replace actual Android or signed-runtime
+verification. Changed product bytes require a new reproducible signed candidate,
+fresh recording, retained-fixture upgrade, complete CI and final artifact review.

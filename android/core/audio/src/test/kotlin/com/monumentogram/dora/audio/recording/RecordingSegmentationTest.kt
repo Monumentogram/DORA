@@ -132,6 +132,74 @@ class RecordingSegmentationTest {
     }
 
     @Test
+    fun preparationDoesNotAdmitPcmAndFirstReadyBlockStillStartsAtFrameZero() {
+        val prepared = segmentation.prepare()
+        assertTrue(!prepared.isDone)
+        assertEquals(0L, session.state.frames)
+        worker.run()
+        assertEquals(null, prepared.get())
+        accept(5120)
+        stop()
+        assertEquals(
+            0L,
+            writer.rows.single { it.kind == SegmentationKind.SEMANTIC_CLOSE }.firstFrame,
+        )
+        assertTrue(segmentation.diagnostics().contains("vadFailure=NONE"))
+    }
+
+    @Test
+    fun timedOutPreparationRetiresObserverButPreservesCanonicalFramesAndHash() {
+        val prepared = segmentation.prepare()
+        segmentation.preparationUnavailable(VadFailure.INITIALIZATION_FAILED)
+        worker.run()
+        assertTrue(prepared.isDone)
+        val pcm = ByteArray(32000) { (it * 17 + 3).toByte() }
+        val expected = java.security.MessageDigest.getInstance("SHA-256").digest(pcm)
+        session.accept(pcm)
+        segmentation.accept(pcm, 0)
+        stop()
+        assertEquals(16000L, writer.frames)
+        assertArrayEquals(expected, writer.digest.digest())
+        assertTrue(writer.rows.any { it.reason == "INITIALIZATION_FAILED" && it.degraded })
+        assertTrue(writer.rows.none { it.kind == SegmentationKind.SEMANTIC_CLOSE })
+        assertTrue(segmentation.diagnostics().contains("vadFailure=INITIALIZATION_FAILED"))
+    }
+
+    @Test
+    fun stopBeforePreparationCompletesKeepsEmptySessionEmpty() {
+        segmentation.prepare()
+        segmentation.stop()
+        session.requestStop()
+        session.confirmStop()
+        worker.run()
+        assertEquals(RecordingPhase.EMPTY, session.state.phase)
+        assertEquals(0L, writer.frames)
+        assertTrue(writer.rows.none { it.kind == SegmentationKind.SEMANTIC_CLOSE })
+    }
+
+    @Test
+    fun stopDuringRestoredPreparationFinalizesExistingDurablePrefix() {
+        val prefixWriter = Writer().also { it.frames = 16000L }
+        val restored = RecordingSession(session.identity, prefixWriter)
+        restored.restore(16000L, 1)
+        assertTrue(restored.resume())
+        val pending =
+            RecordingSegmentation(
+                restored,
+                VadEngineFactory { error("Stopped before JNI") },
+                worker,
+            )
+        pending.prepare()
+        pending.stop()
+        restored.requestStop()
+        restored.confirmStop()
+        worker.run()
+        assertEquals(RecordingPhase.SAVED, restored.state.phase)
+        assertEquals(16000L, restored.state.durableFrames)
+        assertEquals(16000L, prefixWriter.frames)
+    }
+
+    @Test
     fun stopWithUndeliveredOnsetPersistsUnknownWithoutWaitingForWorker() {
         accept(5120, false)
         stop()

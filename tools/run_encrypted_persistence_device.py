@@ -9,11 +9,13 @@ import secrets
 import subprocess
 
 import persistence_instrumentation_diagnostics as diagnostics
+import owner_v9_inventory as v9_inventory
 
 PACKAGE = 'com.monumentogram.dora.audio.persistence'
 NO_CREDENTIAL = PACKAGE + '.auth.AndroidAppLockTest#coldLaunchWithoutCredentialRequiresSystemSetup'
 LOCAL_ACCESS = PACKAGE + '.auth.AndroidLocalAccessTest#exactResumedActivityRequiredWithoutCredentialPrompt'
 RUNNER = 'com.monumentogram.dora.audio.test/androidx.test.runner.AndroidJUnitRunner'
+LIBRARY_1000 = PACKAGE + '.RecordingSearchPersistenceTest#syntheticEncryptedLibraries10_100_1000'
 
 
 def require(condition, message):
@@ -96,6 +98,30 @@ def selectors(selected, *, diagnostic=False, exact_inventory=False):
             if diagnostic or exact_inventory else ['-e', 'package', PACKAGE])
 
 
+def phase_budget(inventory, selected, *, api, shard_index, shard_count,
+                 diagnostic, exact_inventory, phase):
+    require(phase in {'pin-free', 'credential', 'initial-no-credential', 'final-no-credential'},
+            'Unknown persistence phase')
+    if phase in {'initial-no-credential', 'final-no-credential'}:
+        return {'policy': 'NO_CREDENTIAL_CONTROL_120_V1', 'timeout_seconds': 120}
+    if phase == 'credential' and diagnostic:
+        return {'policy': 'DIAGNOSTIC_CREDENTIAL_600_V1', 'timeout_seconds': 600}
+    expected = inventory['tests']
+    # The unchanged 1000-record setup already exhausted API28's aggregate 1800s
+    # before the catalog-reservation correction. Admit only this reviewed batch;
+    # no CLI timeout override or broader historical/diagnostic allowance exists.
+    approved = (type(api) is int and api == 28 and diagnostic is False and exact_inventory is True
+                and type(shard_index) is int and type(shard_count) is int
+                and shard_count == 4 and 0 <= shard_index < 4
+                and len(expected) == len(set(expected)) == 188 and len(selected) == 47
+                and set(selected) == set(sorted(expected)[shard_index::4])
+                and LIBRARY_1000 in selected
+                and v9_inventory.digest(v9_inventory.INVENTORY, json.dumps(inventory)) ==
+                    v9_inventory.INVENTORY_SHA256)
+    return ({'policy': 'API28_V9_LIBRARY_1000_2700_V1', 'timeout_seconds': 2700} if approved else
+            {'policy': 'DEFAULT_PERSISTENCE_1800_V1', 'timeout_seconds': 1800})
+
+
 def page_size_from_smaps(text):
     # This reports kernel mapping pages, not simulated x86_64 userspace page size.
     observed = {int(value) * 1024 for value in re.findall(r'^KernelPageSize:\s+(\d+) kB$', text, re.MULTILINE)}
@@ -145,7 +171,9 @@ def main():
     parser.add_argument('--shard-count', type=int, default=1, help='Number of disjoint inventory shards')
     args = parser.parse_args()
     require(re.fullmatch(r'emulator-\d+', args.serial), 'Only an explicitly selected test emulator is admitted')
-    inventory = json.loads(args.inventory.read_text(encoding='utf-8'))
+    inventory_bytes = args.inventory.read_bytes()
+    inventory_sha256 = hashlib.sha256(inventory_bytes).hexdigest()
+    inventory = v9_inventory.parse_json(inventory_bytes.decode('utf-8'))
     expected, no_credential = validate_inventory(inventory)
     pin_free = inventory.get('profile') == 'PIN_FREE_LOCAL_ACCESS'
     selected = select_inventory(expected, shard_index=args.shard_index, shard_count=args.shard_count,
@@ -171,12 +199,26 @@ def main():
     require((api, page_size) == (args.expected_api, args.expected_page_size), 'Runtime API/page-size identity mismatch')
     prefix = args.receipt.parent / (args.receipt.stem + '-diagnostics')
     prefix.mkdir(parents=True, exist_ok=False)
+    applied_budgets = {}
 
-    def instrument(selectors, names, phase, timeout):
+    def instrument(selectors, names, phase):
+        budget = phase_budget(inventory, selected, api=api, shard_index=args.shard_index,
+                              shard_count=args.shard_count, diagnostic=bool(args.diagnostic_class),
+                              exact_inventory=args.exact_inventory, phase=phase)
+        applied_budgets[phase] = {
+            'phase': phase, **budget, 'inventory_sha256': inventory_sha256,
+            'inventory_contract_sha256': v9_inventory.digest(v9_inventory.INVENTORY, json.dumps(inventory)),
+            'selected_test_count': len(names), 'selected_tests_sha256': hashlib.sha256(
+                ('\n'.join(sorted(names)) + '\n').encode('utf-8')).hexdigest(),
+        }
+        # Written before stream startup, so timeout/crash retains the finite policy
+        # beside stream's own hardTimeoutSeconds without publishing raw arguments.
+        with (prefix / (phase + '.budget.json')).open('x', encoding='utf-8') as output:
+            output.write(json.dumps(applied_budgets[phase], sort_keys=True, indent=2) + '\n')
         try:
             return diagnostics.stream([adb, '-s', args.serial, 'shell', 'am', 'instrument', '-w', '-r',
                                        *selectors, RUNNER], names, prefix / (phase+'.json'),
-                                      hard_timeout=timeout,
+                                      hard_timeout=budget['timeout_seconds'],
                                       probe=lambda: diagnostics.emulator_diagnostics(adb, args.serial),
                                       capture=lambda: diagnostics.emulator_diagnostics(adb, args.serial, stack=True))
         except diagnostics.InstrumentationFailure:
@@ -188,7 +230,7 @@ def main():
             'Synthetic instrumentation package state could not be reset')
 
     def run_no_credential_controls(phase):
-        output = instrument(['-e', 'class', ','.join(sorted(no_credential))], no_credential, phase, 120)
+        output = instrument(['-e', 'class', ','.join(sorted(no_credential))], no_credential, phase)
         rows = parse_results(output)
         require({row['name'] for row in rows} == no_credential, 'No-credential controls did not execute')
         return rows
@@ -198,7 +240,7 @@ def main():
     initial_no_credential_rows = run_no_credential_controls('initial-no-credential')
     if pin_free:
         output = instrument(selectors(selected, exact_inventory=True), selected,
-                            'pin-free', 1800)
+                            'pin-free')
         no_pin_rows = parse_results(output)
         diagnostics.require_complete([row['name'] for row in no_pin_rows], selected)
     # This fresh test-emulator-only setup cannot replace an existing credential without its old value.
@@ -209,14 +251,16 @@ def main():
         selector = selectors(selected, diagnostic=bool(args.diagnostic_class),
                              exact_inventory=args.exact_inventory or pin_free or args.shard_count > 1)
         output = instrument([*selector, '-e', 'syntheticAuthPin', pin], selected,
-                            'credential', 600 if args.diagnostic_class else 1800)
+                            'credential')
         credential_rows = parse_results(output, expected_skips=frozenset() if pin_free else no_credential & selected)
         diagnostics.require_complete([row['name'] for row in credential_rows], selected)
     no_credential_rows = run_no_credential_controls('final-no-credential')
+    require(hashlib.sha256(args.inventory.read_bytes()).hexdigest() == inventory_sha256,
+            'Persistence inventory changed during test')
     receipt = {'schema_version': 1, 'status': 'DIAGNOSTIC_BATCH_COMPLETE' if args.diagnostic_class else 'PASS_COMPONENT_RUNTIME_ONLY',
                'api': api, 'abi': abi, **page_measurement,
                'apk_sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
-               'inventory_sha256': hashlib.sha256(args.inventory.read_bytes()).hexdigest(),
+               'inventory_sha256': inventory_sha256, 'phase_budgets': applied_budgets,
                'shard': {'index': args.shard_index, 'count': args.shard_count,
                          'global_test_count': len(expected), 'selected_test_count': len(selected),
                          'selected_tests_sha256': hashlib.sha256(

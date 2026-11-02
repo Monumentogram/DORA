@@ -9,6 +9,18 @@ import org.junit.Test
 
 class RecordingWakeRenewalTest {
     @Test
+    fun foregroundPreparationStaysAwakeBeforeAnyPcmIsPending() {
+        val driver = ClockDriver()
+        val renewal = RecordingWakeRenewal(driver)
+        renewal.update(true, RecordingPhase.PREPARING, RecordingDurability.CAUGHT_UP)
+        driver.advanceTo(10_000L)
+        assertTrue(driver.isHeld())
+        renewal.update(false, RecordingPhase.PREPARING, RecordingDurability.CAUGHT_UP)
+        assertFalse(driver.isHeld())
+        assertEquals(0, driver.pendingCallbacks())
+    }
+
+    @Test
     fun finalizationStaysAwakeWithoutFurtherStateEmissions() {
         val driver = ClockDriver()
         val renewal = RecordingWakeRenewal(driver)

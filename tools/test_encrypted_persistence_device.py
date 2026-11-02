@@ -15,6 +15,115 @@ def result(name, code):
 
 
 class DeviceReceiptTests(unittest.TestCase):
+    def test_api28_library_budget_requires_exact_approved_inventory_and_stride(self):
+        path = Path(__file__).resolve().parents[1] / 'docs/contracts/alpha-v9-persistence-tests-v1.json'
+        inventory = json.loads(path.read_text(encoding='utf-8'))
+        expected, _ = device.validate_inventory(inventory)
+        heavy = device.PACKAGE + '.RecordingSearchPersistenceTest#syntheticEncryptedLibraries10_100_1000'
+        def budget(contract=inventory, names=None, api=28, index=0, count=4, diagnostic=False,
+                   exact=True, phase='pin-free'):
+            names = device.select_inventory(set(contract['tests']), shard_index=index, shard_count=count) if names is None else names
+            return device.phase_budget(contract, names, api=api, shard_index=index, shard_count=count,
+                                       diagnostic=diagnostic, exact_inventory=exact, phase=phase)
+        for index in range(4):
+            selected = device.select_inventory(expected, shard_index=index, shard_count=4)
+            for phase in ('pin-free', 'credential'):
+                result = budget(names=selected, index=index, phase=phase)
+                self.assertEqual(2700 if heavy in selected else 1800, result['timeout_seconds'])
+                self.assertEqual('API28_V9_LIBRARY_1000_2700_V1' if heavy in selected else
+                                 'DEFAULT_PERSISTENCE_1800_V1', result['policy'])
+        selected = device.select_inventory(expected, shard_index=0, shard_count=4)
+        self.assertIn(heavy, selected)
+        self.assertEqual(1800, budget(api=36)['timeout_seconds'])
+        self.assertEqual(1800, budget(exact=False)['timeout_seconds'])
+        self.assertEqual(1800, budget(count=1)['timeout_seconds'])
+        self.assertEqual(1800, budget(count=2)['timeout_seconds'])
+        self.assertEqual(600, budget(diagnostic=True, phase='credential')['timeout_seconds'])
+        self.assertEqual(1800, budget(diagnostic=True)['timeout_seconds'])
+        for phase in ('initial-no-credential', 'final-no-credential'):
+            self.assertEqual(120, budget(phase=phase)['timeout_seconds'])
+        wrong = set(selected)
+        wrong.remove(next(name for name in wrong if name != heavy))
+        wrong.add(next(name for name in expected if name not in selected))
+        self.assertEqual(1800, budget(names=wrong)['timeout_seconds'])
+        self.assertEqual(1800, budget(names=selected, index=1)['timeout_seconds'])
+        for key, value in [('authority', ['UNREVIEWED']), ('no_credential_tests', []),
+                           ('successor', 'OTHER'), ('profile', 'OTHER')]:
+            changed = dict(inventory, **{key: value})
+            self.assertEqual(1800, budget(contract=changed, names=selected)['timeout_seconds'])
+        changed = json.loads(json.dumps(inventory))
+        other = next(i for i, name in enumerate(changed['tests']) if name != heavy and name not in selected)
+        changed['tests'][other] += 'Unreviewed'
+        self.assertEqual(188, len(set(changed['tests'])))
+        self.assertEqual(1800, budget(contract=changed, names=selected)['timeout_seconds'])
+
+    def test_approved_library_batch_applies_same_budget_to_both_pin_states_and_failure_metadata(self):
+        inventory = json.loads((Path(__file__).resolve().parents[1] /
+            'docs/contracts/alpha-v9-persistence-tests-v1.json').read_text(encoding='utf-8'))
+        expected, _ = device.validate_inventory(inventory)
+        selected = device.select_inventory(expected, shard_index=0, shard_count=4)
+        for failed in (None, 'timeout', 'skip', 'failure', 'inventory-change'):
+            with self.subTest(failed=failed), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                inventory_path, apk, receipt = root / 'inventory.json', root / 'test.apk', root / 'receipt.json'
+                inventory_path.write_text(json.dumps(inventory), encoding='utf-8')
+                apk.write_bytes(b'synthetic-apk')
+                seen = []
+                def command(arguments, **kwargs):
+                    args = tuple(arguments[3:])
+                    values = {('get-state',): 'device', ('shell', 'getprop', 'ro.kernel.qemu'): '1',
+                              ('shell', 'getprop', 'ro.build.version.sdk'): '28',
+                              ('shell', 'getprop', 'ro.product.cpu.abi'): 'x86_64',
+                              ('shell', 'cat', '/proc/self/smaps'): 'KernelPageSize: 4 kB\n'}
+                    value = values.get(args, 'Success')
+                    if len(args) > 1 and str(args[1]).startswith('if command -v getconf'): value = '4096'
+                    if args[:3] == ('shell', 'locksettings', 'set-pin'): value = 'Pin set to synthetic'
+                    if args[:3] == ('shell', 'locksettings', 'clear'): value = 'Lock credential cleared'
+                    return type('Completed', (), {'stdout': value})()
+                def stream(argv, names, path, **kwargs):
+                    phase = path.stem
+                    seen.append((phase, set(names), kwargs['hard_timeout']))
+                    policy = json.loads(path.with_suffix('.budget.json').read_text())
+                    self.assertEqual(kwargs['hard_timeout'], policy['timeout_seconds'])
+                    self.assertEqual(phase, policy['phase'])
+                    if failed == 'timeout' and phase == 'pin-free':
+                        raise device.diagnostics.InstrumentationFailure('HARD_TIMEOUT')
+                    if failed == 'inventory-change' and phase == 'credential':
+                        inventory_path.write_bytes(inventory_path.read_bytes() + b'\n')
+                    rows = []
+                    for name in sorted(names):
+                        cls, method = name.split('#')
+                        for code in (1, 0):
+                            if phase == 'pin-free' and code == 0:
+                                code = -4 if failed == 'skip' else -2 if failed == 'failure' else code
+                            rows.append(f'INSTRUMENTATION_STATUS: class={cls}\n'
+                                        f'INSTRUMENTATION_STATUS: test={method}\nINSTRUMENTATION_STATUS_CODE: {code}\n')
+                    return ''.join(rows) + f'OK ({len(names)} tests)\nINSTRUMENTATION_CODE: -1\n'
+                args = ['runner', '--serial', 'emulator-5554', '--expected-api', '28', '--apk', str(apk),
+                        '--inventory', str(inventory_path), '--receipt', str(receipt), '--exact-inventory',
+                        '--shard-index', '0', '--shard-count', '4']
+                with patch('sys.argv', args), patch.dict('os.environ', {'ANDROID_HOME': temporary}), \
+                        patch.object(device.subprocess, 'run', side_effect=command), \
+                        patch.object(device.diagnostics, 'stream', side_effect=stream):
+                    if failed:
+                        failure = device.diagnostics.InstrumentationFailure if failed == 'timeout' else ValueError
+                        with self.assertRaises(failure): device.main()
+                        self.assertFalse(receipt.exists())
+                    else:
+                        device.main()
+                budget = json.loads((root / 'receipt-diagnostics/pin-free.budget.json').read_text())
+                self.assertEqual('API28_V9_LIBRARY_1000_2700_V1', budget['policy'])
+                self.assertEqual(2700, budget['timeout_seconds'])
+                self.assertEqual(47, budget['selected_test_count'])
+                self.assertNotIn('syntheticAuthPin', json.dumps(budget))
+                if not failed:
+                    self.assertEqual([120, 2700, 2700, 120], [row[2] for row in seen])
+                    saved = json.loads(receipt.read_text())
+                    self.assertEqual(saved['phase_budgets']['pin-free']['policy'], saved['phase_budgets']['credential']['policy'])
+                    for key in ('pin_free_tests', 'credential_tests'):
+                        self.assertEqual(selected, {row['name'] for row in saved[key]})
+                        self.assertEqual({'PASS'}, {row['result'] for row in saved[key]})
+
     def test_recording_progress_is_validated_without_becoming_a_test_completion(self):
         name = 'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest'
         start = result('recording', 1).replace('example.PersistenceTest', name)

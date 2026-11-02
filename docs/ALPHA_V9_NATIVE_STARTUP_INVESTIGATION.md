@@ -85,3 +85,30 @@ No physical ARM device was tested, no native library/model was replaced, and no
 24-hour native-ASR qualification follows. Real ARM behavior, other topologies,
 remaining product defects and current-source release checks remain separate.
 This investigation does not itself change the release guard or authorize release.
+
+## Cold VAD preparation follow-up
+
+The owner-signed `aaa447b` candidate started a separate 1,800-second recording on
+the same two-core environment. Its first capture sample had 24 queued observer
+blocks and zero inference calls; the queue subsequently reached its unchanged
+40-block capacity and recorded BACKPRESSURE. Later samples had an empty queue,
+increasing classifications and a fixed initial coverage deficit. Canonical
+capture remained healthy with zero read errors in the observed interval. This
+attempt does not qualify as clean VAD runtime even if its recording test completes.
+
+Source tracing shows that construction was lazy: the first accepted microphone
+PCM scheduled the observer, whose worker called the factory before polling the
+queue. Microphone blocks are 800 frames/50ms, so the queue holds approximately
+two seconds. The observed initial coverage deficit was about three seconds;
+that is not a direct measurement of factory duration. The readiness correction
+records fixed `vadInitState` and worker-measured `vadInitNanos` scalars to distinguish
+construction from later inference.
+
+The local correction schedules preparation on the same VAD worker and delays
+microphone admission until readiness or a bounded typed-unavailable outcome.
+Controls and UI remain responsive; Stop, Pause, revocation, replaced sessions and
+destroyed services fence late callbacks. On timeout, observation is retired
+before canonical fallback and the semantic reducer retains the unknown interval.
+No queue, frozen profile, model or runtime replacement is used. The constructor
+SIGSEGV remains a native failure that readiness cannot catch or waive. A fresh
+signed candidate and current-source recording qualification remain required.

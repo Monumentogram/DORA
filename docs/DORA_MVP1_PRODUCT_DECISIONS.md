@@ -1398,3 +1398,15 @@ updates. Deletion feedback distinguishes preparation and execution, explains
 retry after interruption and offers recognition cancellation only during a
 recognition operation. These are local recovery/lifecycle corrections within
 the owner's existing scope, not a storage redesign or new performance claim.
+
+DEC-053 VAD-start follow-up, 2026-11-02: cold observer construction completes
+asynchronously before microphone admission. The visible state remains PREPARING
+and cancellation remains responsive. The logical session already owns Stop and
+an authenticated restored prefix, so cancellation retains the existing empty or
+prefix-finalization semantics. A ten-second preparation deadline bounds waiting;
+typed observer unavailability retires observation before canonical-only capture
+with explicitly degraded/unknown segmentation. Readiness never grants recording
+authority: current access, session, action token and foreground-service generation
+are rechecked at native microphone start. Preparation uses the existing bounded,
+foreground-only wake lease. Native libraries, model, observer queue capacity and
+quality thresholds are unchanged; fallback is not healthy VAD qualification.

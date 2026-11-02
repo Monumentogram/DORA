@@ -92,3 +92,15 @@ recovery methods retain their identities and add external-connection mutation,
 readback-failure/reopen, exact PCM, cap, deletion and durable-intent checks.
 This source admission does not carry an old APK or old runtime receipt forward
 as qualification of changed product bytes.
+
+A subsequent 2026-11-02 independent review admits only the RecordingController
+pin change for asynchronous VAD readiness before microphone admission. Existing
+session ownership, authenticated native-start gates and canonical-byte handling
+remain; Stop and service/authority loss fence late readiness. PREPARING publication
+is explicit and typed fallback stays degraded. The other seventeen pins, schema
+versions and all 197 classified/188 ordinary test identities remain unchanged.
+The normalized Controller digest is
+`656db6fb99850bfc14c32670a836201d71a34f66c07e22d258fbfe11ee56fdac`.
+Related VAD/core/app unit checks passed 56/296/165 tests, with zero failures or
+skips, alongside detekt, lint and APK compilation. This source admission does not
+qualify the changed signed artifact or erase the prior startup BACKPRESSURE.

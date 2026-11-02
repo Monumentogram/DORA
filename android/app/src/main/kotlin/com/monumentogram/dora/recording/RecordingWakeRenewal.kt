@@ -28,7 +28,8 @@ internal class RecordingWakeRenewal(private val driver: Driver) : Runnable {
         if (closed) return
         required =
             foreground &&
-                (phase == RecordingPhase.RECORDING ||
+                (phase == RecordingPhase.PREPARING ||
+                    phase == RecordingPhase.RECORDING ||
                     phase == RecordingPhase.FINALIZING ||
                     durability == RecordingDurability.PENDING)
         if (required) {

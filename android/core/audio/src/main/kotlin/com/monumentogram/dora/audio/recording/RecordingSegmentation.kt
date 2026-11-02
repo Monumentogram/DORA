@@ -34,6 +34,7 @@ class RecordingSegmentation(
     private val overflow = AtomicBoolean(false)
     private val recordingGeneration = UUID.randomUUID().toString()
     private var stopped = false
+    private var unavailable = false
     private val reducer =
         SegmentationReducer(SegmentationProfile.FROZEN, session.state.frames, 1, ::retainEvent)
     private val observer =
@@ -45,15 +46,28 @@ class RecordingSegmentation(
     private var silenceBoundaries = 0L
     private var lastBoundaryFrame = -1L
 
+    /** No canonical PCM is needed to initialize the observer on its dedicated worker. */
+    fun prepare() = observer.prepare()
+
+    /** A finite startup failure disables observation before canonical-only capture can begin. */
+    fun preparationUnavailable(reason: VadFailure) {
+        if (stopped || unavailable) return
+        discontinuity(reason)
+        unavailable = true
+        observer.stop(session.state.frames)
+        deliveries.clear()
+        retireWorker()
+    }
+
     /** Called only after canonical acceptance, with the original borrowed block still valid. */
     fun accept(pcm: ByteArray, firstFrame: Long) {
-        if (stopped) return
+        if (stopped || unavailable) return
         drain()
         observer.offer(pcm, firstFrame)
     }
 
     fun drain() {
-        if (stopped) return
+        if (stopped || unavailable) return
         if (overflow.getAndSet(false)) {
             deliveries.clear()
             observer.discontinuity(session.state.frames, VadFailure.BACKPRESSURE)
@@ -104,6 +118,7 @@ class RecordingSegmentation(
     }
 
     fun discontinuity(reason: VadFailure) {
+        if (stopped || unavailable) return
         drain()
         observer.discontinuity(session.state.frames, reason)
         reducer.discontinuity(session.state.frames, observer.currentGeneration(), reason)
@@ -117,6 +132,10 @@ class RecordingSegmentation(
         observer.stop(session.state.frames)
         reducer.stop(session.state.frames)
         deliveries.clear()
+        retireWorker()
+    }
+
+    private fun retireWorker() {
         try {
             worker.execute { worker.shutdown() } // Serialized after drain; no caller waits for JNI.
         } catch (_: java.util.concurrent.RejectedExecutionException) {
@@ -146,6 +165,7 @@ class RecordingSegmentation(
     fun diagnostics(): String {
         val s = observer.stats()
         return "vadProfile=${SegmentationProfile.FROZEN.id} vadFailure=${s.failure ?: "NONE"} " +
+            "vadInitState=${observer.initializationState} vadInitNanos=${observer.initializationNanos} " +
             "vadQueue=${s.queueSize} vadHighWater=${s.queueHighWater} vadInference=${s.inferenceCount} " +
             "vadDeadlineMisses=${s.missedDeadlines} vadMinNanos=${s.minNanos} " +
             "vadP50Nanos=${s.p50Nanos} vadP95Nanos=${s.p95Nanos} vadMaxNanos=${s.maxNanos} " +
