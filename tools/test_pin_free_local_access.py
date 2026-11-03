@@ -1,8 +1,8 @@
 """Permanent ADR-0021 gate. Historical evidence and test fixtures are not product code."""
 import pathlib
 import unittest
+from unittest.mock import patch
 from pin_free_policy import FORBIDDEN, violations
-import validate_encrypted_persistence as persistence
 import validate_pin_free_local_access as local_access
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -33,10 +33,22 @@ class ReviewedKeyPolicyTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        paths = (local_access.HISTORICAL_BLOCKER, local_access.KEY_BACKEND)
-        cls.historical = {path: persistence.git(ROOT, 'show', local_access.BASE + ':' + path)
-                          for path in paths}
-        cls.current = {path: (ROOT / path).read_bytes() for path in (*paths, cls.SCOPES)}
+        # Unit fixtures must work in the permanent gate's shallow CI checkout.
+        # validate_checkout still compares the real files with git show BASE:path.
+        cls.historical = {
+            local_access.HISTORICAL_BLOCKER: b'synthetic historical blocker\n',
+            local_access.KEY_BACKEND: b'synthetic historical noninteractive backend\n',
+        }
+        cls.current = {
+            local_access.HISTORICAL_BLOCKER: cls.historical[local_access.HISTORICAL_BLOCKER],
+            **{path: (ROOT / path).read_bytes()
+               for path in (local_access.KEY_BACKEND, cls.SCOPES)},
+        }
+
+    def test_policy_fixtures_do_not_require_git_history(self):
+        with patch('subprocess.run', side_effect=AssertionError('Unit fixture requires Git history')) as run:
+            type(self).setUpClass()
+        run.assert_not_called()
 
     def test_reviewed_scoped_key_reuse_is_admitted(self):
         try:

@@ -121,3 +121,30 @@ working tree. Repeat it against the clean committed source before publication.
 The owner's subsequent Cloud-activation request prioritizes the existing installed
 v10 and existing backend. P0 work is preserved on its dedicated branch; Cloud
 registration does not authorize a P0 APK installation or a long paid test.
+
+### Committed candidate and CI findings, November 3
+
+The preceding uncommitted checkpoint is superseded by commits b7464d1, 78de837 and
+bab64e0 on [Draft PR133](https://github.com/Monumentogram/DORA/pull/133), stacked on
+PR130. Clean-source Stage00 validation passed. The first CI round retained two
+failures: shallow checkout lacked the historical object used by a new unit fixture;
+and a completed Future could return a successful audio source to an interrupted
+caller without throwing InterruptedException. The latter is a real delivery race,
+not a timeout or a reason to weaken the test.
+
+The unit fixture now uses synthetic historical bytes; the production validator
+still compares the actual historical baseline and pins the reviewed backend/scope
+pair. Eleven focused host tests and the working-tree source validator passed.
+The coordinator now also observes the interrupt flag at completed-result delivery,
+closes an undelivered successful handle and preserves the interrupt. A deterministic
+completed-Future regression failed before this change and passed afterwards; the
+existing concurrent regression remains and also checks interrupt preservation.
+Independent review approved this delta without actionable findings.
+
+After correcting only the new test's formatting, the combined Gradle verification
+passed: core debug JVM 318/318, core release JVM 319/319, app debug JVM 167/167,
+Spotless and Detekt. The earlier failing CI and formatting logs remain evidence;
+they are not reported as successful. Exact revised-head CI, two clean signed builds,
+retained-data upgrade and signed runtime remain release gates. No signed v11 or
+Samsung P0 timing result is claimed at this checkpoint. The separate v10 Cloud
+RU acceptance and restored phone settings are recorded in STAGE13_CLOUD_READINESS.md.

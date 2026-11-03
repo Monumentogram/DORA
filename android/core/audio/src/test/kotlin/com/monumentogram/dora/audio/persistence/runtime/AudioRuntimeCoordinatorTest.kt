@@ -23,6 +23,8 @@ import com.monumentogram.dora.audio.recording.RecordingRecovery
 import com.monumentogram.dora.model.alpha.AudioAssetId
 import com.monumentogram.dora.model.alpha.RecordingId
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Future
+import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -65,6 +67,37 @@ class AudioRuntimeCoordinatorTest {
     }
 
     @Test
+    fun interruptedCallerDiscardsAlreadyCompletedOpenAndPreservesInterrupt() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                val opened = session.originals.openAuthenticated(identity)
+                assertTrue(opened is AudioResult.Value)
+                val completed = FutureTask { opened }.apply { run() }
+                // Force completion before get(), the legal ordering hidden by the concurrent test.
+                // Reflection keeps this scheduling control out of the production constructor/API.
+                val await =
+                    session.javaClass
+                        .getDeclaredMethod("awaitOperation", Future::class.java)
+                        .apply {
+                            isAccessible = true
+                        }
+                try {
+                    Thread.currentThread().interrupt()
+                    val result = await.invoke(session, completed)
+                    assertTrue(Thread.currentThread().isInterrupted)
+                    assertEquals(AudioResult.Failed(AudioFailure.UNCERTAIN), result)
+                    assertEquals(1, vault.sourceCloses)
+                } finally {
+                    Thread.interrupted() // Never leak the fixture interrupt into JUnit/close().
+                    if (opened is AudioResult.Value) opened.value.close()
+                }
+            }
+    }
+
+    @Test
     fun callerInterruptedDuringSuccessfulOpenClosesUndeliveredSource() {
         val lock = LocalAccessSession { true }
         val vault = FixtureVault()
@@ -78,13 +111,18 @@ class AudioRuntimeCoordinatorTest {
             .use { runtime ->
                 val session = opened(runtime, authorize(lock))
                 var result: AudioResult<*>? = null
-                val caller = Thread { result = session.originals.openAuthenticated(identity) }
+                var interruptRestored = false
+                val caller = Thread {
+                    result = session.originals.openAuthenticated(identity)
+                    interruptRestored = Thread.currentThread().isInterrupted
+                }
                 caller.start()
                 assertTrue(entered.await(5, TimeUnit.SECONDS))
                 caller.interrupt()
                 release.countDown()
                 caller.join(5_000)
                 assertTrue(!caller.isAlive)
+                assertTrue(interruptRestored)
                 assertEquals(AudioResult.Failed(AudioFailure.UNCERTAIN), result)
                 assertEquals(1, vault.sourceCloses)
             }

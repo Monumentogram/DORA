@@ -676,7 +676,11 @@ internal class AudioRuntimeCoordinator(
                 if (interrupted) Thread.currentThread().interrupt()
             }
             val result = checkNotNull(completed)
-            return if (interrupted && result is AudioResult.Value) {
+            // A completed Future may return without throwing for an already-set interrupt.
+            // Observe it at delivery too, without clearing the caller's cancellation signal.
+            return if (
+                (interrupted || Thread.currentThread().isInterrupted) && result is AudioResult.Value
+            ) {
                 discard(result)
                 AudioResult.Failed(AudioFailure.UNCERTAIN)
             } else result

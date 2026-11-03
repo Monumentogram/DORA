@@ -1,5 +1,10 @@
 # Stage 13 — Cloud ASR readiness
 
+Latest checkpoint, 2026-11-03: **PASS / SAMSUNG_CLOUD_ASR_OWNER_READY for one short RU
+test over Wi-Fi on installed v10**. See the dated execution and network follow-up below.
+EN was declined; mobile HTTPS, live cancellation/retry and long Cloud remain unqualified.
+The original software-only record follows unchanged.
+
 Date: 2026-11-02. Branch: `codex/stage13-owner-alpha-stabilization`.
 Baseline: Alpha v9, `49ca2070f15a618d145ded307fc87249f382b22c`.
 
@@ -219,3 +224,23 @@ The 30/60-minute Amazon cases remain PENDING. Stage 13 and Stage 12 remain **PAR
 the existing recording/playback latency limitation is not resolved by this Cloud smoke.
 Content-free backend, cleanup and UI/restart receipts are retained privately; no audio,
 transcript text, endpoint, device identity or credentials are included here.
+
+### Owner follow-up: EN declined and network check
+
+The owner declined the optional EN test and authorized a short mobile-network check
+with Wi-Fi restored afterwards. No additional transcription or paid attempt was
+started. At inspection Wi-Fi was already off; the cellular default network was not
+validated by Android and a DNS lookup failed. The bounded browser probe did not
+produce an attributable HTTP response. Mobile HTTPS therefore remains **NOT VERIFIED**;
+these observations do not establish a certificate or application-authorization defect.
+No TLS bypass, DNS/VPN change or cellular configuration change was made.
+
+Wi-Fi was enabled and reconnection to a validated Wi-Fi default network was confirmed.
+The original 30,000 ms screen timeout was restored and DORA reopened. A fresh HTTP
+response after reconnection was not captured, so network reconnection is confirmed
+only at the Android transport layer. The earlier successful RU upload/result remains
+the direct authenticated Wi-Fi HTTPS evidence; ADB reverse mappings were empty.
+Operation with the USB cable physically removed remains untested. No new APK was
+needed for this Cloud activation. The bounded result is
+**PASS / SAMSUNG_CLOUD_ASR_OWNER_READY for short RU over Wi-Fi**, with the network,
+live cancellation/retry and long-recording limitations above retained.
