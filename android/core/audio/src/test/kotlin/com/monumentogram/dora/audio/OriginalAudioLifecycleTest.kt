@@ -17,6 +17,55 @@ import org.junit.Test
 
 class OriginalAudioLifecycleTest {
     @Test
+    fun cancelledAuthenticationWipesUnitReleasesLeaseAndCanRetry() {
+        val f = Fixture()
+        var cancelled = false
+        f.readHook = { cancelled = true }
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNCERTAIN),
+            f.lifecycle.openAuthenticated(f.id) { cancelled },
+        )
+        assertEquals(1, f.deliveries)
+        assertTrue(checkNotNull(f.borrowed).all { it == 0.toByte() })
+        assertNull(f.retained)
+        assertNull(f.loss)
+        checkNotNull(f.catalog.tryAcquire(f.id)).close()
+        f.readHook = {}
+        (f.lifecycle.openAuthenticated(f.id) as AudioResult.Value).value.close()
+        assertEquals(2, f.scans)
+    }
+
+    @Test
+    fun cancellationBeforeOpenAndAlongsideCorruptionNeverRetainsLoss() {
+        val f = Fixture()
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNCERTAIN),
+            f.lifecycle.openAuthenticated(f.id) { true },
+        )
+        assertEquals(0, f.scans)
+        val reference = OriginalAudioReferenceCodec.derive(f.owner, f.vault, f.asset)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNCERTAIN),
+            f.lifecycle.openAuthenticated(reference) { true },
+        )
+        assertEquals(0, f.scans)
+        var cancelled = false
+        f.readHook = { cancelled = true }
+        f.failure = AudioFailure.CORRUPT
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNCERTAIN),
+            f.lifecycle.openAuthenticated(f.id) { cancelled },
+        )
+        assertNull(f.loss)
+        f.readHook = {}
+        assertEquals(
+            AudioResult.Failed(AudioFailure.CORRUPT),
+            f.lifecycle.openAuthenticated(f.id) { false },
+        )
+        assertEquals(AudioFailure.CORRUPT, f.loss)
+    }
+
+    @Test
     fun `incomplete reconciliation must recover without permanent loss`() {
         val f = Fixture()
         val ref = f.reference()
@@ -279,6 +328,8 @@ class OriginalAudioLifecycleTest {
         var failure: AudioFailure? = null
         var locked = false
         var scans = 0
+        var deliveries = 0
+        var borrowed: ByteArray? = null
         var readHook: () -> Unit = {}
         private val held = AtomicReference<Thread?>()
         val catalog =
@@ -327,11 +378,14 @@ class OriginalAudioLifecycleTest {
                     readHook()
                     failure?.let { AudioResult.Failed(it) }
                         ?: run {
-                            val bytes = ByteArray(4)
-                            try {
-                                consume(0, bytes)
-                            } finally {
-                                bytes.fill(0)
+                            repeat(2) { first ->
+                                val bytes = ByteArray(2) { 7 }.also { borrowed = it }
+                                try {
+                                    deliveries++
+                                    consume(first.toLong(), bytes)
+                                } finally {
+                                    bytes.fill(0)
+                                }
                             }
                             AudioResult.Value(
                                 AudioReadSummary(snapshot.identity, 2, AudioCompletion.FINALIZED)

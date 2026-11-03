@@ -80,15 +80,20 @@ internal fun OriginalAudioControls(
                 style = MaterialTheme.typography.labelLarge,
             )
             Button(
-                enabled = enabled && !player.loading,
+                enabled = enabled || player.loading,
                 onClick = {
-                    if (player.playing) player.pause() else if (canPlay()) player.play(identity)
+                    if (player.playing || player.loading) player.pause()
+                    else if (canPlay()) player.play(identity)
                 },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
             ) {
                 Text(
                     stringResource(
-                        if (player.playing) R.string.signal_pause else R.string.signal_play
+                        when {
+                            player.loading -> android.R.string.cancel
+                            player.playing -> R.string.signal_pause
+                            else -> R.string.signal_play
+                        }
                     )
                 )
             }

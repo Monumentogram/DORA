@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
+import com.monumentogram.dora.audio.AudioOperationDiagnostics
 import com.monumentogram.dora.recording.ProductRecordingHost
 import com.monumentogram.dora.recording.ProductRecordingService
 import com.monumentogram.dora.transcript.ModelImportController
@@ -23,10 +24,28 @@ import com.monumentogram.dora.transcript.registerModelPicker
 import com.monumentogram.dora.ui.BootstrapNavigationLayout
 import com.monumentogram.dora.ui.DoraBootstrapApp
 import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
+import java.io.FileDescriptor
+import java.io.PrintWriter
 
 // Unconditional picker registration and Activity lifecycle entry points remain together.
 @Suppress("TooManyFunctions")
 class MainActivity : ComponentActivity() {
+    override fun dump(
+        prefix: String,
+        fd: FileDescriptor?,
+        writer: PrintWriter,
+        args: Array<out String>?,
+    ) {
+        val commands = args?.toSet().orEmpty()
+        if (commands.any { it in setOf("dora-audio", "dora-audio-enable", "dora-audio-disable") }) {
+            if ("dora-audio-enable" in commands) AudioOperationDiagnostics.enable()
+            if ("dora-audio-disable" in commands) AudioOperationDiagnostics.disableAndClear()
+            writer.println(AudioOperationDiagnostics.summary())
+            return
+        }
+        super.dump(prefix, fd, writer, args)
+    }
+
     private val textExports by lazy {
         ViewModelProvider(this)[com.monumentogram.dora.transcript.TextExportController::class.java]
     }

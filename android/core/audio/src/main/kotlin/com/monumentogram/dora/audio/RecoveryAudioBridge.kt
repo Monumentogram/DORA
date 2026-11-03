@@ -110,7 +110,12 @@ internal class RecoveryAudioBridge(
     private val keyFailures: RunKeyFailureScopes = RunKeyFailureScopes(),
 ) : ProductAudioWriterPort, ProductAudioReaderPort {
     private val reader =
-        RecoveryMicrofileReconciliationController(source, crypto, confirmation, quarantine)
+        RecoveryMicrofileReconciliationController(
+            source,
+            TimedRecoveryCrypto(crypto),
+            confirmation,
+            quarantine,
+        )
 
     override fun create(identity: AudioIdentity): AudioResult<Unit> = guarded {
         if (!canonical(identity.sessionId)) failed(AudioFailure.INVALID_INPUT)
@@ -248,13 +253,17 @@ internal class RecoveryAudioBridge(
     }
 
     override fun finalize(identity: AudioIdentity): AudioResult<Unit> =
-        withAsset(identity) { asset ->
-            if (asset.pending != null || asset.finalization != null || asset.segments.isEmpty()) {
-                return@withAsset failed(AudioFailure.COLLISION)
+        AudioOperationDiagnostics.collect(AudioOperation.FINALIZE) {
+            withAsset(identity) { asset ->
+                if (
+                    asset.pending != null || asset.finalization != null || asset.segments.isEmpty()
+                ) {
+                    return@withAsset failed(AudioFailure.COLLISION)
+                }
+                val intent = AudioIntent.Finalize(asset.segments.toList())
+                if (!catalog.reserve(asset, intent)) return@withAsset failed(AudioFailure.UNCERTAIN)
+                reconcileAsset(asset.copy(pending = intent))
             }
-            val intent = AudioIntent.Finalize(asset.segments.toList())
-            if (!catalog.reserve(asset, intent)) return@withAsset failed(AudioFailure.UNCERTAIN)
-            reconcileAsset(asset.copy(pending = intent))
         }
 
     override fun reconcile(identity: AudioIdentity): AudioResult<Unit> =
@@ -322,7 +331,8 @@ internal class RecoveryAudioBridge(
     }
 
     private fun commit(expected: StoredAudioAsset, next: StoredAudioAsset): AudioResult<Unit> =
-        if (catalog.compareAndSet(expected, next)) AudioResult.Value(Unit)
+        if (PersistenceLatency.measure("catalog_commit") { catalog.compareAndSet(expected, next) })
+            AudioResult.Value(Unit)
         else failed(AudioFailure.UNCERTAIN)
 
     override fun extract(
@@ -354,52 +364,63 @@ internal class RecoveryAudioBridge(
         frameCount: Long,
         consume: (Long, ByteArray) -> Unit,
     ): AudioResult<AudioReadSummary> = guarded {
-        check(snapshot.pending == null && snapshot.finalization != null)
-        require(firstFrame >= 0 && frameCount > 0)
-        val end = Math.addExact(firstFrame, frameCount)
-        val segments = snapshot.segments
-        val last = segments.last()
-        require(end <= Math.addExact(last.identity.firstFrame, last.frames))
-        // Lower bound for the first unit whose end lies after the requested first frame.
-        var low = 0
-        var high = segments.size
-        while (low < high) {
-            val middle = (low + high) ushr 1
-            val unit = segments[middle]
-            if (unit.identity.firstFrame + unit.frames <= firstFrame) low = middle + 1
-            else high = middle
-        }
-        var next = firstFrame
-        var index = low
-        while (next < end) {
-            val segment = segments[index++]
-            val read = recover(segment.identity)
-            if (read is AudioResult.Failed) return@guarded read
-            val recovered = (read as AudioResult.Value).value
-            try {
-                if (!recovered.complete) return@guarded failed(AudioFailure.INCOMPLETE)
-                if (
-                    recovered.manifestDigest != segment.manifestDigest ||
-                        recovered.bytes.size.toLong() != segment.frames * 2
-                )
-                    return@guarded failed(AudioFailure.CORRUPT)
-                val finish = minOf(end, segment.identity.firstFrame + segment.frames)
-                val from = ((next - segment.identity.firstFrame) * 2).toInt()
-                val until = ((finish - segment.identity.firstFrame) * 2).toInt()
-                val selected = recovered.bytes.copyOfRange(from, until)
-                try {
-                    consume(next, selected)
-                } finally {
-                    selected.fill(0)
-                }
-                next = finish
-            } finally {
-                recovered.bytes.fill(0)
+        AudioOperationDiagnostics.collect(AudioOperation.RANGE_READ) {
+            check(snapshot.pending == null && snapshot.finalization != null)
+            require(firstFrame >= 0 && frameCount > 0)
+            val end = Math.addExact(firstFrame, frameCount)
+            val segments = snapshot.segments
+            val last = segments.last()
+            require(end <= Math.addExact(last.identity.firstFrame, last.frames))
+            // Lower bound for the first unit whose end lies after the requested first frame.
+            var low = 0
+            var high = segments.size
+            while (low < high) {
+                val middle = (low + high) ushr 1
+                val unit = segments[middle]
+                if (unit.identity.firstFrame + unit.frames <= firstFrame) low = middle + 1
+                else high = middle
             }
+            var next = firstFrame
+            var index = low
+            var endIndex = low
+            while (
+                endIndex < segments.size && segments[endIndex].identity.firstFrame < end
+            ) endIndex++
+            AudioOperationDiagnostics.progress(0, (endIndex - low).toLong())
+            while (next < end) {
+                val segment = segments[index++]
+                val read = recover(segment.identity)
+                if (read is AudioResult.Failed) return@collect read
+                val recovered = (read as AudioResult.Value).value
+                try {
+                    if (!recovered.complete) return@collect failed(AudioFailure.INCOMPLETE)
+                    if (
+                        recovered.manifestDigest != segment.manifestDigest ||
+                            recovered.bytes.size.toLong() != segment.frames * 2
+                    )
+                        return@collect failed(AudioFailure.CORRUPT)
+                    val finish = minOf(end, segment.identity.firstFrame + segment.frames)
+                    val from = ((next - segment.identity.firstFrame) * 2).toInt()
+                    val until = ((finish - segment.identity.firstFrame) * 2).toInt()
+                    val selected = recovered.bytes.copyOfRange(from, until)
+                    try {
+                        consume(next, selected)
+                    } finally {
+                        selected.fill(0)
+                    }
+                    next = finish
+                } finally {
+                    recovered.bytes.fill(0)
+                }
+                AudioOperationDiagnostics.progress(
+                    (index - low).toLong(),
+                    (endIndex - low).toLong(),
+                )
+            }
+            AudioResult.Value(
+                AudioReadSummary(snapshot.identity, frameCount, AudioCompletion.FINALIZED)
+            )
         }
-        AudioResult.Value(
-            AudioReadSummary(snapshot.identity, frameCount, AudioCompletion.FINALIZED)
-        )
     }
 
     private fun extractAsset(
@@ -414,6 +435,8 @@ internal class RecoveryAudioBridge(
         }
         var complete = asset.pending == null
         var deliveredFrames = 0L
+        var completedUnits = 0L
+        AudioOperationDiagnostics.progress(0, asset.segments.size.toLong())
         for (segment in asset.segments) {
             val result = recover(segment.identity)
             if (result is AudioResult.Failed) {
@@ -453,6 +476,8 @@ internal class RecoveryAudioBridge(
             } finally {
                 recovered.bytes.fill(0)
             }
+            completedUnits++
+            AudioOperationDiagnostics.progress(completedUnits, asset.segments.size.toLong())
         }
         val state =
             if (complete && asset.finalization != null) AudioCompletion.FINALIZED
@@ -496,7 +521,11 @@ internal class RecoveryAudioBridge(
     private fun recover(segment: AudioStorageUnitIdentity): AudioResult<Recovered> {
         val run = RunId.fromCanonicalString(segment.unitId)
         val attempt =
-            keyFailures.observe(run, RunKeyOperation.RECONCILIATION) { reader.reconcile(run) }
+            keyFailures.observe(run, RunKeyOperation.RECONCILIATION) {
+                AudioOperationDiagnostics.measure(AudioStage.RECOVERY_UNIT) {
+                    reader.reconcile(run)
+                }
+            }
         val result = attempt.value
         refinedKeyFailure(result, attempt.failure)?.let {
             return failed(it)

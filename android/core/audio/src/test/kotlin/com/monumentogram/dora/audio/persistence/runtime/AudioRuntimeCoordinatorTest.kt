@@ -31,6 +31,127 @@ import org.junit.Test
 
 class AudioRuntimeCoordinatorTest {
     @Test
+    fun successfulSourceDiscardedAfterRevocationIsClosed() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                vault.onOriginalOpen = { runtime.revoke() }
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.LOCKED),
+                    session.originals.openAuthenticated(identity),
+                )
+                assertEquals(1, vault.sourceCloses)
+            }
+    }
+
+    @Test
+    fun finalCoordinatorFenceClosesSourceAfterOpenFenceWasAccepted() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                var checks = 0
+                val result =
+                    session.originals.openAuthenticated(identity) {
+                        if (++checks == 2) runtime.revoke()
+                        false
+                    }
+                assertEquals(AudioResult.Failed(AudioFailure.LOCKED), result)
+                assertEquals(1, vault.sourceCloses)
+            }
+    }
+
+    @Test
+    fun callerInterruptedDuringSuccessfulOpenClosesUndeliveredSource() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        vault.onOriginalOpen = {
+            entered.countDown()
+            check(release.await(5, TimeUnit.SECONDS))
+        }
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                var result: AudioResult<*>? = null
+                val caller = Thread { result = session.originals.openAuthenticated(identity) }
+                caller.start()
+                assertTrue(entered.await(5, TimeUnit.SECONDS))
+                caller.interrupt()
+                release.countDown()
+                caller.join(5_000)
+                assertTrue(!caller.isAlive)
+                assertEquals(AudioResult.Failed(AudioFailure.UNCERTAIN), result)
+                assertEquals(1, vault.sourceCloses)
+            }
+    }
+
+    @Test
+    fun cancelledOpenYieldsWorkerForRecordingRetirement() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                assertEquals(
+                    AudioResult.Failed(AudioFailure.UNCERTAIN),
+                    session.originals.openAuthenticated(identity) { true },
+                )
+                assertEquals(0, vault.originalOpens)
+                val retired = CountDownLatch(1)
+                runtime.retireForRecording {
+                    assertTrue(it)
+                    retired.countDown()
+                }
+                assertTrue(retired.await(5, TimeUnit.SECONDS))
+                assertTrue(vault.closed)
+            }
+    }
+
+    @Test
+    fun activeAuthenticationObservesCancellationBeforeQueuedRetirement() {
+        val lock = LocalAccessSession { true }
+        val vault = FixtureVault()
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val cancelled = java.util.concurrent.atomic.AtomicBoolean()
+        vault.onOriginalCancellation = { checkCancelled ->
+            entered.countDown()
+            check(release.await(5, TimeUnit.SECONDS))
+            assertTrue(checkCancelled())
+        }
+        AudioRuntimeCoordinator({ false }) { _, _ -> AudioResult.Value(vault) }
+            .use { runtime ->
+                val session = opened(runtime, authorize(lock))
+                var result: AudioResult<*>? = null
+                val caller = Thread {
+                    result = session.originals.openAuthenticated(identity, cancelled::get)
+                }
+                caller.start()
+                try {
+                    assertTrue(entered.await(5, TimeUnit.SECONDS))
+                    cancelled.set(true)
+                } finally {
+                    release.countDown()
+                }
+                caller.join(5_000)
+                assertTrue(!caller.isAlive)
+                assertEquals(AudioResult.Failed(AudioFailure.UNCERTAIN), result)
+                assertEquals(1, vault.sourceCloses)
+                val retired = CountDownLatch(1)
+                runtime.retireForRecording {
+                    assertTrue(it)
+                    retired.countDown()
+                }
+                assertTrue(retired.await(5, TimeUnit.SECONDS))
+            }
+    }
+
+    @Test
     fun savingRecoveredPrefixUsesCurrentSerializedSessionAndRechecksRevocation() {
         val lock = LocalAccessSession { true }
         val vault = FixtureVault()
@@ -431,6 +552,10 @@ class AudioRuntimeCoordinatorTest {
             AudioResult.Value(emptyList())
         }
     ) : RuntimeVault {
+        var onOriginalOpen: () -> Unit = {}
+        var onOriginalCancellation: (() -> Boolean) -> Unit = {}
+        var originalOpens = 0
+        var sourceCloses = 0
         var savedPrefixes = 0
         var savedPrefixIdentity: AudioIdentity? = null
         var onSavePrefix: () -> Unit = {}
@@ -517,6 +642,37 @@ class AudioRuntimeCoordinatorTest {
 
         override val originals =
             object : OriginalAudioPort {
+                override fun openAuthenticated(
+                    identity: AudioIdentity,
+                    cancelled: () -> Boolean,
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> {
+                    onOriginalCancellation(cancelled)
+                    return openAuthenticated(identity)
+                }
+
+                override fun openAuthenticated(
+                    identity: AudioIdentity
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> {
+                    originalOpens++
+                    onOriginalOpen()
+                    return AudioResult.Value(
+                        object : com.monumentogram.dora.audio.AuthenticatedAudioSource {
+                            override val reference =
+                                OriginalAudioReference(1, identity, "a".repeat(64), 1)
+
+                            override fun close() {
+                                sourceCloses++
+                            }
+
+                            override fun extractRange(
+                                firstFrame: Long,
+                                frameCount: Long,
+                                consume: (Long, ByteArray) -> Unit,
+                            ) = AudioResult.Value(OriginalAudioStatus.Available(reference))
+                        }
+                    )
+                }
+
                 override fun acquire(identity: AudioIdentity) =
                     inspect(OriginalAudioReference(1, identity, "0".repeat(64), 1))
 

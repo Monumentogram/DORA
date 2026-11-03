@@ -19,7 +19,7 @@ class PcmWindows(
         source: OriginalAudioReference,
         firstFrame: Long,
         cancelled: () -> Boolean,
-    ) : this(open(port, source), firstFrame, cancelled)
+    ) : this(open(port, source, cancelled), firstFrame, cancelled)
 
     private val source = handle.reference
     private val loader = Executors.newSingleThreadExecutor()
@@ -35,7 +35,7 @@ class PcmWindows(
     private fun schedule(): Future<ProtectedPcm>? {
         if (position == source.frames) return null
         val first = position
-        val count = minOf(source.frames - first, ProtectedPcm.MAX_WINDOW_FRAMES.toLong()).toInt()
+        val count = minOf(source.frames - first, PLAYBACK_WINDOW_FRAMES.toLong()).toInt()
         return loader.submit<ProtectedPcm> {
             ProtectedPcm.readWindow(handle, first, count) { closed || cancelled() }
         }
@@ -81,11 +81,14 @@ class PcmWindows(
     }
 
     companion object {
+        private const val PLAYBACK_WINDOW_FRAMES = 80_000
+
         private fun open(
             port: OriginalAudioPort,
             reference: OriginalAudioReference,
+            cancelled: () -> Boolean,
         ): AuthenticatedAudioSource {
-            val result = port.openAuthenticated(reference)
+            val result = port.openAuthenticated(reference, cancelled)
             check(result is AudioResult.Value) { "SOURCE_UNAVAILABLE" }
             return result.value
         }

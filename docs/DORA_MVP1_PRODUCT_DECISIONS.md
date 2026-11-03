@@ -1429,3 +1429,32 @@ Preview10 retains package and signer; publication requires exact-candidate gates
 Samsung acceptance may run only under the owner's explicit device authorization.
 Stage13 overall and Stage12 remain PARTIAL while canonical gates are incomplete;
 issue125 remains separate. See STAGE13_RESULT.md and its domain evidence.
+
+## DEC-055 — Cancel abandoned playback preparation without weakening source authentication (2026-11-02)
+
+The owner-scoped [P0 issue 132](https://github.com/Monumentogram/DORA/issues/132)
+continues signed Preview10 source `45e1e09`. A loading player offers Cancel;
+Cancel, seek and closing the player stop the abandoned authentication attempt
+cooperatively, release its owned resources and allow a new recording without
+restarting the app. Saved audio, transcript versions, selections, manual edits
+and the imported model remain intact. Cancellation never means source deletion
+or permanent corruption. An active provider operation may finish before its
+authenticated-unit cancellation boundary; immediate UI feedback is not a claim
+that resource retirement has already completed.
+
+Full-source authentication remains mandatory before playback. Playback prepares
+five-second windows; Local Whisper retains its five-minute windows and existing
+model/runtime/quality gates. Per-attempt validated-key reuse and opt-in scalar
+diagnostics are defined in [ADR-0032](adr/ADR-0032-authenticated-audio-cancellation-and-scoped-key-reuse.md).
+They create no persistent source permission, plaintext cache, new key or weaker
+protection mode. Software qualification is IN_PROGRESS; physical latency is
+PENDING pending a renewed authorized same-source Samsung comparison.
+
+Separately defer Local Whisper UX work to `S13-OWNER-G`: real percent and processed
+audio time where the engine/checkpoints supply a valid numerator and denominator,
+stage-only progress otherwise, visible cooperative cancellation, and truthful
+state restoration after foreground return or process restart. Cancellation must
+preserve completed admitted checkpoints and user edits; interrupted work must not
+appear complete or restart silently. This P0 task does not implement that UX,
+change recognition quality or claim native GREEN. Stage13 and Stage12 remain
+PARTIAL; issue125, device/endurance/privacy gates and release checks are unchanged.

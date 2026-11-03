@@ -17,6 +17,41 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PcmWindowsTest {
+    @Test
+    fun playbackWindowsStayAtFiveSecondsIncludingInitialAndTail() {
+        val ranges = java.util.concurrent.CopyOnWriteArrayList<Pair<Long, Long>>()
+        val short = source.copy(frames = 160_003)
+        val handle =
+            object : com.monumentogram.dora.audio.AuthenticatedAudioSource {
+                override val reference = short
+
+                override fun close() = Unit
+
+                override fun extractRange(
+                    firstFrame: Long,
+                    frameCount: Long,
+                    consume: (Long, ByteArray) -> Unit,
+                ): AudioResult<OriginalAudioStatus> {
+                    ranges += firstFrame to frameCount
+                    val bytes = ByteArray((frameCount * 2).toInt())
+                    try {
+                        consume(firstFrame, bytes)
+                    } finally {
+                        bytes.fill(0)
+                    }
+                    return AudioResult.Value(OriginalAudioStatus.Available(reference))
+                }
+            }
+        PcmWindows(handle, 1) { false }
+            .use { windows ->
+                windows.next()!!.use { assertEquals(80_000, it.samples.size) }
+                windows.next()!!.use { assertEquals(80_000, it.samples.size) }
+                windows.next()!!.use { assertEquals(2, it.samples.size) }
+                assertNull(windows.next())
+            }
+        assertEquals(listOf(1L to 80_000L, 80_001L to 80_000L, 160_001L to 2L), ranges)
+    }
+
     private val source =
         OriginalAudioReference(
             1,
@@ -26,7 +61,7 @@ class PcmWindowsTest {
                 "test",
             ),
             "a".repeat(64),
-            9_600_002,
+            160_002,
         )
 
     @Test
@@ -63,7 +98,7 @@ class PcmWindowsTest {
                         consume(
                             first,
                             ByteArray(count * 2) {
-                                if (it % 2 == 0) (first / 4_800_000 + 1).toByte() else 0
+                                if (it % 2 == 0) (first / 80_000 + 1).toByte() else 0
                             },
                         )
                         first += count
@@ -71,10 +106,10 @@ class PcmWindowsTest {
                     return inspect(reference)
                 }
             }
-        PcmWindows(port, source, 4_799_999) { false }
+        PcmWindows(port, source, 79_999) { false }
             .use { windows ->
                 windows.next()!!.use { first ->
-                    assertEquals(4_800_000, first.samples.size)
+                    assertEquals(80_000, first.samples.size)
                     assertEquals(1f / 32768f, first.samples.first(), 0f)
                     assertEquals(2f / 32768f, first.samples.last(), 0f)
                     assertTrue(secondStarted.await(10, TimeUnit.SECONDS))

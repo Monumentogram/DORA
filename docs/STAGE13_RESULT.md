@@ -65,3 +65,32 @@ audit failed decoding aapt output under Windows cp1251; rerunning only the audit
 with UTF-8 passed without changing the source or APK. Final workflow-corrected
 source requires fresh build/CI binding; later continuity must retain this original
 execution provenance instead of claiming an unperformed direct upgrade trial.
+
+## P0 issue132 follow-up — 2026-11-02 — qualification in progress
+
+This follow-up starts from signed Preview10 source `45e1e09` on
+`codex/stage13-samsung-audio-performance`, stacked on PR130 -> PR128 -> PR127.
+Earlier tables and candidate records retain their historical checkpoint meanings.
+[Issue132](https://github.com/Monumentogram/DORA/issues/132),
+[DEC-055](DORA_MVP1_PRODUCT_DECISIONS.md#dec-055--cancel-abandoned-playback-preparation-without-weakening-source-authentication-2026-11-02)
+and [ADR-0032](adr/ADR-0032-authenticated-audio-cancellation-and-scoped-key-reuse.md)
+define the bounded correction and preserved security contracts.
+
+| Direction | Follow-up status |
+|---|---|
+| Scoped key reuse | IN_PROGRESS: verify 12 -> 4 validated opens and 36 -> 20 provider cipher calls for the same four-unit source; mandatory decryptions remain. |
+| Playback cancellation and windows | IN_PROGRESS: cooperative full-open cancellation, discarded-handle cleanup and five-second playback windows; API28/API36 UI and recording-handoff qualification pending final aggregation. |
+| Diagnostics | IN_PROGRESS: opt-in bounded enum/scalar stages, actual unit progress and final operation status; no content or source/key identifiers. |
+| Full-source authentication | Unchanged and mandatory before playback; ranges still enforce live authority/deletion/source checks and authenticate selected ciphertext. |
+| Signed/native runtime, data/model continuity, CI and review | Pending exact-candidate receipts for this follow-up; inherited evidence is not a fresh result. |
+| Samsung latency | PENDING: renewed permission and same-retained-source comparison required; 15–30 s finalization / <=5 s first playback remain targets, not measured achievements. |
+| Local Whisper progress/cancel/restoration UX | S13-OWNER-G: DEFERRED / NOT_STARTED; no model/runtime/quality change or native GREEN claim. |
+| Overall Stage13 / Stage12 | PARTIAL; prior device/endurance, security/privacy, issue125, quality and Cloud/live limitations remain. |
+
+The loading-cancellation fixture uses the real player, authenticated storage and
+exclusive recording-vault handoff with synthetic PCM. Its writer test must be
+reported separately from microphone capture; Activity recreation is likewise not
+actual process-death evidence. Baseline/after counts and emulator wall times must
+be labeled by fixture and environment. Reduced provider work does not prove a
+physical StrongBox latency target. This follow-up authorizes no personal-phone
+operation, production AWS change, multi-hour endurance run or merge.

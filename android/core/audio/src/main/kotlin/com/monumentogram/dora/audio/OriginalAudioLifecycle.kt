@@ -36,51 +36,77 @@ internal class OriginalAudioLifecycle(
 
     override fun openAuthenticated(
         reference: OriginalAudioReference
-    ): AudioResult<AuthenticatedAudioSource> = openVerified(reference.identity, reference)
+    ): AudioResult<AuthenticatedAudioSource> = openAuthenticated(reference) { false }
 
     override fun openAuthenticated(identity: AudioIdentity): AudioResult<AuthenticatedAudioSource> =
-        openVerified(identity, null)
+        openAuthenticated(identity) { false }
+
+    override fun openAuthenticated(
+        reference: OriginalAudioReference,
+        cancelled: () -> Boolean,
+    ): AudioResult<AuthenticatedAudioSource> =
+        openVerified(reference.identity, reference, cancelled)
+
+    override fun openAuthenticated(
+        identity: AudioIdentity,
+        cancelled: () -> Boolean,
+    ): AudioResult<AuthenticatedAudioSource> = openVerified(identity, null, cancelled)
 
     private fun openVerified(
         identity: AudioIdentity,
         expected: OriginalAudioReference?,
+        cancelled: () -> Boolean,
     ): AudioResult<AuthenticatedAudioSource> = guarded {
-        requireActive()
-        val lease =
-            catalog.tryAcquire(identity) ?: return@guarded AudioResult.Failed(AudioFailure.BUSY)
-        lease.use {
-            terminalState(identity)?.let {
-                return@guarded unavailableHandle(it)
-            }
-            val loaded =
-                catalog.load(identity) ?: return@guarded AudioResult.Failed(AudioFailure.UNCERTAIN)
-            if (loaded.pending != null || loaded.finalization == null)
-                return@guarded AudioResult.Failed(AudioFailure.INCOMPLETE)
-            val reference = OriginalAudioReferenceCodec.derive(owner, vault, loaded)
-            if (expected != null && reference != expected)
-                return@guarded AudioResult.Failed(AudioFailure.INVALID_INPUT)
-            retainedLoss(reference)?.let {
-                return@guarded AudioResult.Failed(it)
-            }
-            val read = readHeld(loaded) { _, _ -> requireActive() }
+        AudioOperationDiagnostics.collect(AudioOperation.AUTHENTICATED_OPEN) {
             requireActive()
-            if (read is AudioResult.Failed) {
-                failedRead(reference, read.reason)
-                return@guarded read
+            checkCancellation(cancelled)
+            val lease =
+                catalog.tryAcquire(identity) ?: return@collect AudioResult.Failed(AudioFailure.BUSY)
+            lease.use {
+                terminalState(identity)?.let {
+                    return@collect unavailableHandle(it)
+                }
+                val loaded =
+                    catalog.load(identity)
+                        ?: return@collect AudioResult.Failed(AudioFailure.UNCERTAIN)
+                if (loaded.pending != null || loaded.finalization == null)
+                    return@collect AudioResult.Failed(AudioFailure.INCOMPLETE)
+                val reference = OriginalAudioReferenceCodec.derive(owner, vault, loaded)
+                if (expected != null && reference != expected)
+                    return@collect AudioResult.Failed(AudioFailure.INVALID_INPUT)
+                retainedLoss(reference)?.let {
+                    return@collect AudioResult.Failed(it)
+                }
+                checkCancellation(cancelled)
+                val read =
+                    readHeld(loaded) { _, _ ->
+                        requireActive()
+                        checkCancellation(cancelled)
+                    }
+                requireActive()
+                // A cancelled attempt is never evidence of permanent source loss.
+                checkCancellation(cancelled)
+                if (read is AudioResult.Failed) {
+                    failedRead(reference, read.reason)
+                    return@collect read
+                }
+                if (
+                    (read as AudioResult.Value).value !=
+                        AudioReadSummary(
+                            reference.identity,
+                            reference.frames,
+                            AudioCompletion.FINALIZED,
+                        )
+                )
+                    return@collect AudioResult.Failed(AudioFailure.INCOMPLETE)
+                retain(reference, null)
+                requireActive()
+                checkCancellation(cancelled)
+                // Catalog snapshots contain immutable metadata only, never PCM or key material.
+                AudioResult.Value(
+                    VerifiedSource(reference, loaded).also { verifiedSources.add(it) }
+                )
             }
-            if (
-                (read as AudioResult.Value).value !=
-                    AudioReadSummary(
-                        reference.identity,
-                        reference.frames,
-                        AudioCompletion.FINALIZED,
-                    )
-            )
-                return@guarded AudioResult.Failed(AudioFailure.INCOMPLETE)
-            retain(reference, null)
-            requireActive()
-            // Catalog snapshots contain immutable metadata only, never PCM or key material.
-            AudioResult.Value(VerifiedSource(reference, loaded).also { verifiedSources.add(it) })
         }
     }
 
@@ -266,6 +292,10 @@ internal class OriginalAudioLifecycle(
 
     private fun value(status: OriginalAudioStatus) = AudioResult.Value(status)
 
+    private fun checkCancellation(cancelled: () -> Boolean) {
+        if (cancelled()) throw java.util.concurrent.CancellationException()
+    }
+
     @Suppress("TooGenericExceptionCaught")
     private fun <T> guarded(block: () -> AudioResult<T>): AudioResult<T> =
         try {
@@ -273,6 +303,8 @@ internal class OriginalAudioLifecycle(
         } catch (_: LocalAccessDeniedException) {
             AudioResult.Failed(AudioFailure.LOCKED)
         } catch (_: UncertainAudioSourceState) {
+            AudioResult.Failed(AudioFailure.UNCERTAIN)
+        } catch (_: java.util.concurrent.CancellationException) {
             AudioResult.Failed(AudioFailure.UNCERTAIN)
         } catch (_: Exception) {
             AudioResult.Failed(AudioFailure.UNAVAILABLE)

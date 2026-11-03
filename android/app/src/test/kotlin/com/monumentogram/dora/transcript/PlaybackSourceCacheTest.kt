@@ -13,6 +13,33 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlaybackSourceCacheTest {
+    @Test
+    fun successfulOpenArrivingAfterPlayerCancellationIsClosedAndNeverCached() {
+        val cache = PlaybackSourceCache()
+        val source = Source(identity)
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNCERTAIN),
+            cache.remember(identity, AudioResult.Value(source)) { true },
+        )
+        assertEquals(1, source.closes)
+        assertEquals(0, source.checks)
+        assertEquals(null, cache.reuse(identity))
+    }
+
+    @Test
+    fun cancellationDuringLiveCheckRetiresTheNewSnapshot() {
+        val cache = PlaybackSourceCache()
+        val source = Source(identity)
+        var cancelled = false
+        source.onCheck = { cancelled = true }
+        assertEquals(
+            AudioResult.Failed(AudioFailure.UNCERTAIN),
+            cache.remember(identity, AudioResult.Value(source)) { cancelled },
+        )
+        assertEquals(1, source.closes)
+        assertEquals(null, cache.reuse(identity))
+    }
+
     private val identity =
         AudioIdentity(
             RecordingId("00000000-0000-0000-0000-000000000001"),
@@ -99,11 +126,13 @@ class PlaybackSourceCacheTest {
         var status: AudioResult<OriginalAudioStatus> =
             AudioResult.Value(OriginalAudioStatus.Available(reference))
         var checks = 0
+        var onCheck: () -> Unit = {}
         var closes = 0
         val ranges = mutableListOf<Long>()
 
         override fun checkAvailable(): AudioResult<OriginalAudioStatus> {
             checks++
+            onCheck()
             return status
         }
 

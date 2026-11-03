@@ -115,7 +115,8 @@ def main():
         instrument("transcript-editor", "com.monumentogram.dora.debug.test",
                    "com.monumentogram.dora.transcript.TranscriptUiTest,"
                    "com.monumentogram.dora.transcript.ModelPickerLifecycleTest,"
-                   "com.monumentogram.dora.AlphaRecordingUiTest", 6)
+                   "com.monumentogram.dora.AlphaRecordingUiTest,"
+                   "com.monumentogram.dora.transcript.PlaybackCancellationHandoffTest", 8)
         receipt["result"] = "PASS"
     finally:
         receipt.setdefault("result", "FAIL")
