@@ -75,7 +75,15 @@ internal class NoLogRecoveryRunAeadBackend(
 
     override fun getAead(keyUri: String): Aead {
         val run = run(keyUri)
-        return PersistenceLatency.measure("key_open") { keystore(run).open(alias(run)).aead }
+        return failureScopes.validatedAead(
+            run,
+            {
+                if (!aliasExists(run))
+                    throw KeyBoundaryException(KeyFailure.PERMANENTLY_MISSING_OR_INVALIDATED)
+            },
+        ) {
+            PersistenceLatency.measure("key_open") { keystore(run).open(alias(run)).aead }
+        }
     }
 
     fun aliasExists(runId: RunId): Boolean =
@@ -86,6 +94,7 @@ internal class NoLogRecoveryRunAeadBackend(
     /** Internal only: caller must first prove the durable scoped deletion fence. */
     fun removeAlias(runId: RunId) {
         mutationGate(runId)
+        failureScopes.invalidate(runId)
         keystore(runId).remove(alias(runId))
     }
 
@@ -199,7 +208,7 @@ private class NonExportableKeystore(
         val key =
             operations.open(alias)
                 ?: throw KeyBoundaryException(KeyFailure.PERMANENTLY_MISSING_OR_INVALIDATED)
-        val info = operations.information(key)
+        val info = PersistenceLatency.measure("key_info") { operations.information(key) }
         key.encoded?.let { unexpectedExport ->
             unexpectedExport.fill(0)
             throw KeyBoundaryException(KeyFailure.PERMANENTLY_MISSING_OR_INVALIDATED)
@@ -220,7 +229,7 @@ private class NonExportableKeystore(
                     AEADBadTagException("AUTHENTICATION_FAILED")
                 else sanitized
             }
-        confirm(aead)
+        PersistenceLatency.measure("key_probe") { confirm(aead) }
         ConfirmedVaultKey(aead, protection(info))
     }
 
@@ -298,18 +307,24 @@ private class NoLogKeystoreAead(
         cipher.iv + ciphertext
     }
 
-    override fun decrypt(ciphertext: ByteArray, associatedData: ByteArray): ByteArray = crypto {
-        if (ciphertext.size < GCM_OVERHEAD_BYTES)
-            throw KeyBoundaryException(KeyFailure.CORRUPT_CIPHERTEXT)
-        val cipher = newCipher()
-        cipher.init(
-            Cipher.DECRYPT_MODE,
-            key,
-            GCMParameterSpec(GCM_TAG_BITS, ciphertext, 0, GCM_NONCE_BYTES),
-        )
-        cipher.updateAAD(associatedData)
-        cipher.doFinal(ciphertext, GCM_NONCE_BYTES, ciphertext.size - GCM_NONCE_BYTES)
-    }
+    override fun decrypt(ciphertext: ByteArray, associatedData: ByteArray): ByteArray =
+        PersistenceLatency.measure("key_decrypt") {
+            decryptAuthenticated(ciphertext, associatedData)
+        }
+
+    private fun decryptAuthenticated(ciphertext: ByteArray, associatedData: ByteArray): ByteArray =
+        crypto {
+            if (ciphertext.size < GCM_OVERHEAD_BYTES)
+                throw KeyBoundaryException(KeyFailure.CORRUPT_CIPHERTEXT)
+            val cipher = newCipher()
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                key,
+                GCMParameterSpec(GCM_TAG_BITS, ciphertext, 0, GCM_NONCE_BYTES),
+            )
+            cipher.updateAAD(associatedData)
+            cipher.doFinal(ciphertext, GCM_NONCE_BYTES, ciphertext.size - GCM_NONCE_BYTES)
+        }
 
     private fun <T> crypto(block: () -> T): T =
         try {

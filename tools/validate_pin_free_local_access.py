@@ -1,5 +1,6 @@
 """ADR-0021 successor: preserve historical evidence and current encrypted storage checks."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,28 @@ import pin_free_policy
 ROOT = Path(__file__).resolve().parents[1]
 BASE = 'a14d30a8172f13361fbe29b08cdb463651fc954a'
 INVENTORY = 'docs/contracts/owner-arm82-persistence-tests-v1.json'
+HISTORICAL_BLOCKER = 'docs/security/DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE.json'
+KEY_BACKEND = 'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/AndroidVaultKeyBackend.kt'
+KEY_SCOPES = 'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/RunKeyFailureScopes.kt'
+# ADR-0032 source admission only, from b7464d16f500f2322ab2cf2cfa8d19164c81e60d.
+# Pin the backend and its lifetime enforcement together; this is not device qualification.
+SCOPED_KEY_SOURCES = {
+    KEY_BACKEND: 'dedae54d1b5c82f777afb4c0a8a0205d2be56b47d99cbeb4876c517a2fd2c955',
+    KEY_SCOPES: '6b604c9f7d3c09d093ca6935fae313149046ae9a028a8f5fe7f30a1ae35f6040',
+}
+
+
+def validate_preserved_policy(current, historical, *, successor):
+    normalized = {path: source.replace(b'\r\n', b'\n') for path, source in current.items()}
+    if normalized[HISTORICAL_BLOCKER] != historical[HISTORICAL_BLOCKER].replace(b'\r\n', b'\n'):
+        raise ValueError('Historical blocker changed')
+    if normalized[KEY_BACKEND] == historical[KEY_BACKEND].replace(b'\r\n', b'\n'):
+        return
+    if not successor:
+        raise ValueError('ADR-0032 scoped keys require admitted successor storage')
+    for path, expected in SCOPED_KEY_SOURCES.items():
+        if hashlib.sha256(normalized.get(path, b'')).hexdigest() != expected:
+            raise ValueError('Unreviewed ADR-0032 Keystore policy or scoped lifetime: ' + path)
 
 
 def candidate(root=ROOT):
@@ -92,10 +115,14 @@ def validate_checkout(root=ROOT, *, allow_working=None):
                   name.endswith(('#credentialVaultRoundTripRelockReopenConfirmedDeletion', '#noCredentialCannotCreateStorage'))}
     require(set(old['tests']) - superseded - alpha.DEFERRED_DEVICE <= accounted,
             'Non-PIN security regression test removed')
-    for path in ('docs/security/DEV-SECURITY-RESTORE-BEFORE-ALPHA-CLOSE.json',
-                 'android/core/audio/src/main/kotlin/com/monumentogram/dora/audio/persistence/keys/AndroidVaultKeyBackend.kt'):
-        require((root / path).read_bytes().replace(b'\r\n', b'\n') == persistence.git(root, 'show', BASE + ':' + path).replace(b'\r\n', b'\n'),
-                'Historical blocker or noninteractive Keystore policy changed')
+    policy_paths = (HISTORICAL_BLOCKER, KEY_BACKEND)
+    current_policy = {path: (root / path).read_bytes() for path in policy_paths}
+    if successor:
+        current_policy[KEY_SCOPES] = (root / KEY_SCOPES).read_bytes()
+    validate_preserved_policy(
+        current_policy,
+        {path: persistence.git(root, 'show', BASE + ':' + path) for path in policy_paths},
+        successor=successor)
     legacy = lifecycle.historical_parent(root)
     result = {**legacy, 'local_access_profile': 'ADR-0021', 'vad_runtime_graph': True,
               'release_graph_sha256': vad.read_contract(root)['releaseGraphSha256']}

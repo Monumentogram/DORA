@@ -13,6 +13,20 @@ SCHEMAS = ROOT / 'android/core/audio/schemas/com.monumentogram.dora.audio.persis
 
 
 class Stage9EmulatorTest(unittest.TestCase):
+    def test_player_cancel_handoff_joins_existing_ui_batch_without_dropping_tests(self):
+        tree = ast.parse((ROOT / 'tools/run_stage9_emulator.py').read_text(encoding='utf-8'))
+        batch = next(node for node in ast.walk(tree) if isinstance(node, ast.Call)
+                     and isinstance(node.func, ast.Name) and node.func.id == 'instrument'
+                     and node.args and isinstance(node.args[0], ast.Constant)
+                     and node.args[0].value == 'transcript-editor')
+        self.assertEqual({
+            'com.monumentogram.dora.transcript.TranscriptUiTest',
+            'com.monumentogram.dora.transcript.ModelPickerLifecycleTest',
+            'com.monumentogram.dora.AlphaRecordingUiTest',
+            'com.monumentogram.dora.transcript.PlaybackCancellationHandoffTest',
+        }, set(batch.args[2].value.split(',')))
+        self.assertEqual(8, batch.args[3].value)
+
     def test_summary_and_progress_cannot_replace_completed_tests(self):
         import run_stage9_emulator as runner
         prefix = 'com.monumentogram.dora.audio.persistence.AlphaRecordingRuntimeTest'

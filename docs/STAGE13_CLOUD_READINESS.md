@@ -1,5 +1,10 @@
 # Stage 13 — Cloud ASR readiness
 
+Latest checkpoint, 2026-11-03: **PASS / SAMSUNG_CLOUD_ASR_OWNER_READY for one short RU
+test over Wi-Fi on installed v10**. See the dated execution and network follow-up below.
+EN was declined; mobile HTTPS, live cancellation/retry and long Cloud remain unqualified.
+The original software-only record follows unchanged.
+
 Date: 2026-11-02. Branch: `codex/stage13-owner-alpha-stabilization`.
 Baseline: Alpha v9, `49ca2070f15a618d145ded307fc87249f382b22c`.
 
@@ -176,3 +181,66 @@ writes private result receipts; do not invoke it as a substitute or publish its 
 Until authorized current execution produces those receipts, long Amazon live remains
 PENDING. Neither this patch nor a successful future owner smoke closes issue #125,
 the full Stage 12 security gate, the supported-device matrix or Stage 13 endurance.
+
+## 2026-11-03 update — bounded Samsung v10 RU live PASS
+
+The preceding 2026-11-02 sections preserve the original software-only boundary.
+Separately authorized execution now establishes **PASS for one short Samsung RU
+Cloud scenario** on the existing Owner Alpha v10, source
+`45e1e093d437bf925b170bb291754b424df11908` ([PR #130](https://github.com/Monumentogram/DORA/pull/130)).
+No APK, Cloud code or infrastructure replacement was needed. The Samsung installation
+was permanently trusted using its own installation identity and public key through
+the existing Stage 9.3 protocol. Other registrations, including POCO, remained unchanged;
+short proof-bound sessions and replay protection were retained.
+
+After explicit owner permission and in-app RU upload consent, one nonconfidential
+microphone recording of **25.45 seconds / 407,200 frames** produced exactly **one job
+and one paid attempt**. The authenticated HTTPS path accepted 814,444 WAV bytes and
+stored the completed result. Backend job creation to completion took approximately
+**217.7 seconds, including upload**; this is not provider processing time alone.
+The app showed a separate nonempty Cloud version. Both Local and Cloud versions
+survived a fresh-process restart, with the previous Local edit and Cloud text unchanged.
+All nine prior backend jobs and other installation records matched the pre-test baseline.
+
+The attempt reserved **USD 0.023**, below the separately authorized USD 0.03 cap.
+The estimated Transcribe charge is **USD 0.0026**, using 26 billed seconds at the
+verified Frankfurt standard-batch rate of USD 0.0001/second; this is not an invoice.
+The USD 20/month Budget, USD 0.25 daily reserve and existing operation limits remain
+unchanged. Fresh backend privacy preflight passed, and API, watchdog, HTTPS, certificate
+renewal and health services were active. Long Cloud remains disabled.
+
+Read-only checks after the normal cleanup mechanism confirmed absence of the exact
+provider job, expected temporary S3 input/output keys and their multipart uploads,
+with no truncated listings. Temporary encrypted audio bytes and pending cleanup were
+zero; the retained encrypted result remained available. The monitor issued no Start,
+retry or Delete calls. Object-version listing was permission-denied; privacy preflight
+verified disabled bucket versioning, but version inventory and provider-internal copy
+erasure are not claimed. **Issue #125 remains OPEN.**
+
+This result does not qualify EN, an active cancellation or retry, mobile internet,
+network reconnection, or operation with USB physically disconnected. Those optional
+scenarios need their own owner permission and any required paid-attempt authorization.
+The 30/60-minute Amazon cases remain PENDING. Stage 13 and Stage 12 remain **PARTIAL**;
+the existing recording/playback latency limitation is not resolved by this Cloud smoke.
+Content-free backend, cleanup and UI/restart receipts are retained privately; no audio,
+transcript text, endpoint, device identity or credentials are included here.
+
+### Owner follow-up: EN declined and network check
+
+The owner declined the optional EN test and authorized a short mobile-network check
+with Wi-Fi restored afterwards. No additional transcription or paid attempt was
+started. At inspection Wi-Fi was already off; the cellular default network was not
+validated by Android and a DNS lookup failed. The bounded browser probe did not
+produce an attributable HTTP response. Mobile HTTPS therefore remains **NOT VERIFIED**;
+these observations do not establish a certificate or application-authorization defect.
+No TLS bypass, DNS/VPN change or cellular configuration change was made.
+
+Wi-Fi was enabled and reconnection to a validated Wi-Fi default network was confirmed.
+The original 30,000 ms screen timeout was restored and DORA reopened. A fresh HTTP
+response after reconnection was not captured, so network reconnection is confirmed
+only at the Android transport layer. The earlier successful RU upload/result remains
+the direct authenticated Wi-Fi HTTPS evidence; ADB reverse mappings were empty.
+Operation with the USB cable physically removed remains untested. No new APK was
+needed for this Cloud activation. The bounded result is
+**PASS / SAMSUNG_CLOUD_ASR_OWNER_READY for short RU over Wi-Fi**, with the network,
+live cancellation/retry and long-recording limitations above retained.

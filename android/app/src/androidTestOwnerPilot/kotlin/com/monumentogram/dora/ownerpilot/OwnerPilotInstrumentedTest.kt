@@ -238,9 +238,9 @@ class OwnerPilotInstrumentedTest {
                     PackageManager.GET_INSTRUMENTATION,
             )
         val preview = context.packageName.endsWith(".preview")
-        assertEquals(if (preview) 10L else 4L, info.longVersionCode)
+        assertEquals(if (preview) 11L else 4L, info.longVersionCode)
         assertEquals(
-            if (preview) "0.1.0-owner-preview.10" else "0.1.0-owner-alpha.4",
+            if (preview) "0.1.0-owner-preview.11" else "0.1.0-owner-alpha.4",
             info.versionName,
         )
         assertEquals(null, info.sharedUserId)

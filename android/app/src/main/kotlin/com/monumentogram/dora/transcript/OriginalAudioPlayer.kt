@@ -16,9 +16,14 @@ import androidx.compose.runtime.setValue
 import com.monumentogram.dora.DoraApplication
 import com.monumentogram.dora.MainActivity
 import com.monumentogram.dora.audio.AudioAvailability
+import com.monumentogram.dora.audio.AudioDiagnosticMeasurement
 import com.monumentogram.dora.audio.AudioIdentity
 import com.monumentogram.dora.audio.AudioOpenMode
+import com.monumentogram.dora.audio.AudioOperation
+import com.monumentogram.dora.audio.AudioOperationDiagnostics
+import com.monumentogram.dora.audio.AudioOperationStatus
 import com.monumentogram.dora.audio.AudioResult
+import com.monumentogram.dora.audio.AudioStage
 import com.monumentogram.dora.audio.AuthenticatedAudioSource
 import com.monumentogram.dora.audio.transcript.PcmWindows
 import java.util.concurrent.Executors
@@ -47,6 +52,8 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
     private val trackLock = Any()
     private var track: AudioTrack? = null
     private var closed = false
+    @Volatile private var preparation: Pair<Long, AudioDiagnosticMeasurement?>? = null
+    private var preparationStartFrame = 0L
     var playing by mutableStateOf(false)
         private set
 
@@ -79,6 +86,8 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
 
     fun pause() {
         generation.incrementAndGet()
+        preparation?.second?.finish(AudioOperationStatus.CANCELLED)
+        preparation = null
         playing = false
         loading = false
         synchronized(trackLock) {
@@ -108,6 +117,9 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
         }
         val request = generation.incrementAndGet()
         val start = if (position >= frames) 0 else position
+        preparationStartFrame = start
+        preparation =
+            request to AudioOperationDiagnostics.begin(AudioOperation.PLAYBACK_PREPARATION)
         loading = true
         failed = false
         worker.execute { prepareSource(request, start, identity) }
@@ -147,7 +159,10 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
                         val source =
                             sourceCache.remember(
                                 identity,
-                                result.session.originals.openAuthenticated(identity),
+                                result.session.originals.openAuthenticated(identity) {
+                                    !current(request)
+                                },
+                                { !current(request) },
                             )
                         playSource(request, start, source)
                     } catch (_: Exception) {
@@ -183,6 +198,10 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
 
     private fun finish(request: Long, error: Boolean) {
         if (generation.get() != request) return
+        preparation
+            ?.takeIf { it.first == request }
+            ?.second
+            ?.finish(if (error) AudioOperationStatus.FAILED else AudioOperationStatus.SUCCEEDED)
         loading = false
         playing = false
         failed = error
@@ -200,18 +219,20 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
     ) {
         val source = authenticated.reference
         val output =
-            AudioTrack.Builder()
-                .setAudioAttributes(attributes)
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setSampleRate(SAMPLE_RATE)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
-                        .build()
-                )
-                .setBufferSizeInBytes(BUFFER_FRAMES * Float.SIZE_BYTES)
-                .setTransferMode(AudioTrack.MODE_STREAM)
-                .build()
+            preparationStage(request, AudioStage.AUDIO_TRACK) {
+                AudioTrack.Builder()
+                    .setAudioAttributes(attributes)
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setSampleRate(SAMPLE_RATE)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
+                            .build()
+                    )
+                    .setBufferSizeInBytes(BUFFER_FRAMES * Float.SIZE_BYTES)
+                    .setTransferMode(AudioTrack.MODE_STREAM)
+                    .build()
+            }
         try {
             synchronized(trackLock) {
                 if (!current(request)) return
@@ -222,7 +243,11 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
                 .use { windows ->
                     var ready = false
                     while (current(request)) {
-                        val window = windows.next() ?: break
+                        val window =
+                            if (!ready)
+                                preparationStage(request, AudioStage.WINDOW_READ) { windows.next() }
+                            else windows.next()
+                        if (window == null) break
                         window.use {
                             if (!ready) {
                                 publishReady(request, source.frames, start)
@@ -281,7 +306,22 @@ internal class OriginalAudioPlayer(private val activity: MainActivity) : AutoClo
     }
 
     private fun publishPosition(request: Long, frame: Long) {
-        activity.runOnUiThread { if (current(request)) position = frame.coerceAtMost(frames) }
+        activity.runOnUiThread {
+            if (current(request)) {
+                position = frame.coerceAtMost(frames)
+                if (frame > preparationStartFrame) {
+                    preparation
+                        ?.takeIf { it.first == request }
+                        ?.second
+                        ?.finish(AudioOperationStatus.SUCCEEDED)
+                }
+            }
+        }
+    }
+
+    private fun <T> preparationStage(request: Long, stage: AudioStage, block: () -> T): T {
+        val measurement = preparation?.takeIf { it.first == request }?.second ?: return block()
+        return measurement.measure(stage, block)
     }
 
     override fun close() {

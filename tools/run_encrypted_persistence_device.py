@@ -113,7 +113,8 @@ def phase_budget(inventory, selected, *, api, shard_index, shard_count,
     approved = (type(api) is int and api == 28 and diagnostic is False and exact_inventory is True
                 and type(shard_index) is int and type(shard_count) is int
                 and shard_count == 4 and 0 <= shard_index < 4
-                and len(expected) == len(set(expected)) == 188 and len(selected) == 47
+                and len(expected) == len(set(expected)) == 193
+                and len(selected) == (49 if shard_index == 0 else 48)
                 and set(selected) == set(sorted(expected)[shard_index::4])
                 and LIBRARY_1000 in selected
                 and v9_inventory.digest(v9_inventory.INVENTORY, json.dumps(inventory)) ==

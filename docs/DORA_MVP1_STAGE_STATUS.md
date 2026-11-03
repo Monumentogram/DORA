@@ -2051,3 +2051,33 @@ Stage13 overall remains PARTIAL. Candidate10 runtime/update/CI/review are pendin
 Samsung acceptance remains pending until its actual scenario sheet is complete.
 Stage12/issue125, canonical device/endurance/security/privacy gates remain open.
 No production AWS mutation or main merge is authorized or performed.
+
+## Stage13 P0 audio preparation follow-up — 2026-11-02
+
+Current follow-up: [issue132](https://github.com/Monumentogram/DORA/issues/132),
+signed Preview10 baseline `45e1e09`, branch `codex/stage13-samsung-audio-performance`,
+stacked on PR130 -> PR128 -> PR127. This dated entry does not relabel earlier
+candidate checkpoints or historical failures.
+
+S13-OWNER-F software implementation and qualification are IN_PROGRESS. The scoped
+changes are per-reconciliation validated-key reuse, cancellation of abandoned
+full authenticated opens, five-second playback windows and opt-in scalar stage
+diagnostics. The structural four-unit target is 12 -> 4 validated opens and
+36 -> 20 provider cipher calls, retaining every mandatory decrypt and full-source
+authentication. Final API28/API36 regression, native/signed-candidate runtime,
+retained-data update, exact-source CI and independent-review results must be
+recorded in [the qualification report](STAGE13_RESULT.md); this entry claims none
+of those pending gates as complete.
+
+Samsung physical performance is PENDING. Finalization 15–30 s, first playback
+<=5 s and cancelled-open retirement require a fresh owner-authorized comparison
+on the same retained source. No physical target follows from synthetic counts or
+emulator timing. Local Whisper progress percent/processed audio time, cancel and
+state-recovery UX is S13-OWNER-G, DEFERRED / NOT_STARTED; model/runtime and quality
+gates remain unchanged. See [DEC-055](DORA_MVP1_PRODUCT_DECISIONS.md#dec-055--cancel-abandoned-playback-preparation-without-weakening-source-authentication-2026-11-02)
+and [ADR-0032](adr/ADR-0032-authenticated-audio-cancellation-and-scoped-key-reuse.md).
+
+Stage13 overall and Stage12 remain PARTIAL. Issue125, canonical device/endurance,
+security/privacy, existing native-failure records and separate Cloud/live gates
+remain open as previously recorded. No AWS mutation, personal-device operation,
+multi-hour campaign or PR merge is authorized by this entry.

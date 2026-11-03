@@ -26,7 +26,7 @@ class OwnerV9InventoryTests(unittest.TestCase):
     def test_all_current_methods_have_disjoint_explicit_disposition_without_inherited_removal(self):
         contract = self.v9.read_inventory(ROOT)
         selected = self.v9.validate_accounting(contract, self.discovered(), self.predecessor())
-        self.assertEqual(188, len(selected))
+        self.assertEqual(193, len(selected))
         self.assertEqual([], contract['deferred_tests'])
         self.assertEqual(4, len(contract['separate_process_tests']))
         self.assertEqual(2, len(contract['qualification_only_tests']))

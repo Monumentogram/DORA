@@ -19,13 +19,26 @@ internal object PersistenceLatency {
     }
 
     fun <T> measure(stage: String, block: () -> T): T {
-        val totals = current.get() ?: return block()
-        val start = System.nanoTime()
-        try {
-            return block()
-        } finally {
-            totals[stage] = (totals[stage] ?: 0L) + System.nanoTime() - start
-            totals[stage + "_count"] = (totals[stage + "_count"] ?: 0L) + 1L
+        fun existingTiming(): T {
+            val totals = current.get() ?: return block()
+            val start = System.nanoTime()
+            try {
+                return block()
+            } finally {
+                totals[stage] = (totals[stage] ?: 0L) + System.nanoTime() - start
+                totals[stage + "_count"] = (totals[stage + "_count"] ?: 0L) + 1L
+            }
         }
+        val fixedStage =
+            when (stage) {
+                "key_open" -> AudioStage.KEY_OPEN
+                "key_info" -> AudioStage.KEY_INFO
+                "key_probe" -> AudioStage.KEY_PROBE
+                "key_decrypt" -> AudioStage.KEY_DECRYPT
+                "catalog_commit" -> AudioStage.CATALOG_COMMIT
+                else -> null
+            }
+        return if (fixedStage == null) existingTiming()
+        else AudioOperationDiagnostics.measure(fixedStage, ::existingTiming)
     }
 }

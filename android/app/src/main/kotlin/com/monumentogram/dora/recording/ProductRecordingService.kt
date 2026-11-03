@@ -155,6 +155,7 @@ class ProductRecordingService : Service() {
 
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>?) {
         writer.write(controller.diagnosticSummary())
+        writer.println(com.monumentogram.dora.audio.AudioOperationDiagnostics.summary())
     }
 
     override fun onDestroy() {

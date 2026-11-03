@@ -40,6 +40,8 @@ internal class RunKeyProductFixture(operations: VaultKeystoreIo) : AutoCloseable
             override fun getApplicationContext(): Context = this
         }
     val backend: NoLogRecoveryRunAeadBackend
+    val ownerId: String
+    val vaultId: String
     val journal: RoomAudioJournal
     val bridge: RecoveryAudioBridge
 
@@ -49,6 +51,8 @@ internal class RunKeyProductFixture(operations: VaultKeystoreIo) : AutoCloseable
             VaultSecretStore(storage, AndroidVaultKeyBackend(context)).createNew()
                 as KeyAccess.Available
         val secrets = result.value
+        ownerId = secrets.ownerId
+        vaultId = secrets.vaultId
         backend = NoLogRecoveryRunAeadBackend(context, secrets.vaultId, operations)
         val file = File(storage.vaultDirectory, "journal-${secrets.databaseObjectSelector}.db")
         journal = secrets.borrowDatabaseSecret { secret ->

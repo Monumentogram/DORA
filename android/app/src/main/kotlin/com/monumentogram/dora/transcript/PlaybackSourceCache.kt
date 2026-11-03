@@ -28,17 +28,28 @@ internal class PlaybackSourceCache : AutoCloseable {
     fun remember(
         identity: AudioIdentity,
         opened: AudioResult<AuthenticatedAudioSource>,
+        cancelled: () -> Boolean = { false },
     ): AudioResult<AuthenticatedAudioSource> {
         close()
         return when (opened) {
             is AudioResult.Failed -> opened
             is AudioResult.Value -> {
                 val source = opened.value
+                if (cancelled()) {
+                    source.close()
+                    return AudioResult.Failed(AudioFailure.UNCERTAIN)
+                }
                 retained = source
                 if (source.reference.identity != identity) {
                     close()
                     AudioResult.Failed(AudioFailure.CORRUPT)
-                } else checked(source)
+                } else {
+                    val result = checked(source)
+                    if (cancelled()) {
+                        close()
+                        AudioResult.Failed(AudioFailure.UNCERTAIN)
+                    } else result
+                }
             }
         }
     }

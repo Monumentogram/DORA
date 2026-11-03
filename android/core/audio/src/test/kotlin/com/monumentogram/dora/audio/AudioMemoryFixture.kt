@@ -4,6 +4,8 @@ package com.monumentogram.dora.audio
 
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.subtle.AesGcmJce
+import com.monumentogram.dora.audio.persistence.keys.RunKeyFailureScopes
+import com.monumentogram.dora.audio.persistence.keys.RunKeyOperation
 import com.monumentogram.dora.poc.recovery.bootstrap.*
 import com.monumentogram.dora.poc.recovery.candidate.*
 import com.monumentogram.dora.poc.recovery.contract.*
@@ -15,7 +17,7 @@ import java.security.SecureRandom
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** Test-only volatile collaborators; all audio artifacts use the real accepted Tink crypto. */
-internal class AudioMemoryFixture {
+internal class AudioMemoryFixture(private val scopedKeys: Boolean = true) {
     val files = mutableMapOf<String, ByteArray>()
     val keys = mutableMapOf<String, Aead>()
     val units = mutableListOf<RecoveryMicrofileUnitRow>()
@@ -24,6 +26,9 @@ internal class AudioMemoryFixture {
     val catalog = MemoryAudioCatalog()
     val quarantine = MemoryQuarantineFixture(files)
     var inventory = emptyList<RecoveryInventoryEntry>()
+    val keyFailures = RunKeyFailureScopes()
+    var keyOpens = 0
+    var keyDecrypts = 0
 
     private val provider =
         RecoveryRunAeadProvider(
@@ -35,8 +40,39 @@ internal class AudioMemoryFixture {
                     key.fill(0)
                 }
 
-                override fun getAead(keyUri: String): Aead =
-                    keys[keyUri] ?: throw GeneralSecurityException("Unavailable test key")
+                override fun getAead(keyUri: String): Aead {
+                    val run =
+                        RunId.fromCanonicalString(
+                            keyUri.removePrefix(CanonicalRecoveryAlias.PREFIX)
+                        )
+                    val open = {
+                        keyOpens++
+                        val delegate =
+                            keys[keyUri] ?: throw GeneralSecurityException("Unavailable test key")
+                        object : Aead {
+                            override fun encrypt(plaintext: ByteArray, associatedData: ByteArray) =
+                                delegate.encrypt(plaintext, associatedData)
+
+                            override fun decrypt(
+                                ciphertext: ByteArray,
+                                associatedData: ByteArray,
+                            ): ByteArray {
+                                keyDecrypts++
+                                return delegate.decrypt(ciphertext, associatedData)
+                            }
+                        }
+                    }
+                    return if (scopedKeys)
+                        keyFailures.validatedAead(
+                            run,
+                            {
+                                if (keyUri !in keys)
+                                    throw GeneralSecurityException("Unavailable test key")
+                            },
+                            open,
+                        )
+                    else open()
+                }
             }
         )
 
@@ -285,6 +321,33 @@ internal class AudioMemoryFixture {
                 }
         }
 
+    fun publishCandidateRun(run: RunId, chunks: List<ByteArray>) {
+        val confirmation = KeyConfirmationValue(RecoveryCandidate.MICROFILE, run)
+        val boot = bootstrap.bootstrap(confirmation) as BootstrapResult.Committed
+        chunks.forEach { bytes ->
+            check(
+                publisher.publish(
+                    MicrofilePublicationInput(confirmation, boot.publicationCapability, bytes, 5UL)
+                ) is MicrofilePublicationResult.Committed
+            )
+        }
+    }
+
+    fun reconcileCandidate(run: RunId): MicrofileReconciliationResult =
+        keyFailures
+            .observe(run, RunKeyOperation.RECONCILIATION) {
+                RecoveryMicrofileReconciliationController(
+                        source,
+                        crypto,
+                        RecoveryKeyConfirmationController(
+                            ExistingRecoveryRunAeadOpener(provider::openExisting)
+                        ),
+                        quarantine.controller,
+                    )
+                    .reconcile(run)
+            }
+            .value
+
     fun newBridge() =
         RecoveryAudioBridge(
             catalog,
@@ -296,6 +359,7 @@ internal class AudioMemoryFixture {
                 ExistingRecoveryRunAeadOpener(provider::openExisting)
             ),
             quarantine.controller,
+            keyFailures = keyFailures,
         )
 
     val bridge = newBridge()

@@ -8,6 +8,9 @@ import subprocess
 import threading
 import time
 
+RUN_KEY_PIPELINE_TEST = ('com.monumentogram.dora.audio.persistence.keys.RunKeyReusePipelineTest#'
+                         'finalizationAndFreshReadsUseOneValidatedOpenAndFiveProviderCallsPerUnit')
+
 
 class InstrumentationFailure(RuntimeError):
     """Only a fixed content-free reason, never subprocess arguments/output."""
@@ -39,13 +42,37 @@ class Progress:
         self.events = 0
         self.suppressed = 0
         self.stage9_checkpoint = self.pending_checkpoint = None
+        self.pending_checkpoint_kind = None
+        self.run_key_measurements = []
 
     def feed(self, line):
         if self.pending_checkpoint is not None:
             if line != 'INSTRUMENTATION_STATUS_CODE: 3':
-                raise ValueError('INVALID_STAGE9_CHECKPOINT_STATUS')
-            self.stage9_checkpoint, self.pending_checkpoint = self.pending_checkpoint, None
+                raise ValueError('INVALID_RUN_KEY_PIPELINE_STATUS' if self.pending_checkpoint_kind == 'run_key'
+                                 else 'INVALID_STAGE9_CHECKPOINT_STATUS')
+            if self.pending_checkpoint_kind == 'run_key':
+                self.run_key_measurements.append(self.pending_checkpoint)
+            else:
+                self.stage9_checkpoint = self.pending_checkpoint
+            self.pending_checkpoint = self.pending_checkpoint_kind = None
             self.events += 1
+            return line
+        marker = 'INSTRUMENTATION_STATUS: runKeyPipeline='
+        if line.startswith(marker):
+            match = re.fullmatch(r'operation=(FINALIZE|AUTHENTICATED_OPEN) units=4 opens=(\d{1,3}) '
+                                 r'infos=(\d{1,3}) ciphers=(\d{1,3}) elapsedNs=(\d{1,13})', line[len(marker):])
+            phases = ('FINALIZE', 'AUTHENTICATED_OPEN', 'AUTHENTICATED_OPEN')
+            if (self.current or self.last_started != RUN_KEY_PIPELINE_TEST
+                    or self.last_started in self.completed or not match
+                    or len(self.run_key_measurements) >= len(phases)
+                    or match[1] != phases[len(self.run_key_measurements)]):
+                raise ValueError('INVALID_RUN_KEY_PIPELINE_MEASUREMENT')
+            opens, infos, ciphers, elapsed = map(int, match.groups()[1:])
+            if elapsed > 1_800_000_000_000:
+                raise ValueError('INVALID_RUN_KEY_PIPELINE_BOUNDS')
+            self.pending_checkpoint = dict(operation=match[1], units=4, opens=opens,
+                                           infos=infos, ciphers=ciphers, elapsedNs=elapsed)
+            self.pending_checkpoint_kind = 'run_key'
             return line
         marker = 'INSTRUMENTATION_STATUS: stage9Progress='
         if line.startswith(marker):
@@ -64,6 +91,7 @@ class Progress:
                 raise ValueError('INVALID_STAGE9_CHECKPOINT_BOUNDS')
             self.pending_checkpoint = {'phase': match[1], 'acceptedUnits': units,
                                        'durableFrames': frames, 'elapsedMs': elapsed}
+            self.pending_checkpoint_kind = 'stage9'
             return line
         match = re.fullmatch(r'INSTRUMENTATION_STATUS: (class|test)=(.+)', line)
         if match:
@@ -112,7 +140,8 @@ class Progress:
         return {'lastStartedTest': self.last_started, 'lastCompletedTest': self.last_completed,
                 'completedCount': len(self.completed), 'completedTests': list(self.completed),
                 'statusEvents': self.events, 'suppressedLineCount': self.suppressed,
-                'stage9Checkpoint': self.stage9_checkpoint}
+                'stage9Checkpoint': self.stage9_checkpoint,
+                'runKeyPipelineMeasurements': list(self.run_key_measurements)}
 
 
 @contextmanager

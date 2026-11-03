@@ -14,6 +14,114 @@ if SPEC:
     import persistence_instrumentation_diagnostics as diag
 
 NAMES = {'example.First#one', 'example.Second#two'}
+KEY_PIPELINE = ('com.monumentogram.dora.audio.persistence.keys.RunKeyReusePipelineTest#'
+                'finalizationAndFreshReadsUseOneValidatedOpenAndFiveProviderCallsPerUnit')
+
+
+def key_status(code, name=KEY_PIPELINE):
+    cls, method = name.split('#')
+    return [f'INSTRUMENTATION_STATUS: class={cls}', f'INSTRUMENTATION_STATUS: test={method}',
+            f'INSTRUMENTATION_STATUS_CODE: {code}']
+
+
+def key_measurement(operation='FINALIZE', values='units=4 opens=4 infos=4 ciphers=20 elapsedNs=123456789'):
+    return [f'INSTRUMENTATION_STATUS: runKeyPipeline=operation={operation} {values}',
+            'INSTRUMENTATION_STATUS_CODE: 3']
+
+
+class RunKeyPipelineTelemetryTests(unittest.TestCase):
+    def started(self, name=KEY_PIPELINE):
+        state = diag.Progress({name})
+        for line in key_status(1, name):
+            state.feed(line)
+        return state
+
+    def test_three_measurements_survive_real_stream_and_exact_completion_parser(self):
+        import run_encrypted_persistence_device as device
+        lines = key_status(1)
+        for operation in ('FINALIZE', 'AUTHENTICATED_OPEN', 'AUTHENTICATED_OPEN'):
+            lines += key_measurement(operation)
+        lines += key_status(0) + ['OK (1 test)', 'INSTRUMENTATION_CODE: -1']
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'measurement.json'
+            try:
+                output = diag.stream([sys.executable, '-c', 'print(' + repr('\n'.join(lines)) + ')'],
+                                     {KEY_PIPELINE}, path, hard_timeout=3, echo=False)
+            except diag.InstrumentationFailure as error:
+                self.fail('Bounded progress must not become anonymous completion: ' + str(error))
+            self.assertEqual([{'name': KEY_PIPELINE, 'result': 'PASS'}], device.parse_results(output))
+            receipt = json.loads(path.read_text())
+            self.assertEqual(1, receipt['completedCount'])
+            self.assertEqual([KEY_PIPELINE], receipt['completedTests'])
+            self.assertEqual([
+                dict(operation=operation, units=4, opens=4, infos=4, ciphers=20, elapsedNs=123456789)
+                for operation in ('FINALIZE', 'AUTHENTICATED_OPEN', 'AUTHENTICATED_OPEN')
+            ], receipt['runKeyPipelineMeasurements'])
+
+    def test_measurement_commits_only_with_progress_status_and_never_completes_test(self):
+        state = self.started()
+        state.feed(key_measurement()[0])
+        self.assertEqual([], state.snapshot()['runKeyPipelineMeasurements'])
+        self.assertEqual([], state.completed)
+        with self.assertRaises(ValueError):
+            state.require_passed()
+        state.feed('INSTRUMENTATION_STATUS_CODE: 3')
+        self.assertEqual(1, len(state.snapshot()['runKeyPipelineMeasurements']))
+        self.assertEqual([], state.completed)
+        with self.assertRaises(ValueError):
+            state.require_passed()
+
+    def test_measurements_require_exact_active_method_and_phase_order(self):
+        other = KEY_PIPELINE.split('#')[0] + '#providerInvalidationAfterConfirmationStillRejectsBothReusedEnvelopeDecrypts'
+        finished = self.started()
+        for line in key_status(0):
+            finished.feed(line)
+        for state in (diag.Progress({KEY_PIPELINE}), self.started(other), finished):
+            with self.assertRaises(ValueError):
+                state.feed(key_measurement()[0])
+        state = self.started()
+        with self.assertRaises(ValueError):
+            state.feed(key_measurement('AUTHENTICATED_OPEN')[0])
+        for operation in ('FINALIZE', 'AUTHENTICATED_OPEN', 'AUTHENTICATED_OPEN'):
+            for line in key_measurement(operation):
+                state.feed(line)
+        with self.assertRaises(ValueError):
+            state.feed(key_measurement('AUTHENTICATED_OPEN')[0])
+
+    def test_malformed_unbounded_or_content_bearing_measurements_are_rejected(self):
+        values = 'units=4 opens=4 infos=4 ciphers=20 elapsedNs=123456789'
+        for bad in (values.replace('units=4', 'units=5'), values.replace('opens=4', 'opens=-1'),
+                    values.replace('infos=4', 'infos=1000'), values.replace('ciphers=20', 'ciphers=1000'),
+                    values.replace('elapsedNs=123456789', 'elapsedNs=1800000000001'),
+                    values + ' alias=private', values.replace('opens=4', 'opens=private')):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                self.started().feed(key_measurement(values=bad)[0])
+        with self.assertRaises(ValueError):
+            self.started().feed(key_measurement('PRIVATE')[0])
+
+    def test_old_anonymous_success_and_unknown_status_remain_rejected(self):
+        state = self.started()
+        state.feed('INSTRUMENTATION_STATUS: stream=RUN_KEY_PIPELINE FINALIZE units=4 opens=4 infos=4 ciphers=20 elapsedNs=1')
+        with self.assertRaisesRegex(ValueError, 'INCOMPLETE_TEST_IDENTITY'):
+            state.feed('INSTRUMENTATION_STATUS_CODE: 0')
+        for code in (0, 1, 2, 4, -2, -3, -4):
+            state = self.started()
+            state.feed(key_measurement()[0])
+            with self.subTest(code=code), self.assertRaises(ValueError):
+                state.feed(f'INSTRUMENTATION_STATUS_CODE: {code}')
+        with self.assertRaises(ValueError):
+            self.started().feed('INSTRUMENTATION_STATUS_CODE: 3')
+
+    def test_progress_cannot_hide_failure_skip_missing_or_duplicate_completion(self):
+        import run_encrypted_persistence_device as device
+        start = key_status(1) + key_measurement()
+        terminal = ['OK (1 test)', 'INSTRUMENTATION_CODE: -1']
+        cases = [start + key_status(code) + terminal for code in (-1, -2, -3, -4)]
+        cases += [start + terminal, start + key_status(0) * 2 + terminal,
+                  start + key_status(0) + terminal + key_measurement()[:1]]
+        for lines in cases:
+            with self.subTest(lines=lines), self.assertRaises(ValueError):
+                device.parse_results('\n'.join(lines))
 
 
 class StreamDiagnosticsTests(unittest.TestCase):

@@ -2,7 +2,7 @@ name: Version label APK and Activity parity
 
 on:
   push:
-    branches: ["codex/parallel-alpha-preview", "codex/arm82-owner-alpha", "codex/isolated-owner-alpha-pilot", "codex/alpha-v9-recording-stabilization", "codex/stage13-owner-alpha-stabilization"]
+    branches: ["codex/parallel-alpha-preview", "codex/arm82-owner-alpha", "codex/isolated-owner-alpha-pilot", "codex/alpha-v9-recording-stabilization", "codex/stage13-owner-alpha-stabilization", "codex/stage13-samsung-audio-performance"]
   workflow_dispatch:
 
 permissions:

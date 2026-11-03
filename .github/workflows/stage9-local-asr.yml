@@ -1,7 +1,7 @@
 name: Stage9 local ASR transcript software
 on:
   push:
-    branches: ["codex/parallel-alpha-preview", "codex/arm82-owner-alpha", "codex/stage9-local-asr", "codex/alpha-v9-recording-stabilization", "codex/stage13-owner-alpha-stabilization"]
+    branches: ["codex/parallel-alpha-preview", "codex/arm82-owner-alpha", "codex/stage9-local-asr", "codex/alpha-v9-recording-stabilization", "codex/stage13-owner-alpha-stabilization", "codex/stage13-samsung-audio-performance"]
   workflow_dispatch:
 permissions:
   contents: read

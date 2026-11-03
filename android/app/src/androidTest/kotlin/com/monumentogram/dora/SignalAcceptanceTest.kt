@@ -68,19 +68,24 @@ class SignalAcceptanceTest {
                 }
             }
             ui.onNodeWithText(label(R.string.signal_play)).assertIsNotEnabled()
-            scenario.onActivity { blocked.value = false }
-            ui.onNodeWithText(label(R.string.signal_play)).performClick()
-            await(label(R.string.signal_pause))
-            scenario.onActivity { blocked.value = true }
-            await(label(R.string.signal_play))
-            ui.onNodeWithText(label(R.string.signal_play)).assertIsNotEnabled()
-            scenario.onActivity { blocked.value = false }
-            ui.onNodeWithText(label(R.string.signal_forward_ten)).performClick()
-            ui.onNodeWithText("00:00:03 / 00:00:03").assertExists()
-            // Playback updates every 20 ms. Automatic idle synchronization can skip
-            // the entire three-second state on a physical device; inspect each frame.
+            // Both plays update every 20 ms. Observe frames instead of waiting for a
+            // three-second playback to become idle and disappear before the assertion.
             ui.mainClock.autoAdvance = false
             try {
+                scenario.onActivity { blocked.value = false }
+                ui.mainClock.advanceTimeByFrame()
+                ui.onNodeWithText(label(R.string.signal_play)).performClick()
+                await(label(R.string.signal_pause))
+                scenario.onActivity { blocked.value = true }
+                await(label(R.string.signal_play))
+                ui.onNodeWithText(label(R.string.signal_play)).assertIsNotEnabled()
+                scenario.onActivity { blocked.value = false }
+                ui.mainClock.advanceTimeByFrame()
+                ui.onNodeWithText(label(R.string.signal_forward_ten)).performClick()
+                ui.mainClock.advanceTimeByFrame()
+                ui.onNodeWithText("00:00:03 / 00:00:03").assertExists()
+                // Playback updates every 20 ms. Automatic idle synchronization can skip
+                // the entire three-second state on a physical device; inspect each frame.
                 ui.onNodeWithText(label(R.string.signal_play)).performClick()
                 ui.waitUntil(30000) {
                     ui.mainClock.advanceTimeByFrame()
@@ -206,7 +211,10 @@ class SignalAcceptanceTest {
     }
 
     private fun await(text: String) {
-        ui.waitUntil(30000) { ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
+        ui.waitUntil(30000) {
+            if (!ui.mainClock.autoAdvance) ui.mainClock.advanceTimeByFrame()
+            ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     private fun label(id: Int) =

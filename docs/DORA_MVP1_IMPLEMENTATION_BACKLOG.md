@@ -1723,3 +1723,35 @@ without weakening privacy draft clearing; real lifecycle regression coverage.
 S13-OWNER-E: Preview10 same package/signer, retained-v9 update, mandatory seven CI
 workflows and independent review before publication. Source and physical/live
 qualification remain distinct; [current evidence](STAGE13_RESULT.md). No merge.
+
+## Stage13 P0 authenticated audio performance follow-up — 2026-11-02
+
+Authority: [issue132](https://github.com/Monumentogram/DORA/issues/132), DEC-055 and
+[ADR-0032](adr/ADR-0032-authenticated-audio-cancellation-and-scoped-key-reuse.md).
+Continue signed Preview10 source `45e1e09`, stacked on PR130 -> PR128 -> PR127.
+Historical entries above retain their original execution scope. Stage13 overall
+and Stage12 remain PARTIAL.
+
+| Item | Work and exit evidence | Current status |
+|---|---|---|
+| S13-OWNER-F1 | One validated run-key primitive per exact synchronous reconciliation attempt; real four-unit counters target 12 -> 4 opens and 36 -> 20 provider cipher calls; scope/failure/deletion controls and unchanged mandatory decryptions. | IN_PROGRESS / SOFTWARE_QUALIFICATION_PENDING |
+| S13-OWNER-F2 | Cooperative authenticated-open cancellation, rejected-handle closure and five-second playback windows. API28/API36 loading Cancel and disposal -> released queue -> new recording without restart; preserve authority, full authentication, PCM wiping and corruption/deletion semantics. | IN_PROGRESS / SOFTWARE_QUALIFICATION_PENDING |
+| S13-OWNER-F3 | Opt-in bounded scalar stage/progress diagnostics; compare identical synthetic fixtures; preserve existing unit, UI, storage/security, signed runtime, data/model update, exact-source CI and independent review gates. | IN_PROGRESS / SOFTWARE_QUALIFICATION_PENDING |
+| S13-OWNER-F4 | After fresh owner device authorization, compare the same retained Samsung source: finalization target 15–30 s, first playback target <=5 s, cancelled-open retirement and subsequent recording. Publish actual stage times and any unmet target. | PENDING / PHYSICAL_PERFORMANCE_NOT_QUALIFIED |
+| S13-OWNER-G | Separate Local Whisper progress and recovery UX: honest percent/processed audio time, stage fallback, responsive cancel feedback, foreground/process-restored job state. | DEFERRED / NOT_STARTED |
+
+S13-OWNER-G acceptance must distinguish current-window engine progress, completed
+audio/checkpoints and final publication. Percent requires real measured work and
+a stable denominator; no elapsed-wall-time estimate may impersonate processed
+audio. Cancel must fence late results and preserve completed checkpoints, original
+audio, versions and user edits. Return/restart must show the durable running,
+interrupted, cancelled, resumable or completed state without an invented success
+or silent restart. Keep existing background draft clearing, exact-source/attempt
+fences and explicit resume. Add bounded API28/API36 tests for those transitions;
+the unchanged model/runtime and quality gates need their own native evidence.
+
+The P0 scope does not implement S13-OWNER-G, authorize AWS changes or personal-phone
+operations, change formats/model/StrongBox, claim native GREEN, perform a multi-hour
+campaign, or merge a PR. Physical timing targets are not implied by reduced call
+counts or emulator results. [Current qualification](STAGE13_RESULT.md) records
+software, signed-candidate and physical outcomes separately.

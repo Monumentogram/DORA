@@ -54,7 +54,7 @@ class DeviceReceiptTests(unittest.TestCase):
         changed = json.loads(json.dumps(inventory))
         other = next(i for i, name in enumerate(changed['tests']) if name != heavy and name not in selected)
         changed['tests'][other] += 'Unreviewed'
-        self.assertEqual(188, len(set(changed['tests'])))
+        self.assertEqual(193, len(set(changed['tests'])))
         self.assertEqual(1800, budget(contract=changed, names=selected)['timeout_seconds'])
 
     def test_approved_library_batch_applies_same_budget_to_both_pin_states_and_failure_metadata(self):
@@ -114,7 +114,7 @@ class DeviceReceiptTests(unittest.TestCase):
                 budget = json.loads((root / 'receipt-diagnostics/pin-free.budget.json').read_text())
                 self.assertEqual('API28_V9_LIBRARY_1000_2700_V1', budget['policy'])
                 self.assertEqual(2700, budget['timeout_seconds'])
-                self.assertEqual(47, budget['selected_test_count'])
+                self.assertEqual(49, budget['selected_test_count'])
                 self.assertNotIn('syntheticAuthPin', json.dumps(budget))
                 if not failed:
                     self.assertEqual([120, 2700, 2700, 120], [row[2] for row in seen])
@@ -145,13 +145,13 @@ class DeviceReceiptTests(unittest.TestCase):
             with self.subTest(output=output), self.assertRaises(ValueError):
                 device.parse_results(output)
 
-    def test_four_shards_partition_all_188_ordinary_methods_without_overlap(self):
+    def test_four_shards_partition_all_193_ordinary_methods_without_overlap(self):
         inventory = json.loads((Path(__file__).resolve().parents[1] /
                                 'docs/contracts/alpha-v9-persistence-tests-v1.json').read_text(encoding='utf-8'))
         expected, _ = device.validate_inventory(inventory)
-        self.assertEqual(188, len(expected))
+        self.assertEqual(193, len(expected))
         shards = [device.select_inventory(expected, shard_index=index, shard_count=4) for index in range(4)]
-        self.assertEqual([47, 47, 47, 47], [len(shard) for shard in shards])
+        self.assertEqual([49, 48, 48, 48], [len(shard) for shard in shards])
         self.assertEqual(expected, set().union(*shards))
         for index, shard in enumerate(shards):
             self.assertEqual(set(sorted(expected)[index::4]), shard)

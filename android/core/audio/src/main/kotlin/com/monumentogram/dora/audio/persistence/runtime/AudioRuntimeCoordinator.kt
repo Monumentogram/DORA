@@ -20,6 +20,7 @@ import com.monumentogram.dora.audio.ProductAudioSession
 import com.monumentogram.dora.audio.ProductAudioWriterPort
 import com.monumentogram.dora.audio.SegmentationMetadata
 import com.monumentogram.dora.audio.VaultKeyProtection
+import com.monumentogram.dora.audio.cancellableAudioOpen
 import com.monumentogram.dora.audio.persistence.auth.LocalAccessDeniedException
 import com.monumentogram.dora.audio.persistence.auth.LocalAccessSession
 import com.monumentogram.dora.audio.transcript.CloudConsent
@@ -491,14 +492,40 @@ internal class AudioRuntimeCoordinator(
             object : OriginalAudioPort {
                 override fun openAuthenticated(
                     identity: AudioIdentity
-                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> = invoke {
-                    wrap(originals.openAuthenticated(identity))
-                }
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> =
+                    openAuthenticated(identity) { false }
 
                 override fun openAuthenticated(
                     reference: OriginalAudioReference
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> =
+                    openAuthenticated(reference) { false }
+
+                override fun openAuthenticated(
+                    identity: AudioIdentity,
+                    cancelled: () -> Boolean,
                 ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> = invoke {
-                    wrap(originals.openAuthenticated(reference))
+                    val fence = {
+                        requireCurrent(this@Handle)
+                        cancelled()
+                    }
+                    wrap(
+                        cancellableAudioOpen(fence) { originals.openAuthenticated(identity, fence) }
+                    )
+                }
+
+                override fun openAuthenticated(
+                    reference: OriginalAudioReference,
+                    cancelled: () -> Boolean,
+                ): AudioResult<com.monumentogram.dora.audio.AuthenticatedAudioSource> = invoke {
+                    val fence = {
+                        requireCurrent(this@Handle)
+                        cancelled()
+                    }
+                    wrap(
+                        cancellableAudioOpen(fence) {
+                            originals.openAuthenticated(reference, fence)
+                        }
+                    )
                 }
 
                 private fun wrap(
@@ -511,6 +538,7 @@ internal class AudioRuntimeCoordinator(
                             AudioResult.Value(
                                 object : com.monumentogram.dora.audio.AuthenticatedAudioSource {
                                     override val reference = source.reference
+                                    private val closed = java.util.concurrent.atomic.AtomicBoolean()
 
                                     override fun checkAvailable() =
                                         this@Handle.invoke { source.checkAvailable() }
@@ -531,12 +559,9 @@ internal class AudioRuntimeCoordinator(
                                         }
 
                                     override fun close() {
-                                        val retired =
-                                            this@Handle.invoke {
-                                                source.close()
-                                                AudioResult.Value(Unit)
-                                            }
-                                        if (retired is AudioResult.Failed) source.close()
+                                        // Metadata retirement is thread-safe and cannot queue
+                                        // behind the operation whose result is being discarded.
+                                        if (closed.compareAndSet(false, true)) source.close()
                                     }
                                 }
                             )
@@ -651,21 +676,34 @@ internal class AudioRuntimeCoordinator(
                 if (interrupted) Thread.currentThread().interrupt()
             }
             val result = checkNotNull(completed)
-            return if (interrupted && result is AudioResult.Value) {
+            // A completed Future may return without throwing for an already-set interrupt.
+            // Observe it at delivery too, without clearing the caller's cancellation signal.
+            return if (
+                (interrupted || Thread.currentThread().isInterrupted) && result is AudioResult.Value
+            ) {
+                discard(result)
                 AudioResult.Failed(AudioFailure.UNCERTAIN)
             } else result
         }
 
-        fun <T> perform(block: RuntimeVault.() -> AudioResult<T>): AudioResult<T> =
-            try {
+        fun <T> perform(block: RuntimeVault.() -> AudioResult<T>): AudioResult<T> {
+            var completed: AudioResult<T>? = null
+            return try {
                 requireCurrent(this)
-                val result = vault.block()
+                val result = vault.block().also { completed = it }
                 authorization.withPlaintextDelivery { requireCurrent(this) }
                 result
             } catch (_: LocalAccessDeniedException) {
+                discard(completed)
                 AudioResult.Failed(AudioFailure.LOCKED)
             } catch (_: Exception) {
+                discard(completed)
                 AudioResult.Failed(AudioFailure.UNAVAILABLE)
             }
+        }
+
+        private fun discard(result: AudioResult<*>?) {
+            if (result is AudioResult.Value) (result.value as? AutoCloseable)?.close()
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.monumentogram.dora.audio.persistence.keys
 
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.crypto.tink.Aead
 import com.monumentogram.dora.poc.recovery.contract.CanonicalRecoveryAlias
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import java.security.ProviderException
@@ -23,6 +24,65 @@ class RunKeyBoundaryTest {
     private fun id() = UUID.randomUUID().toString()
 
     private fun run() = RunId.fromCanonicalString(id())
+
+    @Test
+    fun scopedPrimitiveExpiresAfterSuccessAndRemovalCannotReuseIt() {
+        val backend = NoLogRecoveryRunAeadBackend(context, id())
+        val run = run()
+        val uri = CanonicalRecoveryAlias.forRun(run)
+        var borrowed: Aead? = null
+        try {
+            backend.generateNew(uri)
+            val ciphertext = backend.getAead(uri).encrypt(byteArrayOf(7), byteArrayOf(8))
+            backend.failureScopes.observe(run, RunKeyOperation.RECONCILIATION) {
+                borrowed = backend.getAead(uri)
+                assertArrayEquals(byteArrayOf(7), borrowed!!.decrypt(ciphertext, byteArrayOf(8)))
+            }
+            assertThrows(Exception::class.java) { borrowed!!.decrypt(ciphertext, byteArrayOf(8)) }
+            backend.failureScopes.observe(run, RunKeyOperation.RECONCILIATION) {
+                val current = backend.getAead(uri)
+                assertArrayEquals(byteArrayOf(7), current.decrypt(ciphertext, byteArrayOf(8)))
+                backend.removeAlias(run)
+                assertThrows(Exception::class.java) { current.decrypt(ciphertext, byteArrayOf(8)) }
+                assertThrows(Exception::class.java) { backend.getAead(uri) }
+            }
+            assertFalse(backend.aliasExists(run))
+            assertThrows(Exception::class.java) { backend.getAead(uri) }
+        } finally {
+            backend.removeAlias(run)
+        }
+    }
+
+    @Test
+    fun externalAliasRemovalIsCheckedBeforeBorrowedPrimitiveDecrypt() {
+        var physicalAlias = ""
+        val operations =
+            object : VaultKeystoreIo by AndroidVaultKeystoreIo {
+                override fun generate(alias: String, strongBox: Boolean) {
+                    AndroidVaultKeystoreIo.generate(alias, strongBox)
+                    physicalAlias = alias
+                }
+            }
+        val backend = NoLogRecoveryRunAeadBackend(context, id(), operations)
+        val run = run()
+        val uri = CanonicalRecoveryAlias.forRun(run)
+        try {
+            backend.generateNew(uri)
+            val ciphertext = backend.getAead(uri).encrypt(byteArrayOf(7), byteArrayOf(8))
+            val attempt =
+                backend.failureScopes.observe(run, RunKeyOperation.RECONCILIATION) {
+                    val primitive = backend.getAead(uri)
+                    AndroidVaultKeystoreIo.remove(physicalAlias)
+                    assertThrows(Exception::class.java) {
+                        primitive.decrypt(ciphertext, byteArrayOf(8))
+                    }
+                    assertThrows(Exception::class.java) { backend.getAead(uri) }
+                }
+            assertEquals(KeyFailure.PERMANENTLY_MISSING_OR_INVALIDATED, attempt.failure)
+        } finally {
+            backend.removeAlias(run)
+        }
+    }
 
     @Test
     fun independentVaultsShareLogicalRunButNeverPhysicalKeysOrDeletion() {

@@ -43,12 +43,25 @@ interface OriginalAudioPort {
     fun openAuthenticated(identity: AudioIdentity): AudioResult<AuthenticatedAudioSource> =
         AudioResult.Failed(AudioFailure.UNAVAILABLE)
 
+    /** Cooperative cancellation never grants partial-source authority or retains source loss. */
+    fun openAuthenticated(
+        identity: AudioIdentity,
+        cancelled: () -> Boolean,
+    ): AudioResult<AuthenticatedAudioSource> =
+        cancellableAudioOpen(cancelled) { openAuthenticated(identity) }
+
     /**
      * Authenticate the whole immutable source once for this attempt; close on cancellation/resume.
      */
     fun openAuthenticated(
         reference: OriginalAudioReference
     ): AudioResult<AuthenticatedAudioSource> = AudioResult.Failed(AudioFailure.UNAVAILABLE)
+
+    fun openAuthenticated(
+        reference: OriginalAudioReference,
+        cancelled: () -> Boolean,
+    ): AudioResult<AuthenticatedAudioSource> =
+        cancellableAudioOpen(cancelled) { openAuthenticated(reference) }
 
     fun acquire(identity: AudioIdentity): AudioResult<OriginalAudioStatus>
 
@@ -69,7 +82,8 @@ interface OriginalAudioPort {
  * Process-local verified snapshot, never persisted permission. Each range rechecks live authority,
  * deletion and exact source metadata, then authenticates the selected encrypted units. Callbacks
  * borrow bounded PCM; callers must discard the entire range on failure and never do slow work in
- * the callback. Offsets are global source frames. Closing retires this attempt's snapshot.
+ * the callback. Offsets are global source frames. Closing retires this attempt's metadata snapshot
+ * and must be safe from any thread; it does not close a vault or own outstanding PCM callbacks.
  */
 interface AuthenticatedAudioSource : AutoCloseable {
     val reference: OriginalAudioReference
@@ -83,4 +97,20 @@ interface AuthenticatedAudioSource : AutoCloseable {
         frameCount: Long,
         consume: (firstFrame: Long, pcm: ByteArray) -> Unit,
     ): AudioResult<OriginalAudioStatus>
+}
+
+/** Own a late successful result until its caller's cancellation fence accepts the handoff. */
+internal fun cancellableAudioOpen(
+    cancelled: () -> Boolean,
+    open: () -> AudioResult<AuthenticatedAudioSource>,
+): AudioResult<AuthenticatedAudioSource> {
+    if (cancelled()) return AudioResult.Failed(AudioFailure.UNCERTAIN)
+    val opened = open()
+    var accepted = false
+    return try {
+        accepted = !cancelled()
+        if (accepted) opened else AudioResult.Failed(AudioFailure.UNCERTAIN)
+    } finally {
+        if (!accepted && opened is AudioResult.Value) opened.value.close()
+    }
 }
