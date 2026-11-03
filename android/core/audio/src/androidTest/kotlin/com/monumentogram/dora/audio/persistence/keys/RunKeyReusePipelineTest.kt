@@ -199,12 +199,12 @@ class RunKeyReusePipelineTest {
     private fun receipt(operation: String, keys: CountingKeys, elapsed: Long) {
         InstrumentationRegistry.getInstrumentation()
             .sendStatus(
-                0,
+                3, // Progress only; the runner owns test completion and its class/method identity.
                 Bundle().apply {
                     putString(
-                        "stream",
-                        "RUN_KEY_PIPELINE $operation units=4 opens=${keys.opens} " +
-                            "infos=${keys.infos} ciphers=${keys.ciphers} elapsedNs=$elapsed\n",
+                        "runKeyPipeline",
+                        "operation=$operation units=4 opens=${keys.opens} " +
+                            "infos=${keys.infos} ciphers=${keys.ciphers} elapsedNs=$elapsed",
                     )
                 },
             )
